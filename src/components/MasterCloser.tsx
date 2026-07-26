@@ -972,7 +972,7 @@ a{text-decoration:none;color:inherit;}
 
 /* hero */
 .hero{padding:80px 0 64px;}
-.hero-grid{display:grid;grid-template-columns:0.82fr 1.38fr;gap:110px;align-items:center;}
+.hero-grid{display:grid;grid-template-columns:0.72fr 1.28fr;gap:120px;align-items:center;}
 .hero-h1{font-weight:900;font-size:clamp(3rem,6vw,4.7rem);line-height:.98;letter-spacing:-.04em;margin:0 0 22px;}
 .hero-sub{font-size:1.14rem;color:#44444e;margin:0 0 30px;}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px;}
