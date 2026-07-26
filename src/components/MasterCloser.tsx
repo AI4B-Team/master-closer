@@ -988,7 +988,7 @@ a{text-decoration:none;color:inherit;}
 .device-wrap{position:relative;width:100%;max-width:560px;}
 .float-chip{position:absolute;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:0 22px 44px -22px rgba(11,11,15,.28);z-index:2;animation:float 5.5s ease-in-out infinite;}
 .float-chip-1{top:-42px;left:-44px;animation-delay:0s;}
-.float-chip-2{top:34%;left:-70px;animation-delay:1.2s;max-width:190px;}
+.float-chip-2{top:-30px;right:-44px;animation-delay:1.2s;max-width:190px;}
 .float-chip-3{bottom:-34px;right:-44px;animation-delay:2.4s;}
 .float-ico{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
 .float-ico-live{background:rgba(230,57,70,.14);}
