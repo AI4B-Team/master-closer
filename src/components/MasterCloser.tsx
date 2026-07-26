@@ -7,7 +7,7 @@ import {
   LayoutDashboard, BookOpen, Wand2, BarChart3, Library,
   Video, Smartphone, Globe, MousePointerClick, TrendingUp,
   UsersRound, Hand, Send, AudioLines, BrainCircuit, MessageSquareText,
-  Headphones, ChartNoAxesCombined, ContactRound, Plug, MessagesSquare,
+  Headphones, ChartNoAxesCombined, ContactRound, Plug, MessagesSquare, Brain,
   BotMessageSquare
 } from "lucide-react";
 
