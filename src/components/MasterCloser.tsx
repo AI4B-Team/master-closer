@@ -365,7 +365,7 @@ export default function App() {
 
       {/* HERO */}
       <section className="hero">
-        <div className="wrap hero-grid">
+        <div className="hero-wrap hero-grid">
           <div className="hero-copy">
             <Eyebrow>One Slider. Every Call.</Eyebrow>
             <h1 className="font-display hero-h1">Close Every<br />Conversation.</h1>
