@@ -871,7 +871,7 @@ a{text-decoration:none;color:inherit;}
 .quote-avatar-text{font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-size:.9rem;}
 .quote-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
 .quote-n{font-weight:800;font-size:.98rem;}
-.quote-title{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.quote-title{font-size:.82rem;color:var(--muted);line-height:1.35;}
 .quote-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:500;letter-spacing:.04em;padding:6px 10px;border-radius:999px;background:var(--mist);color:var(--ink);}
 .quote-badge svg{color:var(--signal);}
 @media(max-width:860px){.quotes{grid-template-columns:1fr;}}
