@@ -260,13 +260,13 @@ const FAQS = [
 ];
 
 const INSIDE = [
-  { icon: LayoutDashboard, t: "Dashboard", d: "Live calls, close rate, and next moves at a glance.", x: 8, y: 12 },
-  { icon: BookOpen, t: "Knowledge Base", d: "Your offer, pricing, and playbooks in one brain.", x: 8, y: 40 },
-  { icon: Brain, t: "Conversation Memory", d: "Every past call remembered and searchable.", x: 8, y: 68 },
-  { icon: Wand2, t: "Prompt Builder", d: "Tune the voice, the close, and the disclosure.", x: 74, y: 12 },
-  { icon: GraduationCap, t: "AI Training", d: "Feed it winning calls. It gets sharper weekly.", x: 74, y: 40 },
-  { icon: BarChart3, t: "Analytics", d: "See what closes and what stalls, per rep.", x: 74, y: 68 },
-  { icon: Library, t: "Call Library", d: "Every call recorded, tagged, and reviewable.", x: 41, y: 88 },
+  { icon: LayoutDashboard, t: "Dashboard", d: "Live calls, close rate, and next moves at a glance.", x: 9, y: 18 },
+  { icon: BookOpen, t: "Knowledge Base", d: "Your offer, pricing, and playbooks in one brain.", x: 9, y: 50 },
+  { icon: Brain, t: "Conversation Memory", d: "Every past call remembered and searchable.", x: 9, y: 82 },
+  { icon: Wand2, t: "Prompt Builder", d: "Tune the voice, the close, and the disclosure.", x: 91, y: 18 },
+  { icon: GraduationCap, t: "AI Training", d: "Feed it winning calls. It gets sharper weekly.", x: 91, y: 50 },
+  { icon: BarChart3, t: "Analytics", d: "See what closes and what stalls, per rep.", x: 91, y: 82 },
+  { icon: Library, t: "Call Library", d: "Every call recorded, tagged, and reviewable.", x: 50, y: 100 },
 ];
 
 const PLATFORMS = [
