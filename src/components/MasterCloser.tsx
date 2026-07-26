@@ -495,7 +495,7 @@ export default function App() {
       </section>
 
       {/* COMPARISON TABLE */}
-      <section className="sec sec-mist">
+      <section className="sec">
         <div className="wrap wrap-narrow">
           <div className="sec-head">
             <Eyebrow variant="rule">The Difference</Eyebrow>
