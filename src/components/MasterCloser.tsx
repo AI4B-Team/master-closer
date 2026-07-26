@@ -1110,7 +1110,7 @@ a{text-decoration:none;color:inherit;}
 /* inside master closer */
 .inside{position:relative;}
 .inside-stage{position:relative;padding:40px 0;max-width:1100px;margin:0 auto;}
-.mock{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 70px -30px rgba(11,11,15,.35);overflow:hidden;margin:0 max(60px,10%);}
+.mock{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 70px -30px rgba(11,11,15,.35);overflow:hidden;margin:0 220px;}
 .mock-chrome{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#fafafb;border-bottom:1px solid var(--line);}
 .mock-dot{width:10px;height:10px;border-radius:50%;}
 .mock-dot-r{background:#ff5f57;}.mock-dot-y{background:#febc2e;}.mock-dot-g{background:#28c840;}
