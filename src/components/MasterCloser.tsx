@@ -369,49 +369,56 @@ const OBJ_MODES = [
 
 function ObjectionDemo() {
   const [m, setM] = useState("ai");
-  const responseByMode = {
+
+  const byMode = {
     ai: {
-      tag: "Master Closer · Speaking",
+      prospect: "I'd like to know more about pricing.",
+      chips: [{ label: "Buying Signal", red: true }, { label: "Curious Tone" }],
+      panelTag: "Master Closer · Speaking",
       sub: "Spoken Automatically",
       icon: Bot,
-      badge: "Autonomous",
+      badge: "AI Handled",
+      badgeTone: "red",
+      kind: "reply",
+      line: "Absolutely. Let me walk you through it — pricing scales with call volume and the modes you use. Based on what you've shared, most teams like yours land between $2K and $4K a month. Want me to lock in today's rate?",
       footer: "Live · voice out to prospect",
-      actions: null,
     },
     hybrid: {
-      tag: "Suggested Reply",
-      sub: "Awaiting Rep Approval",
+      prospect: "I'd like to speak with someone before I decide.",
+      chips: [{ label: "Escalation Signal", red: true }, { label: "High Intent" }],
+      panelTag: "AI · Transferring To Human",
+      sub: "Qualified Successfully",
       icon: PhoneForwarded,
-      badge: "Human-Approved",
-      footer: null,
-      actions: (
-        <div className="obj-actions">
-          <button className="obj-btn obj-btn-primary"><Check size={13} strokeWidth={2.6} /> Approve</button>
-          <button className="obj-btn"><Wand2 size={13} strokeWidth={2.4} /> Edit</button>
-          <button className="obj-btn"><MousePointerClick size={13} strokeWidth={2.4} /> Send</button>
-        </div>
-      ),
+      badge: "Human Connected",
+      badgeTone: "black",
+      kind: "handoff",
+      checks: ["Name captured", "Budget confirmed", "Timeline confirmed", "Product matched"],
+      agent: { name: "Sarah Chen", role: "Senior Sales Advisor", initials: "SC" },
+      footer: "Conversation summary sent · connecting now",
     },
     copilot: {
-      tag: "Whispered To Rep",
+      prospect: "I need to think about it.",
+      chips: [{ label: "Delay Objection", red: true }, { label: "Hesitant Tone" }],
+      panelTag: "Whispered To Rep",
       sub: "In-Ear · Rep Delivers Line",
       icon: Crosshair,
-      badge: "Rep-Delivered",
+      badge: "Rep Delivered",
+      badgeTone: "red-outline",
+      kind: "reply",
+      line: "Ask whether it's price, timing, or fit — then handle that specific one.",
       footer: "Only your rep hears this",
-      actions: null,
     },
   };
-  const r = responseByMode[m];
+  const r = byMode[m];
   const RIcon = r.icon;
-  const line = "Completely understand. Can I ask what's giving you pause? Is it the investment, the timing, or making sure it's the right fit?";
 
   return (
     <section id="objection" className="sec">
       <div className="wrap">
         <div className="sec-head">
           <Eyebrow variant="dot">Live Objection Demo</Eyebrow>
-          <h2 className="font-display sec-h2">Watch AI Handle A Real Objection.</h2>
-          <p className="sec-lead">Same objection. Same engine. Different delivery — pick a mode and see the exact same call play out on your terms.</p>
+          <h2 className="font-display sec-h2">See Master Closer Adapt To Each Mode.</h2>
+          <p className="sec-lead">One AI. Three ways to handle the conversation. Pick a mode and watch how the same lead plays out.</p>
         </div>
 
         <div className="obj-modes" role="tablist" aria-label="Delivery mode">
@@ -429,36 +436,61 @@ function ObjectionDemo() {
           ))}
         </div>
 
-
-        <div className="obj-grid">
-          {/* LEFT — Live Conversation */}
+        <div className="obj-grid" key={m}>
+          {/* LEFT — Prospect */}
           <div className="obj-panel">
             <div className="obj-panel-head">
               <span className="obj-panel-tag font-mono"><span className="rec-dot" /> Prospect</span>
             </div>
-
             <div className="obj-bubble">
-              <p className="obj-quote obj-quote-lg">"I need to think about it."</p>
+              <p className="obj-quote obj-quote-lg">"{r.prospect}"</p>
             </div>
-
             <div className="obj-meta">
-              <span className="obj-chip obj-chip-red">Delay Objection</span>
-              <span className="obj-chip">Hesitant Tone</span>
+              {r.chips.map((c, i) => (
+                <span key={i} className={`obj-chip${c.red ? " obj-chip-red" : ""}`}>{c.label}</span>
+              ))}
             </div>
           </div>
 
-          {/* RIGHT — AI Response (mode-aware) */}
+          {/* RIGHT — Mode-specific response */}
           <div className="obj-panel obj-panel-response">
             <div className="obj-panel-head">
-              <span className="obj-panel-tag font-mono"><RIcon size={12} strokeWidth={2.6} /> {r.tag}</span>
-              <span className="obj-badge">{r.badge}</span>
+              <span className="obj-panel-tag font-mono"><RIcon size={12} strokeWidth={2.6} /> {r.panelTag}</span>
+              <span className={`obj-badge obj-badge-${r.badgeTone}`}>{r.badge}</span>
             </div>
 
             <div className="obj-response-body">
               <span className="obj-role font-mono">{r.sub}</span>
-              <p className="obj-quote obj-quote-lg">"{line}"</p>
 
-              {r.actions}
+              {r.kind === "reply" && (
+                <p className="obj-quote obj-quote-lg">"{r.line}"</p>
+              )}
+
+              {r.kind === "handoff" && (
+                <div className="handoff">
+                  <ul className="handoff-checks">
+                    {r.checks.map((c) => (
+                      <li key={c}><Check size={14} strokeWidth={2.8} className="text-signal" /> {c}</li>
+                    ))}
+                  </ul>
+
+                  <div className="handoff-line">
+                    <span className="handoff-line-fill" />
+                    <span className="handoff-pin handoff-pin-l"><Bot size={12} strokeWidth={2.4} /></span>
+                    <span className="handoff-pin handoff-pin-r"><Users size={12} strokeWidth={2.4} /></span>
+                  </div>
+
+                  <div className="handoff-agent">
+                    <span className="handoff-avatar">{r.agent.initials}</span>
+                    <div className="handoff-agent-info">
+                      <div className="handoff-agent-status font-mono"><span className="rec-dot" style={{ background: "#12b76a" }} /> Connecting…</div>
+                      <div className="handoff-agent-name">{r.agent.name}</div>
+                      <div className="handoff-agent-role">{r.agent.role}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {r.footer && <div className="obj-footer font-mono">{r.footer}</div>}
             </div>
           </div>
@@ -467,6 +499,7 @@ function ObjectionDemo() {
     </section>
   );
 }
+
 
 
 
@@ -1515,4 +1548,28 @@ a{text-decoration:none;color:inherit;}
 .modes-xl .mode-cue-line{font-family:'Fraunces',serif;font-style:italic;font-size:.98rem;line-height:1.5;color:#0b0b0f;font-weight:500;}
 
 @media(max-width:1000px){.modes-xl{grid-template-columns:1fr;}.spectrum{margin-bottom:36px;}}
+
+/* ===== HANDOFF (HYBRID DEMO) ===== */
+.obj-badge-red{background:var(--signal);color:#fff;}
+.obj-badge-black{background:#0b0b0f;color:#fff;}
+.obj-badge-red-outline{background:#fff;color:var(--signal);border:1px solid color-mix(in srgb,var(--signal) 40%,var(--line));}
+
+.handoff{display:flex;flex-direction:column;gap:16px;animation:objIn .4s ease;}
+.handoff-checks{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;}
+.handoff-checks li{display:flex;align-items:center;gap:9px;font-size:.94rem;font-weight:600;color:#0b0b0f;}
+.handoff-line{position:relative;height:2px;background:repeating-linear-gradient(90deg,#e4c8ca 0 6px,transparent 6px 12px);margin:6px 22px;border-radius:2px;overflow:visible;}
+.handoff-line-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,var(--signal),#0b0b0f);border-radius:2px;transform-origin:left;animation:handoffFill 1.6s ease-out forwards;}
+.handoff-pin{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid var(--line);display:grid;place-items:center;color:#0b0b0f;box-shadow:0 4px 10px -4px rgba(11,11,15,.25);}
+.handoff-pin-l{left:-22px;border-color:var(--signal);color:var(--signal);}
+.handoff-pin-r{right:-22px;border-color:#0b0b0f;color:#0b0b0f;animation:handoffPop .3s ease 1.4s both;}
+.handoff-agent{display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px -16px rgba(11,11,15,.2);}
+.handoff-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0b0b0f,#3a3a44);color:#fff;display:grid;place-items:center;font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-size:.95rem;letter-spacing:.02em;flex:none;}
+.handoff-agent-info{display:flex;flex-direction:column;gap:2px;}
+.handoff-agent-status{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#12b76a;display:inline-flex;align-items:center;gap:6px;font-weight:700;}
+.handoff-agent-name{font-weight:800;font-size:1rem;color:#0b0b0f;line-height:1.2;}
+.handoff-agent-role{font-size:.82rem;color:#54545e;}
+
+@keyframes handoffFill{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes handoffPop{from{transform:translateY(-50%) scale(.4);opacity:0;}to{transform:translateY(-50%) scale(1);opacity:1;}}
+@media(max-width:640px){.handoff-checks{grid-template-columns:1fr;}}
 `;
