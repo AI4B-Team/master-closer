@@ -35,7 +35,42 @@ const MODES = [
   },
 ];
 
-function Eyebrow({ children }) {
+function Eyebrow({ children, variant = "classic", num }) {
+  if (variant === "rule") {
+    return (
+      <div className="eyebrow eyebrow-rule">
+        <span className="eb-line" />
+        <span className="eb-text text-signal">{children}</span>
+        <span className="eb-line" />
+      </div>
+    );
+  }
+  if (variant === "num") {
+    return (
+      <div className="eyebrow eyebrow-num">
+        <span className="eb-num font-mono">{num}</span>
+        <span className="eb-slash">/</span>
+        <span className="eb-text text-signal">{children}</span>
+      </div>
+    );
+  }
+  if (variant === "dot") {
+    return (
+      <div className="eyebrow eyebrow-dot">
+        <span className="eb-dot" />
+        <span className="eb-text text-signal">{children}</span>
+      </div>
+    );
+  }
+  if (variant === "bracket") {
+    return (
+      <div className="eyebrow eyebrow-bracket font-mono">
+        <span className="eb-brack">[</span>
+        <span className="eb-text text-signal">{children}</span>
+        <span className="eb-brack">]</span>
+      </div>
+    );
+  }
   return <div className="eyebrow text-signal">{children}</div>;
 }
 
@@ -393,7 +428,7 @@ export default function App() {
       <section id="autonomy" className="sec">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
-            <Eyebrow>The Autonomy Slider</Eyebrow>
+            <Eyebrow variant="num" num="01">The Autonomy Slider</Eyebrow>
             <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One Platform. Three Ways To Run The Call.</h2>
             <p className="sec-lead">Every other tool picks a lane — an AI that talks, or a copilot that whispers. Master Closer is the same brain at three settings. Move the dial per campaign, per rep, per call.</p>
           </div>
@@ -428,7 +463,7 @@ export default function App() {
       <section className="sec sec-mist">
         <div className="wrap wrap-narrow">
           <div className="sec-head">
-            <Eyebrow>The Difference</Eyebrow>
+            <Eyebrow variant="rule">The Difference</Eyebrow>
             <h2 className="font-display sec-h2">How Master Closer Compares.</h2>
             <p className="sec-lead">Recorders review the call after it's lost. Basic copilots only whisper. Master Closer runs, assists, and closes.</p>
           </div>
@@ -455,7 +490,7 @@ export default function App() {
       <section className="sec sec-mist">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Two Sides Of Every Call</Eyebrow>
+            <Eyebrow variant="num" num="02">Two Sides Of Every Call</Eyebrow>
             <h2 className="font-display sec-h2">What They Hear. What You See.</h2>
             <p className="sec-lead">Your prospect hears a natural, confident conversation. You see the objection named, the next line, and the close probability — private, on your screen only.</p>
           </div>
@@ -492,7 +527,7 @@ export default function App() {
       <section className="sec">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Ten Seconds, End To End</Eyebrow>
+            <Eyebrow variant="dot">Ten Seconds, End To End</Eyebrow>
             <h2 className="font-display sec-h2">Watch It Close An Objection.</h2>
             <p className="sec-lead">The prospect stalls. Master Closer names the objection, thinks, and hands your rep the exact next line. They send it, the prospect softens, the deal moves.</p>
           </div>
@@ -542,7 +577,7 @@ export default function App() {
       <section id="demo" className="sec">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Live Demo</Eyebrow>
+            <Eyebrow variant="bracket">Live Demo</Eyebrow>
             <h2 className="font-display sec-h2">Test It Live.</h2>
             <p className="sec-lead">This is the actual engine, not a video. Pick a line or type your own, choose who's running the call, and watch Master Closer hand back the move in real time.</p>
           </div>
@@ -554,7 +589,7 @@ export default function App() {
       <section className="sec sec-mist">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Inside Master Closer</Eyebrow>
+            <Eyebrow variant="num" num="03">Inside Master Closer</Eyebrow>
             <h2 className="font-display sec-h2">The Whole Cockpit, On One Screen.</h2>
             <p className="sec-lead">Every part of your close, wired together. Live calls on the left, the brain in the middle, coaching on the right.</p>
           </div>
@@ -639,7 +674,7 @@ export default function App() {
       <section className="sec sec-dark">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
-            <Eyebrow>Capabilities</Eyebrow>
+            <Eyebrow variant="rule">Capabilities</Eyebrow>
             <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap", color: "#fff" }}>Everything A Closer Needs, In One Place.</h2>
           </div>
           <div className="caps">
@@ -661,7 +696,7 @@ export default function App() {
       <section id="uses" className="sec sec-mist">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Trained To Close</Eyebrow>
+            <Eyebrow variant="num" num="04">Trained To Close</Eyebrow>
             <h2 className="font-display sec-h2">A Master Closer For Any Close.</h2>
             <p className="sec-lead">Real objections it handles live, tuned to your industry and your offer.</p>
           </div>
@@ -689,7 +724,7 @@ export default function App() {
       <section id="setup" className="sec">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Setup</Eyebrow>
+            <Eyebrow variant="dot">Setup</Eyebrow>
             <h2 className="font-display sec-h2">Works Anywhere You Take Calls.</h2>
             <p className="sec-lead">If it has audio, Master Closer runs on it. No new headset, no new phone, no IT project.</p>
           </div>
@@ -718,7 +753,7 @@ export default function App() {
       <section className="sec sec-dark">
         <div className="wrap comply">
           <div className="comply-copy">
-            <Eyebrow>Consent, Built In</Eyebrow>
+            <Eyebrow variant="bracket">Consent, Built In</Eyebrow>
             <h2 className="font-display sec-h2" style={{ color: "#fff" }}>The Honest Edge Wins The Deal.</h2>
             <p className="sec-lead" style={{ color: "rgba(255,255,255,.66)" }}>
               Covert tools get their users sued. Master Closer discloses when a call is recorded,
@@ -742,7 +777,7 @@ export default function App() {
       <section className="sec">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Proof</Eyebrow>
+            <Eyebrow variant="num" num="05">Proof</Eyebrow>
             <h2 className="font-display sec-h2">Closers Don't Go Back.</h2>
           </div>
           <div className="quotes">
@@ -803,7 +838,7 @@ export default function App() {
       <section id="faq" className="sec sec-mist">
         <div className="wrap wrap-narrow">
           <div className="sec-head">
-            <Eyebrow>FAQ</Eyebrow>
+            <Eyebrow variant="rule">FAQ</Eyebrow>
             <h2 className="font-display sec-h2">The Questions Closers Ask First.</h2>
           </div>
           <div className="faq">{FAQS.map((f) => <FAQItem key={f.q} {...f} />)}</div>
@@ -861,6 +896,18 @@ const CSS = `
 .wrap-narrow{max-width:860px;}
 a{text-decoration:none;color:inherit;}
 .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;}
+.eyebrow-rule{display:flex;align-items:center;justify-content:center;gap:14px;}
+.eyebrow-rule .eb-line{height:1px;width:48px;background:linear-gradient(90deg,transparent,var(--signal),transparent);}
+.eyebrow-num{display:inline-flex;align-items:center;gap:10px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;}
+.sec-dark .eyebrow-num{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);}
+.eyebrow-num .eb-num{font-size:.7rem;color:#8a8a92;letter-spacing:.08em;}
+.eyebrow-num .eb-slash{color:#d4d4dc;font-weight:400;}
+.sec-dark .eyebrow-num .eb-slash{color:rgba(255,255,255,.2);}
+.eyebrow-dot{display:inline-flex;align-items:center;gap:9px;}
+.eyebrow-dot .eb-dot{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 4px rgba(230,57,70,.15);}
+.eyebrow-bracket{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;letter-spacing:.14em;}
+.eyebrow-bracket .eb-brack{color:#c9c9d1;font-weight:400;}
+.sec-dark .eyebrow-bracket .eb-brack{color:rgba(255,255,255,.28);}
 
 /* buttons */
 .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#fff;
