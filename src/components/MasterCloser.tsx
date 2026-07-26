@@ -619,21 +619,45 @@ export default function App() {
       <section id="autonomy" className="sec">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
-            <Eyebrow variant="num" num="01">The Autonomy Slider</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One Platform. Three Ways To Run The Call.</h2>
-            <p className="sec-lead">Every other tool picks a lane — an AI that talks, or a copilot that whispers. Master Closer is the same brain at three settings. Move the dial per campaign, per rep, per call.</p>
+            <Eyebrow variant="num" num="01">Three Levels Of Control</Eyebrow>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One AI. Three Levels Of Control.</h2>
+            <p className="sec-lead">You're not choosing between products — you're choosing how much control to give the AI. Same brain. Slide from fully autonomous to human-guided per campaign, per rep, per call.</p>
           </div>
+
+          <div className="continuum" aria-hidden="true">
+            <span className="cont-end font-mono">Max Autonomy</span>
+            <span className="cont-line" />
+            {MODES.map((m) => (
+              <span key={m.key} className="cont-node">
+                <span className="cont-dot" />
+                <span className="cont-label font-mono">{m.label}</span>
+                <span className="cont-sub">{m.tagline}</span>
+              </span>
+            ))}
+            <span className="cont-line" />
+            <span className="cont-end font-mono">Human Control</span>
+          </div>
+
           <div className="modes">
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
-                <div key={m.key} className="mode-card">
+                <div key={m.key} className={`mode-card mode-card-${m.key}`}>
                   <div className="mode-top">
                     <span className="mode-ico"><Icon size={20} strokeWidth={2.2} /></span>
                     <span className="mode-step font-mono">0{i + 1}</span>
                   </div>
                   <h3 className="font-display mode-h">{m.label}</h3>
+                  <p className="mode-tagline font-mono">{m.tagline}</p>
+                  <p className="mode-headline">{m.headline}</p>
                   <p className="mode-b">{m.blurb}</p>
+                  <div className="mode-speakers">
+                    {m.speakers.map((s, si) => (
+                      s.note
+                        ? <span key={si} className="mode-spk-note">{s.note}</span>
+                        : <span key={si} className="mode-spk"><span className="mode-spk-ico">{s.icon}</span> {s.label}</span>
+                    ))}
+                  </div>
                   <div className="mode-cue">
                     <span className="font-mono mode-cue-tag">{m.tag}</span>
                     <p className="mode-cue-line">{m.cue}</p>
@@ -642,13 +666,9 @@ export default function App() {
               );
             })}
           </div>
-          <div className="dial-bar">
-            <span className="font-mono dial-end">FULL AI</span>
-            <div className="dial-track"><span className="dial-knob" /></div>
-            <span className="font-mono dial-end">FULL HUMAN</span>
-          </div>
         </div>
       </section>
+
 
       {/* COMPARISON TABLE */}
       <section className="sec">
