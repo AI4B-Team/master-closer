@@ -430,6 +430,33 @@ export default function App() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
+      <section id="how" className="sec sec-mist">
+        <div className="wrap">
+          <div className="sec-head">
+            <Eyebrow variant="rule">How It Works</Eyebrow>
+            <h2 className="font-display sec-h2">Listen. Understand. Coach.</h2>
+            <p className="sec-lead">Three steps that answer the only question that matters: what actually happens on the call?</p>
+          </div>
+          <div className="works">
+            {WORKS.map((w, i) => {
+              const Icon = w.icon;
+              return (
+                <div key={w.t} className="work">
+                  <div className="work-top">
+                    <span className="work-ico"><Icon size={20} strokeWidth={2.2} /></span>
+                    <span className="work-n font-mono">{w.n}</span>
+                  </div>
+                  <h3 className="font-display work-h">{w.t}</h3>
+                  <p className="work-d">{w.d}</p>
+                  {i < WORKS.length - 1 && <div className="work-line" aria-hidden="true" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* AUTONOMY */}
       <section id="autonomy" className="sec">
         <div className="wrap">
