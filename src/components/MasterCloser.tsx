@@ -1342,7 +1342,7 @@ a{text-decoration:none;color:inherit;}
 .mock-dot{width:10px;height:10px;border-radius:50%;}
 .mock-dot-r{background:#ff5f57;}.mock-dot-y{background:#febc2e;}.mock-dot-g{background:#28c840;}
 .mock-url{margin-left:16px;font-size:11px;color:var(--muted);}
-.mock-body{display:grid;grid-template-columns:160px 1fr;min-height:340px;}
+.mock-body{display:grid;grid-template-columns:180px 1fr;min-height:440px;}
 .mock-side{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:4px;background:#fcfcfd;}
 .mock-brand{display:flex;align-items:center;gap:8px;padding:4px 6px 12px;}
 .mock-nav{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#54545e;padding:7px 8px;border-radius:7px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;}
