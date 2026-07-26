@@ -526,6 +526,91 @@ export default function App() {
         </div>
       </section>
 
+      {/* INSIDE MASTER CLOSER */}
+      <section className="sec sec-mist">
+        <div className="wrap">
+          <div className="sec-head">
+            <Eyebrow>Inside Master Closer</Eyebrow>
+            <h2 className="font-display sec-h2">The Whole Cockpit, On One Screen.</h2>
+            <p className="sec-lead">Every part of your close, wired together. Live calls on the left, the brain in the middle, coaching on the right.</p>
+          </div>
+          <div className="inside">
+            <div className="inside-stage">
+              {/* Mock app window */}
+              <div className="mock">
+                <div className="mock-chrome">
+                  <span className="mock-dot mock-dot-r" />
+                  <span className="mock-dot mock-dot-y" />
+                  <span className="mock-dot mock-dot-g" />
+                  <span className="mock-url font-mono">app.masterclose.ai / dashboard</span>
+                </div>
+                <div className="mock-body">
+                  <aside className="mock-side">
+                    <div className="mock-brand"><span className="brand-mark"><Crosshair size={13} strokeWidth={2.6} /></span><span className="font-display" style={{fontWeight:800,fontSize:13}}>Master Closer</span></div>
+                    {[
+                      {i:LayoutDashboard,t:"Dashboard",on:true},
+                      {i:BookOpen,t:"Knowledge"},
+                      {i:Brain,t:"Memory"},
+                      {i:Wand2,t:"Prompts"},
+                      {i:GraduationCap,t:"Training"},
+                      {i:BarChart3,t:"Analytics"},
+                      {i:Library,t:"Call Library"},
+                    ].map((r)=>{const I=r.i;return(
+                      <div key={r.t} className={"mock-nav "+(r.on?"mock-nav-on":"")}><I size={13} strokeWidth={2.2}/><span>{r.t}</span></div>
+                    );})}
+                  </aside>
+                  <div className="mock-main">
+                    <div className="mock-head">
+                      <div>
+                        <div className="mock-h font-display">Live Calls</div>
+                        <div className="mock-sub font-mono">3 IN PROGRESS · 12 TODAY</div>
+                      </div>
+                      <div className="mock-metric"><span className="font-mono mock-metric-l">CLOSE RATE</span><span className="font-display mock-metric-v">47%</span></div>
+                    </div>
+                    <div className="mock-cards">
+                      {[
+                        {n:"Gridline · Discovery",t:"Price Objection",p:72,live:true},
+                        {n:"Northbound · Demo",t:"Timing",p:58,live:true},
+                        {n:"Apex Solar · Close",t:"Ready",p:91,live:true},
+                      ].map((c)=>(
+                        <div key={c.n} className="mock-card">
+                          <div className="mock-card-top">
+                            <span className="rec-dot" />
+                            <span className="font-mono mock-card-n">{c.n}</span>
+                          </div>
+                          <span className="chip chip-red" style={{alignSelf:'flex-start'}}>{c.t}</span>
+                          <div className="conf">
+                            <div className="conf-track"><div className="conf-fill" style={{width:c.p+"%"}}/></div>
+                            <div className="conf-num font-mono">{c.p}%</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mock-chart">
+                      <div className="mock-chart-h"><span className="font-display" style={{fontWeight:800}}>This Week</span><span className="font-mono mock-metric-l">CLOSES / DAY</span></div>
+                      <div className="mock-bars">
+                        {[40,62,55,78,68,84,72].map((h,i)=><span key={i} className="mock-bar" style={{height:h+"%"}}/>)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Callouts */}
+              {INSIDE.map((c,i)=>{const I=c.icon;return(
+                <div key={c.t} className={"callout callout-"+i} style={{left:c.x+"%",top:c.y+"%"}}>
+                  <span className="callout-ico"><I size={14} strokeWidth={2.2}/></span>
+                  <div className="callout-body">
+                    <div className="callout-t font-display">{c.t}</div>
+                    <div className="callout-d">{c.d}</div>
+                  </div>
+                </div>
+              );})}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CAPABILITIES */}
       <section className="sec">
         <div className="wrap">
