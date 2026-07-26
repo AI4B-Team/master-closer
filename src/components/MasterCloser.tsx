@@ -666,7 +666,17 @@ export default function App() {
         <div className="wrap">
           <div className="sec-head">
             <Eyebrow>Setup</Eyebrow>
-            <h2 className="font-display sec-h2">Live On Your Next Call.</h2>
+            <h2 className="font-display sec-h2">Works Anywhere You Take Calls.</h2>
+            <p className="sec-lead">If it has audio, Master Closer runs on it. No new headset, no new phone, no IT project.</p>
+          </div>
+          <div className="platforms">
+            {PLATFORMS.map((p)=>{const I=p.icon;return(
+              <div key={p.t} className="platform">
+                <span className="platform-check"><Check size={13} strokeWidth={3}/></span>
+                <span className="platform-ico"><I size={18} strokeWidth={2.2}/></span>
+                <span className="platform-t font-display">{p.t}</span>
+              </div>
+            );})}
           </div>
           <div className="steps">
             {STEPS.map((s) => (
