@@ -353,7 +353,7 @@ export default function App() {
           <nav className="nav-links">
             <a href="#autonomy">Product</a>
             <a href="#uses">Solutions</a>
-            <a href="#setup">How It Works</a>
+            <a href="#how">How It Works</a>
             <a href="#faq">FAQ</a>
           </nav>
           <div className="nav-cta">
