@@ -864,12 +864,18 @@ a{text-decoration:none;color:inherit;}
 
 /* quotes */
 .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.quote{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;}
-.quote-t{font-size:1.02rem;line-height:1.55;color:#24242c;margin:0 0 20px;font-weight:500;}
-.quote-by{display:flex;flex-direction:column;gap:2px;}
+.quote{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column;}
+.quote-t{font-size:1.02rem;line-height:1.55;color:#24242c;margin:0 0 22px;font-weight:500;flex:1;}
+.quote-meta{display:flex;align-items:center;gap:14px;}
+.quote-avatar{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--signal);color:#fff;display:grid;place-items:center;}
+.quote-avatar-text{font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-size:.9rem;}
+.quote-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
 .quote-n{font-weight:800;font-size:.98rem;}
-.quote-r{font-size:.84rem;color:var(--muted);}
+.quote-title{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.quote-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:500;letter-spacing:.04em;padding:6px 10px;border-radius:999px;background:var(--mist);color:var(--ink);}
+.quote-badge svg{color:var(--signal);}
 @media(max-width:860px){.quotes{grid-template-columns:1fr;}}
+@media(max-width:520px){.quote-meta{flex-wrap:wrap;}.quote-badge{width:100%;justify-content:center;margin-top:2px;}}
 
 /* faq */
 .faq{display:flex;flex-direction:column;gap:12px;}
