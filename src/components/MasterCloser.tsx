@@ -454,9 +454,9 @@ export default function App() {
       {/* CAPABILITIES */}
       <section className="sec">
         <div className="wrap">
-          <div className="sec-head">
+          <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow>Capabilities</Eyebrow>
-            <h2 className="font-display sec-h2">Everything A Closer Needs, In One Place.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>Everything A Closer Needs, In One Place.</h2>
           </div>
           <div className="caps">
             {CAPS.map((c) => {
