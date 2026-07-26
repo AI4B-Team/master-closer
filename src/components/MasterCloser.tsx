@@ -264,6 +264,12 @@ const USES = [
   { icon: Heart, t: "Dating (Practice)", o: "Rehearse the ask before it counts, never live on the date." },
 ];
 
+const WORKS = [
+  { n: "01", t: "Listen", d: "Master Closer listens to the conversation in real time, across Zoom, Meet, Teams, phone, or browser.", icon: Ear },
+  { n: "02", t: "Understand", d: "It identifies questions, objections, and opportunities using your knowledge base and past calls.", icon: Brain },
+  { n: "03", t: "Coach", d: "It suggests the best response instantly so you can stay focused on the conversation.", icon: Crosshair },
+];
+
 const STEPS = [
   { n: "01", t: "Feed It Your Offer", d: "Drop In Your Script, Pricing, And Objections. It Learns What You Sell And How You Win." },
   { n: "02", t: "Set The Autonomy", d: "Slide From Full AI To Hybrid Handoff To Human-Plus-Copilot Per Campaign Or Per Rep." },
