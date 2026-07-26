@@ -1152,6 +1152,14 @@ a{text-decoration:none;color:inherit;}
 .work-line{position:absolute;top:50%;right:-20px;width:20px;height:2px;background:linear-gradient(90deg,var(--signal),transparent);transform:translateY(-50%);}
 @media(max-width:800px){.works{grid-template-columns:1fr;gap:18px;}.work-line{display:none;}}
 
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;max-width:960px;margin:0 auto;}
+.step{border-top:2px solid var(--signal);padding-top:20px;}
+.step-n{font-size:13px;color:var(--signal);font-weight:500;letter-spacing:.1em;}
+.step-h{font-weight:800;font-size:1.3rem;margin:12px 0 9px;}
+.step-d{font-size:.94rem;color:#54545e;margin:0;line-height:1.5;}
+@media(max-width:800px){.steps{grid-template-columns:1fr;gap:22px;}}
+
 /* compliance */
 .comply{display:grid;grid-template-columns:1.4fr .6fr;gap:44px;align-items:center;}
 .comply-copy .sec-lead{margin-bottom:24px;text-align:left;}
