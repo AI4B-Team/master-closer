@@ -925,8 +925,8 @@ const CSS = `
 .spin{animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-.wrap{max-width:1320px;margin:0 auto;padding:0 24px;}
-.wrap-narrow{max-width:920px;}
+.wrap{max-width:1440px;margin:0 auto;padding:0 28px;}
+.wrap-narrow{max-width:980px;}
 a{text-decoration:none;color:inherit;}
 .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;}
 .eyebrow-rule{display:flex;align-items:center;justify-content:center;gap:14px;}
