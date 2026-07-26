@@ -348,9 +348,9 @@ function FAQItem({ q, a }) {
 }
 
 const OBJ_MODES = [
-  { key: "ai", label: "Full AI" },
+  { key: "ai", label: "AI" },
   { key: "hybrid", label: "Hybrid" },
-  { key: "copilot", label: "Human + Copilot" },
+  { key: "copilot", label: "Copilot" },
 ];
 
 function ObjectionDemo() {
