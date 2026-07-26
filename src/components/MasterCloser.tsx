@@ -1119,10 +1119,10 @@ a{text-decoration:none;color:inherit;}
 .hero-h1{font-weight:900;font-size:clamp(3rem,6vw,4.7rem);line-height:.98;letter-spacing:-.04em;margin:0 0 22px;}
 .hero-sub{font-size:1.14rem;color:#44444e;margin:0 0 30px;}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px;}
-.hero-pills{display:flex;gap:12px;flex-wrap:wrap;}
-.hero-pill{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fff;}
-.hero-pill-ico{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#fbeaea;color:var(--signal);}
-.hero-pill-t{font-size:.9rem;font-weight:700;}
+.hero-pills{display:flex;gap:10px;flex-wrap:nowrap;}
+.hero-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:9px 13px;background:#fff;white-space:nowrap;}
+.hero-pill-ico{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
+.hero-pill-t{font-size:.86rem;font-weight:700;white-space:nowrap;}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px;}.hero{padding:48px 0 40px;}}
 
 /* hero floating chips */
