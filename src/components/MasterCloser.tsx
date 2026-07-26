@@ -553,18 +553,54 @@ export default function App() {
           </div>
           <div className="quotes">
             {[
-              { q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.", n: "Marcus D.", r: "Solar" },
-              { q: "The whisper hits before the silence gets awkward. My objection handling doubled.", n: "Priya R.", r: "SaaS AE" },
-              { q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
-            ].map((t) => (
-              <div key={t.n} className="quote">
-                <p className="quote-t">“{t.q}”</p>
-                <div className="quote-by">
-                  <span className="quote-n font-display">{t.n}</span>
-                  <span className="quote-r">{t.r}</span>
+              {
+                q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.",
+                n: "Marcus D.",
+                title: "Owner",
+                company: "Apex Solar",
+                initials: "MD",
+                revenue: "$1.2M Closed",
+                logo: Sun,
+              },
+              {
+                q: "The whisper hits before the silence gets awkward. My objection handling doubled.",
+                n: "Priya R.",
+                title: "Enterprise AE",
+                company: "Flowstack",
+                initials: "PR",
+                revenue: "42% Win Rate",
+                logo: Building2,
+              },
+              {
+                q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.",
+                n: "Jordan T.",
+                title: "Founder",
+                company: "Northbound Agency",
+                initials: "JT",
+                revenue: "$340K Added",
+                logo: Users,
+              },
+            ].map((t) => {
+              const Logo = t.logo;
+              return (
+                <div key={t.n} className="quote">
+                  <p className="quote-t">"{t.q}"</p>
+                  <div className="quote-meta">
+                    <div className="quote-avatar">
+                      <span className="quote-avatar-text">{t.initials}</span>
+                    </div>
+                    <div className="quote-info">
+                      <span className="quote-n font-display">{t.n}</span>
+                      <span className="quote-title">{t.title} — {t.company}</span>
+                    </div>
+                    <div className="quote-badge">
+                      <Logo size={14} strokeWidth={2.2} />
+                      <span className="font-mono">{t.revenue}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -828,12 +864,18 @@ a{text-decoration:none;color:inherit;}
 
 /* quotes */
 .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.quote{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;}
-.quote-t{font-size:1.02rem;line-height:1.55;color:#24242c;margin:0 0 20px;font-weight:500;}
-.quote-by{display:flex;flex-direction:column;gap:2px;}
+.quote{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column;}
+.quote-t{font-size:1.02rem;line-height:1.55;color:#24242c;margin:0 0 22px;font-weight:500;flex:1;}
+.quote-meta{display:flex;align-items:center;gap:14px;}
+.quote-avatar{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:var(--signal);color:#fff;display:grid;place-items:center;}
+.quote-avatar-text{font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-size:.9rem;}
+.quote-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
 .quote-n{font-weight:800;font-size:.98rem;}
-.quote-r{font-size:.84rem;color:var(--muted);}
+.quote-title{font-size:.82rem;color:var(--muted);line-height:1.35;}
+.quote-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:500;letter-spacing:.04em;padding:6px 10px;border-radius:999px;background:var(--mist);color:var(--ink);}
+.quote-badge svg{color:var(--signal);}
 @media(max-width:860px){.quotes{grid-template-columns:1fr;}}
+@media(max-width:520px){.quote-meta{flex-wrap:wrap;}.quote-badge{width:100%;justify-content:center;margin-top:2px;}}
 
 /* faq */
 .faq{display:flex;flex-direction:column;gap:12px;}
