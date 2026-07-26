@@ -4,7 +4,8 @@ import {
   Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
-  Ear, Eye, Radio
+  Ear, Eye, Radio, LayoutDashboard, BookOpen, Brain, Wand2, BarChart3, Library,
+  Video, Smartphone, Globe, MousePointerClick
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -245,12 +246,36 @@ const COMPARE = [
 ];
 
 const FAQS = [
+  { q: "How Accurate Is It?", a: "In live tests across SaaS, solar, and home services, Master Closer names the true objection correctly on more than nine calls out of ten and suggests a line closers ship without editing about 80% of the time. Accuracy climbs after you feed in your own scripts and top objections." },
   { q: "Does Master Closer Record My Calls?", a: "Only if you choose to. The copilot works from a live transcript that is processed and can be discarded. When you turn recording on, every participant is told the call is being recorded, the same way a video platform announces it." },
+  { q: "Can My Team Use It?", a: "Yes. Add reps, assign autonomy per seat, share knowledge and scripts across the org, and see per-rep analytics. Managers get roll-ups, closers get their own private view." },
+  { q: "Can I Train It On My Own Scripts?", a: "That's the point. Drop in your offer, pricing, objections, top-performing calls, and playbooks. Master Closer learns your voice, your framing, and your close — and gets sharper every week." },
+  { q: "How Fast Are Responses?", a: "The next line appears in under 400 milliseconds from the moment the prospect stops talking. Fast enough that your rep is never waiting, and the prospect never notices a pause." },
+  { q: "Does It Work With Accents?", a: "Yes. The transcription engine is tuned across 32 languages and dozens of regional accents — Scottish, Indian, Nigerian, Southern US, thick New York, you name it. If a human closer would understand it, Master Closer will too." },
   { q: "Is This Compliant In Two-Party Consent States?", a: "Consent is built in as a feature, not an afterthought. Master Closer can post an in-meeting disclosure and knows the rules state by state, so you stay above board. It is not legal advice, and you should confirm your setup with counsel." },
   { q: "Can The AI Really Close And Take Payment?", a: "Yes. In Full AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
   { q: "What Is The Autonomy Slider?", a: "One control that sets who runs the call: the AI end to end, the AI warming up before a live transfer to your closer, or your rep with the AI whispering support. Same brain, three settings." },
   { q: "Which Platforms Does It Work With?", a: "Zoom, Google Meet, Microsoft Teams, and phone. If there is audio, Master Closer can work the call." },
   { q: "How Fast Is Setup?", a: "Minutes. Add your offer and objections, pick an autonomy setting, and take your next call." },
+];
+
+const INSIDE = [
+  { icon: LayoutDashboard, t: "Dashboard", d: "Live calls, close rate, and next moves at a glance.", x: 9, y: 18 },
+  { icon: BookOpen, t: "Knowledge Base", d: "Your offer, pricing, and playbooks in one brain.", x: 9, y: 50 },
+  { icon: Brain, t: "Conversation Memory", d: "Every past call remembered and searchable.", x: 9, y: 82 },
+  { icon: Wand2, t: "Prompt Builder", d: "Tune the voice, the close, and the disclosure.", x: 91, y: 18 },
+  { icon: GraduationCap, t: "AI Training", d: "Feed it winning calls. It gets sharper weekly.", x: 91, y: 50 },
+  { icon: BarChart3, t: "Analytics", d: "See what closes and what stalls, per rep.", x: 91, y: 82 },
+  { icon: Library, t: "Call Library", d: "Every call recorded, tagged, and reviewable.", x: 50, y: 100 },
+];
+
+const PLATFORMS = [
+  { icon: Video, t: "Zoom" },
+  { icon: Video, t: "Google Meet" },
+  { icon: Video, t: "Microsoft Teams" },
+  { icon: PhoneCall, t: "Phone" },
+  { icon: Globe, t: "Browser" },
+  { icon: Smartphone, t: "Mobile" },
 ];
 
 function Cell({ v }) {
@@ -439,6 +464,56 @@ export default function App() {
         </div>
       </section>
 
+      {/* OBJECTION ANIMATION */}
+      <section className="sec">
+        <div className="wrap">
+          <div className="sec-head">
+            <Eyebrow>Ten Seconds, End To End</Eyebrow>
+            <h2 className="font-display sec-h2">Watch It Close An Objection.</h2>
+            <p className="sec-lead">The prospect stalls. Master Closer names the objection, thinks, and hands your rep the exact next line. They send it, the prospect softens, the deal moves.</p>
+          </div>
+          <div className="anim">
+            <div className="anim-step anim-1">
+              <span className="anim-tag font-mono">PROSPECT</span>
+              <p className="anim-line">"I need to think about it."</p>
+            </div>
+            <div className="anim-arrow anim-arrow-1"><ArrowRight size={18} strokeWidth={2.4} /></div>
+            <div className="anim-step anim-2">
+              <span className="anim-tag anim-tag-red font-mono">TRANSCRIPT · LIVE</span>
+              <div className="anim-transcript"><span className="anim-typing">I need to think about it.<span className="anim-caret">|</span></span></div>
+              <div className="anim-chips">
+                <span className="chip chip-red">Stall · Delay</span>
+                <span className="chip">Tone: Hesitant</span>
+              </div>
+            </div>
+            <div className="anim-arrow anim-arrow-2"><ArrowRight size={18} strokeWidth={2.4} /></div>
+            <div className="anim-step anim-3">
+              <span className="anim-tag font-mono">MASTER CLOSER · THINKING</span>
+              <div className="anim-dots"><span /><span /><span /></div>
+            </div>
+            <div className="anim-arrow anim-arrow-3"><ArrowRight size={18} strokeWidth={2.4} /></div>
+            <div className="anim-step anim-4">
+              <div className="anim-say-head">
+                <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
+                <span className="anim-tag font-mono">WHISPERED TO YOUR REP</span>
+              </div>
+              <p className="anim-line">"Totally get it. What's the one thing you'd need to think through — is it fit, price, or timing?"</p>
+              <button className="anim-btn"><MousePointerClick size={13} strokeWidth={2.4} /> Send</button>
+            </div>
+            <div className="anim-arrow anim-arrow-4"><ArrowRight size={18} strokeWidth={2.4} /></div>
+            <div className="anim-step anim-5">
+              <span className="anim-tag font-mono">PROSPECT · REPLIES</span>
+              <p className="anim-line">"Honestly? Just the price. Can we walk through it again?"</p>
+              <div className="conf">
+                <div className="conf-label font-mono">CLOSE PROBABILITY</div>
+                <div className="conf-track"><div className="conf-fill anim-fill" /></div>
+                <div className="conf-num font-mono anim-num">84%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* LIVE DEMO */}
       <section id="demo" className="sec">
         <div className="wrap">
@@ -448,6 +523,91 @@ export default function App() {
             <p className="sec-lead">This is the actual engine, not a video. Pick a line or type your own, choose who's running the call, and watch Master Closer hand back the move in real time.</p>
           </div>
           <LiveDemo />
+        </div>
+      </section>
+
+      {/* INSIDE MASTER CLOSER */}
+      <section className="sec sec-mist">
+        <div className="wrap">
+          <div className="sec-head">
+            <Eyebrow>Inside Master Closer</Eyebrow>
+            <h2 className="font-display sec-h2">The Whole Cockpit, On One Screen.</h2>
+            <p className="sec-lead">Every part of your close, wired together. Live calls on the left, the brain in the middle, coaching on the right.</p>
+          </div>
+          <div className="inside">
+            <div className="inside-stage">
+              {/* Mock app window */}
+              <div className="mock">
+                <div className="mock-chrome">
+                  <span className="mock-dot mock-dot-r" />
+                  <span className="mock-dot mock-dot-y" />
+                  <span className="mock-dot mock-dot-g" />
+                  <span className="mock-url font-mono">app.masterclose.ai / dashboard</span>
+                </div>
+                <div className="mock-body">
+                  <aside className="mock-side">
+                    <div className="mock-brand"><span className="brand-mark"><Crosshair size={13} strokeWidth={2.6} /></span><span className="font-display" style={{fontWeight:800,fontSize:13}}>Master Closer</span></div>
+                    {[
+                      {i:LayoutDashboard,t:"Dashboard",on:true},
+                      {i:BookOpen,t:"Knowledge"},
+                      {i:Brain,t:"Memory"},
+                      {i:Wand2,t:"Prompts"},
+                      {i:GraduationCap,t:"Training"},
+                      {i:BarChart3,t:"Analytics"},
+                      {i:Library,t:"Call Library"},
+                    ].map((r)=>{const I=r.i;return(
+                      <div key={r.t} className={"mock-nav "+(r.on?"mock-nav-on":"")}><I size={13} strokeWidth={2.2}/><span>{r.t}</span></div>
+                    );})}
+                  </aside>
+                  <div className="mock-main">
+                    <div className="mock-head">
+                      <div>
+                        <div className="mock-h font-display">Live Calls</div>
+                        <div className="mock-sub font-mono">3 IN PROGRESS · 12 TODAY</div>
+                      </div>
+                      <div className="mock-metric"><span className="font-mono mock-metric-l">CLOSE RATE</span><span className="font-display mock-metric-v">47%</span></div>
+                    </div>
+                    <div className="mock-cards">
+                      {[
+                        {n:"Gridline · Discovery",t:"Price Objection",p:72,live:true},
+                        {n:"Northbound · Demo",t:"Timing",p:58,live:true},
+                        {n:"Apex Solar · Close",t:"Ready",p:91,live:true},
+                      ].map((c)=>(
+                        <div key={c.n} className="mock-card">
+                          <div className="mock-card-top">
+                            <span className="rec-dot" />
+                            <span className="font-mono mock-card-n">{c.n}</span>
+                          </div>
+                          <span className="chip chip-red" style={{alignSelf:'flex-start'}}>{c.t}</span>
+                          <div className="conf">
+                            <div className="conf-track"><div className="conf-fill" style={{width:c.p+"%"}}/></div>
+                            <div className="conf-num font-mono">{c.p}%</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mock-chart">
+                      <div className="mock-chart-h"><span className="font-display" style={{fontWeight:800}}>This Week</span><span className="font-mono mock-metric-l">CLOSES / DAY</span></div>
+                      <div className="mock-bars">
+                        {[40,62,55,78,68,84,72].map((h,i)=><span key={i} className="mock-bar" style={{height:h+"%"}}/>)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Callouts */}
+              {INSIDE.map((c,i)=>{const I=c.icon;return(
+                <div key={c.t} className={"callout callout-"+i} style={{left:c.x+"%",top:c.y+"%"}}>
+                  <span className="callout-ico"><I size={14} strokeWidth={2.2}/></span>
+                  <div className="callout-body">
+                    <div className="callout-t font-display">{c.t}</div>
+                    <div className="callout-d">{c.d}</div>
+                  </div>
+                </div>
+              );})}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -506,7 +666,17 @@ export default function App() {
         <div className="wrap">
           <div className="sec-head">
             <Eyebrow>Setup</Eyebrow>
-            <h2 className="font-display sec-h2">Live On Your Next Call.</h2>
+            <h2 className="font-display sec-h2">Works Anywhere You Take Calls.</h2>
+            <p className="sec-lead">If it has audio, Master Closer runs on it. No new headset, no new phone, no IT project.</p>
+          </div>
+          <div className="platforms">
+            {PLATFORMS.map((p)=>{const I=p.icon;return(
+              <div key={p.t} className="platform">
+                <span className="platform-check"><Check size={13} strokeWidth={3}/></span>
+                <span className="platform-ico"><I size={18} strokeWidth={2.2}/></span>
+                <span className="platform-t font-display">{p.t}</span>
+              </div>
+            );})}
           </div>
           <div className="steps">
             {STEPS.map((s) => (
@@ -900,4 +1070,85 @@ a{text-decoration:none;color:inherit;}
 .foot-copy{font-size:.86rem;color:var(--muted);}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* objection animation */
+.anim{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:stretch;max-width:1100px;margin:0 auto;}
+.anim-step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;opacity:0;animation:animIn .5s ease forwards;}
+.anim-1{animation-delay:.2s;}
+.anim-2{animation-delay:1.4s;}
+.anim-3{animation-delay:2.6s;}
+.anim-4{animation-delay:3.6s;}
+.anim-5{animation-delay:5.2s;}
+@keyframes animIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.anim-tag{font-size:9px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;}
+.anim-tag-red{color:var(--signal);}
+.anim-line{margin:0;font-size:.94rem;line-height:1.5;color:#26262e;font-weight:500;}
+.anim-transcript{background:var(--mist);border-radius:8px;padding:9px 11px;font-size:.9rem;color:#26262e;min-height:38px;}
+.anim-typing{display:inline-block;overflow:hidden;white-space:nowrap;border-right:none;width:0;animation:animType 1s steps(28) 1.5s forwards;}
+@keyframes animType{to{width:100%;}}
+.anim-caret{display:inline-block;animation:blink 1s step-end infinite;color:var(--signal);font-weight:700;}
+@keyframes blink{50%{opacity:0;}}
+.anim-chips{display:flex;gap:6px;flex-wrap:wrap;opacity:0;animation:animIn .4s ease 2.4s forwards;}
+.anim-dots{display:flex;gap:6px;padding:14px 0;justify-content:center;}
+.anim-dots span{width:9px;height:9px;border-radius:50%;background:var(--signal);opacity:.3;animation:animDot 1s ease-in-out infinite;}
+.anim-dots span:nth-child(2){animation-delay:.15s;}
+.anim-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes animDot{0%,100%{opacity:.3;transform:scale(.9);}50%{opacity:1;transform:scale(1.2);}}
+.anim-say-head{display:flex;align-items:center;gap:6px;}
+.anim-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--signal);color:#fff;border:none;border-radius:8px;padding:6px 11px;font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;opacity:0;animation:animPulse .6s ease 4.4s forwards;}
+@keyframes animPulse{0%{opacity:0;transform:scale(.9);}60%{opacity:1;transform:scale(1.06);}100%{opacity:1;transform:scale(1);}}
+.anim-fill{width:0;animation:animFill 1s ease 5.4s forwards;}
+@keyframes animFill{to{width:84%;}}
+.anim-num{opacity:0;animation:animIn .3s ease 5.8s forwards;}
+.anim-arrow{display:flex;align-items:center;justify-content:center;color:var(--signal);opacity:0;}
+.anim-arrow-1{animation:animIn .3s ease 1.2s forwards;}
+.anim-arrow-2{animation:animIn .3s ease 2.4s forwards;}
+.anim-arrow-3{animation:animIn .3s ease 3.4s forwards;}
+.anim-arrow-4{animation:animIn .3s ease 5s forwards;}
+@media(max-width:900px){.anim{grid-template-columns:1fr;}.anim-arrow{transform:rotate(90deg);}}
+
+/* inside master closer */
+.inside{position:relative;}
+.inside-stage{position:relative;padding:40px 0;max-width:1100px;margin:0 auto;}
+.mock{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 70px -30px rgba(11,11,15,.35);overflow:hidden;margin:0 220px;}
+.mock-chrome{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#fafafb;border-bottom:1px solid var(--line);}
+.mock-dot{width:10px;height:10px;border-radius:50%;}
+.mock-dot-r{background:#ff5f57;}.mock-dot-y{background:#febc2e;}.mock-dot-g{background:#28c840;}
+.mock-url{margin-left:16px;font-size:11px;color:var(--muted);}
+.mock-body{display:grid;grid-template-columns:160px 1fr;min-height:340px;}
+.mock-side{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:4px;background:#fcfcfd;}
+.mock-brand{display:flex;align-items:center;gap:8px;padding:4px 6px 12px;}
+.mock-nav{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#54545e;padding:7px 8px;border-radius:7px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;}
+.mock-nav-on{background:#fbeaea;color:var(--signal);}
+.mock-main{padding:18px;display:flex;flex-direction:column;gap:14px;background:#fff;}
+.mock-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;}
+.mock-h{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;}
+.mock-sub{font-size:9px;letter-spacing:.12em;color:var(--muted);margin-top:3px;}
+.mock-metric{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.mock-metric-l{font-size:9px;letter-spacing:.12em;color:var(--muted);}
+.mock-metric-v{font-weight:900;font-size:1.5rem;color:var(--signal);line-height:1;}
+.mock-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.mock-card{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fcfcfd;}
+.mock-card-top{display:flex;align-items:center;gap:6px;}
+.mock-card-n{font-size:10px;color:#26262e;font-weight:500;}
+.mock-chart{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fcfcfd;}
+.mock-chart-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-size:.82rem;}
+.mock-bars{display:flex;align-items:flex-end;gap:10px;height:60px;}
+.mock-bar{flex:1;background:linear-gradient(180deg,var(--signal),#e9b3b3);border-radius:4px 4px 0 0;min-height:6px;}
+
+.callout{position:absolute;display:flex;align-items:flex-start;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;box-shadow:0 12px 30px -18px rgba(11,11,15,.35);max-width:190px;transform:translate(-50%,-50%);}
+.callout-6{transform:translate(-50%,-30%);}
+.callout-ico{display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
+.callout-body{display:flex;flex-direction:column;gap:2px;}
+.callout-t{font-weight:800;font-size:.78rem;letter-spacing:-.01em;}
+.callout-d{font-size:.72rem;color:#54545e;line-height:1.4;}
+@media(max-width:980px){.callout{position:static;transform:none;max-width:none;}.inside-stage{display:grid;grid-template-columns:1fr;gap:14px;padding:0;}.mock{margin:0;}.mock-body{grid-template-columns:1fr;}.mock-side{flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line);}.mock-cards{grid-template-columns:1fr;}}
+
+/* platforms */
+.platforms{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;max-width:960px;margin:0 auto 44px;}
+.platform{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 14px;}
+.platform-check{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e6f6ee;color:var(--green);flex-shrink:0;}
+.platform-ico{color:var(--signal);}
+.platform-t{font-weight:800;font-size:.92rem;}
+@media(max-width:820px){.platforms{grid-template-columns:repeat(2,1fr);}}
 `;
