@@ -334,9 +334,9 @@ const INSIDE = [
 ];
 
 const PLATFORMS = [
-  { type: "logo", src: "https://cdn.simpleicons.org/zoom/2D8CFF", t: "Zoom" },
-  { type: "logo", src: "https://cdn.simpleicons.org/googlemeet/00832d", t: "Google Meet" },
-  { type: "logo", src: "https://cdn.simpleicons.org/microsoftteams/6264A7", t: "Microsoft Teams" },
+  { type: "logo", src: "https://api.iconify.design/simple-icons/zoom.svg?color=%232D8CFF", t: "Zoom" },
+  { type: "logo", src: "https://api.iconify.design/simple-icons/googlemeet.svg?color=%2300832d", t: "Google Meet" },
+  { type: "logo", src: "https://api.iconify.design/simple-icons/microsoftteams.svg?color=%236264A7", t: "Microsoft Teams" },
   { type: "icon", icon: PhoneCall, t: "Phone" },
   { type: "icon", icon: Globe, t: "Browser" },
   { type: "icon", icon: Smartphone, t: "Mobile" },
