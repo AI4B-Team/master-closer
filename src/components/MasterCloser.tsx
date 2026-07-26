@@ -27,6 +27,9 @@ const MODES = [
     speakers: [{ Icon: BotMessageSquare, label: "AI Speaks" }, { note: "Human Optional" }],
     tag: "AI Speaking To Prospect",
     cue: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
+    autonomy: 100,
+    metric: { v: "24/7", l: "Always On" },
+    bestFor: ["Inbound Volume", "After-Hours", "Cold Outreach"],
   },
   {
     key: "hybrid", label: "Hybrid", icon: UsersRound,
@@ -37,6 +40,11 @@ const MODES = [
     speakers: [{ Icon: Bot, label: "AI" }, { Icon: UsersRound, label: "Human" }, { note: "AI Hands Off When Needed" }],
     tag: "AI Briefing Your Closer",
     cue: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
+    autonomy: 55,
+    metric: { v: "2×", l: "Rep Throughput" },
+    bestFor: ["High-Ticket", "Warm Transfers", "Team Coverage"],
+    featured: true,
+    featuredLabel: "Most Flexible",
   },
   {
     key: "copilot", label: "Copilot", icon: Headphones,
@@ -47,6 +55,9 @@ const MODES = [
     speakers: [{ Icon: UsersRound, label: "Human Speaks" }, { Icon: Headphones, label: "AI Coaches Privately" }],
     tag: "Whispered To Your Rep",
     cue: "Say: \"When you say it's a lot, is it the total or the monthly that gives you pause?\"",
+    autonomy: 15,
+    metric: { v: "+38%", l: "Close Rate Lift" },
+    bestFor: ["Senior Closers", "Complex Deals", "Live Coaching"],
   },
 ];
 
@@ -581,7 +592,7 @@ export default function App() {
       </section>
 
       {/* AUTONOMY */}
-      <section id="autonomy" className="sec">
+      <section id="autonomy" className="sec sec-autonomy">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow variant="num" num="01">Three Levels Of Control</Eyebrow>
@@ -589,24 +600,67 @@ export default function App() {
             <p className="sec-lead">You're not choosing between products — you're choosing how much control to give the AI. Same brain. Slide from fully autonomous to human-guided per campaign, per rep, per call.</p>
           </div>
 
-          <div className="modes modes-lg">
+          {/* Global control spectrum */}
+          <div className="spectrum">
+            <div className="spectrum-labels">
+              <span className="font-mono spectrum-l"><Bot size={13} strokeWidth={2.4} /> Max Autonomy</span>
+              <span className="font-mono spectrum-l spectrum-l-r">Human Control <UsersRound size={13} strokeWidth={2.4} /></span>
+            </div>
+            <div className="spectrum-bar">
+              <span className="spectrum-fill" />
+              <span className="spectrum-tick" style={{ left: "8%" }}><em>AI</em></span>
+              <span className="spectrum-tick" style={{ left: "50%" }}><em>Hybrid</em></span>
+              <span className="spectrum-tick" style={{ left: "92%" }}><em>Copilot</em></span>
+            </div>
+          </div>
+
+          <div className="modes modes-xl">
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
-                <div key={m.key} className={`mode-card mode-card-${m.key}`}>
+                <div key={m.key} className={`mode-card mode-card-${m.key}${m.featured ? " mode-card-featured" : ""}`}>
+                  {m.featured && (
+                    <span className="mode-badge font-mono">★ {m.featuredLabel}</span>
+                  )}
+
                   <div className="mode-top">
                     <span className="mode-ico"><Icon size={26} strokeWidth={2.1} /></span>
                     <span className="mode-step font-mono">0{i + 1}</span>
                   </div>
+
                   <h3 className="font-display mode-h">{m.label}</h3>
                   <p className="mode-tagline font-mono">{m.tagline}</p>
+
+                  {/* Per-card autonomy meter */}
+                  <div className="mode-meter">
+                    <div className="mode-meter-head font-mono">
+                      <span>Autonomy</span>
+                      <span className="mode-meter-v">{m.autonomy}%</span>
+                    </div>
+                    <div className="mode-meter-bar">
+                      <span className="mode-meter-fill" style={{ width: `${m.autonomy}%` }} />
+                      <span className="mode-meter-dot" style={{ left: `calc(${m.autonomy}% - 7px)` }} />
+                    </div>
+                    <div className="mode-meter-foot font-mono">
+                      <span>AI</span>
+                      <span>Human</span>
+                    </div>
+                  </div>
+
                   <p className="mode-headline">{m.headline}</p>
                   <p className="mode-b">{m.blurb}</p>
+
                   <ul className="mode-caps">
                     {m.caps.map((c) => (
                       <li key={c}><Check size={14} strokeWidth={2.6} className="text-signal" /> {c}</li>
                     ))}
                   </ul>
+
+                  <div className="mode-metric">
+                    <span className="font-display mode-metric-v">{m.metric.v}</span>
+                    <span className="font-mono mode-metric-l">{m.metric.l}</span>
+                  </div>
+
                   <div className="mode-speakers">
                     {m.speakers.map((s, si) => {
                       if (s.note) return <span key={si} className="mode-spk-note">{s.note}</span>;
@@ -618,9 +672,19 @@ export default function App() {
                       );
                     })}
                   </div>
+
+                  <div className="mode-bestfor">
+                    <span className="mode-bestfor-l font-mono">Best For</span>
+                    <div className="mode-chips">
+                      {m.bestFor.map((b) => (
+                        <span key={b} className="mode-chip">{b}</span>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="mode-cue">
                     <span className="font-mono mode-cue-tag">{m.tag}</span>
-                    <p className="mode-cue-line">{m.cue}</p>
+                    <p className="mode-cue-line">"{m.cue}"</p>
                   </div>
                 </div>
               );
@@ -628,6 +692,7 @@ export default function App() {
           </div>
         </div>
       </section>
+
 
 
 
@@ -1390,4 +1455,64 @@ a{text-decoration:none;color:inherit;}
 .mode-caps li{display:flex;align-items:flex-start;gap:9px;font-size:.95rem;color:#0b0b0f;line-height:1.4;}
 .mode-caps li svg{margin-top:3px;flex:none;}
 .mode-spk-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#fff;border:1px solid var(--line);color:#0b0b0f;}
+
+/* ===== ROBUST AUTONOMY SECTION ===== */
+.sec-autonomy{background:linear-gradient(180deg,#fafafb 0%,#f4f4f6 100%);position:relative;}
+.sec-autonomy::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(11,11,15,.06) 1px,transparent 0);background-size:28px 28px;opacity:.5;pointer-events:none;mask-image:linear-gradient(180deg,transparent,#000 20%,#000 80%,transparent);}
+.sec-autonomy .wrap{position:relative;}
+
+.spectrum{max-width:920px;margin:0 auto 56px;padding:24px 28px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px -20px rgba(11,11,15,.15);}
+.spectrum-labels{display:flex;justify-content:space-between;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#54545e;margin-bottom:14px;font-weight:700;}
+.spectrum-l{display:inline-flex;align-items:center;gap:8px;}
+.spectrum-l svg{color:var(--signal);}
+.spectrum-bar{position:relative;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--signal) 0%,#f2b7b7 50%,#0b0b0f 100%);}
+.spectrum-tick{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #0b0b0f;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.spectrum-tick em{position:absolute;top:22px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#0b0b0f;font-style:normal;font-weight:700;white-space:nowrap;}
+
+.modes-xl{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:44px;align-items:stretch;}
+.modes-xl .mode-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:36px 30px 30px;display:flex;flex-direction:column;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;overflow:hidden;}
+.modes-xl .mode-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--signal),#f2b7b7);opacity:.85;}
+.modes-xl .mode-card:hover{transform:translateY(-6px);box-shadow:0 30px 60px -30px rgba(11,11,15,.28);border-color:#e2c4c4;}
+.modes-xl .mode-card-featured{border-color:#0b0b0f;box-shadow:0 24px 50px -28px rgba(11,11,15,.35);}
+.modes-xl .mode-card-featured::before{background:#0b0b0f;height:5px;}
+
+.mode-badge{position:absolute;top:16px;right:16px;background:#0b0b0f;color:#fff;padding:6px 12px;border-radius:999px;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;letter-spacing:.14em;}
+
+.modes-xl .mode-top{margin-top:6px;margin-bottom:16px;}
+.modes-xl .mode-ico{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#fbeaea,#fff);border:1px solid #f2d3d3;box-shadow:inset 0 -2px 0 rgba(204,0,0,.08);}
+.modes-xl .mode-step{font-size:14px;color:#c8c8d0;font-weight:600;letter-spacing:.06em;}
+.modes-xl .mode-h{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;}
+.modes-xl .mode-tagline{font-size:.7rem;letter-spacing:.16em;margin:0 0 20px;}
+.modes-xl .mode-headline{font-family:'Fraunces',serif;font-size:1.15rem;line-height:1.35;margin:0 0 10px;font-weight:600;}
+.modes-xl .mode-b{font-size:.95rem;color:#54545e;line-height:1.6;margin:0 0 20px;}
+
+.mode-meter{background:#fafafb;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 22px;}
+.mode-meter-head{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#54545e;font-weight:700;margin-bottom:10px;}
+.mode-meter-v{color:var(--signal);font-size:.78rem;letter-spacing:.06em;}
+.mode-meter-bar{position:relative;height:6px;border-radius:999px;background:#eaeaee;overflow:visible;}
+.mode-meter-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--signal),#ff5252);border-radius:999px;}
+.mode-meter-dot{position:absolute;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--signal);box-shadow:0 2px 6px rgba(204,0,0,.25);}
+.mode-meter-foot{display:flex;justify-content:space-between;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#96969e;margin-top:10px;font-weight:700;}
+
+.modes-xl .mode-caps{margin:0 0 22px;}
+.modes-xl .mode-caps li{font-size:.94rem;}
+
+.mode-metric{display:flex;align-items:baseline;gap:12px;padding:16px 18px;background:linear-gradient(135deg,#0b0b0f,#1c1c22);color:#fff;border-radius:12px;margin:0 0 18px;}
+.mode-metric-v{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1;color:#fff;}
+.mode-metric-l{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:#c8c8d0;font-weight:700;}
+.mode-card-featured .mode-metric{background:linear-gradient(135deg,var(--signal),#a30000);}
+
+.modes-xl .mode-speakers{margin-bottom:18px;padding:14px 16px;border-radius:12px;background:var(--mist);}
+.modes-xl .mode-spk{font-size:.88rem;}
+
+.mode-bestfor{margin-bottom:20px;}
+.mode-bestfor-l{display:block;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:#96969e;font-weight:700;margin-bottom:10px;}
+.mode-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.mode-chip{display:inline-flex;padding:6px 11px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:.75rem;font-weight:600;color:#26262e;}
+
+.modes-xl .mode-cue{margin-top:auto;padding:16px 18px 0;border-top:1px solid var(--line);}
+.modes-xl .mode-cue-tag{font-size:.62rem;letter-spacing:.16em;margin-bottom:8px;}
+.modes-xl .mode-cue-line{font-family:'Fraunces',serif;font-style:italic;font-size:.98rem;line-height:1.5;color:#0b0b0f;font-weight:500;}
+
+@media(max-width:1000px){.modes-xl{grid-template-columns:1fr;}.spectrum{margin-bottom:36px;}}
 `;
