@@ -631,42 +631,6 @@ export default function App() {
 
 
 
-      {/* TWO VIEWS (real graphic like RentHQ see/never-see) */}
-      <section className="sec sec-mist">
-        <div className="wrap">
-          <div className="sec-head">
-            <Eyebrow variant="num" num="02">Two Sides Of Every Call</Eyebrow>
-            <h2 className="font-display sec-h2">What They Hear. What You See.</h2>
-            <p className="sec-lead">Your prospect hears a natural, confident conversation. You see the objection named, the next line, and the close probability — private, on your screen only.</p>
-          </div>
-          <div className="views">
-            <div className="view-card">
-              <div className="view-head">
-                <span className="view-ico view-ico-green"><Ear size={18} strokeWidth={2.2} /></span>
-                <span className="view-title font-display">What Your Prospect Hears</span>
-                <span className="view-pill view-pill-green font-mono">NATURAL</span>
-              </div>
-              <ul className="view-list">
-                {["A Confident, Human Conversation", "Natural Pauses And Sharp Questions", "No Robotic Script, No Awkward Delay", "A Smooth, Low-Pressure Close"].map((x) => (
-                  <li key={x}><Check size={16} strokeWidth={2.6} className="view-check-green" /> {x}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="view-card">
-              <div className="view-head">
-                <span className="view-ico view-ico-red"><Eye size={18} strokeWidth={2.2} /></span>
-                <span className="view-title font-display">What You See On Screen</span>
-                <span className="view-pill view-pill-red font-mono">PRIVATE</span>
-              </div>
-              <ul className="view-list">
-                {["The Real Objection, Named Instantly", "The Exact Next Line To Say", "Live Close Probability, Moving", "Agreement And Payment, Ready To Send"].map((x) => (
-                  <li key={x}><Crosshair size={15} strokeWidth={2.4} className="text-signal" /> {x}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* OBJECTION DEMO */}
       <ObjectionDemo />
