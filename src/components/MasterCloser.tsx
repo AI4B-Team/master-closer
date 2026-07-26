@@ -983,10 +983,11 @@ a{text-decoration:none;color:inherit;}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px;}.hero{padding:48px 0 40px;}}
 
 /* hero floating chips */
-.hero-card{position:relative;}
+.hero-card{position:relative;display:flex;justify-content:center;}
+.device-wrap{position:relative;width:100%;max-width:620px;}
 .float-chip{position:absolute;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:0 22px 44px -22px rgba(11,11,15,.28);z-index:2;animation:float 5.5s ease-in-out infinite;}
 .float-chip-1{top:-22px;left:-86px;animation-delay:0s;}
-.float-chip-2{top:52%;left:-138px;animation-delay:1.2s;max-width:210px;}
+.float-chip-2{bottom:18%;left:-138px;animation-delay:1.2s;max-width:210px;}
 .float-chip-3{bottom:-18px;right:-58px;animation-delay:2.4s;}
 .float-ico{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
 .float-ico-live{background:rgba(230,57,70,.14);}
