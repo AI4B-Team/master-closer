@@ -343,9 +343,9 @@ export default function App() {
       {/* AUTONOMY */}
       <section id="autonomy" className="sec">
         <div className="wrap">
-          <div className="sec-head">
+          <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow>The Autonomy Slider</Eyebrow>
-            <h2 className="font-display sec-h2">One Platform. Three Ways To Run The Call.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One Platform. Three Ways To Run The Call.</h2>
             <p className="sec-lead">Every other tool picks a lane — an AI that talks, or a copilot that whispers. Master Closer is the same brain at three settings. Move the dial per campaign, per rep, per call.</p>
           </div>
           <div className="modes">
