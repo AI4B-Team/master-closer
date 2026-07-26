@@ -281,7 +281,7 @@ const WORKS = [
 
 const STEPS = [
   { n: "01", t: "Feed It Your Offer", d: "Drop In Your Script, Pricing, And Objections. It Learns What You Sell And How You Win." },
-  { n: "02", t: "Set The Autonomy", d: "Slide From Full AI To Hybrid Handoff To Human-Plus-Copilot Per Campaign Or Per Rep." },
+  { n: "02", t: "Set The Autonomy", d: "Slide From AI To Hybrid To Copilot Per Campaign Or Per Rep." },
   { n: "03", t: "Go Live & Get Paid", d: "It Runs Or Assists The Call, Sends The Agreement, And Collects Payment. Then Logs It All." },
 ];
 
@@ -303,7 +303,7 @@ const FAQS = [
   { q: "How Fast Are Responses?", a: "The next line appears in under 400 milliseconds from the moment the prospect stops talking. Fast enough that your rep is never waiting, and the prospect never notices a pause." },
   { q: "Does It Work With Accents?", a: "Yes. The transcription engine is tuned across 32 languages and dozens of regional accents — Scottish, Indian, Nigerian, Southern US, thick New York, you name it. If a human closer would understand it, Master Closer will too." },
   { q: "Is This Compliant In Two-Party Consent States?", a: "Consent is built in as a feature, not an afterthought. Master Closer can post an in-meeting disclosure and knows the rules state by state, so you stay above board. It is not legal advice, and you should confirm your setup with counsel." },
-  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In Full AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
+  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
   { q: "What Is The Autonomy Slider?", a: "One control that sets who runs the call: the AI end to end, the AI warming up before a live transfer to your closer, or your rep with the AI whispering support. Same brain, three settings." },
   { q: "Which Platforms Does It Work With?", a: "Zoom, Google Meet, Microsoft Teams, and phone. If there is audio, Master Closer can work the call." },
   { q: "How Fast Is Setup?", a: "Minutes. Add your offer and objections, pick an autonomy setting, and take your next call." },
@@ -966,7 +966,7 @@ export default function App() {
                 logo: Building2,
               },
               {
-                q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.",
+                q: "AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.",
                 n: "Jordan T.",
                 title: "Founder",
                 company: "Northbound Agency",
