@@ -5,7 +5,7 @@ import {
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
   Ear, Eye, Radio, LayoutDashboard, BookOpen, Brain, Wand2, BarChart3, Library,
-  Video, Smartphone, Globe, MousePointerClick
+  Video, Smartphone, Globe, MousePointerClick, TrendingUp
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
