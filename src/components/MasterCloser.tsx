@@ -1137,7 +1137,7 @@ a{text-decoration:none;color:inherit;}
 .mock-bar{flex:1;background:linear-gradient(180deg,var(--signal),#e9b3b3);border-radius:4px 4px 0 0;min-height:6px;}
 
 .callout{position:absolute;display:flex;align-items:flex-start;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;box-shadow:0 12px 30px -18px rgba(11,11,15,.35);max-width:190px;transform:translate(-50%,-50%);}
-.callout-6{transform:translate(-50%,0);}
+.callout-6{transform:translate(-50%,-30%);}
 .callout-ico{display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
 .callout-body{display:flex;flex-direction:column;gap:2px;}
 .callout-t{font-weight:800;font-size:.78rem;letter-spacing:-.01em;}
