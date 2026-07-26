@@ -20,7 +20,7 @@ import {
 const MODES = [
   {
     key: "ai", label: "AI", icon: Bot,
-    tagline: "Runs The Call Autonomously.",
+    tagline: "Runs the call autonomously.",
     headline: "The AI Runs The Call.",
     blurb: "It listens, responds, asks questions, handles objections, and closes — no human required.",
     caps: ["Speaks in a natural human voice", "Handles objections in real time", "Sends the agreement and takes payment"],
@@ -33,7 +33,7 @@ const MODES = [
   },
   {
     key: "hybrid", label: "Hybrid", icon: UsersRound,
-    tagline: "AI And Your Team Share Control.",
+    tagline: "AI and your team share control.",
     headline: "AI And Humans Split The Call.",
     blurb: "AI warms the lead, hands off to your closer, or takes back over when your rep needs a break.",
     caps: ["Live warm transfer to your closer", "AI briefs the human before hand-off", "Rep can hand back to AI mid-call"],
@@ -48,7 +48,7 @@ const MODES = [
   },
   {
     key: "copilot", label: "Copilot", icon: Headphones,
-    tagline: "Your Rep Leads. AI Assists Live.",
+    tagline: "Your rep leads. AI assists live.",
     headline: "Your Rep Runs The Call.",
     blurb: "The AI listens silently and whispers the exact next line while your rep stays in full control.",
     caps: ["Private in-ear coaching", "Objection named the moment it lands", "Suggested close, ready to say"],
@@ -662,7 +662,7 @@ export default function App() {
                   </div>
 
                   <h3 className="font-display mode-h">{m.label}</h3>
-                  <p className="mode-tagline font-mono">{m.tagline}</p>
+                  <p className="mode-tagline">{m.tagline}</p>
 
                   {/* Per-card autonomy meter */}
                   <div className="mode-meter">
