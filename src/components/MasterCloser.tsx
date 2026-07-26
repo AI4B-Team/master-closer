@@ -395,7 +395,7 @@ function ObjectionDemo() {
   const line = "Completely understand. Can I ask what's giving you pause? Is it the investment, the timing, or making sure it's the right fit?";
 
   return (
-    <section className="sec">
+    <section id="objection" className="sec">
       <div className="wrap">
         <div className="sec-head">
           <Eyebrow variant="dot">Live Objection Demo</Eyebrow>
