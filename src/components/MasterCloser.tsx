@@ -16,20 +16,29 @@ import {
 
 const MODES = [
   {
-    key: "ai", label: "Full AI", icon: Bot,
-    blurb: "The Agent Runs The Whole Call — Discovery, Demo, Close, And Payment.",
+    key: "ai", label: "AI", icon: Bot,
+    tagline: "Runs the call.",
+    headline: "Runs the conversation for you.",
+    blurb: "The AI listens, responds, asks questions, handles objections, books meetings, and closes — all autonomously.",
+    speakers: [{ icon: "🤖", label: "AI speaks" }, { note: "Human optional" }],
     tag: "AI Speaking To Prospect",
     cue: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
   },
   {
-    key: "hybrid", label: "Hybrid Handoff", icon: PhoneForwarded,
-    blurb: "AI Warms The Lead, Then Live-Transfers To A Human And Stays On To Assist.",
+    key: "hybrid", label: "Hybrid", icon: PhoneForwarded,
+    tagline: "Shares control.",
+    headline: "AI and humans work together.",
+    blurb: "AI can take over when you want it to, or hand control back to your team seamlessly.",
+    speakers: [{ icon: "🤖", label: "AI" }, { icon: "👤", label: "Human" }, { note: "AI hands off when needed" }],
     tag: "AI Briefing Your Closer",
     cue: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
   },
   {
-    key: "copilot", label: "Human + Copilot", icon: Mic,
-    blurb: "Your Rep Runs The Call. The Copilot Whispers The Next Line, Only They See It.",
+    key: "copilot", label: "Copilot", icon: Mic,
+    tagline: "Assists your rep.",
+    headline: "Your AI assistant stays by your side.",
+    blurb: "AI listens, coaches, and suggests responses while your rep remains in complete control.",
+    speakers: [{ icon: "👤", label: "Human speaks" }, { note: "🤖 AI coaches privately" }],
     tag: "Whispered To Your Rep",
     cue: "Say: \"When you say it's a lot, is it the total or the monthly that gives you pause?\"",
   },
@@ -272,7 +281,7 @@ const WORKS = [
 
 const STEPS = [
   { n: "01", t: "Feed It Your Offer", d: "Drop In Your Script, Pricing, And Objections. It Learns What You Sell And How You Win." },
-  { n: "02", t: "Set The Autonomy", d: "Slide From Full AI To Hybrid Handoff To Human-Plus-Copilot Per Campaign Or Per Rep." },
+  { n: "02", t: "Set The Autonomy", d: "Slide From AI To Hybrid To Copilot Per Campaign Or Per Rep." },
   { n: "03", t: "Go Live & Get Paid", d: "It Runs Or Assists The Call, Sends The Agreement, And Collects Payment. Then Logs It All." },
 ];
 
@@ -294,7 +303,7 @@ const FAQS = [
   { q: "How Fast Are Responses?", a: "The next line appears in under 400 milliseconds from the moment the prospect stops talking. Fast enough that your rep is never waiting, and the prospect never notices a pause." },
   { q: "Does It Work With Accents?", a: "Yes. The transcription engine is tuned across 32 languages and dozens of regional accents — Scottish, Indian, Nigerian, Southern US, thick New York, you name it. If a human closer would understand it, Master Closer will too." },
   { q: "Is This Compliant In Two-Party Consent States?", a: "Consent is built in as a feature, not an afterthought. Master Closer can post an in-meeting disclosure and knows the rules state by state, so you stay above board. It is not legal advice, and you should confirm your setup with counsel." },
-  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In Full AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
+  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
   { q: "What Is The Autonomy Slider?", a: "One control that sets who runs the call: the AI end to end, the AI warming up before a live transfer to your closer, or your rep with the AI whispering support. Same brain, three settings." },
   { q: "Which Platforms Does It Work With?", a: "Zoom, Google Meet, Microsoft Teams, and phone. If there is audio, Master Closer can work the call." },
   { q: "How Fast Is Setup?", a: "Minutes. Add your offer and objections, pick an autonomy setting, and take your next call." },
@@ -339,9 +348,9 @@ function FAQItem({ q, a }) {
 }
 
 const OBJ_MODES = [
-  { key: "ai", label: "Full AI" },
+  { key: "ai", label: "AI" },
   { key: "hybrid", label: "Hybrid" },
-  { key: "copilot", label: "Human + Copilot" },
+  { key: "copilot", label: "Copilot" },
 ];
 
 function ObjectionDemo() {
@@ -610,21 +619,45 @@ export default function App() {
       <section id="autonomy" className="sec">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
-            <Eyebrow variant="num" num="01">The Autonomy Slider</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One Platform. Three Ways To Run The Call.</h2>
-            <p className="sec-lead">Every other tool picks a lane — an AI that talks, or a copilot that whispers. Master Closer is the same brain at three settings. Move the dial per campaign, per rep, per call.</p>
+            <Eyebrow variant="num" num="01">Three Levels Of Control</Eyebrow>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One AI. Three Levels Of Control.</h2>
+            <p className="sec-lead">You're not choosing between products — you're choosing how much control to give the AI. Same brain. Slide from fully autonomous to human-guided per campaign, per rep, per call.</p>
           </div>
+
+          <div className="continuum" aria-hidden="true">
+            <span className="cont-end font-mono">Max Autonomy</span>
+            <span className="cont-line" />
+            {MODES.map((m) => (
+              <span key={m.key} className="cont-node">
+                <span className="cont-dot" />
+                <span className="cont-label font-mono">{m.label}</span>
+                <span className="cont-sub">{m.tagline}</span>
+              </span>
+            ))}
+            <span className="cont-line" />
+            <span className="cont-end font-mono">Human Control</span>
+          </div>
+
           <div className="modes">
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
-                <div key={m.key} className="mode-card">
+                <div key={m.key} className={`mode-card mode-card-${m.key}`}>
                   <div className="mode-top">
                     <span className="mode-ico"><Icon size={20} strokeWidth={2.2} /></span>
                     <span className="mode-step font-mono">0{i + 1}</span>
                   </div>
                   <h3 className="font-display mode-h">{m.label}</h3>
+                  <p className="mode-tagline font-mono">{m.tagline}</p>
+                  <p className="mode-headline">{m.headline}</p>
                   <p className="mode-b">{m.blurb}</p>
+                  <div className="mode-speakers">
+                    {m.speakers.map((s, si) => (
+                      s.note
+                        ? <span key={si} className="mode-spk-note">{s.note}</span>
+                        : <span key={si} className="mode-spk"><span className="mode-spk-ico">{s.icon}</span> {s.label}</span>
+                    ))}
+                  </div>
                   <div className="mode-cue">
                     <span className="font-mono mode-cue-tag">{m.tag}</span>
                     <p className="mode-cue-line">{m.cue}</p>
@@ -633,13 +666,9 @@ export default function App() {
               );
             })}
           </div>
-          <div className="dial-bar">
-            <span className="font-mono dial-end">FULL AI</span>
-            <div className="dial-track"><span className="dial-knob" /></div>
-            <span className="font-mono dial-end">FULL HUMAN</span>
-          </div>
         </div>
       </section>
+
 
       {/* COMPARISON TABLE */}
       <section className="sec">
@@ -937,7 +966,7 @@ export default function App() {
                 logo: Building2,
               },
               {
-                q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.",
+                q: "AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.",
                 n: "Jordan T.",
                 title: "Founder",
                 company: "Northbound Agency",
@@ -1162,12 +1191,28 @@ a{text-decoration:none;color:inherit;}
 .mode-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
 .mode-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#fbeaea;color:var(--signal);}
 .mode-step{font-size:13px;color:#cfcfd6;font-weight:500;}
-.mode-h{font-weight:800;font-size:1.3rem;margin:0 0 9px;}
-.mode-b{font-size:.92rem;color:#54545e;margin:0 0 16px;line-height:1.5;}
+.mode-h{font-weight:800;font-size:1.6rem;margin:0 0 4px;letter-spacing:-.01em;}
+.mode-tagline{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin:0 0 12px;font-weight:700;}
+.mode-headline{font-family:'Fraunces',serif;font-size:1.05rem;line-height:1.35;color:#0b0b0f;margin:0 0 10px;font-weight:600;}
+.mode-b{font-size:.92rem;color:#54545e;margin:0 0 14px;line-height:1.55;}
+.mode-speakers{display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--mist);border-radius:10px;margin-bottom:16px;}
+.mode-spk{display:inline-flex;align-items:center;gap:8px;font-size:.86rem;font-weight:700;color:#0b0b0f;}
+.mode-spk-ico{font-size:1.05rem;line-height:1;}
+.mode-spk-note{font-size:.74rem;color:var(--muted);letter-spacing:.02em;}
 .mode-cue{border-top:1px solid var(--line);padding-top:14px;}
 .mode-cue-tag{display:block;font-size:9px;letter-spacing:.12em;color:var(--signal);text-transform:uppercase;margin-bottom:7px;}
 .mode-cue-line{margin:0;font-size:.9rem;line-height:1.5;color:#26262e;font-weight:500;}
 @media(max-width:800px){.modes{grid-template-columns:1fr;}}
+
+/* continuum */
+.continuum{display:flex;align-items:center;gap:14px;max-width:1000px;margin:0 auto 40px;padding:22px 26px;background:#fff;border:1px solid var(--line);border-radius:999px;box-shadow:0 18px 44px -32px rgba(11,11,15,.22);}
+.cont-end{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.cont-line{flex:1;height:2px;background:linear-gradient(90deg,var(--signal),#e9b3b3);border-radius:999px;}
+.cont-node{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:100px;}
+.cont-dot{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--signal);box-shadow:0 3px 10px rgba(11,11,15,.18);}
+.cont-label{font-size:.82rem;font-weight:700;color:#0b0b0f;letter-spacing:.04em;text-transform:uppercase;}
+.cont-sub{font-size:.72rem;color:var(--muted);white-space:nowrap;}
+@media(max-width:800px){.continuum{flex-direction:column;border-radius:22px;gap:18px;}.cont-line{width:2px;height:24px;}}
 
 /* dial */
 .dial-bar{display:flex;align-items:center;gap:18px;max-width:560px;margin:0 auto;}
