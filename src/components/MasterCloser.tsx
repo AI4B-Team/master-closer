@@ -4,8 +4,11 @@ import {
   Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
-  Ear, Eye, Radio, LayoutDashboard, BookOpen, Brain, Wand2, BarChart3, Library,
-  Video, Smartphone, Globe, MousePointerClick, TrendingUp
+  LayoutDashboard, BookOpen, Wand2, BarChart3, Library,
+  Video, Smartphone, Globe, MousePointerClick, TrendingUp,
+  UsersRound, Hand, Send, AudioLines, BrainCircuit, MessageSquareText,
+  Headphones, ChartNoAxesCombined, ContactRound, Plug, MessagesSquare, Brain,
+  BotMessageSquare
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -17,28 +20,31 @@ import {
 const MODES = [
   {
     key: "ai", label: "AI", icon: Bot,
-    tagline: "Runs the call.",
-    headline: "Runs the conversation for you.",
-    blurb: "The AI listens, responds, asks questions, handles objections, books meetings, and closes — all autonomously.",
-    speakers: [{ icon: "🤖", label: "AI speaks" }, { note: "Human optional" }],
+    tagline: "Runs The Call Autonomously.",
+    headline: "The AI Runs The Call.",
+    blurb: "It listens, responds, asks questions, handles objections, and closes — no human required.",
+    caps: ["Speaks in a natural human voice", "Handles objections in real time", "Sends the agreement and takes payment"],
+    speakers: [{ Icon: BotMessageSquare, label: "AI Speaks" }, { note: "Human Optional" }],
     tag: "AI Speaking To Prospect",
     cue: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
   },
   {
-    key: "hybrid", label: "Hybrid", icon: PhoneForwarded,
-    tagline: "Shares control.",
-    headline: "AI and humans work together.",
-    blurb: "AI can take over when you want it to, or hand control back to your team seamlessly.",
-    speakers: [{ icon: "🤖", label: "AI" }, { icon: "👤", label: "Human" }, { note: "AI hands off when needed" }],
+    key: "hybrid", label: "Hybrid", icon: UsersRound,
+    tagline: "AI And Your Team Share Control.",
+    headline: "AI And Humans Split The Call.",
+    blurb: "AI warms the lead, hands off to your closer, or takes back over when your rep needs a break.",
+    caps: ["Live warm transfer to your closer", "AI briefs the human before hand-off", "Rep can hand back to AI mid-call"],
+    speakers: [{ Icon: Bot, label: "AI" }, { Icon: UsersRound, label: "Human" }, { note: "AI Hands Off When Needed" }],
     tag: "AI Briefing Your Closer",
     cue: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
   },
   {
-    key: "copilot", label: "Copilot", icon: Mic,
-    tagline: "Assists your rep.",
-    headline: "Your AI assistant stays by your side.",
-    blurb: "AI listens, coaches, and suggests responses while your rep remains in complete control.",
-    speakers: [{ icon: "👤", label: "Human speaks" }, { note: "🤖 AI coaches privately" }],
+    key: "copilot", label: "Copilot", icon: Headphones,
+    tagline: "Your Rep Leads. AI Assists Live.",
+    headline: "Your Rep Runs The Call.",
+    blurb: "The AI listens silently and whispers the exact next line while your rep stays in full control.",
+    caps: ["Private in-ear coaching", "Objection named the moment it lands", "Suggested close, ready to say"],
+    speakers: [{ Icon: UsersRound, label: "Human Speaks" }, { Icon: Headphones, label: "AI Coaches Privately" }],
     tag: "Whispered To Your Rep",
     cue: "Say: \"When you say it's a lot, is it the total or the monthly that gives you pause?\"",
   },
@@ -274,9 +280,9 @@ const USES = [
 ];
 
 const WORKS = [
-  { n: "01", t: "Listen", d: "Master Closer listens to the conversation in real time, across Zoom, Meet, Teams, phone, or browser.", icon: Ear },
-  { n: "02", t: "Understand", d: "It identifies questions, objections, and opportunities using your knowledge base and past calls.", icon: Brain },
-  { n: "03", t: "Coach", d: "It suggests the best response instantly so you can stay focused on the conversation.", icon: Crosshair },
+  { n: "01", t: "Listen", d: "Master Closer listens to the conversation in real time, across Zoom, Meet, Teams, phone, or browser.", icon: AudioLines },
+  { n: "02", t: "Understand", d: "It identifies questions, objections, and opportunities using your knowledge base and past calls.", icon: BrainCircuit },
+  { n: "03", t: "Act", d: "It speaks the response, hands off to your closer, or whispers the next line — whichever mode you set.", icon: MessageSquareText },
 ];
 
 const STEPS = [
@@ -310,13 +316,10 @@ const FAQS = [
 ];
 
 const INSIDE = [
-  { icon: LayoutDashboard, t: "Dashboard", d: "Live calls, close rate, and next moves at a glance.", x: 9, y: 18 },
-  { icon: BookOpen, t: "Knowledge Base", d: "Your offer, pricing, and playbooks in one brain.", x: 9, y: 50 },
-  { icon: Brain, t: "Conversation Memory", d: "Every past call remembered and searchable.", x: 9, y: 82 },
-  { icon: Wand2, t: "Prompt Builder", d: "Tune the voice, the close, and the disclosure.", x: 91, y: 18 },
-  { icon: GraduationCap, t: "AI Training", d: "Feed it winning calls. It gets sharper weekly.", x: 91, y: 50 },
-  { icon: BarChart3, t: "Analytics", d: "See what closes and what stalls, per rep.", x: 91, y: 82 },
-  { icon: Library, t: "Call Library", d: "Every call recorded, tagged, and reviewable.", x: 50, y: 100 },
+  { icon: MessagesSquare, t: "Live Conversation", d: "Every word transcribed and understood in real time.", x: 8, y: 22 },
+  { icon: Crosshair, t: "AI Response", d: "The next line, ready to speak or approve.", x: 92, y: 22 },
+  { icon: BookOpen, t: "Knowledge Retrieval", d: "Answers pulled from your offer and past calls.", x: 8, y: 78 },
+  { icon: Bot, t: "Control Mode", d: "AI, Hybrid, or Copilot — set per rep or per call.", x: 92, y: 78 },
 ];
 
 const PLATFORMS = [
@@ -392,7 +395,7 @@ function ObjectionDemo() {
   const line = "Completely understand. Can I ask what's giving you pause? Is it the investment, the timing, or making sure it's the right fit?";
 
   return (
-    <section className="sec">
+    <section id="objection" className="sec">
       <div className="wrap">
         <div className="sec-head">
           <Eyebrow variant="dot">Live Objection Demo</Eyebrow>
@@ -415,49 +418,21 @@ function ObjectionDemo() {
           ))}
         </div>
 
-        <div className="obj-flow" key={m}>
-          <span className="obj-flow-step"><span className="obj-flow-dot" /> Listening</span>
-          <ArrowRight size={14} strokeWidth={2.6} />
-          <span className="obj-flow-step obj-flow-2"><Check size={12} strokeWidth={3} /> Objection Detected</span>
-          <ArrowRight size={14} strokeWidth={2.6} />
-          <span className="obj-flow-step obj-flow-3"><Check size={12} strokeWidth={3} /> Response Ready</span>
-        </div>
 
         <div className="obj-grid">
           {/* LEFT — Live Conversation */}
           <div className="obj-panel">
             <div className="obj-panel-head">
-              <span className="obj-panel-tag font-mono"><span className="rec-dot" /> Live Conversation</span>
+              <span className="obj-panel-tag font-mono"><span className="rec-dot" /> Prospect</span>
             </div>
 
             <div className="obj-bubble">
-              <span className="obj-role font-mono">Prospect</span>
-              <p className="obj-quote">"I need to think about it."</p>
+              <p className="obj-quote obj-quote-lg">"I need to think about it."</p>
             </div>
 
-            <div className="obj-detect">
-              <div className="obj-detect-head">
-                <span className="obj-panel-tag font-mono">Master Closer · Understood</span>
-                <span className="obj-conf">97% <span>Confidence</span></span>
-              </div>
-              <ul className="obj-facts">
-                <li>
-                  <span className="obj-fact-k font-mono">Detected</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Delay Objection</span>
-                </li>
-                <li>
-                  <span className="obj-fact-k font-mono">Intent</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Needs Reassurance</span>
-                </li>
-                <li>
-                  <span className="obj-fact-k font-mono">Decision</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Uncover Root Concern</span>
-                </li>
-                <li>
-                  <span className="obj-fact-k font-mono">Action</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Ask Diagnostic Question</span>
-                </li>
-              </ul>
+            <div className="obj-meta">
+              <span className="obj-chip obj-chip-red">Delay Objection</span>
+              <span className="obj-chip">Hesitant Tone</span>
             </div>
           </div>
 
@@ -474,16 +449,6 @@ function ObjectionDemo() {
 
               {r.actions}
               {r.footer && <div className="obj-footer font-mono">{r.footer}</div>}
-            </div>
-
-            <div className="obj-result">
-              <span className="obj-panel-tag font-mono">Prospect · Replies</span>
-              <p className="obj-quote">"Honestly? Just the price. Can we walk through it again?"</p>
-              <div className="conf">
-                <div className="conf-label font-mono">Close Probability</div>
-                <div className="conf-track"><div className="conf-fill" style={{ width: "84%" }} /></div>
-                <div className="conf-num font-mono">84%</div>
-              </div>
             </div>
           </div>
         </div>
@@ -531,7 +496,7 @@ export default function App() {
               much is human — on one dial.
             </p>
             <div className="hero-actions">
-              <a href="#demo" className="btn-primary btn-lg">Try It Live <ArrowRight size={17} strokeWidth={2.4} /></a>
+              <a href="#objection" className="btn-primary btn-lg">See It Work <ArrowRight size={17} strokeWidth={2.4} /></a>
               <a href="#autonomy" className="btn-ghost btn-lg"><Play size={16} strokeWidth={2.4} /> See The Slider</a>
             </div>
             <div className="hero-pills">
@@ -593,7 +558,7 @@ export default function App() {
         <div className="wrap">
           <div className="sec-head">
             <Eyebrow variant="rule">How It Works</Eyebrow>
-            <h2 className="font-display sec-h2">Listen. Understand. Coach.</h2>
+            <h2 className="font-display sec-h2">Listen. Understand. Act.</h2>
             <p className="sec-lead">Three steps that answer the only question that matters: what actually happens on the call?</p>
           </div>
           <div className="works">
@@ -624,39 +589,34 @@ export default function App() {
             <p className="sec-lead">You're not choosing between products — you're choosing how much control to give the AI. Same brain. Slide from fully autonomous to human-guided per campaign, per rep, per call.</p>
           </div>
 
-          <div className="continuum" aria-hidden="true">
-            <span className="cont-end font-mono">Max Autonomy</span>
-            <span className="cont-line" />
-            {MODES.map((m) => (
-              <span key={m.key} className="cont-node">
-                <span className="cont-dot" />
-                <span className="cont-label font-mono">{m.label}</span>
-                <span className="cont-sub">{m.tagline}</span>
-              </span>
-            ))}
-            <span className="cont-line" />
-            <span className="cont-end font-mono">Human Control</span>
-          </div>
-
-          <div className="modes">
+          <div className="modes modes-lg">
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
                 <div key={m.key} className={`mode-card mode-card-${m.key}`}>
                   <div className="mode-top">
-                    <span className="mode-ico"><Icon size={20} strokeWidth={2.2} /></span>
+                    <span className="mode-ico"><Icon size={26} strokeWidth={2.1} /></span>
                     <span className="mode-step font-mono">0{i + 1}</span>
                   </div>
                   <h3 className="font-display mode-h">{m.label}</h3>
                   <p className="mode-tagline font-mono">{m.tagline}</p>
                   <p className="mode-headline">{m.headline}</p>
                   <p className="mode-b">{m.blurb}</p>
-                  <div className="mode-speakers">
-                    {m.speakers.map((s, si) => (
-                      s.note
-                        ? <span key={si} className="mode-spk-note">{s.note}</span>
-                        : <span key={si} className="mode-spk"><span className="mode-spk-ico">{s.icon}</span> {s.label}</span>
+                  <ul className="mode-caps">
+                    {m.caps.map((c) => (
+                      <li key={c}><Check size={14} strokeWidth={2.6} className="text-signal" /> {c}</li>
                     ))}
+                  </ul>
+                  <div className="mode-speakers">
+                    {m.speakers.map((s, si) => {
+                      if (s.note) return <span key={si} className="mode-spk-note">{s.note}</span>;
+                      const SI = s.Icon;
+                      return (
+                        <span key={si} className="mode-spk">
+                          <span className="mode-spk-ico"><SI size={14} strokeWidth={2.2} /></span> {s.label}
+                        </span>
+                      );
+                    })}
                   </div>
                   <div className="mode-cue">
                     <span className="font-mono mode-cue-tag">{m.tag}</span>
@@ -670,85 +630,12 @@ export default function App() {
       </section>
 
 
-      {/* COMPARISON TABLE */}
-      <section className="sec">
-        <div className="wrap wrap-narrow">
-          <div className="sec-head">
-            <Eyebrow variant="rule">The Difference</Eyebrow>
-            <h2 className="font-display sec-h2">How Master Closer Compares.</h2>
-            <p className="sec-lead">Recorders review the call after it's lost. Basic copilots only whisper. Master Closer runs, assists, and closes.</p>
-          </div>
-          <div className="compare">
-            <div className="cmp-row cmp-head">
-              <div className="cmp-cap font-mono">CAPABILITY</div>
-              <div className="cmp-col font-display">Recorders</div>
-              <div className="cmp-col font-display">Basic Copilots</div>
-              <div className="cmp-col cmp-col-hi font-display">Master Closer</div>
-            </div>
-            {COMPARE.map((r) => (
-              <div key={r.cap} className="cmp-row">
-                <div className="cmp-cap">{r.cap}</div>
-                <div className="cmp-col"><Cell v={r.rec} /></div>
-                <div className="cmp-col"><Cell v={r.cop} /></div>
-                <div className="cmp-col cmp-col-hi"><Cell v={r.mc} /></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* TWO VIEWS (real graphic like RentHQ see/never-see) */}
-      <section className="sec sec-mist">
-        <div className="wrap">
-          <div className="sec-head">
-            <Eyebrow variant="num" num="02">Two Sides Of Every Call</Eyebrow>
-            <h2 className="font-display sec-h2">What They Hear. What You See.</h2>
-            <p className="sec-lead">Your prospect hears a natural, confident conversation. You see the objection named, the next line, and the close probability — private, on your screen only.</p>
-          </div>
-          <div className="views">
-            <div className="view-card">
-              <div className="view-head">
-                <span className="view-ico view-ico-green"><Ear size={18} strokeWidth={2.2} /></span>
-                <span className="view-title font-display">What Your Prospect Hears</span>
-                <span className="view-pill view-pill-green font-mono">NATURAL</span>
-              </div>
-              <ul className="view-list">
-                {["A Confident, Human Conversation", "Natural Pauses And Sharp Questions", "No Robotic Script, No Awkward Delay", "A Smooth, Low-Pressure Close"].map((x) => (
-                  <li key={x}><Check size={16} strokeWidth={2.6} className="view-check-green" /> {x}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="view-card">
-              <div className="view-head">
-                <span className="view-ico view-ico-red"><Eye size={18} strokeWidth={2.2} /></span>
-                <span className="view-title font-display">What You See On Screen</span>
-                <span className="view-pill view-pill-red font-mono">PRIVATE</span>
-              </div>
-              <ul className="view-list">
-                {["The Real Objection, Named Instantly", "The Exact Next Line To Say", "Live Close Probability, Moving", "Agreement And Payment, Ready To Send"].map((x) => (
-                  <li key={x}><Crosshair size={15} strokeWidth={2.4} className="text-signal" /> {x}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* OBJECTION DEMO */}
       <ObjectionDemo />
 
 
-      {/* LIVE DEMO */}
-      <section id="demo" className="sec">
-        <div className="wrap">
-          <div className="sec-head">
-            <Eyebrow variant="bracket">Live Demo</Eyebrow>
-            <h2 className="font-display sec-h2">Test It Live.</h2>
-            <p className="sec-lead">This is the actual engine, not a video. Pick a line or type your own, choose who's running the call, and watch Master Closer hand back the move in real time.</p>
-          </div>
-          <LiveDemo />
-        </div>
-      </section>
 
       {/* INSIDE MASTER CLOSER */}
       <section className="sec sec-mist">
@@ -835,12 +722,39 @@ export default function App() {
         </div>
       </section>
 
+      {/* COMPARISON TABLE */}
+      <section className="sec sec-mist">
+        <div className="wrap wrap-narrow">
+          <div className="sec-head">
+            <Eyebrow variant="rule">The Difference</Eyebrow>
+            <h2 className="font-display sec-h2">How Master Closer Compares.</h2>
+            <p className="sec-lead">Recorders review the call after it's lost. Basic copilots only whisper. Master Closer runs, assists, and closes.</p>
+          </div>
+          <div className="compare">
+            <div className="cmp-row cmp-head">
+              <div className="cmp-cap font-mono">CAPABILITY</div>
+              <div className="cmp-col font-display">Recorders</div>
+              <div className="cmp-col font-display">Basic Copilots</div>
+              <div className="cmp-col cmp-col-hi font-display">Master Closer</div>
+            </div>
+            {COMPARE.map((r) => (
+              <div key={r.cap} className="cmp-row">
+                <div className="cmp-cap">{r.cap}</div>
+                <div className="cmp-col"><Cell v={r.rec} /></div>
+                <div className="cmp-col"><Cell v={r.cop} /></div>
+                <div className="cmp-col cmp-col-hi"><Cell v={r.mc} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CAPABILITIES */}
-      <section className="sec sec-dark">
+      <section className="sec">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow variant="rule">Capabilities</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap", color: "#fff" }}>Everything A Closer Needs, In One Place.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>Everything A Closer Needs, In One Place.</h2>
           </div>
           <div className="caps">
             {CAPS.map((c) => {
@@ -1423,12 +1337,12 @@ a{text-decoration:none;color:inherit;}
 /* inside master closer */
 .inside{position:relative;}
 .inside-stage{position:relative;padding:40px 0;max-width:1100px;margin:0 auto;}
-.mock{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 70px -30px rgba(11,11,15,.35);overflow:hidden;margin:0 220px;}
+.mock{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 90px -40px rgba(11,11,15,.4);overflow:hidden;margin:0 90px;}
 .mock-chrome{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#fafafb;border-bottom:1px solid var(--line);}
 .mock-dot{width:10px;height:10px;border-radius:50%;}
 .mock-dot-r{background:#ff5f57;}.mock-dot-y{background:#febc2e;}.mock-dot-g{background:#28c840;}
 .mock-url{margin-left:16px;font-size:11px;color:var(--muted);}
-.mock-body{display:grid;grid-template-columns:160px 1fr;min-height:340px;}
+.mock-body{display:grid;grid-template-columns:180px 1fr;min-height:440px;}
 .mock-side{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:4px;background:#fcfcfd;}
 .mock-brand{display:flex;align-items:center;gap:8px;padding:4px 6px 12px;}
 .mock-nav{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#54545e;padding:7px 8px;border-radius:7px;font-weight:600;font-family:'Hanken Grotesk',sans-serif;}
@@ -1464,4 +1378,16 @@ a{text-decoration:none;color:inherit;}
 .platform-ico{color:var(--signal);}
 .platform-t{font-weight:800;font-size:.92rem;}
 @media(max-width:820px){.platforms{grid-template-columns:repeat(2,1fr);}}
+/* objection demo — simple meta chips */
+.obj-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.obj-chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:var(--mist);border:1px solid var(--line);font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#0b0b0f;}
+.obj-chip-red{background:color-mix(in srgb,var(--signal) 12%,#fff);border-color:color-mix(in srgb,var(--signal) 30%,var(--line));color:var(--signal);}
+
+/* mode card capabilities */
+.modes-lg{gap:26px;}
+.modes-lg .mode-card{padding:36px 32px;}
+.mode-caps{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:10px;}
+.mode-caps li{display:flex;align-items:flex-start;gap:9px;font-size:.95rem;color:#0b0b0f;line-height:1.4;}
+.mode-caps li svg{margin-top:3px;flex:none;}
+.mode-spk-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#fff;border:1px solid var(--line);color:#0b0b0f;}
 `;
