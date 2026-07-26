@@ -338,6 +338,153 @@ function FAQItem({ q, a }) {
   );
 }
 
+const OBJ_MODES = [
+  { key: "ai", label: "Full AI" },
+  { key: "hybrid", label: "Hybrid" },
+  { key: "copilot", label: "Human + Copilot" },
+];
+
+function ObjectionDemo() {
+  const [m, setM] = useState("ai");
+  const responseByMode = {
+    ai: {
+      tag: "Master Closer · Speaking",
+      sub: "Spoken Automatically",
+      icon: Bot,
+      badge: "Autonomous",
+      footer: "Live · voice out to prospect",
+      actions: null,
+    },
+    hybrid: {
+      tag: "Suggested Reply",
+      sub: "Awaiting Rep Approval",
+      icon: PhoneForwarded,
+      badge: "Human-Approved",
+      footer: null,
+      actions: (
+        <div className="obj-actions">
+          <button className="obj-btn obj-btn-primary"><Check size={13} strokeWidth={2.6} /> Approve</button>
+          <button className="obj-btn"><Wand2 size={13} strokeWidth={2.4} /> Edit</button>
+          <button className="obj-btn"><MousePointerClick size={13} strokeWidth={2.4} /> Send</button>
+        </div>
+      ),
+    },
+    copilot: {
+      tag: "Whispered To Rep",
+      sub: "In-Ear · Rep Delivers Line",
+      icon: Crosshair,
+      badge: "Rep-Delivered",
+      footer: "Only your rep hears this",
+      actions: null,
+    },
+  };
+  const r = responseByMode[m];
+  const RIcon = r.icon;
+  const line = "Completely understand. Can I ask what's giving you pause? Is it the investment, the timing, or making sure it's the right fit?";
+
+  return (
+    <section className="sec">
+      <div className="wrap">
+        <div className="sec-head">
+          <Eyebrow variant="dot">Live Objection Demo</Eyebrow>
+          <h2 className="font-display sec-h2">Watch AI Handle A Real Objection.</h2>
+          <p className="sec-lead">Same objection. Same engine. Different delivery — pick a mode and see the exact same call play out on your terms.</p>
+        </div>
+
+        <div className="obj-modes" role="tablist" aria-label="Delivery mode">
+          {OBJ_MODES.map((o) => (
+            <button
+              key={o.key}
+              role="tab"
+              aria-selected={m === o.key}
+              className={`obj-mode ${m === o.key ? "obj-mode-on" : ""}`}
+              onClick={() => setM(o.key)}
+            >
+              <span className="obj-mode-radio" aria-hidden="true"><span /></span>
+              {o.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="obj-flow" key={m}>
+          <span className="obj-flow-step"><span className="obj-flow-dot" /> Listening</span>
+          <ArrowRight size={14} strokeWidth={2.6} />
+          <span className="obj-flow-step obj-flow-2"><Check size={12} strokeWidth={3} /> Objection Detected</span>
+          <ArrowRight size={14} strokeWidth={2.6} />
+          <span className="obj-flow-step obj-flow-3"><Check size={12} strokeWidth={3} /> Response Ready</span>
+        </div>
+
+        <div className="obj-grid">
+          {/* LEFT — Live Conversation */}
+          <div className="obj-panel">
+            <div className="obj-panel-head">
+              <span className="obj-panel-tag font-mono"><span className="rec-dot" /> Live Conversation</span>
+            </div>
+
+            <div className="obj-bubble">
+              <span className="obj-role font-mono">Prospect</span>
+              <p className="obj-quote">"I need to think about it."</p>
+            </div>
+
+            <div className="obj-detect">
+              <div className="obj-detect-head">
+                <span className="obj-panel-tag font-mono">Master Closer · Understood</span>
+                <span className="obj-conf">97% <span>Confidence</span></span>
+              </div>
+              <ul className="obj-facts">
+                <li>
+                  <span className="obj-fact-k font-mono">Detected</span>
+                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Delay Objection</span>
+                </li>
+                <li>
+                  <span className="obj-fact-k font-mono">Intent</span>
+                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Needs Reassurance</span>
+                </li>
+                <li>
+                  <span className="obj-fact-k font-mono">Decision</span>
+                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Uncover Root Concern</span>
+                </li>
+                <li>
+                  <span className="obj-fact-k font-mono">Action</span>
+                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Ask Diagnostic Question</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* RIGHT — AI Response (mode-aware) */}
+          <div className="obj-panel obj-panel-response">
+            <div className="obj-panel-head">
+              <span className="obj-panel-tag font-mono"><RIcon size={12} strokeWidth={2.6} /> {r.tag}</span>
+              <span className="obj-badge">{r.badge}</span>
+            </div>
+
+            <div className="obj-response-body">
+              <span className="obj-role font-mono">{r.sub}</span>
+              <p className="obj-quote obj-quote-lg">"{line}"</p>
+
+              {r.actions}
+              {r.footer && <div className="obj-footer font-mono">{r.footer}</div>}
+            </div>
+
+            <div className="obj-result">
+              <span className="obj-panel-tag font-mono">Prospect · Replies</span>
+              <p className="obj-quote">"Honestly? Just the price. Can we walk through it again?"</p>
+              <div className="conf">
+                <div className="conf-label font-mono">Close Probability</div>
+                <div className="conf-track"><div className="conf-fill" style={{ width: "84%" }} /></div>
+                <div className="conf-num font-mono">84%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
 export default function App() {
   return (
     <div className="mc-root">
