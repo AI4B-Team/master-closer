@@ -612,11 +612,11 @@ export default function App() {
       </section>
 
       {/* CAPABILITIES */}
-      <section className="sec">
+      <section className="sec sec-dark">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow>Capabilities</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>Everything A Closer Needs, In One Place.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap", color: "#fff" }}>Everything A Closer Needs, In One Place.</h2>
           </div>
           <div className="caps">
             {CAPS.map((c) => {
@@ -998,6 +998,10 @@ a{text-decoration:none;color:inherit;}
 .cap-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#fbeaea;color:var(--signal);margin-bottom:16px;}
 .cap-h{font-weight:800;font-size:1.1rem;margin:0 0 7px;}
 .cap-d{font-size:.92rem;color:#54545e;margin:0;line-height:1.5;}
+.sec-dark .cap-ico{background:rgba(230,57,70,.14);color:var(--signal);}
+.sec-dark .cap-h{color:#fff;}
+.sec-dark .cap-d{color:rgba(255,255,255,.62);}
+.sec-dark .eyebrow{color:var(--signal);}
 @media(max-width:980px){.caps{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:560px){.caps{grid-template-columns:1fr;}}
 
