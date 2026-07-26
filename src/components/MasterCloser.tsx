@@ -898,7 +898,7 @@ export default function App() {
           <div className="foot-links">
             <a href="#autonomy">Product</a>
             <a href="#uses">Solutions</a>
-            <a href="#setup">How It Works</a>
+            <a href="#how">How It Works</a>
             <a href="#faq">FAQ</a>
           </div>
           <div className="foot-copy">© 2026 Master Closer</div>
