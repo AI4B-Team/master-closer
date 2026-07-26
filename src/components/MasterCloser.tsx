@@ -27,6 +27,9 @@ const MODES = [
     speakers: [{ Icon: BotMessageSquare, label: "AI Speaks" }, { note: "Human Optional" }],
     tag: "AI Speaking To Prospect",
     cue: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
+    autonomy: 100,
+    metric: { v: "24/7", l: "Always On" },
+    bestFor: ["Inbound Volume", "After-Hours", "Cold Outreach"],
   },
   {
     key: "hybrid", label: "Hybrid", icon: UsersRound,
@@ -37,6 +40,11 @@ const MODES = [
     speakers: [{ Icon: Bot, label: "AI" }, { Icon: UsersRound, label: "Human" }, { note: "AI Hands Off When Needed" }],
     tag: "AI Briefing Your Closer",
     cue: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
+    autonomy: 55,
+    metric: { v: "2×", l: "Rep Throughput" },
+    bestFor: ["High-Ticket", "Warm Transfers", "Team Coverage"],
+    featured: true,
+    featuredLabel: "Most Flexible",
   },
   {
     key: "copilot", label: "Copilot", icon: Headphones,
@@ -47,6 +55,9 @@ const MODES = [
     speakers: [{ Icon: UsersRound, label: "Human Speaks" }, { Icon: Headphones, label: "AI Coaches Privately" }],
     tag: "Whispered To Your Rep",
     cue: "Say: \"When you say it's a lot, is it the total or the monthly that gives you pause?\"",
+    autonomy: 15,
+    metric: { v: "+38%", l: "Close Rate Lift" },
+    bestFor: ["Senior Closers", "Complex Deals", "Live Coaching"],
   },
 ];
 
