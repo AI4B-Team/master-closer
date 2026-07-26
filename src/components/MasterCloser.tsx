@@ -35,7 +35,42 @@ const MODES = [
   },
 ];
 
-function Eyebrow({ children }) {
+function Eyebrow({ children, variant = "classic", num }) {
+  if (variant === "rule") {
+    return (
+      <div className="eyebrow eyebrow-rule">
+        <span className="eb-line" />
+        <span className="eb-text text-signal">{children}</span>
+        <span className="eb-line" />
+      </div>
+    );
+  }
+  if (variant === "num") {
+    return (
+      <div className="eyebrow eyebrow-num">
+        <span className="eb-num font-mono">{num}</span>
+        <span className="eb-slash">/</span>
+        <span className="eb-text text-signal">{children}</span>
+      </div>
+    );
+  }
+  if (variant === "dot") {
+    return (
+      <div className="eyebrow eyebrow-dot">
+        <span className="eb-dot" />
+        <span className="eb-text text-signal">{children}</span>
+      </div>
+    );
+  }
+  if (variant === "bracket") {
+    return (
+      <div className="eyebrow eyebrow-bracket font-mono">
+        <span className="eb-brack">[</span>
+        <span className="eb-text text-signal">{children}</span>
+        <span className="eb-brack">]</span>
+      </div>
+    );
+  }
   return <div className="eyebrow text-signal">{children}</div>;
 }
 
