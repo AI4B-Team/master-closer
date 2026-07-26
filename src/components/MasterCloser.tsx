@@ -999,9 +999,9 @@ a{text-decoration:none;color:inherit;}
 .float-delta{margin-left:6px;font-family:var(--font-mono,ui-monospace);font-size:11px;font-weight:700;color:#0f9d58;background:rgba(15,157,88,.1);padding:3px 7px;border-radius:6px;}
 @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(230,57,70,.55);}70%{box-shadow:0 0 0 8px rgba(230,57,70,0);}100%{box-shadow:0 0 0 0 rgba(230,57,70,0);}}
-@media(max-width:1200px){.float-chip-1{left:-48px;}.float-chip-2{left:-80px;}.float-chip-3{right:-32px;}}
-@media(max-width:1000px){.float-chip-1{left:-24px;}.float-chip-2{left:-48px;}.float-chip-3{right:-16px;}}
-@media(max-width:900px){.float-chip-1{left:8px;top:-14px;}.float-chip-2{left:-8px;}.float-chip-3{right:8px;}}
+@media(max-width:1200px){.device-wrap{max-width:500px;}.float-chip-1{left:-48px;}.float-chip-2{right:-56px;}.float-chip-3{right:-36px;}}
+@media(max-width:1000px){.device-wrap{max-width:460px;}.float-chip-1{left:-28px;}.float-chip-2{right:-36px;}.float-chip-3{right:-18px;}}
+@media(max-width:900px){.device-wrap{max-width:560px;}.float-chip-1{left:8px;top:-14px;}.float-chip-2{right:-8px;}.float-chip-3{right:8px;}}
 @media(max-width:560px){.float-chip-2{display:none;}}
 
 /* device card */
