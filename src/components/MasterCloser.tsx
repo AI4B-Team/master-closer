@@ -5,7 +5,7 @@ import {
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
   Ear, Eye, Radio, LayoutDashboard, BookOpen, Brain, Wand2, BarChart3, Library,
-  Video, Smartphone, Globe, MousePointerClick
+  Video, Smartphone, Globe, MousePointerClick, TrendingUp
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -349,7 +349,31 @@ export default function App() {
               })}
             </div>
           </div>
-          <div className="hero-card"><LiveCallCard /></div>
+          <div className="hero-card">
+            <LiveCallCard />
+            <div className="float-chip float-chip-1">
+              <span className="float-ico"><TrendingUp size={14} strokeWidth={2.4} /></span>
+              <div className="float-body">
+                <span className="float-label font-mono">CLOSE RATE</span>
+                <span className="float-value">47%</span>
+              </div>
+              <span className="float-delta">+12</span>
+            </div>
+            <div className="float-chip float-chip-2">
+              <span className="float-ico float-ico-live"><span className="float-dot" /></span>
+              <div className="float-body">
+                <span className="float-label font-mono">WHISPER · LIVE</span>
+                <span className="float-value float-value-sm">"Anchor the price, then pause."</span>
+              </div>
+            </div>
+            <div className="float-chip float-chip-3">
+              <span className="float-ico"><Check size={14} strokeWidth={2.8} /></span>
+              <div className="float-body">
+                <span className="float-label font-mono">DEAL CLOSED</span>
+                <span className="float-value">$4,200</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -875,6 +899,25 @@ a{text-decoration:none;color:inherit;}
 .hero-pill-ico{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#fbeaea;color:var(--signal);}
 .hero-pill-t{font-size:.9rem;font-weight:700;}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px;}.hero{padding:48px 0 40px;}}
+
+/* hero floating chips */
+.hero-card{position:relative;}
+.float-chip{position:absolute;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:0 22px 44px -22px rgba(11,11,15,.28);z-index:2;animation:float 5.5s ease-in-out infinite;}
+.float-chip-1{top:-18px;left:-32px;animation-delay:0s;}
+.float-chip-2{top:44%;left:-64px;animation-delay:1.2s;max-width:250px;}
+.float-chip-3{bottom:-16px;right:-28px;animation-delay:2.4s;}
+.float-ico{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
+.float-ico-live{background:rgba(230,57,70,.14);}
+.float-dot{width:9px;height:9px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 0 rgba(230,57,70,.55);animation:pulseDot 1.6s ease-out infinite;}
+.float-body{display:flex;flex-direction:column;line-height:1.15;}
+.float-label{font-size:9px;letter-spacing:.12em;color:#8a8a92;}
+.float-value{font-weight:800;font-size:1rem;color:var(--ink);margin-top:2px;}
+.float-value-sm{font-size:.82rem;font-weight:600;color:#26262e;max-width:200px;}
+.float-delta{margin-left:6px;font-family:var(--font-mono,ui-monospace);font-size:11px;font-weight:700;color:#0f9d58;background:rgba(15,157,88,.1);padding:3px 7px;border-radius:6px;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(230,57,70,.55);}70%{box-shadow:0 0 0 8px rgba(230,57,70,0);}100%{box-shadow:0 0 0 0 rgba(230,57,70,0);}}
+@media(max-width:900px){.float-chip-1{left:8px;top:-14px;}.float-chip-2{left:-8px;}.float-chip-3{right:8px;}}
+@media(max-width:560px){.float-chip-2{display:none;}}
 
 /* device card */
 .device{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 26px 64px -30px rgba(11,11,15,.3);overflow:hidden;}
