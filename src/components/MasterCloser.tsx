@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import {
   Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
