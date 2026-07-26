@@ -906,10 +906,15 @@ export default function App() {
             <p className="sec-lead">If it has audio, Master Closer runs on it. No new headset, no new phone, no IT project.</p>
           </div>
           <div className="platforms">
-            {PLATFORMS.map((p)=>{const I=p.icon;return(
+            {PLATFORMS.map((p)=>{
+              return(
               <div key={p.t} className="platform">
                 <span className="platform-check"><Check size={13} strokeWidth={3}/></span>
-                <span className="platform-ico"><I size={18} strokeWidth={2.2}/></span>
+                {p.type === "logo" ? (
+                  <img src={p.src} alt={`${p.t} logo`} className="platform-logo" />
+                ) : (
+                  <span className="platform-ico"><p.icon size={18} strokeWidth={2.2}/></span>
+                )}
                 <span className="platform-t font-display">{p.t}</span>
               </div>
             );})}
