@@ -1378,4 +1378,16 @@ a{text-decoration:none;color:inherit;}
 .platform-ico{color:var(--signal);}
 .platform-t{font-weight:800;font-size:.92rem;}
 @media(max-width:820px){.platforms{grid-template-columns:repeat(2,1fr);}}
+/* objection demo — simple meta chips */
+.obj-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.obj-chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:var(--mist);border:1px solid var(--line);font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#0b0b0f;}
+.obj-chip-red{background:color-mix(in srgb,var(--signal) 12%,#fff);border-color:color-mix(in srgb,var(--signal) 30%,var(--line));color:var(--signal);}
+
+/* mode card capabilities */
+.modes-lg{gap:26px;}
+.modes-lg .mode-card{padding:36px 32px;}
+.mode-caps{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:10px;}
+.mode-caps li{display:flex;align-items:flex-start;gap:9px;font-size:.95rem;color:#0b0b0f;line-height:1.4;}
+.mode-caps li svg{margin-top:3px;flex:none;}
+.mode-spk-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#fff;border:1px solid var(--line);color:#0b0b0f;}
 `;
