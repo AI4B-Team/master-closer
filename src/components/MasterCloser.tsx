@@ -705,55 +705,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* OBJECTION ANIMATION */}
-      <section className="sec">
-        <div className="wrap">
-          <div className="sec-head">
-            <Eyebrow variant="dot">Ten Seconds, End To End</Eyebrow>
-            <h2 className="font-display sec-h2">Watch It Close An Objection.</h2>
-            <p className="sec-lead">The prospect stalls. Master Closer names the objection, thinks, and hands your rep the exact next line. They send it, the prospect softens, the deal moves.</p>
-          </div>
-          <div className="anim">
-            <div className="anim-step anim-1">
-              <span className="anim-tag font-mono">PROSPECT</span>
-              <p className="anim-line">"I need to think about it."</p>
-            </div>
-            <div className="anim-arrow anim-arrow-1"><ArrowRight size={18} strokeWidth={2.4} /></div>
-            <div className="anim-step anim-2">
-              <span className="anim-tag anim-tag-red font-mono">TRANSCRIPT · LIVE</span>
-              <div className="anim-transcript"><span className="anim-typing">I need to think about it.<span className="anim-caret">|</span></span></div>
-              <div className="anim-chips">
-                <span className="chip chip-red">Stall · Delay</span>
-                <span className="chip">Tone: Hesitant</span>
-              </div>
-            </div>
-            <div className="anim-arrow anim-arrow-2"><ArrowRight size={18} strokeWidth={2.4} /></div>
-            <div className="anim-step anim-3">
-              <span className="anim-tag font-mono">MASTER CLOSER · THINKING</span>
-              <div className="anim-dots"><span /><span /><span /></div>
-            </div>
-            <div className="anim-arrow anim-arrow-3"><ArrowRight size={18} strokeWidth={2.4} /></div>
-            <div className="anim-step anim-4">
-              <div className="anim-say-head">
-                <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
-                <span className="anim-tag font-mono">WHISPERED TO YOUR REP</span>
-              </div>
-              <p className="anim-line">"Totally get it. What's the one thing you'd need to think through — is it fit, price, or timing?"</p>
-              <button className="anim-btn"><MousePointerClick size={13} strokeWidth={2.4} /> Send</button>
-            </div>
-            <div className="anim-arrow anim-arrow-4"><ArrowRight size={18} strokeWidth={2.4} /></div>
-            <div className="anim-step anim-5">
-              <span className="anim-tag font-mono">PROSPECT · REPLIES</span>
-              <p className="anim-line">"Honestly? Just the price. Can we walk through it again?"</p>
-              <div className="conf">
-                <div className="conf-label font-mono">CLOSE PROBABILITY</div>
-                <div className="conf-track"><div className="conf-fill anim-fill" /></div>
-                <div className="conf-num font-mono anim-num">84%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* OBJECTION DEMO */}
+      <ObjectionDemo />
+
 
       {/* LIVE DEMO */}
       <section id="demo" className="sec">
