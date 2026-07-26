@@ -553,18 +553,54 @@ export default function App() {
           </div>
           <div className="quotes">
             {[
-              { q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.", n: "Marcus D.", r: "Solar" },
-              { q: "The whisper hits before the silence gets awkward. My objection handling doubled.", n: "Priya R.", r: "SaaS AE" },
-              { q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
-            ].map((t) => (
-              <div key={t.n} className="quote">
-                <p className="quote-t">“{t.q}”</p>
-                <div className="quote-by">
-                  <span className="quote-n font-display">{t.n}</span>
-                  <span className="quote-r">{t.r}</span>
+              {
+                q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.",
+                n: "Marcus D.",
+                title: "Owner",
+                company: "Apex Solar",
+                initials: "MD",
+                revenue: "$1.2M Closed",
+                logo: Sun,
+              },
+              {
+                q: "The whisper hits before the silence gets awkward. My objection handling doubled.",
+                n: "Priya R.",
+                title: "Enterprise AE",
+                company: "Flowstack",
+                initials: "PR",
+                revenue: "42% Win Rate",
+                logo: Building2,
+              },
+              {
+                q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.",
+                n: "Jordan T.",
+                title: "Founder",
+                company: "Northbound Agency",
+                initials: "JT",
+                revenue: "$340K Added",
+                logo: Users,
+              },
+            ].map((t) => {
+              const Logo = t.logo;
+              return (
+                <div key={t.n} className="quote">
+                  <p className="quote-t">"{t.q}"</p>
+                  <div className="quote-meta">
+                    <div className="quote-avatar">
+                      <span className="quote-avatar-text">{t.initials}</span>
+                    </div>
+                    <div className="quote-info">
+                      <span className="quote-n font-display">{t.n}</span>
+                      <span className="quote-title">{t.title} — {t.company}</span>
+                    </div>
+                    <div className="quote-badge">
+                      <Logo size={14} strokeWidth={2.2} />
+                      <span className="font-mono">{t.revenue}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
