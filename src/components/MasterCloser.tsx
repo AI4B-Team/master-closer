@@ -417,7 +417,7 @@ function ObjectionDemo() {
       <div className="wrap">
         <div className="sec-head">
           <Eyebrow variant="dot">Live Objection Demo</Eyebrow>
-          <h2 className="font-display sec-h2">See Master Closer Adapt To Each Mode.</h2>
+          <h2 className="font-display sec-h2">Watch AI Handle A Real Objection.</h2>
           <p className="sec-lead">One AI. Three ways to handle the conversation. Pick a mode and watch how the same lead plays out.</p>
         </div>
 
