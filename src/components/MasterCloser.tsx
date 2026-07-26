@@ -391,27 +391,29 @@ export default function App() {
             </div>
           </div>
           <div className="hero-card">
-            <LiveCallCard />
-            <div className="float-chip float-chip-1">
-              <span className="float-ico"><TrendingUp size={14} strokeWidth={2.4} /></span>
-              <div className="float-body">
-                <span className="float-label font-mono">CLOSE RATE</span>
-                <span className="float-value">47%</span>
+            <div className="device-wrap">
+              <LiveCallCard />
+              <div className="float-chip float-chip-1">
+                <span className="float-ico"><TrendingUp size={14} strokeWidth={2.4} /></span>
+                <div className="float-body">
+                  <span className="float-label font-mono">CLOSE RATE</span>
+                  <span className="float-value">47%</span>
+                </div>
+                <span className="float-delta">+12</span>
               </div>
-              <span className="float-delta">+12</span>
-            </div>
-            <div className="float-chip float-chip-2">
-              <span className="float-ico float-ico-live"><span className="float-dot" /></span>
-              <div className="float-body">
-                <span className="float-label font-mono">WHISPER · LIVE</span>
-                <span className="float-value float-value-sm">"Anchor the price, then pause."</span>
+              <div className="float-chip float-chip-2">
+                <span className="float-ico float-ico-live"><span className="float-dot" /></span>
+                <div className="float-body">
+                  <span className="float-label font-mono">WHISPER · LIVE</span>
+                  <span className="float-value float-value-sm">"Anchor the price, then pause."</span>
+                </div>
               </div>
-            </div>
-            <div className="float-chip float-chip-3">
-              <span className="float-ico"><Check size={14} strokeWidth={2.8} /></span>
-              <div className="float-body">
-                <span className="float-label font-mono">DEAL CLOSED</span>
-                <span className="float-value">$4,200</span>
+              <div className="float-chip float-chip-3">
+                <span className="float-ico"><Check size={14} strokeWidth={2.8} /></span>
+                <div className="float-body">
+                  <span className="float-label font-mono">DEAL CLOSED</span>
+                  <span className="float-value">$4,200</span>
+                </div>
               </div>
             </div>
           </div>
