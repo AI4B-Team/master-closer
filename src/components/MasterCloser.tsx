@@ -316,13 +316,10 @@ const FAQS = [
 ];
 
 const INSIDE = [
-  { icon: LayoutDashboard, t: "Dashboard", d: "Live calls, close rate, and next moves at a glance.", x: 9, y: 18 },
-  { icon: BookOpen, t: "Knowledge Base", d: "Your offer, pricing, and playbooks in one brain.", x: 9, y: 50 },
-  { icon: Brain, t: "Conversation Memory", d: "Every past call remembered and searchable.", x: 9, y: 82 },
-  { icon: Wand2, t: "Prompt Builder", d: "Tune the voice, the close, and the disclosure.", x: 91, y: 18 },
-  { icon: GraduationCap, t: "AI Training", d: "Feed it winning calls. It gets sharper weekly.", x: 91, y: 50 },
-  { icon: BarChart3, t: "Analytics", d: "See what closes and what stalls, per rep.", x: 91, y: 82 },
-  { icon: Library, t: "Call Library", d: "Every call recorded, tagged, and reviewable.", x: 50, y: 100 },
+  { icon: MessagesSquare, t: "Live Conversation", d: "Every word transcribed and understood in real time.", x: 8, y: 22 },
+  { icon: Crosshair, t: "AI Response", d: "The next line, ready to speak or approve.", x: 92, y: 22 },
+  { icon: BookOpen, t: "Knowledge Retrieval", d: "Answers pulled from your offer and past calls.", x: 8, y: 78 },
+  { icon: Bot, t: "Control Mode", d: "AI, Hybrid, or Copilot — set per rep or per call.", x: 92, y: 78 },
 ];
 
 const PLATFORMS = [
