@@ -372,15 +372,15 @@ function ObjectionDemo() {
 
   const byMode = {
     ai: {
-      prospect: "I'd like to know more about pricing.",
-      chips: [{ label: "Buying Signal", red: true }, { label: "Curious Tone" }],
+      prospect: "Honestly… your competitor is cheaper.",
+      chips: [{ label: "Price Objection", red: true }, { label: "Comparison Frame" }],
       panelTag: "Master Closer · Speaking",
-      sub: "Spoken Automatically",
+      sub: "Spoken Automatically To Prospect",
       icon: Bot,
       badge: "AI Handled",
       badgeTone: "red",
       kind: "reply",
-      line: "Absolutely. Let me walk you through it — pricing scales with call volume and the modes you use. Based on what you've shared, most teams like yours land between $2K and $4K a month. Want me to lock in today's rate?",
+      line: "That's helpful to know. If both options cost exactly the same, which one would you choose — and why?",
       footer: "Live · voice out to prospect",
     },
     hybrid: {
@@ -399,14 +399,14 @@ function ObjectionDemo() {
     copilot: {
       prospect: "I need to think about it.",
       chips: [{ label: "Delay Objection", red: true }, { label: "Hesitant Tone" }],
-      panelTag: "Whispered To Rep",
-      sub: "In-Ear · Rep Delivers Line",
+      panelTag: "Next Best Response",
+      sub: "Live Coaching · Say This Now",
       icon: Crosshair,
       badge: "Rep Delivered",
       badgeTone: "red-outline",
       kind: "reply",
-      line: "Ask whether it's price, timing, or fit — then handle that specific one.",
-      footer: "Only your rep hears this",
+      line: "Absolutely. In my experience, when someone says they need to think about it, they're usually already thinking about one specific thing. What is it for you?",
+      footer: "Only your rep hears this · delivered word-for-word",
     },
   };
   const r = byMode[m];
