@@ -1479,6 +1479,7 @@ a{text-decoration:none;color:inherit;}
 .platform{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 14px;}
 .platform-check{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e6f6ee;color:var(--green);flex-shrink:0;}
 .platform-ico{color:var(--signal);}
+.platform-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0;}
 .platform-t{font-weight:800;font-size:.92rem;}
 @media(max-width:820px){.platforms{grid-template-columns:repeat(2,1fr);}}
 /* objection demo — simple meta chips */
