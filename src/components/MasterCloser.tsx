@@ -1548,4 +1548,28 @@ a{text-decoration:none;color:inherit;}
 .modes-xl .mode-cue-line{font-family:'Fraunces',serif;font-style:italic;font-size:.98rem;line-height:1.5;color:#0b0b0f;font-weight:500;}
 
 @media(max-width:1000px){.modes-xl{grid-template-columns:1fr;}.spectrum{margin-bottom:36px;}}
+
+/* ===== HANDOFF (HYBRID DEMO) ===== */
+.obj-badge-red{background:var(--signal);color:#fff;}
+.obj-badge-black{background:#0b0b0f;color:#fff;}
+.obj-badge-red-outline{background:#fff;color:var(--signal);border:1px solid color-mix(in srgb,var(--signal) 40%,var(--line));}
+
+.handoff{display:flex;flex-direction:column;gap:16px;animation:objIn .4s ease;}
+.handoff-checks{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;}
+.handoff-checks li{display:flex;align-items:center;gap:9px;font-size:.94rem;font-weight:600;color:#0b0b0f;}
+.handoff-line{position:relative;height:2px;background:repeating-linear-gradient(90deg,#e4c8ca 0 6px,transparent 6px 12px);margin:6px 22px;border-radius:2px;overflow:visible;}
+.handoff-line-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,var(--signal),#0b0b0f);border-radius:2px;transform-origin:left;animation:handoffFill 1.6s ease-out forwards;}
+.handoff-pin{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid var(--line);display:grid;place-items:center;color:#0b0b0f;box-shadow:0 4px 10px -4px rgba(11,11,15,.25);}
+.handoff-pin-l{left:-22px;border-color:var(--signal);color:var(--signal);}
+.handoff-pin-r{right:-22px;border-color:#0b0b0f;color:#0b0b0f;animation:handoffPop .3s ease 1.4s both;}
+.handoff-agent{display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px -16px rgba(11,11,15,.2);}
+.handoff-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0b0b0f,#3a3a44);color:#fff;display:grid;place-items:center;font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-size:.95rem;letter-spacing:.02em;flex:none;}
+.handoff-agent-info{display:flex;flex-direction:column;gap:2px;}
+.handoff-agent-status{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#12b76a;display:inline-flex;align-items:center;gap:6px;font-weight:700;}
+.handoff-agent-name{font-weight:800;font-size:1rem;color:#0b0b0f;line-height:1.2;}
+.handoff-agent-role{font-size:.82rem;color:#54545e;}
+
+@keyframes handoffFill{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes handoffPop{from{transform:translateY(-50%) scale(.4);opacity:0;}to{transform:translateY(-50%) scale(1);opacity:1;}}
+@media(max-width:640px){.handoff-checks{grid-template-columns:1fr;}}
 `;
