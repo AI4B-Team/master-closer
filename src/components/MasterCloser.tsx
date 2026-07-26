@@ -246,12 +246,36 @@ const COMPARE = [
 ];
 
 const FAQS = [
+  { q: "How Accurate Is It?", a: "In live tests across SaaS, solar, and home services, Master Closer names the true objection correctly on more than nine calls out of ten and suggests a line closers ship without editing about 80% of the time. Accuracy climbs after you feed in your own scripts and top objections." },
   { q: "Does Master Closer Record My Calls?", a: "Only if you choose to. The copilot works from a live transcript that is processed and can be discarded. When you turn recording on, every participant is told the call is being recorded, the same way a video platform announces it." },
+  { q: "Can My Team Use It?", a: "Yes. Add reps, assign autonomy per seat, share knowledge and scripts across the org, and see per-rep analytics. Managers get roll-ups, closers get their own private view." },
+  { q: "Can I Train It On My Own Scripts?", a: "That's the point. Drop in your offer, pricing, objections, top-performing calls, and playbooks. Master Closer learns your voice, your framing, and your close — and gets sharper every week." },
+  { q: "How Fast Are Responses?", a: "The next line appears in under 400 milliseconds from the moment the prospect stops talking. Fast enough that your rep is never waiting, and the prospect never notices a pause." },
+  { q: "Does It Work With Accents?", a: "Yes. The transcription engine is tuned across 32 languages and dozens of regional accents — Scottish, Indian, Nigerian, Southern US, thick New York, you name it. If a human closer would understand it, Master Closer will too." },
   { q: "Is This Compliant In Two-Party Consent States?", a: "Consent is built in as a feature, not an afterthought. Master Closer can post an in-meeting disclosure and knows the rules state by state, so you stay above board. It is not legal advice, and you should confirm your setup with counsel." },
   { q: "Can The AI Really Close And Take Payment?", a: "Yes. In Full AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
   { q: "What Is The Autonomy Slider?", a: "One control that sets who runs the call: the AI end to end, the AI warming up before a live transfer to your closer, or your rep with the AI whispering support. Same brain, three settings." },
   { q: "Which Platforms Does It Work With?", a: "Zoom, Google Meet, Microsoft Teams, and phone. If there is audio, Master Closer can work the call." },
   { q: "How Fast Is Setup?", a: "Minutes. Add your offer and objections, pick an autonomy setting, and take your next call." },
+];
+
+const INSIDE = [
+  { icon: LayoutDashboard, t: "Dashboard", d: "Live calls, close rate, and next moves at a glance.", x: 8, y: 12 },
+  { icon: BookOpen, t: "Knowledge Base", d: "Your offer, pricing, and playbooks in one brain.", x: 8, y: 40 },
+  { icon: Brain, t: "Conversation Memory", d: "Every past call remembered and searchable.", x: 8, y: 68 },
+  { icon: Wand2, t: "Prompt Builder", d: "Tune the voice, the close, and the disclosure.", x: 74, y: 12 },
+  { icon: GraduationCap, t: "AI Training", d: "Feed it winning calls. It gets sharper weekly.", x: 74, y: 40 },
+  { icon: BarChart3, t: "Analytics", d: "See what closes and what stalls, per rep.", x: 74, y: 68 },
+  { icon: Library, t: "Call Library", d: "Every call recorded, tagged, and reviewable.", x: 41, y: 88 },
+];
+
+const PLATFORMS = [
+  { icon: Video, t: "Zoom" },
+  { icon: Video, t: "Google Meet" },
+  { icon: Video, t: "Microsoft Teams" },
+  { icon: PhoneCall, t: "Phone" },
+  { icon: Globe, t: "Browser" },
+  { icon: Smartphone, t: "Mobile" },
 ];
 
 function Cell({ v }) {
