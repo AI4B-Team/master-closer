@@ -334,12 +334,12 @@ const INSIDE = [
 ];
 
 const PLATFORMS = [
-  { icon: Video, t: "Zoom" },
-  { icon: Video, t: "Google Meet" },
-  { icon: Video, t: "Microsoft Teams" },
-  { icon: PhoneCall, t: "Phone" },
-  { icon: Globe, t: "Browser" },
-  { icon: Smartphone, t: "Mobile" },
+  { type: "logo", src: "https://api.iconify.design/simple-icons/zoom.svg?color=%232D8CFF", t: "Zoom" },
+  { type: "logo", src: "https://api.iconify.design/simple-icons/googlemeet.svg?color=%2300832d", t: "Google Meet" },
+  { type: "logo", src: "https://api.iconify.design/simple-icons/microsoftteams.svg?color=%236264A7", t: "Microsoft Teams" },
+  { type: "icon", icon: PhoneCall, t: "Phone" },
+  { type: "icon", icon: Globe, t: "Browser" },
+  { type: "icon", icon: Smartphone, t: "Mobile" },
 ];
 
 function Cell({ v }) {
@@ -906,10 +906,15 @@ export default function App() {
             <p className="sec-lead">If it has audio, Master Closer runs on it. No new headset, no new phone, no IT project.</p>
           </div>
           <div className="platforms">
-            {PLATFORMS.map((p)=>{const I=p.icon;return(
+            {PLATFORMS.map((p)=>{
+              return(
               <div key={p.t} className="platform">
                 <span className="platform-check"><Check size={13} strokeWidth={3}/></span>
-                <span className="platform-ico"><I size={18} strokeWidth={2.2}/></span>
+                {p.type === "logo" ? (
+                  <img src={p.src} alt={`${p.t} logo`} className="platform-logo" />
+                ) : (
+                  <span className="platform-ico"><p.icon size={18} strokeWidth={2.2}/></span>
+                )}
                 <span className="platform-t font-display">{p.t}</span>
               </div>
             );})}
@@ -1474,6 +1479,7 @@ a{text-decoration:none;color:inherit;}
 .platform{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 14px;}
 .platform-check{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e6f6ee;color:var(--green);flex-shrink:0;}
 .platform-ico{color:var(--signal);}
+.platform-logo{width:20px;height:20px;object-fit:contain;flex-shrink:0;}
 .platform-t{font-weight:800;font-size:.92rem;}
 @media(max-width:820px){.platforms{grid-template-columns:repeat(2,1fr);}}
 /* objection demo — simple meta chips */
