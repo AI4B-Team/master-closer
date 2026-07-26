@@ -418,13 +418,6 @@ function ObjectionDemo() {
           ))}
         </div>
 
-        <div className="obj-flow" key={m}>
-          <span className="obj-flow-step"><span className="obj-flow-dot" /> Listening</span>
-          <ArrowRight size={14} strokeWidth={2.6} />
-          <span className="obj-flow-step obj-flow-2"><Check size={12} strokeWidth={3} /> Objection Detected</span>
-          <ArrowRight size={14} strokeWidth={2.6} />
-          <span className="obj-flow-step obj-flow-3"><Check size={12} strokeWidth={3} /> Response Ready</span>
-        </div>
 
         <div className="obj-grid">
           {/* LEFT — Live Conversation */}
