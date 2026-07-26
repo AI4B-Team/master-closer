@@ -589,39 +589,34 @@ export default function App() {
             <p className="sec-lead">You're not choosing between products — you're choosing how much control to give the AI. Same brain. Slide from fully autonomous to human-guided per campaign, per rep, per call.</p>
           </div>
 
-          <div className="continuum" aria-hidden="true">
-            <span className="cont-end font-mono">Max Autonomy</span>
-            <span className="cont-line" />
-            {MODES.map((m) => (
-              <span key={m.key} className="cont-node">
-                <span className="cont-dot" />
-                <span className="cont-label font-mono">{m.label}</span>
-                <span className="cont-sub">{m.tagline}</span>
-              </span>
-            ))}
-            <span className="cont-line" />
-            <span className="cont-end font-mono">Human Control</span>
-          </div>
-
-          <div className="modes">
+          <div className="modes modes-lg">
             {MODES.map((m, i) => {
               const Icon = m.icon;
               return (
                 <div key={m.key} className={`mode-card mode-card-${m.key}`}>
                   <div className="mode-top">
-                    <span className="mode-ico"><Icon size={20} strokeWidth={2.2} /></span>
+                    <span className="mode-ico"><Icon size={26} strokeWidth={2.1} /></span>
                     <span className="mode-step font-mono">0{i + 1}</span>
                   </div>
                   <h3 className="font-display mode-h">{m.label}</h3>
                   <p className="mode-tagline font-mono">{m.tagline}</p>
                   <p className="mode-headline">{m.headline}</p>
                   <p className="mode-b">{m.blurb}</p>
-                  <div className="mode-speakers">
-                    {m.speakers.map((s, si) => (
-                      s.note
-                        ? <span key={si} className="mode-spk-note">{s.note}</span>
-                        : <span key={si} className="mode-spk"><span className="mode-spk-ico">{s.icon}</span> {s.label}</span>
+                  <ul className="mode-caps">
+                    {m.caps.map((c) => (
+                      <li key={c}><Check size={14} strokeWidth={2.6} className="text-signal" /> {c}</li>
                     ))}
+                  </ul>
+                  <div className="mode-speakers">
+                    {m.speakers.map((s, si) => {
+                      if (s.note) return <span key={si} className="mode-spk-note">{s.note}</span>;
+                      const SI = s.Icon;
+                      return (
+                        <span key={si} className="mode-spk">
+                          <span className="mode-spk-ico"><SI size={14} strokeWidth={2.2} /></span> {s.label}
+                        </span>
+                      );
+                    })}
                   </div>
                   <div className="mode-cue">
                     <span className="font-mono mode-cue-tag">{m.tag}</span>
