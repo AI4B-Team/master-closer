@@ -280,9 +280,9 @@ const USES = [
 ];
 
 const WORKS = [
-  { n: "01", t: "Listen", d: "Master Closer listens to the conversation in real time, across Zoom, Meet, Teams, phone, or browser.", icon: Ear },
-  { n: "02", t: "Understand", d: "It identifies questions, objections, and opportunities using your knowledge base and past calls.", icon: Brain },
-  { n: "03", t: "Coach", d: "It suggests the best response instantly so you can stay focused on the conversation.", icon: Crosshair },
+  { n: "01", t: "Listen", d: "Master Closer listens to the conversation in real time, across Zoom, Meet, Teams, phone, or browser.", icon: AudioLines },
+  { n: "02", t: "Understand", d: "It identifies questions, objections, and opportunities using your knowledge base and past calls.", icon: BrainCircuit },
+  { n: "03", t: "Act", d: "It speaks the response, hands off to your closer, or whispers the next line — whichever mode you set.", icon: MessageSquareText },
 ];
 
 const STEPS = [
