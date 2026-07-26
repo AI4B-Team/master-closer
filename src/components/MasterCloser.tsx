@@ -264,6 +264,12 @@ const USES = [
   { icon: Heart, t: "Dating (Practice)", o: "Rehearse the ask before it counts, never live on the date." },
 ];
 
+const WORKS = [
+  { n: "01", t: "Listen", d: "Master Closer listens to the conversation in real time, across Zoom, Meet, Teams, phone, or browser.", icon: Ear },
+  { n: "02", t: "Understand", d: "It identifies questions, objections, and opportunities using your knowledge base and past calls.", icon: Brain },
+  { n: "03", t: "Coach", d: "It suggests the best response instantly so you can stay focused on the conversation.", icon: Crosshair },
+];
+
 const STEPS = [
   { n: "01", t: "Feed It Your Offer", d: "Drop In Your Script, Pricing, And Objections. It Learns What You Sell And How You Win." },
   { n: "02", t: "Set The Autonomy", d: "Slide From Full AI To Hybrid Handoff To Human-Plus-Copilot Per Campaign Or Per Rep." },
@@ -347,7 +353,7 @@ export default function App() {
           <nav className="nav-links">
             <a href="#autonomy">Product</a>
             <a href="#uses">Solutions</a>
-            <a href="#setup">How It Works</a>
+            <a href="#how">How It Works</a>
             <a href="#faq">FAQ</a>
           </nav>
           <div className="nav-cta">
@@ -420,6 +426,33 @@ export default function App() {
             {["SaaS", "Real Estate", "Solar", "Insurance", "Recruiting", "Automotive", "Home Services"].map((x) => (
               <span key={x} className="strip-chip font-display">{x}</span>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section id="how" className="sec sec-mist">
+        <div className="wrap">
+          <div className="sec-head">
+            <Eyebrow variant="rule">How It Works</Eyebrow>
+            <h2 className="font-display sec-h2">Listen. Understand. Coach.</h2>
+            <p className="sec-lead">Three steps that answer the only question that matters: what actually happens on the call?</p>
+          </div>
+          <div className="works">
+            {WORKS.map((w, i) => {
+              const Icon = w.icon;
+              return (
+                <div key={w.t} className="work">
+                  <div className="work-top">
+                    <span className="work-ico"><Icon size={20} strokeWidth={2.2} /></span>
+                    <span className="work-n font-mono">{w.n}</span>
+                  </div>
+                  <h3 className="font-display work-h">{w.t}</h3>
+                  <p className="work-d">{w.d}</p>
+                  {i < WORKS.length - 1 && <div className="work-line" aria-hidden="true" />}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -865,7 +898,7 @@ export default function App() {
           <div className="foot-links">
             <a href="#autonomy">Product</a>
             <a href="#uses">Solutions</a>
-            <a href="#setup">How It Works</a>
+            <a href="#how">How It Works</a>
             <a href="#faq">FAQ</a>
           </div>
           <div className="foot-copy">© 2026 Master Closer</div>
@@ -1106,6 +1139,18 @@ a{text-decoration:none;color:inherit;}
 .use-o-tag{display:block;font-size:9px;letter-spacing:.14em;color:var(--signal);margin-bottom:6px;}
 @media(max-width:980px){.uses{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:520px){.uses{grid-template-columns:1fr;}}
+
+/* how it works */
+.works{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1040px;margin:0 auto;position:relative;}
+.work{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;position:relative;transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;}
+.work:hover{border-color:#e2c4c4;transform:translateY(-3px);box-shadow:0 20px 44px -28px rgba(11,11,15,.28);}
+.work-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.work-ico{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#fbeaea;color:var(--signal);}
+.work-n{font-size:13px;color:#cfcfd6;font-weight:500;}
+.work-h{font-weight:800;font-size:1.35rem;margin:0 0 10px;}
+.work-d{font-size:.94rem;color:#54545e;margin:0;line-height:1.55;}
+.work-line{position:absolute;top:50%;right:-20px;width:20px;height:2px;background:linear-gradient(90deg,var(--signal),transparent);transform:translateY(-50%);}
+@media(max-width:800px){.works{grid-template-columns:1fr;gap:18px;}.work-line{display:none;}}
 
 /* steps */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;max-width:960px;margin:0 auto;}
