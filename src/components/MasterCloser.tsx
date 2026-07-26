@@ -722,12 +722,39 @@ export default function App() {
         </div>
       </section>
 
+      {/* COMPARISON TABLE */}
+      <section className="sec sec-mist">
+        <div className="wrap wrap-narrow">
+          <div className="sec-head">
+            <Eyebrow variant="rule">The Difference</Eyebrow>
+            <h2 className="font-display sec-h2">How Master Closer Compares.</h2>
+            <p className="sec-lead">Recorders review the call after it's lost. Basic copilots only whisper. Master Closer runs, assists, and closes.</p>
+          </div>
+          <div className="compare">
+            <div className="cmp-row cmp-head">
+              <div className="cmp-cap font-mono">CAPABILITY</div>
+              <div className="cmp-col font-display">Recorders</div>
+              <div className="cmp-col font-display">Basic Copilots</div>
+              <div className="cmp-col cmp-col-hi font-display">Master Closer</div>
+            </div>
+            {COMPARE.map((r) => (
+              <div key={r.cap} className="cmp-row">
+                <div className="cmp-cap">{r.cap}</div>
+                <div className="cmp-col"><Cell v={r.rec} /></div>
+                <div className="cmp-col"><Cell v={r.cop} /></div>
+                <div className="cmp-col cmp-col-hi"><Cell v={r.mc} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CAPABILITIES */}
-      <section className="sec sec-dark">
+      <section className="sec">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow variant="rule">Capabilities</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap", color: "#fff" }}>Everything A Closer Needs, In One Place.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>Everything A Closer Needs, In One Place.</h2>
           </div>
           <div className="caps">
             {CAPS.map((c) => {
