@@ -20,7 +20,7 @@ import {
 const MODES = [
   {
     key: "ai", label: "AI", icon: Bot,
-    tagline: "Runs The Call Autonomously.",
+    tagline: "Runs the call autonomously.",
     headline: "The AI Runs The Call.",
     blurb: "It listens, responds, asks questions, handles objections, and closes — no human required.",
     caps: ["Speaks in a natural human voice", "Handles objections in real time", "Sends the agreement and takes payment"],
@@ -33,7 +33,7 @@ const MODES = [
   },
   {
     key: "hybrid", label: "Hybrid", icon: UsersRound,
-    tagline: "AI And Your Team Share Control.",
+    tagline: "AI and your team share control.",
     headline: "AI And Humans Split The Call.",
     blurb: "AI warms the lead, hands off to your closer, or takes back over when your rep needs a break.",
     caps: ["Live warm transfer to your closer", "AI briefs the human before hand-off", "Rep can hand back to AI mid-call"],
@@ -48,7 +48,7 @@ const MODES = [
   },
   {
     key: "copilot", label: "Copilot", icon: Headphones,
-    tagline: "Your Rep Leads. AI Assists Live.",
+    tagline: "Your rep leads. AI assists live.",
     headline: "Your Rep Runs The Call.",
     blurb: "The AI listens silently and whispers the exact next line while your rep stays in full control.",
     caps: ["Private in-ear coaching", "Objection named the moment it lands", "Suggested close, ready to say"],
@@ -662,7 +662,7 @@ export default function App() {
                   </div>
 
                   <h3 className="font-display mode-h">{m.label}</h3>
-                  <p className="mode-tagline font-mono">{m.tagline}</p>
+                  <p className="mode-tagline">{m.tagline}</p>
 
                   {/* Per-card autonomy meter */}
                   <div className="mode-meter">
@@ -1204,8 +1204,8 @@ a{text-decoration:none;color:inherit;}
 .mode-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#fbeaea;color:var(--signal);}
 .mode-step{font-size:13px;color:#cfcfd6;font-weight:500;}
 .mode-h{font-weight:800;font-size:1.6rem;margin:0 0 4px;letter-spacing:-.01em;}
-.mode-tagline{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin:0 0 12px;font-weight:700;}
-.mode-headline{font-family:'Fraunces',serif;font-size:1.05rem;line-height:1.35;color:#0b0b0f;margin:0 0 10px;font-weight:600;}
+.mode-tagline{font-size:.95rem;font-weight:500;color:var(--signal);margin:0 0 16px;line-height:1.3;}
+.mode-headline{font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:1.15rem;line-height:1.3;color:#0b0b0f;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
 .mode-b{font-size:.92rem;color:#54545e;margin:0 0 14px;line-height:1.55;}
 .mode-speakers{display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--mist);border-radius:10px;margin-bottom:16px;}
 .mode-spk{display:inline-flex;align-items:center;gap:8px;font-size:.86rem;font-weight:700;color:#0b0b0f;}
@@ -1515,8 +1515,8 @@ a{text-decoration:none;color:inherit;}
 .modes-xl .mode-ico{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#fbeaea,#fff);border:1px solid #f2d3d3;box-shadow:inset 0 -2px 0 rgba(204,0,0,.08);}
 .modes-xl .mode-step{font-size:14px;color:#c8c8d0;font-weight:600;letter-spacing:.06em;}
 .modes-xl .mode-h{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;}
-.modes-xl .mode-tagline{font-size:.7rem;letter-spacing:.16em;margin:0 0 20px;}
-.modes-xl .mode-headline{font-family:'Fraunces',serif;font-size:1.15rem;line-height:1.35;margin:0 0 10px;font-weight:600;}
+.modes-xl .mode-tagline{font-size:1rem;font-weight:500;margin:0 0 20px;}
+.modes-xl .mode-headline{font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:1.25rem;line-height:1.3;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
 .modes-xl .mode-b{font-size:.95rem;color:#54545e;line-height:1.6;margin:0 0 20px;}
 
 .mode-meter{background:#fafafb;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 22px;}
@@ -1545,7 +1545,7 @@ a{text-decoration:none;color:inherit;}
 
 .modes-xl .mode-cue{margin-top:auto;padding:16px 18px 0;border-top:1px solid var(--line);}
 .modes-xl .mode-cue-tag{font-size:.62rem;letter-spacing:.16em;margin-bottom:8px;}
-.modes-xl .mode-cue-line{font-family:'Fraunces',serif;font-style:italic;font-size:.98rem;line-height:1.5;color:#0b0b0f;font-weight:500;}
+.modes-xl .mode-cue-line{font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:.98rem;line-height:1.5;color:#0b0b0f;font-weight:500;}
 
 @media(max-width:1000px){.modes-xl{grid-template-columns:1fr;}.spectrum{margin-bottom:36px;}}
 
