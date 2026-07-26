@@ -636,17 +636,6 @@ export default function App() {
       <ObjectionDemo />
 
 
-      {/* LIVE DEMO */}
-      <section id="demo" className="sec">
-        <div className="wrap">
-          <div className="sec-head">
-            <Eyebrow variant="bracket">Live Demo</Eyebrow>
-            <h2 className="font-display sec-h2">Test It Live.</h2>
-            <p className="sec-lead">This is the actual engine, not a video. Pick a line or type your own, choose who's running the call, and watch Master Closer hand back the move in real time.</p>
-          </div>
-          <LiveDemo />
-        </div>
-      </section>
 
       {/* INSIDE MASTER CLOSER */}
       <section className="sec sec-mist">
