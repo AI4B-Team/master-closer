@@ -612,11 +612,11 @@ export default function App() {
       </section>
 
       {/* CAPABILITIES */}
-      <section className="sec">
+      <section className="sec sec-dark">
         <div className="wrap">
           <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow>Capabilities</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>Everything A Closer Needs, In One Place.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap", color: "#fff" }}>Everything A Closer Needs, In One Place.</h2>
           </div>
           <div className="caps">
             {CAPS.map((c) => {
