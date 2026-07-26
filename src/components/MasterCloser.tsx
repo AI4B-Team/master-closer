@@ -207,14 +207,14 @@ function LiveDemo() {
 
 /* ------------------------------ Data ------------------------------ */
 const CAPS = [
-  { icon: Mic, t: "Live Copilot", d: "The Next Line On Screen Before The Prospect Finishes Talking. Only Your Rep Sees It." },
-  { icon: Bot, t: "AI Voice Agent", d: "A Natural Voice That Runs The Call End To End When You Want It To." },
-  { icon: PhoneForwarded, t: "Warm Transfer", d: "AI Briefs The Human, Hands Off The Live Call, And Stays On To Assist." },
-  { icon: CreditCard, t: "Close & Collect", d: "Send The Agreement And A Payment Link Before The Call Ends." },
-  { icon: Database, t: "CRM Write-Back", d: "Outcome, Next Step, And Summary Logged The Moment You Hang Up." },
-  { icon: ShieldCheck, t: "Consent Built In", d: "Disclosure And Per-State Rules Handled For You, Not Bolted On." },
-  { icon: GraduationCap, t: "Practice Mode", d: "Spar With An AI Prospect That Fights Back Before The Real Call." },
-  { icon: Languages, t: "32 Languages", d: "Run And Close Conversations Across Regions In Native Voice." },
+  { icon: Mic, t: "Live Copilot", d: "The next line appears before the prospect stops talking." },
+  { icon: Bot, t: "AI Voice Agent", d: "A natural voice runs the whole call end to end." },
+  { icon: PhoneForwarded, t: "Warm Transfer", d: "AI hands the call to a human and stays to assist." },
+  { icon: CreditCard, t: "Close & Collect", d: "Send the agreement and payment link before you hang up." },
+  { icon: Database, t: "CRM Write-Back", d: "Outcome, next step, and summary logged automatically." },
+  { icon: ShieldCheck, t: "Consent Built In", d: "Disclosure and per-state rules handled out of the box." },
+  { icon: GraduationCap, t: "Practice Mode", d: "Spar with an AI prospect before the real call." },
+  { icon: Languages, t: "32 Languages", d: "Run and close conversations in native voice anywhere." },
 ];
 
 const USES = [
@@ -375,6 +375,33 @@ export default function App() {
         </div>
       </section>
 
+      {/* COMPARISON TABLE */}
+      <section className="sec sec-mist">
+        <div className="wrap wrap-narrow">
+          <div className="sec-head">
+            <Eyebrow>The Difference</Eyebrow>
+            <h2 className="font-display sec-h2">How Master Closer Compares.</h2>
+            <p className="sec-lead">Recorders review the call after it's lost. Basic copilots only whisper. Master Closer runs, assists, and closes.</p>
+          </div>
+          <div className="compare">
+            <div className="cmp-row cmp-head">
+              <div className="cmp-cap font-mono">CAPABILITY</div>
+              <div className="cmp-col font-display">Recorders</div>
+              <div className="cmp-col font-display">Basic Copilots</div>
+              <div className="cmp-col cmp-col-hi font-display">Master Closer</div>
+            </div>
+            {COMPARE.map((r) => (
+              <div key={r.cap} className="cmp-row">
+                <div className="cmp-cap">{r.cap}</div>
+                <div className="cmp-col"><Cell v={r.rec} /></div>
+                <div className="cmp-col"><Cell v={r.cop} /></div>
+                <div className="cmp-col cmp-col-hi"><Cell v={r.mc} /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* TWO VIEWS (real graphic like RentHQ see/never-see) */}
       <section className="sec sec-mist">
         <div className="wrap">
@@ -421,33 +448,6 @@ export default function App() {
             <p className="sec-lead">This is the actual engine, not a video. Pick a line or type your own, choose who's running the call, and watch Master Closer hand back the move in real time.</p>
           </div>
           <LiveDemo />
-        </div>
-      </section>
-
-      {/* COMPARISON TABLE */}
-      <section className="sec sec-mist">
-        <div className="wrap wrap-narrow">
-          <div className="sec-head">
-            <Eyebrow>The Difference</Eyebrow>
-            <h2 className="font-display sec-h2">How Master Closer Compares.</h2>
-            <p className="sec-lead">Recorders review the call after it's lost. Basic copilots only whisper. Master Closer runs, assists, and closes.</p>
-          </div>
-          <div className="compare">
-            <div className="cmp-row cmp-head">
-              <div className="cmp-cap font-mono">CAPABILITY</div>
-              <div className="cmp-col font-display">Recorders</div>
-              <div className="cmp-col font-display">Basic Copilots</div>
-              <div className="cmp-col cmp-col-hi font-display">Master Closer</div>
-            </div>
-            {COMPARE.map((r) => (
-              <div key={r.cap} className="cmp-row">
-                <div className="cmp-cap">{r.cap}</div>
-                <div className="cmp-col"><Cell v={r.rec} /></div>
-                <div className="cmp-col"><Cell v={r.cop} /></div>
-                <div className="cmp-col cmp-col-hi"><Cell v={r.mc} /></div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
