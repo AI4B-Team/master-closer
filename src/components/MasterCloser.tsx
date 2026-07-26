@@ -896,6 +896,18 @@ const CSS = `
 .wrap-narrow{max-width:860px;}
 a{text-decoration:none;color:inherit;}
 .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;}
+.eyebrow-rule{display:flex;align-items:center;justify-content:center;gap:14px;}
+.eyebrow-rule .eb-line{height:1px;width:48px;background:linear-gradient(90deg,transparent,var(--signal),transparent);}
+.eyebrow-num{display:inline-flex;align-items:center;gap:10px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;}
+.sec-dark .eyebrow-num{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);}
+.eyebrow-num .eb-num{font-size:.7rem;color:#8a8a92;letter-spacing:.08em;}
+.eyebrow-num .eb-slash{color:#d4d4dc;font-weight:400;}
+.sec-dark .eyebrow-num .eb-slash{color:rgba(255,255,255,.2);}
+.eyebrow-dot{display:inline-flex;align-items:center;gap:9px;}
+.eyebrow-dot .eb-dot{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 4px rgba(230,57,70,.15);}
+.eyebrow-bracket{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;letter-spacing:.14em;}
+.eyebrow-bracket .eb-brack{color:#c9c9d1;font-weight:400;}
+.sec-dark .eyebrow-bracket .eb-brack{color:rgba(255,255,255,.28);}
 
 /* buttons */
 .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--signal);color:#fff;
