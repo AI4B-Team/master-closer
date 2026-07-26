@@ -558,7 +558,7 @@ export default function App() {
         <div className="wrap">
           <div className="sec-head">
             <Eyebrow variant="rule">How It Works</Eyebrow>
-            <h2 className="font-display sec-h2">Listen. Understand. Coach.</h2>
+            <h2 className="font-display sec-h2">Listen. Understand. Act.</h2>
             <p className="sec-lead">Three steps that answer the only question that matters: what actually happens on the call?</p>
           </div>
           <div className="works">
