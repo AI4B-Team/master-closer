@@ -423,37 +423,16 @@ function ObjectionDemo() {
           {/* LEFT — Live Conversation */}
           <div className="obj-panel">
             <div className="obj-panel-head">
-              <span className="obj-panel-tag font-mono"><span className="rec-dot" /> Live Conversation</span>
+              <span className="obj-panel-tag font-mono"><span className="rec-dot" /> Prospect</span>
             </div>
 
             <div className="obj-bubble">
-              <span className="obj-role font-mono">Prospect</span>
-              <p className="obj-quote">"I need to think about it."</p>
+              <p className="obj-quote obj-quote-lg">"I need to think about it."</p>
             </div>
 
-            <div className="obj-detect">
-              <div className="obj-detect-head">
-                <span className="obj-panel-tag font-mono">Master Closer · Understood</span>
-                <span className="obj-conf">97% <span>Confidence</span></span>
-              </div>
-              <ul className="obj-facts">
-                <li>
-                  <span className="obj-fact-k font-mono">Detected</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Delay Objection</span>
-                </li>
-                <li>
-                  <span className="obj-fact-k font-mono">Intent</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Needs Reassurance</span>
-                </li>
-                <li>
-                  <span className="obj-fact-k font-mono">Decision</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Uncover Root Concern</span>
-                </li>
-                <li>
-                  <span className="obj-fact-k font-mono">Action</span>
-                  <span className="obj-fact-v"><Check size={13} strokeWidth={3} className="text-signal" /> Ask Diagnostic Question</span>
-                </li>
-              </ul>
+            <div className="obj-meta">
+              <span className="obj-chip obj-chip-red">Delay Objection</span>
+              <span className="obj-chip">Hesitant Tone</span>
             </div>
           </div>
 
@@ -470,16 +449,6 @@ function ObjectionDemo() {
 
               {r.actions}
               {r.footer && <div className="obj-footer font-mono">{r.footer}</div>}
-            </div>
-
-            <div className="obj-result">
-              <span className="obj-panel-tag font-mono">Prospect · Replies</span>
-              <p className="obj-quote">"Honestly? Just the price. Can we walk through it again?"</p>
-              <div className="conf">
-                <div className="conf-label font-mono">Close Probability</div>
-                <div className="conf-track"><div className="conf-fill" style={{ width: "84%" }} /></div>
-                <div className="conf-num font-mono">84%</div>
-              </div>
             </div>
           </div>
         </div>
