@@ -496,7 +496,7 @@ export default function App() {
               much is human — on one dial.
             </p>
             <div className="hero-actions">
-              <a href="#demo" className="btn-primary btn-lg">Try It Live <ArrowRight size={17} strokeWidth={2.4} /></a>
+              <a href="#objection" className="btn-primary btn-lg">See It Work <ArrowRight size={17} strokeWidth={2.4} /></a>
               <a href="#autonomy" className="btn-ghost btn-lg"><Play size={16} strokeWidth={2.4} /> See The Slider</a>
             </div>
             <div className="hero-pills">
