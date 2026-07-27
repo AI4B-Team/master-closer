@@ -1509,8 +1509,8 @@ a{text-decoration:none;color:inherit;}
 .spectrum-fill{position:absolute;inset:0;border-radius:999px;background:var(--signal);opacity:.95;z-index:0;pointer-events:none;}
 .spectrum-tick{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #0b0b0f;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:2;}
 .spectrum-tick em{position:absolute;top:22px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#0b0b0f;font-style:normal;font-weight:700;white-space:nowrap;}
-.spectrum-tick-start em{left:0;transform:translateX(-50%);}
-.spectrum-tick-end em{left:auto;right:0;transform:translateX(50%);}
+.spectrum-tick-start em{left:0;right:auto;transform:none;text-align:left;}
+.spectrum-tick-end em{left:auto;right:0;transform:none;text-align:right;}
 
 .modes-xl{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:44px;align-items:stretch;}
 .modes-xl .mode-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:36px 30px 30px;display:flex;flex-direction:column;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;overflow:hidden;}
