@@ -522,8 +522,8 @@ export default function App() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="nav-cta">
-            <a href="#" className="nav-login">Sign In</a>
-            <a href="#" className="btn-primary">Get Started</a>
+            <a href="/auth" className="nav-login">Sign In</a>
+            <a href="/auth" className="btn-primary">Get Started</a>
           </div>
         </div>
       </header>
