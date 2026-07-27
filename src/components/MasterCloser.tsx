@@ -1439,8 +1439,8 @@ a{text-decoration:none;color:inherit;}
 
 /* inside master closer */
 .inside{position:relative;}
-.inside-stage{position:relative;padding:40px 0;max-width:1100px;margin:0 auto;}
-.mock{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 90px -40px rgba(11,11,15,.4);overflow:hidden;margin:0 90px;}
+.inside-stage{position:relative;padding:50px 60px;max-width:1100px;margin:0 auto;}
+.mock{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 90px -40px rgba(11,11,15,.4);overflow:visible;margin:0 70px;}
 .mock-chrome{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#fafafb;border-bottom:1px solid var(--line);}
 .mock-dot{width:10px;height:10px;border-radius:50%;}
 .mock-dot-r{background:#ff5f57;}.mock-dot-y{background:#febc2e;}.mock-dot-g{background:#28c840;}
