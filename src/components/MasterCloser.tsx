@@ -39,7 +39,7 @@ const MODES = [
     caps: ["Live warm transfer to your closer", "AI briefs the human before hand-off", "Rep can hand back to AI mid-call"],
     speakers: [{ Icon: Bot, label: "AI" }, { Icon: UsersRound, label: "Human" }, { note: "AI Hands Off When Needed" }],
     tag: "AI Briefing Your Closer",
-    cue: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
+    cue: "Warm lead, budget confirmed, one price objection left. Transferring you in, take the close.",
     autonomy: 55,
     metric: { v: "2×", l: "Rep Throughput" },
     bestFor: ["High-Ticket", "Warm Transfers", "Team Coverage"],
