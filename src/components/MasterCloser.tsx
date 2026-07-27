@@ -327,10 +327,10 @@ const FAQS = [
 ];
 
 const INSIDE = [
-  { icon: MessagesSquare, t: "Live Conversation", d: "Every word transcribed and understood in real time.", x: 8, y: 22 },
-  { icon: Crosshair, t: "AI Response", d: "The next line, ready to speak or approve.", x: 92, y: 22 },
-  { icon: BookOpen, t: "Knowledge Retrieval", d: "Answers pulled from your offer and past calls.", x: 8, y: 78 },
-  { icon: Bot, t: "Control Mode", d: "AI, Hybrid, or Copilot — set per rep or per call.", x: 92, y: 78 },
+  { icon: MessagesSquare, t: "Live Conversation", d: "Every word transcribed and understood in real time.", x: 14, y: 20 },
+  { icon: Crosshair, t: "AI Response", d: "The next line, ready to speak or approve.", x: 86, y: 20 },
+  { icon: BookOpen, t: "Knowledge Retrieval", d: "Answers pulled from your offer and past calls.", x: 14, y: 80 },
+  { icon: Bot, t: "Control Mode", d: "AI, Hybrid, or Copilot — set per rep or per call.", x: 86, y: 80 },
 ];
 
 const PLATFORMS = [
@@ -1439,8 +1439,8 @@ a{text-decoration:none;color:inherit;}
 
 /* inside master closer */
 .inside{position:relative;}
-.inside-stage{position:relative;padding:40px 0;max-width:1100px;margin:0 auto;}
-.mock{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 90px -40px rgba(11,11,15,.4);overflow:hidden;margin:0 90px;}
+.inside-stage{position:relative;padding:50px 60px;max-width:1100px;margin:0 auto;}
+.mock{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 90px -40px rgba(11,11,15,.4);overflow:visible;margin:0 70px;}
 .mock-chrome{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#fafafb;border-bottom:1px solid var(--line);}
 .mock-dot{width:10px;height:10px;border-radius:50%;}
 .mock-dot-r{background:#ff5f57;}.mock-dot-y{background:#febc2e;}.mock-dot-g{background:#28c840;}
@@ -1466,13 +1466,13 @@ a{text-decoration:none;color:inherit;}
 .mock-bars{display:flex;align-items:flex-end;gap:10px;height:60px;}
 .mock-bar{flex:1;background:var(--signal);border-radius:4px 4px 0 0;min-height:6px;}
 
-.callout{position:absolute;display:flex;align-items:flex-start;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;box-shadow:0 12px 30px -18px rgba(11,11,15,.35);max-width:190px;transform:translate(-50%,-50%);}
+.callout{position:absolute;display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px;box-shadow:0 14px 34px -18px rgba(11,11,15,.35);width:220px;transform:translate(-50%,-50%);z-index:2;}
 .callout-6{transform:translate(-50%,-30%);}
-.callout-ico{display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
-.callout-body{display:flex;flex-direction:column;gap:2px;}
-.callout-t{font-weight:800;font-size:.78rem;letter-spacing:-.01em;}
-.callout-d{font-size:.72rem;color:#54545e;line-height:1.4;}
-@media(max-width:980px){.callout{position:static;transform:none;max-width:none;}.inside-stage{display:grid;grid-template-columns:1fr;gap:14px;padding:0;}.mock{margin:0;}.mock-body{grid-template-columns:1fr;}.mock-side{flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line);}.mock-cards{grid-template-columns:1fr;}}
+.callout-ico{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#fbeaea;color:var(--signal);flex-shrink:0;}
+.callout-body{display:flex;flex-direction:column;gap:3px;}
+.callout-t{font-weight:800;font-size:.82rem;letter-spacing:-.01em;white-space:nowrap;}
+.callout-d{font-size:.74rem;color:#54545e;line-height:1.35;}
+@media(max-width:980px){.callout{position:static;transform:none;width:auto;max-width:none;}.inside-stage{display:grid;grid-template-columns:1fr;gap:14px;padding:0;}.mock{margin:0;}.mock-body{grid-template-columns:1fr;}.mock-side{flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line);}.mock-cards{grid-template-columns:1fr;}}
 
 /* platforms */
 .platforms{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;max-width:960px;margin:0 auto 44px;}
