@@ -641,9 +641,9 @@ export default function App() {
             </div>
             <div className="spectrum-bar">
               <span className="spectrum-fill" />
-              <span className="spectrum-tick" style={{ left: "0%" }}><em>AI</em></span>
+              <span className="spectrum-tick spectrum-tick-start" style={{ left: "0%" }}><em>AI</em></span>
               <span className="spectrum-tick" style={{ left: "50%" }}><em>Hybrid</em></span>
-              <span className="spectrum-tick" style={{ left: "100%" }}><em>Copilot</em></span>
+              <span className="spectrum-tick spectrum-tick-end" style={{ left: "100%" }}><em>Copilot</em></span>
             </div>
           </div>
 
