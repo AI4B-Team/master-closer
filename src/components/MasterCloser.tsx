@@ -1276,8 +1276,8 @@ a{text-decoration:none;color:inherit;}
 .cmp-cap{padding:16px 20px;font-size:.94rem;font-weight:600;color:#2a2a32;}
 .cmp-head .cmp-cap{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:500;}
 .cmp-col{padding:16px 12px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#54545e;}
-.cmp-col-hi{background:#fdf6f6;color:var(--signal);}
-.cmp-head .cmp-col-hi{color:var(--signal);}
+.cmp-col-hi{background:#e6f6ee;color:var(--green);}
+.cmp-head .cmp-col-hi{color:var(--green);}
 .cmark{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;}
 .cmark-yes{background:#e6f6ee;color:var(--green);}
 .cmark-no{background:#f0f0f3;color:#b6b6be;}
