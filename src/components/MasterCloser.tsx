@@ -738,9 +738,9 @@ export default function App() {
       {/* INSIDE MASTER CLOSER */}
       <section className="sec sec-mist">
         <div className="wrap">
-          <div className="sec-head">
+          <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow variant="num" num="03">Inside Master Closer</Eyebrow>
-            <h2 className="font-display sec-h2">The Whole Cockpit, On One Screen.</h2>
+            <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>The Whole Cockpit, On One Screen.</h2>
             <p className="sec-lead">Every part of your close, wired together. Live calls on the left, the brain in the middle, coaching on the right.</p>
           </div>
           <div className="inside">
