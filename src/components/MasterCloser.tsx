@@ -327,10 +327,10 @@ const FAQS = [
 ];
 
 const INSIDE = [
-  { icon: MessagesSquare, t: "Live Conversation", d: "Every word transcribed and understood in real time.", x: 8, y: 22 },
-  { icon: Crosshair, t: "AI Response", d: "The next line, ready to speak or approve.", x: 92, y: 22 },
-  { icon: BookOpen, t: "Knowledge Retrieval", d: "Answers pulled from your offer and past calls.", x: 8, y: 78 },
-  { icon: Bot, t: "Control Mode", d: "AI, Hybrid, or Copilot — set per rep or per call.", x: 92, y: 78 },
+  { icon: MessagesSquare, t: "Live Conversation", d: "Every word transcribed and understood in real time.", x: 14, y: 20 },
+  { icon: Crosshair, t: "AI Response", d: "The next line, ready to speak or approve.", x: 86, y: 20 },
+  { icon: BookOpen, t: "Knowledge Retrieval", d: "Answers pulled from your offer and past calls.", x: 14, y: 80 },
+  { icon: Bot, t: "Control Mode", d: "AI, Hybrid, or Copilot — set per rep or per call.", x: 86, y: 80 },
 ];
 
 const PLATFORMS = [
