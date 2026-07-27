@@ -39,7 +39,7 @@ const MODES = [
     caps: ["Live warm transfer to your closer", "AI briefs the human before hand-off", "Rep can hand back to AI mid-call"],
     speakers: [{ Icon: Bot, label: "AI" }, { Icon: UsersRound, label: "Human" }, { note: "AI Hands Off When Needed" }],
     tag: "AI Briefing Your Closer",
-    cue: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
+    cue: "Warm lead, budget confirmed, one price objection left. Transferring you in, take the close.",
     autonomy: 55,
     metric: { v: "2×", l: "Rep Throughput" },
     bestFor: ["High-Ticket", "Warm Transfers", "Team Coverage"],
@@ -630,15 +630,11 @@ export default function App() {
           <div className="sec-head" style={{ maxWidth: "none" }}>
             <Eyebrow variant="num" num="01">Three Levels Of Control</Eyebrow>
             <h2 className="font-display sec-h2" style={{ whiteSpace: "nowrap" }}>One AI. Three Levels Of Control.</h2>
-            <p className="sec-lead">You're not choosing between products — you're choosing how much control to give the AI. Same brain. Slide from fully autonomous to human-guided per campaign, per rep, per call.</p>
+            <p className="sec-lead">Same brain. Choose how much control to give it, per campaign, per rep, per call.</p>
           </div>
 
           {/* Global control spectrum */}
           <div className="spectrum">
-            <div className="spectrum-labels">
-              <span className="font-mono spectrum-l"><Bot size={13} strokeWidth={2.4} /> Max Autonomy</span>
-              <span className="font-mono spectrum-l spectrum-l-r">Human Control <UsersRound size={13} strokeWidth={2.4} /></span>
-            </div>
             <div className="spectrum-bar">
               <span className="spectrum-fill" />
               <span className="spectrum-tick spectrum-tick-start" style={{ left: "0%" }}><em>AI</em></span>
@@ -647,82 +643,31 @@ export default function App() {
             </div>
           </div>
 
-          <div className="modes modes-xl">
-            {MODES.map((m, i) => {
+          <div className="modes modes-simple">
+            {MODES.map((m) => {
               const Icon = m.icon;
               return (
-                <div key={m.key} className={`mode-card mode-card-${m.key}${m.featured ? " mode-card-featured" : ""}`}>
+                <div key={m.key} className="mode-card-s">
                   {m.featured && (
-                    <span className="mode-badge font-mono">★ {m.featuredLabel}</span>
+                    <span className="mode-badge-s font-mono">Most Popular</span>
                   )}
-
-                  <div className="mode-top">
-                    <span className="mode-ico"><Icon size={26} strokeWidth={2.1} /></span>
-                    <span className="mode-step font-mono">0{i + 1}</span>
-                  </div>
-
-                  <h3 className="font-display mode-h">{m.label}</h3>
-                  <p className="mode-tagline">{m.tagline}</p>
-
-                  {/* Per-card autonomy meter */}
-                  <div className="mode-meter">
-                    <div className="mode-meter-head font-mono">
-                      <span>Autonomy</span>
-                      <span className="mode-meter-v">{m.autonomy}%</span>
-                    </div>
-                    <div className="mode-meter-bar">
-                      <span className="mode-meter-fill" style={{ width: `${m.autonomy}%` }} />
-                      <span className="mode-meter-dot" style={{ left: `calc(${m.autonomy}% - 7px)` }} />
-                    </div>
-                    <div className="mode-meter-foot font-mono">
-                      <span>AI</span>
-                      <span>Human</span>
-                    </div>
-                  </div>
-
-                  <p className="mode-headline">{m.headline}</p>
-                  <p className="mode-b">{m.blurb}</p>
-
-                  <ul className="mode-caps">
+                  <span className="mode-ico-s"><Icon size={22} strokeWidth={2.1} /></span>
+                  <h3 className="font-display mode-h-s">{m.label}</h3>
+                  <p className="mode-tagline-s">{m.tagline}</p>
+                  <ul className="mode-caps-s">
                     {m.caps.map((c) => (
                       <li key={c}><Check size={14} strokeWidth={2.6} className="text-signal" /> {c}</li>
                     ))}
                   </ul>
-
-                  <div className="mode-metric">
-                    <span className="font-display mode-metric-v">{m.metric.v}</span>
-                    <span className="font-mono mode-metric-l">{m.metric.l}</span>
-                  </div>
-
-                  <div className="mode-speakers">
-                    {m.speakers.map((s, si) => {
-                      if (s.note) return <span key={si} className="mode-spk-note">{s.note}</span>;
-                      const SI = s.Icon;
-                      return (
-                        <span key={si} className="mode-spk">
-                          <span className="mode-spk-ico"><SI size={14} strokeWidth={2.2} /></span> {s.label}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mode-bestfor">
-                    <span className="mode-bestfor-l font-mono">Best For</span>
-                    <div className="mode-chips">
-                      {m.bestFor.map((b) => (
-                        <span key={b} className="mode-chip">{b}</span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mode-cue">
-                    <span className="font-mono mode-cue-tag">{m.tag}</span>
-                    <p className="mode-cue-line">"{m.cue}"</p>
+                  <div className="mode-cue-s">
+                    <span className="font-mono mode-cue-tag-s">{m.tag}</span>
+                    <p className="mode-cue-line-s">"{m.cue}"</p>
                   </div>
                 </div>
               );
             })}
           </div>
+
         </div>
       </section>
 
@@ -1558,6 +1503,23 @@ a{text-decoration:none;color:inherit;}
 .modes-xl .mode-cue-line{font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:.98rem;line-height:1.5;color:#0b0b0f;font-weight:500;}
 
 @media(max-width:1000px){.modes-xl{grid-template-columns:1fr;}.spectrum{margin-bottom:36px;}}
+
+/* ===== SIMPLIFIED MODE CARDS ===== */
+.modes-simple{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch;}
+.mode-card-s{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px 28px;display:flex;flex-direction:column;gap:16px;transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;}
+.mode-card-s:hover{border-color:#e2c4c4;transform:translateY(-3px);box-shadow:0 20px 44px -28px rgba(11,11,15,.22);}
+.mode-badge-s{position:absolute;top:16px;right:16px;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);background:color-mix(in srgb,var(--signal) 10%,#fff);border:1px solid color-mix(in srgb,var(--signal) 25%,var(--line));padding:5px 10px;border-radius:999px;font-weight:700;}
+.mode-ico-s{width:44px;height:44px;border-radius:10px;background:color-mix(in srgb,var(--signal) 10%,#fff);color:var(--signal);display:grid;place-items:center;}
+.mode-h-s{font-size:1.75rem;font-weight:800;letter-spacing:-.01em;color:#0b0b0f;line-height:1.1;margin:0;}
+.mode-tagline-s{font-size:.98rem;color:#54545e;line-height:1.5;margin:0;}
+.mode-caps-s{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.mode-caps-s li{display:flex;align-items:flex-start;gap:10px;font-size:.95rem;color:#0b0b0f;line-height:1.45;}
+.mode-caps-s li svg{margin-top:3px;flex:none;}
+.mode-cue-s{margin-top:auto;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fafafa;display:flex;flex-direction:column;gap:8px;}
+.mode-cue-tag-s{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);font-weight:700;}
+.mode-cue-line-s{font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:.95rem;line-height:1.5;color:#0b0b0f;font-weight:500;margin:0;}
+@media(max-width:1000px){.modes-simple{grid-template-columns:1fr;}}
+
 
 /* ===== HANDOFF (HYBRID DEMO) ===== */
 .obj-badge-red{background:var(--signal);color:#fff;}
