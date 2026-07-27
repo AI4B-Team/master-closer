@@ -48,7 +48,7 @@ function LeadsPage() {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
-      const { error } = await supabase.from("leads").insert({ ...form, org_id: prof.org_id });
+      const { error } = await supabase.from("leads").insert({ ...form, status: form.status as any, org_id: prof.org_id });
       if (error) throw error;
     },
     onSuccess: () => {
