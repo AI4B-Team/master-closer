@@ -1504,6 +1504,23 @@ a{text-decoration:none;color:inherit;}
 
 @media(max-width:1000px){.modes-xl{grid-template-columns:1fr;}.spectrum{margin-bottom:36px;}}
 
+/* ===== SIMPLIFIED MODE CARDS ===== */
+.modes-simple{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch;}
+.mode-card-s{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px 28px;display:flex;flex-direction:column;gap:16px;transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;}
+.mode-card-s:hover{border-color:#e2c4c4;transform:translateY(-3px);box-shadow:0 20px 44px -28px rgba(11,11,15,.22);}
+.mode-badge-s{position:absolute;top:16px;right:16px;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);background:color-mix(in srgb,var(--signal) 10%,#fff);border:1px solid color-mix(in srgb,var(--signal) 25%,var(--line));padding:5px 10px;border-radius:999px;font-weight:700;}
+.mode-ico-s{width:44px;height:44px;border-radius:10px;background:color-mix(in srgb,var(--signal) 10%,#fff);color:var(--signal);display:grid;place-items:center;}
+.mode-h-s{font-size:1.75rem;font-weight:800;letter-spacing:-.01em;color:#0b0b0f;line-height:1.1;margin:0;}
+.mode-tagline-s{font-size:.98rem;color:#54545e;line-height:1.5;margin:0;}
+.mode-caps-s{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.mode-caps-s li{display:flex;align-items:flex-start;gap:10px;font-size:.95rem;color:#0b0b0f;line-height:1.45;}
+.mode-caps-s li svg{margin-top:3px;flex:none;}
+.mode-cue-s{margin-top:auto;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fafafa;display:flex;flex-direction:column;gap:8px;}
+.mode-cue-tag-s{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);font-weight:700;}
+.mode-cue-line-s{font-family:'Hanken Grotesk',system-ui,sans-serif;font-size:.95rem;line-height:1.5;color:#0b0b0f;font-weight:500;margin:0;}
+@media(max-width:1000px){.modes-simple{grid-template-columns:1fr;}}
+
+
 /* ===== HANDOFF (HYBRID DEMO) ===== */
 .obj-badge-red{background:var(--signal);color:#fff;}
 .obj-badge-black{background:#0b0b0f;color:#fff;}
