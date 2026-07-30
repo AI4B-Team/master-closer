@@ -412,7 +412,7 @@ const STORIES = [
   {
     kicker: "Close & Collect",
     icon: CreditCard,
-    t: "Signed And Paid Before The Call Ends.",
+    t: <>Signed And Paid<br />Before The Call Ends.</>,
     d: "Send the agreement and a payment link mid-call, then let the outcome, next step, and summary write themselves back to your CRM.",
     bullets: ["Agreement and payment link in-call", "Outcome logged the moment you hang up", "Nothing left for your rep to type"],
     Mock: MockCollect,
