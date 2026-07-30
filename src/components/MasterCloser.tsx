@@ -598,10 +598,10 @@ export default function MasterCloser() {
       </section>
 
       {/* LIVE DEMO */}
-      <section id="demo" className="sec">
+      <section id="demo" className="sec sec-demo-dark">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Live Demo</Eyebrow>
+            <Eyebrow light>Live Demo</Eyebrow>
             <h2 className="font-display sec-h2">Throw It A Real Objection.</h2>
             <p className="sec-lead">This is the actual engine, not a video. Pick a line or type your own, choose who's running the call, and watch Master Closer hand back the move in real time.</p>
           </div>
