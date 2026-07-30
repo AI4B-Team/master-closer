@@ -17,24 +17,25 @@ import {
 
 const MODES = [
   {
-    key: "ai", label: "Full AI", plain: "The AI Closer", icon: Bot,
-    blurb: "It runs the whole call: discovery, demo, close, and payment. No human required.",
+    key: "ai", label: "AI", plain: "AI Runs The Call", icon: Bot,
+    blurb: "Runs the entire conversation—from discovery and presentation through objections, closing, and payment.",
     tag: "AI Speaking To Prospect",
     cue: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
   },
   {
-    key: "hybrid", label: "Hybrid Handoff", plain: "Both, Working Together", icon: PhoneForwarded,
-    blurb: "The AI warms the lead, live-transfers to your closer, and stays on to assist.",
+    key: "hybrid", label: "Hybrid", plain: "AI Starts. Human Closes.", icon: PhoneForwarded,
+    blurb: "AI qualifies and warms the prospect, then briefs your closer and transfers the call when it's time to close.",
     tag: "AI Briefing Your Closer",
     cue: "Warm lead, budget confirmed, one price objection left. Transferring you in, take the close.",
   },
   {
-    key: "copilot", label: "Human + Copilot", plain: "Your Human Closer", icon: Mic,
-    blurb: "Your rep runs the call. The copilot whispers the next line, only they see it.",
+    key: "copilot", label: "Copilot", plain: "Human Leads. AI Assists.", icon: Mic,
+    blurb: "Your rep runs the call while AI privately provides the next best response in real time.",
     tag: "Whispered To Your Rep",
     cue: "Say: \"When you say it's a lot, is it the total or the monthly that gives you pause?\"",
   },
 ];
+
 
 function Eyebrow({ children, light }) {
   return <div className={"eyebrow " + (light ? "eyebrow-light" : "text-signal")}>{children}</div>;
