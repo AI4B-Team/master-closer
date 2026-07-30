@@ -739,29 +739,79 @@ export default function MasterCloser() {
       </section>
 
       {/* COMPLIANCE */}
-      <section className="sec sec-dark">
+      <section className="sec sec-dark sec-comply">
         <div className="wrap comply">
           <div className="comply-copy">
-            <Eyebrow light>Consent, Built In</Eyebrow>
-            <h2 className="font-display sec-h2" style={{ color: "#fff" }}>The Honest Edge Wins The Deal.</h2>
+            <Eyebrow light>Compliance, Built In</Eyebrow>
+            <h2 className="font-display sec-h2" style={{ color: "#fff" }}>Win The Call Without Crossing The Line.</h2>
             <p className="sec-lead" style={{ color: "rgba(255,255,255,.66)" }}>
-              Covert tools get their users sued. Master Closer delivers a light quality-and-training
-              disclosure when a call is recorded, knows the consent rules state by state, and keeps
-              the coaching layer private to your rep. Compliance becomes a reason to trust you, not a
-              liability to hide.
+              Master Closer provides a clear recording disclosure, applies consent rules based on the
+              caller's location, and keeps private AI coaching out of the recorded conversation. Every
+              disclosure and consent event is securely logged—so your team can sell confidently without
+              resorting to covert tactics.
             </p>
             <div className="comply-list">
-              {["Light, State-Aware Disclosure", "Per-State Consent Rules", "No Covert Audio Capture", "SOC 2-Ready Data Handling"].map((x) => (
+              {["Automatic Recording Disclosure", "State-Aware Consent Guidance", "Private AI Coaching", "Encrypted Consent Logs"].map((x) => (
                 <div key={x} className="comply-item"><Check size={16} strokeWidth={2.6} className="text-signal" /> {x}</div>
               ))}
             </div>
           </div>
-          <div className="comply-badge">
-            <Lock size={26} strokeWidth={2} />
-            <span className="font-mono">DISCLOSED · ENCRYPTED · LOGGED</span>
+
+          <div className="cv">
+            <div className="cv-glow" />
+            <div className="cv-card">
+              <div className="cv-top">
+                <div className="cv-title">
+                  <span className="cv-ico"><ShieldCheck size={18} strokeWidth={2.2} /></span>
+                  <div>
+                    <div className="font-display cv-h">Consent Verification</div>
+                    <div className="cv-sub font-mono">SESSION LIVE</div>
+                  </div>
+                </div>
+                <span className="cv-badge">Two-Party Consent</span>
+              </div>
+
+              <div className="cv-meta">
+                <div className="cv-meta-item">
+                  <PhoneIncoming size={15} strokeWidth={2.2} />
+                  <span>Incoming Call</span>
+                </div>
+                <div className="cv-meta-item">
+                  <MapPin size={15} strokeWidth={2.2} />
+                  <span>Location: Florida</span>
+                </div>
+              </div>
+
+              <div className="cv-steps">
+                <div className="cv-line" />
+                {[
+                  { t: "Disclosure Played", d: "“This call is recorded for quality and training.”", icon: Check, tone: "ok" },
+                  { t: "Consent Confirmed", d: "Verbal opt-in captured at 00:07", icon: Check, tone: "ok" },
+                  { t: "Recording Started", d: "Encrypted stream · AES-256", icon: Check, tone: "ok" },
+                  { t: "AI Coaching Private", d: "Copilot layer excluded from recording", icon: Lock, tone: "lock" },
+                ].map((s) => {
+                  const I = s.icon;
+                  return (
+                    <div key={s.t} className="cv-step">
+                      <span className={"cv-dot cv-dot-" + s.tone}><I size={13} strokeWidth={3} /></span>
+                      <div>
+                        <div className="cv-step-t font-display">{s.t}</div>
+                        <div className="cv-step-d">{s.d}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="cv-foot font-mono">
+                <span>2026-07-30 14:22:09 EDT</span>
+                <span>LOG ID · CN-8F42-A19D-77E0</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
 
       {/* TESTIMONIALS */}
       <section className="sec">
