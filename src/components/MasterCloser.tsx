@@ -373,7 +373,7 @@ const STORIES = [
   {
     kicker: "Live Copilot",
     icon: Mic,
-    t: "The next line, before they finish talking.",
+    t: "The Next Line, Before They Finish Talking.",
     d: "Master Closer listens to the live call, names the objection, and puts the exact words on your rep's screen. Invisible to the prospect.",
     bullets: ["Word-for-word response, not vague coaching", "Objection and tone labeled in real time", "Close probability updates every turn"],
     Mock: MockWhisper,
@@ -381,7 +381,7 @@ const STORIES = [
   {
     kicker: "AI Voice Agent",
     icon: Bot,
-    t: "Let the AI run the entire call.",
+    t: "Let The AI Run The Entire Call.",
     d: "A natural voice that opens, qualifies, demos, and closes on its own. Turn it on for the calls your team never gets to.",
     bullets: ["Runs discovery through close, end to end", "Never skips the disclosure or the ask", "Handles overflow and after-hours calls"],
     Mock: MockVoice,
@@ -389,7 +389,7 @@ const STORIES = [
   {
     kicker: "Warm Transfer",
     icon: PhoneForwarded,
-    t: "The AI warms it, your closer lands it.",
+    t: "The AI Warms It, Your Closer Lands It.",
     d: "When the lead is hot, the AI live-transfers to a human with a full brief already delivered, then stays on the line to assist.",
     bullets: ["Instant briefing before the human speaks", "No repeated questions, no cold restart", "Copilot keeps whispering after handoff"],
     Mock: MockTransfer,
@@ -397,7 +397,7 @@ const STORIES = [
   {
     kicker: "Close & Collect",
     icon: CreditCard,
-    t: "Signed and paid before the call ends.",
+    t: "Signed And Paid Before The Call Ends.",
     d: "Send the agreement and a payment link mid-call, then let the outcome, next step, and summary write themselves back to your CRM.",
     bullets: ["Agreement and payment link in-call", "Outcome logged the moment you hang up", "Nothing left for your rep to type"],
     Mock: MockCollect,
