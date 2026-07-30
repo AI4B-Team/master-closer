@@ -677,7 +677,7 @@ const CSS = `
   background:var(--paper); -webkit-font-smoothing:antialiased; line-height:1.5;
 }
 .mc-root *{box-sizing:border-box;}
-.font-display{font-family:'Sora',system-ui,sans-serif; letter-spacing:-.02em; font-weight:700;}
+.font-display{font-family:'Sora',system-ui,sans-serif; letter-spacing:-.03em; font-weight:700;}
 .font-mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
 .text-signal{color:var(--signal);}
 .spin{animation:spin 1s linear infinite;}
