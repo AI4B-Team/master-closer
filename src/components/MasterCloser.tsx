@@ -188,7 +188,12 @@ function LiveDemo() {
         {!result && !loading && !error && (
           <div className="demo-empty">Pick An Objection Or Type Your Own. Master Closer Reads It Live And Hands Back The Move.</div>
         )}
-        {loading && (<div className="demo-empty flex items-center gap-2"><Loader2 size={15} className="spin" /> Reading The Room…</div>)}
+        {loading && (
+          <div className="demo-thinking">
+            <DemoWave />
+            <div className="demo-thinking-text">Reading The Room…</div>
+          </div>
+        )}
         {error && <div className="demo-empty text-signal">{error}</div>}
         {result && (
           <div className="demo-result">
