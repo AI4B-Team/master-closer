@@ -50,7 +50,7 @@ function Dashboard() {
         ? calls.reduce((s, c) => s + (c.close_probability ?? 0), 0) / calls.length
         : 0;
       const modeSplit = ["full_ai", "hybrid", "copilot"].map((m) => ({
-        name: m === "full_ai" ? "Full AI" : m === "hybrid" ? "Hybrid" : "Copilot",
+        name: m === "full_ai" ? "AI" : m === "hybrid" ? "Hybrid" : "Copilot",
         value: (calls ?? []).filter((c) => c.mode === m).length,
       }));
       return {

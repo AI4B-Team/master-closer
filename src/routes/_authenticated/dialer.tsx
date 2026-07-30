@@ -20,9 +20,9 @@ export const Route = createFileRoute("/_authenticated/dialer")({
   head: () => ({
     meta: [
       { title: "Dialer — Master Closer" },
-      { name: "description", content: "Outbound dialing with disclosure-gated call flow across Full AI, Hybrid, and Copilot modes." },
+      { name: "description", content: "Outbound dialing with disclosure-gated call flow across AI, Hybrid, and Copilot modes." },
       { property: "og:title", content: "Dialer — Master Closer" },
-      { property: "og:description", content: "Outbound dialing with disclosure-gated call flow across Full AI, Hybrid, and Copilot modes." },
+      { property: "og:description", content: "Outbound dialing with disclosure-gated call flow across AI, Hybrid, and Copilot modes." },
     ],
   }),
   component: DialerPage,
@@ -32,7 +32,7 @@ type Mode = "full_ai" | "hybrid" | "copilot";
 type Line = { speaker: string; text: string; tone?: "disclosure" | "normal" };
 
 const MODE_LABEL: Record<Mode, string> = {
-  full_ai: "Full AI",
+  full_ai: "AI",
   hybrid: "Hybrid",
   copilot: "Copilot",
 };
@@ -201,7 +201,7 @@ function DialerPage() {
               <Select value={mode} onValueChange={(v) => setMode(v as Mode)} disabled={connected}>
                 <SelectTrigger className="mt-1.5 rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full_ai">Full AI</SelectItem>
+                  <SelectItem value="full_ai">AI</SelectItem>
                   <SelectItem value="hybrid">Hybrid</SelectItem>
                   <SelectItem value="copilot">Copilot</SelectItem>
                 </SelectContent>

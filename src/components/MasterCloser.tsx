@@ -17,24 +17,25 @@ import {
 
 const MODES = [
   {
-    key: "ai", label: "Full AI", plain: "The AI Closer", icon: Bot,
-    blurb: "It runs the whole call: discovery, demo, close, and payment. No human required.",
+    key: "ai", label: "AI", plain: "AI Runs The Call", icon: Bot,
+    blurb: "Runs the entire conversation—from discovery and presentation through objections, closing, and payment.",
     tag: "AI Speaking To Prospect",
     cue: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
   },
   {
-    key: "hybrid", label: "Hybrid Handoff", plain: "Both, Working Together", icon: PhoneForwarded,
-    blurb: "The AI warms the lead, live-transfers to your closer, and stays on to assist.",
+    key: "hybrid", label: "Hybrid", plain: "AI Starts. Human Closes.", icon: PhoneForwarded,
+    blurb: "AI qualifies and warms the prospect, then briefs your closer and transfers the call when it's time to close.",
     tag: "AI Briefing Your Closer",
     cue: "Warm lead, budget confirmed, one price objection left. Transferring you in, take the close.",
   },
   {
-    key: "copilot", label: "Human + Copilot", plain: "Your Human Closer", icon: Mic,
-    blurb: "Your rep runs the call. The copilot whispers the next line, only they see it.",
+    key: "copilot", label: "Copilot", plain: "Human Leads. AI Assists.", icon: Mic,
+    blurb: "Your rep runs the call while AI privately provides the next best response in real time.",
     tag: "Whispered To Your Rep",
     cue: "Say: \"When you say it's a lot, is it the total or the monthly that gives you pause?\"",
   },
 ];
+
 
 function Eyebrow({ children, light }) {
   return <div className={"eyebrow " + (light ? "eyebrow-light" : "text-signal")}>{children}</div>;
@@ -396,7 +397,7 @@ const USES = [
 
 const STEPS = [
   { icon: Upload, t: "Feed It Your Offer", d: "Drop in your script, pricing, and objections. It learns what you sell and how you win." },
-  { icon: SlidersHorizontal, t: "Set The Autonomy", d: "Choose Full AI, Hybrid, or Copilot, per campaign or per rep." },
+  { icon: SlidersHorizontal, t: "Set The Autonomy", d: "Choose AI, Hybrid, or Copilot, per campaign or per rep." },
   { icon: Headphones, t: "Run Or Assist The Call", d: "It runs the call itself or whispers the next line to your rep, live." },
   { icon: CreditCard, t: "Close & Get Paid", d: "Send the agreement, collect payment, and log the whole thing to your CRM." },
 ];
@@ -414,8 +415,8 @@ const COMPARE = [
 const FAQS = [
   { q: "Does Master Closer Record My Calls?", a: "Only if you choose to. The copilot works from a live transcript that is processed and can be discarded. When you turn recording on, a short disclosure is delivered at the top of the call, the same way a call center announces it." },
   { q: "Is This Compliant In Two-Party Consent States?", a: "Consent is built in as a feature. Master Closer delivers a light quality-and-training disclosure on capture and knows the rules state by state, so it only adds friction where the law requires it. It is not legal advice, and you should confirm your setup with counsel." },
-  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In Full AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
-  { q: "What Are The Three Modes?", a: "One setting decides who runs the call. Full AI runs it end to end. Hybrid warms the lead, then live-transfers to your closer while the AI stays on. Copilot lets your rep run it with the AI whispering support. Same brain, three settings, changeable per call." },
+  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
+  { q: "What Are The Three Modes?", a: "One setting decides who runs the call. AI runs it end to end. Hybrid warms the lead, then live-transfers to your closer while the AI stays on. Copilot lets your rep run it with the AI whispering support. Same brain, three settings, changeable per call." },
   { q: "Which Platforms Does It Work With?", a: "Zoom, Google Meet, Microsoft Teams, and phone. If there is audio, Master Closer can work the call." },
   { q: "How Fast Is Setup?", a: "Minutes. Add your offer and objections, pick an autonomy setting, and take your next call." },
 ];
@@ -713,9 +714,9 @@ export default function MasterCloser() {
       <section id="autonomy" className="sec">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>AI, Hybrid, Or Copilot</Eyebrow>
+            <Eyebrow>AI · Hybrid · Copilot</Eyebrow>
             <h2 className="font-display sec-h2">One Platform. Three Ways To Run The Call.</h2>
-            <p className="sec-lead">Same brain, three settings. Let the AI close for you, split the call with your team, or run it yourself with the AI in your ear. Set it per campaign, per rep, per call.</p>
+            <p className="sec-lead">One sales engine. Three ways to use it. Let AI run the call, transfer a qualified prospect to your closer, or privately coach your rep in real time.</p>
           </div>
           <div className="modes">
             {MODES.map((m, i) => {
@@ -991,7 +992,7 @@ export default function MasterCloser() {
             {[
               { q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.", n: "Marcus D.", r: "Solar" },
               { q: "The whisper hits before the silence gets awkward. My objection handling doubled.", n: "Priya R.", r: "SaaS AE" },
-              { q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
+              { q: "AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
             ].map((t) => (
               <div key={t.n} className="quote">
                 <p className="quote-t">“{t.q}”</p>
