@@ -293,6 +293,8 @@ function LiveDemo() {
     const prospect = (text ?? input).trim();
     if (!prospect) return;
     setInput(prospect); setLoading(true); setError(""); setResult(null);
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("mc-demo-pulse"));
+
     const m = modeMeta[mode];
     const prompt =
       `You are Master Closer, a real-time sales AI. ${m.persona}\n\n` +
