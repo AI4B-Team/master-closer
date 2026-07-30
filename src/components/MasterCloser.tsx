@@ -404,7 +404,7 @@ const STORIES = [
   {
     kicker: "Warm Transfer",
     icon: PhoneForwarded,
-    t: "The AI Warms It, Your Closer Lands It.",
+    t: <>The AI Warms It,<br />Your Closer Lands It.</>,
     d: "When the lead is hot, the AI live-transfers to a human with a full brief already delivered, then stays on the line to assist.",
     bullets: ["Instant briefing before the human speaks", "No repeated questions, no cold restart", "Copilot keeps whispering after handoff"],
     Mock: MockTransfer,
