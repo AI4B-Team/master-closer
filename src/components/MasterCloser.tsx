@@ -683,17 +683,24 @@ export default function MasterCloser() {
         </div>
       </section>
 
-      {/* TRUST STRIP */}
+      {/* INDUSTRY MARQUEE */}
       <section className="strip">
-        <div className="wrap strip-in">
+        <div className="strip-in">
           <span className="strip-label font-mono">BUILT TO CLOSE IN</span>
-          <div className="strip-chips">
-            {["SaaS", "Real Estate", "Solar", "Insurance", "Recruiting", "Automotive", "Home Services"].map((x) => (
-              <span key={x} className="strip-chip font-display">{x}</span>
-            ))}
+          <div className="marquee">
+            <div className="marquee-track">
+              {[0, 1].map((dup) => (
+                <div className="marquee-set" key={dup} aria-hidden={dup === 1}>
+                  {INDUSTRIES.map((x) => (
+                    <span key={x} className="strip-chip font-display">{x}</span>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
+
 
       {/* AUTONOMY */}
       <section id="autonomy" className="sec">
