@@ -129,7 +129,154 @@ function DemoWave() {
   );
 }
 
+function AudioAtmosphere() {
+  const ref = React.useRef(null);
+  const wrapRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const canvas = ref.current;
+    const host = wrapRef.current;
+    if (!canvas || !host) return;
+    const ctx = canvas.getContext("2d");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 760px)").matches;
+
+    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const resize = () => {
+      const r = host.getBoundingClientRect();
+      w = Math.max(1, r.width); h = Math.max(1, r.height);
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.width = w + "px"; canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(host);
+
+    let visible = true;
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0.02 });
+    io.observe(host);
+
+    const PARTICLES = mobile ? 14 : 38;
+    const particles = Array.from({ length: PARTICLES }, () => ({
+      a: Math.random() * Math.PI * 2,
+      r: 0.25 + Math.random() * 0.85,
+      s: 0.0006 + Math.random() * 0.0016,
+      p: Math.random(),
+    }));
+
+    // states: 0 listening, 1 processing, 2 speaking
+    let state = 0, stateT = 0, nextSwitch = 3200;
+    let energy = 0.35, targetEnergy = 0.35;
+    let pulse = 0;
+    const onPulse = () => { pulse = 1; state = 1; stateT = 0; nextSwitch = 900; };
+    window.addEventListener("mc-demo-pulse", onPulse);
+
+    let raf, last = performance.now(), t = 0;
+    const lines = mobile ? 3 : 5;
+
+    const draw = (now) => {
+      raf = requestAnimationFrame(draw);
+      const dt = Math.min(48, now - last); last = now;
+      if (!visible) return;
+      t += dt * 0.001;
+
+      stateT += dt;
+      if (stateT > nextSwitch) {
+        stateT = 0;
+        state = state === 0 ? 1 : state === 1 ? 2 : 0;
+        nextSwitch = state === 0 ? 4200 + Math.random() * 2500 : state === 1 ? 1100 + Math.random() * 600 : 2600 + Math.random() * 1400;
+      }
+      targetEnergy = state === 0 ? 0.32 : state === 1 ? 0.6 : 0.95;
+      energy += (targetEnergy + pulse * 0.6 - energy) * 0.045;
+      pulse *= 0.955;
+
+      ctx.clearRect(0, 0, w, h);
+      if (reduced) {
+        ctx.globalAlpha = 0.1;
+        ctx.strokeStyle = "rgba(204,0,0,.6)";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, h * 0.62); ctx.lineTo(w, h * 0.62); ctx.stroke();
+        return;
+      }
+
+      const cx = w / 2, cy = h * 0.6;
+
+      // diffused glow
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.55);
+      g.addColorStop(0, `rgba(204,0,0,${0.1 + energy * 0.07})`);
+      g.addColorStop(0.5, "rgba(120,0,0,0.05)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      // flowing waveform lines
+      for (let i = 0; i < lines; i++) {
+        const off = i / lines;
+        const amp = h * (0.05 + 0.055 * energy) * (1 - off * 0.45);
+        const yBase = cy + (i - (lines - 1) / 2) * (h * 0.035);
+        ctx.beginPath();
+        const step = mobile ? 14 : 8;
+        for (let x = 0; x <= w; x += step) {
+          const nx = x / w;
+          const edge = Math.sin(Math.PI * Math.min(1, Math.max(0, nx)));
+          const y =
+            yBase +
+            Math.sin(nx * 7 + t * (0.7 + i * 0.18)) * amp * edge +
+            Math.sin(nx * 17 - t * (1.4 + i * 0.25)) * amp * 0.35 * edge +
+            Math.sin(nx * 31 + t * 2.3) * amp * 0.14 * edge * energy;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = i === 0
+          ? `rgba(255,70,70,${0.16 + energy * 0.14})`
+          : `rgba(204,0,0,${0.09 + energy * 0.08})`;
+        ctx.lineWidth = i === 0 ? 1.6 : 1;
+        ctx.stroke();
+      }
+
+      // particles converging toward center
+      const conv = state === 1 ? 1 : 0.15;
+      for (const p of particles) {
+        p.p += p.s * dt * (0.6 + conv * 2.2);
+        if (p.p > 1) { p.p = 0; p.a = Math.random() * Math.PI * 2; p.r = 0.25 + Math.random() * 0.85; }
+        const dist = (1 - p.p) * p.r;
+        const px = cx + Math.cos(p.a) * dist * w * 0.5;
+        const py = cy + Math.sin(p.a) * dist * h * 0.62;
+        const fade = Math.sin(p.p * Math.PI);
+        ctx.beginPath();
+        ctx.arc(px, py, 1.1 + energy * 0.9, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,90,90,${0.16 * fade * (0.5 + energy)})`;
+        ctx.fill();
+      }
+
+      // click pulse ring toward card
+      if (pulse > 0.02) {
+        const rr = (1 - pulse) * Math.max(w, h) * 0.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,60,60,${0.22 * pulse})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    };
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect(); io.disconnect();
+      window.removeEventListener("mc-demo-pulse", onPulse);
+    };
+  }, []);
+
+  return (
+    <div className="atmo" ref={wrapRef} aria-hidden="true">
+      <canvas ref={ref} className="atmo-canvas" />
+    </div>
+  );
+}
+
 function LiveDemo() {
+
   const [mode, setMode] = useState("copilot");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
