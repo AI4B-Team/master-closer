@@ -273,6 +273,168 @@ function FAQItem({ q, a }) {
   );
 }
 
+
+/* --------------------- Feature story mocks (zigzag) -------------------- */
+function MockWhisper() {
+  return (
+    <div className="fmock">
+      <div className="fmock-bar">
+        <span className="rec-dot" /><span className="font-mono fmock-live">LIVE · COPILOT</span>
+      </div>
+      <div className="fmock-body">
+        <div className="bubble bubble-them">
+          <div className="bubble-name font-mono">PROSPECT</div>
+          Honestly, your competitor is cheaper.
+        </div>
+        <div className="say">
+          <div className="say-head">
+            <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
+            <span className="font-mono say-tag">Next Best Response</span>
+          </div>
+          <p className="say-line">Say: "Cheaper on the sticker, sure. Are they closing 4 in 10 for you?"</p>
+        </div>
+        <div className="fmock-note font-mono">ONLY YOUR REP SEES THIS</div>
+      </div>
+    </div>
+  );
+}
+function MockVoice() {
+  return (
+    <div className="fmock">
+      <div className="fmock-bar">
+        <span className="fmock-ico"><Bot size={14} strokeWidth={2.3} /></span>
+        <span className="font-mono fmock-live">AI CLOSER · SPEAKING</span>
+      </div>
+      <div className="fmock-body">
+        <div className="wavebox">
+          {Array.from({ length: 26 }).map((_, i) => (
+            <span key={i} className="wavebar" style={{ animationDelay: (i * 0.055) + "s" }} />
+          ))}
+        </div>
+        <p className="fmock-quote">"If I lock today's rate and email the agreement now, are you good to start?"</p>
+        <div className="fmock-rows">
+          <div className="fmock-row"><span>Discovery</span><b className="text-green">Done</b></div>
+          <div className="fmock-row"><span>Demo</span><b className="text-green">Done</b></div>
+          <div className="fmock-row"><span>Close</span><b className="text-signal">In Progress</b></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+function MockTransfer() {
+  return (
+    <div className="fmock">
+      <div className="fmock-bar">
+        <span className="fmock-ico"><PhoneForwarded size={14} strokeWidth={2.3} /></span>
+        <span className="font-mono fmock-live">WARM TRANSFER</span>
+      </div>
+      <div className="fmock-body">
+        <div className="xfer">
+          <div className="xfer-side"><span className="xfer-av xfer-av-ai"><Bot size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">AI Closer</span></div>
+          <span className="xfer-arrow"><ArrowRight size={18} strokeWidth={2.6} /></span>
+          <div className="xfer-side"><span className="xfer-av"><Headphones size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">Sarah</span></div>
+        </div>
+        <div className="say">
+          <div className="say-head">
+            <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
+            <span className="font-mono say-tag">Briefing Your Closer</span>
+          </div>
+          <p className="say-line">Warm lead, budget confirmed, one price objection left. Take the close.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+function MockCollect() {
+  return (
+    <div className="fmock">
+      <div className="fmock-bar">
+        <span className="fmock-ico"><CreditCard size={14} strokeWidth={2.3} /></span>
+        <span className="font-mono fmock-live">CLOSE & COLLECT</span>
+      </div>
+      <div className="fmock-body">
+        <div className="pay">
+          <div className="pay-label font-mono">AGREEMENT SENT</div>
+          <div className="pay-amt font-display">$4,200</div>
+          <div className="pay-meta">Gridline Ops · Annual Plan</div>
+          <div className="pay-btn font-display">Pay Now</div>
+        </div>
+        <div className="fmock-rows">
+          <div className="fmock-row"><span>Signature</span><b className="text-green">Received</b></div>
+          <div className="fmock-row"><span>Payment</span><b className="text-green">Captured</b></div>
+          <div className="fmock-row"><span>CRM Write-Back</span><b className="text-green">Logged</b></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const STORIES = [
+  {
+    kicker: "Live Copilot",
+    icon: Mic,
+    t: "The next line, before they finish talking.",
+    d: "Master Closer listens to the live call, names the objection, and puts the exact words on your rep's screen. Invisible to the prospect.",
+    bullets: ["Word-for-word response, not vague coaching", "Objection and tone labeled in real time", "Close probability updates every turn"],
+    Mock: MockWhisper,
+  },
+  {
+    kicker: "AI Voice Agent",
+    icon: Bot,
+    t: "Let the AI run the entire call.",
+    d: "A natural voice that opens, qualifies, demos, and closes on its own. Turn it on for the calls your team never gets to.",
+    bullets: ["Runs discovery through close, end to end", "Never skips the disclosure or the ask", "Handles overflow and after-hours calls"],
+    Mock: MockVoice,
+  },
+  {
+    kicker: "Warm Transfer",
+    icon: PhoneForwarded,
+    t: "The AI warms it, your closer lands it.",
+    d: "When the lead is hot, the AI live-transfers to a human with a full brief already delivered, then stays on the line to assist.",
+    bullets: ["Instant briefing before the human speaks", "No repeated questions, no cold restart", "Copilot keeps whispering after handoff"],
+    Mock: MockTransfer,
+  },
+  {
+    kicker: "Close & Collect",
+    icon: CreditCard,
+    t: "Signed and paid before the call ends.",
+    d: "Send the agreement and a payment link mid-call, then let the outcome, next step, and summary write themselves back to your CRM.",
+    bullets: ["Agreement and payment link in-call", "Outcome logged the moment you hang up", "Nothing left for your rep to type"],
+    Mock: MockCollect,
+  },
+];
+
+function FeatureStories() {
+  return (
+    <>
+      {STORIES.map((s, i) => {
+        const Icon = s.icon;
+        const Mock = s.Mock;
+        const flip = i % 2 === 1;
+        return (
+          <section key={s.kicker} className={"sec sec-story " + (flip ? "sec-mist" : "")}>
+            <div className="wrap">
+              <div className={"story " + (flip ? "story-flip" : "")}>
+                <div className="story-copy">
+                  <div className="story-kick font-mono"><Icon size={14} strokeWidth={2.3} />{s.kicker}</div>
+                  <h3 className="font-display story-h">{s.t}</h3>
+                  <p className="story-d">{s.d}</p>
+                  <ul className="story-list">
+                    {s.bullets.map((b) => (
+                      <li key={b}><span className="story-tick"><Check size={13} strokeWidth={3} /></span>{b}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="story-vis">{React.createElement(Mock)}</div>
+              </div>
+            </div>
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
 export default function MasterCloser() {
   return (
     <div className="mc-root">
@@ -475,23 +637,34 @@ export default function MasterCloser() {
       </section>
 
       {/* CAPABILITIES */}
-      <section className="sec">
+      <section className="sec sec-caps-head">
         <div className="wrap">
           <div className="sec-head">
             <Eyebrow>Capabilities</Eyebrow>
             <h2 className="font-display sec-h2">Everything A Closer Needs, In One Place.</h2>
+            <p className="sec-lead">Four things happen on every call. Master Closer handles all of them.</p>
           </div>
-          <div className="caps">
-            {CAPS.map((c) => {
+        </div>
+      </section>
+
+      <FeatureStories />
+
+      <section className="sec sec-tight">
+        <div className="wrap">
+          <div className="caps-more">
+            {CAPS.slice(4).map((c) => {
               const Icon = c.icon;
               return (
                 <div key={c.t} className="cap">
-                  <span className="cap-ico"><Icon size={19} strokeWidth={2.1} /></span>
+                  <span className="cap-ico"><Icon size={18} strokeWidth={2.1} /></span>
                   <h3 className="font-display cap-h">{c.t}</h3>
                   <p className="cap-d">{c.d}</p>
                 </div>
               );
             })}
+          </div>
+          <div className="caps-cta">
+            <a href="#demo" className="btn-primary btn-lg">Try It Live <ArrowRight size={17} strokeWidth={2.4} /></a>
           </div>
         </div>
       </section>
@@ -942,6 +1115,57 @@ a{text-decoration:none;color:inherit;}
 .foot-col a:hover{color:#fff;}
 .foot-bottom{max-width:none;padding-left:34px;padding-right:34px;padding-top:22px;font-size:.84rem;color:#6b7280;}
 @media(max-width:820px){.foot-in{grid-template-columns:1fr;gap:30px;}.foot-cols{grid-template-columns:repeat(2,1fr);}}
+
+
+/* feature stories (zigzag) */
+.sec-caps-head{padding-bottom:0;}
+.sec-story{padding:64px 0;}
+.sec-tight{padding-top:56px;}
+.story{display:grid;grid-template-columns:1fr 1.05fr;gap:70px;align-items:center;}
+.story-flip .story-copy{order:2;}
+.story-flip .story-vis{order:1;}
+.story-kick{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--signal);margin-bottom:16px;}
+.story-h{font-weight:800;font-size:clamp(1.6rem,2.7vw,2.3rem);line-height:1.1;letter-spacing:-.03em;margin:0 0 16px;}
+.story-d{font-size:1.05rem;color:var(--muted);line-height:1.6;margin:0 0 22px;max-width:34em;}
+.story-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
+.story-list li{display:flex;align-items:flex-start;gap:11px;font-size:.97rem;font-weight:500;color:#2b3038;}
+.story-tick{flex:0 0 auto;display:grid;place-items:center;width:21px;height:21px;border-radius:50%;
+  background:#e6f6ee;color:var(--green);margin-top:1px;}
+.story-vis{position:relative;}
+.fmock{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 22px 50px -26px rgba(12,14,20,.34);}
+.fmock-bar{display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid var(--line);background:#fafafb;}
+.fmock-live{font-size:11px;letter-spacing:.12em;color:#57606e;}
+.fmock-ico{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:#fbeaea;color:var(--signal);}
+.fmock-body{padding:18px;display:flex;flex-direction:column;gap:14px;}
+.fmock-note{font-size:10px;letter-spacing:.14em;color:#9aa0ab;}
+.fmock-quote{font-size:1rem;font-weight:600;color:#1b1f26;margin:0;line-height:1.45;}
+.fmock-rows{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.fmock-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-size:.9rem;color:#57606e;border-bottom:1px solid var(--line);}
+.fmock-row:last-child{border-bottom:none;}
+.fmock-row b{font-size:.8rem;font-family:'Sora',sans-serif;font-weight:700;}
+.wavebox{display:flex;align-items:center;gap:4px;height:64px;padding:0 2px;}
+.wavebar{flex:1;background:var(--signal);border-radius:3px;height:22%;opacity:.85;
+  animation:wv 1.1s ease-in-out infinite;}
+@keyframes wv{0%,100%{height:16%}50%{height:92%}}
+.xfer{display:flex;align-items:center;justify-content:center;gap:20px;padding:12px 0 4px;}
+.xfer-side{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.xfer-av{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#f1f2f5;color:#57606e;}
+.xfer-av-ai{background:#fbeaea;color:var(--signal);}
+.xfer-name{font-size:.9rem;font-weight:700;}
+.xfer-arrow{color:var(--signal);}
+.pay{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fafafb;text-align:center;}
+.pay-label{font-size:10px;letter-spacing:.14em;color:#9aa0ab;}
+.pay-amt{font-size:2.1rem;font-weight:800;letter-spacing:-.03em;margin:6px 0 2px;}
+.pay-meta{font-size:.86rem;color:var(--muted);margin-bottom:14px;}
+.pay-btn{display:inline-block;background:var(--signal);color:#fff;font-weight:700;font-size:.88rem;
+  padding:10px 26px;border-radius:999px;}
+.caps-more{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+.caps-cta{display:flex;justify-content:center;margin-top:44px;}
+@media(max-width:900px){.story{grid-template-columns:1fr;gap:34px;}
+  .story-flip .story-copy{order:1;}.story-flip .story-vis{order:2;}
+  .caps-more{grid-template-columns:repeat(2,1fr);}}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 `;
