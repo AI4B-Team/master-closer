@@ -535,6 +535,13 @@ function MockCollect() {
   );
 }
 
+const INDUSTRIES = [
+  "SaaS", "Real Estate", "Solar", "Insurance", "Recruiting", "Automotive",
+  "Home Services", "Legal Services", "Healthcare Sales", "Financial Services",
+  "Agencies", "Education", "Telecommunications", "Merchant Services",
+  "Coaching", "B2B Services",
+];
+
 const STORIES = [
   {
     kicker: "Live Copilot",
