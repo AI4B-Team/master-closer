@@ -917,7 +917,7 @@ a{text-decoration:none;color:inherit;}
 .float-ico-green{background:#e6f6ee;color:var(--success);}
 .float-delta{font-size:.72rem;font-weight:700;color:var(--success);background:#e6f6ee;border-radius:999px;padding:2px 7px;}
 .float-rate{top:-26px;left:-30px;animation:floaty 6s ease-in-out infinite;}
-.float-deal{bottom:-24px;right:-24px;animation:floaty 6s ease-in-out infinite;animation-delay:1.4s;}
+.float-deal{bottom:-76px;right:-24px;animation:floaty 6s ease-in-out infinite;animation-delay:1.4s;}
 .float-whisper{top:38%;right:-46px;flex-direction:column;align-items:flex-start;gap:4px;max-width:190px;animation:floaty 7s ease-in-out infinite;animation-delay:.7s;}
 .float-whisper-line{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.35;}
 @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
