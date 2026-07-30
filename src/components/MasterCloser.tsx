@@ -116,6 +116,16 @@ const SCENARIOS = [
   "I need to talk to my business partner first.",
   "It's not the right time, maybe next quarter.",
 ];
+function DemoWave() {
+  return (
+    <div className="demo-wave" aria-hidden="true">
+      <span className="demo-wave-ring" />
+      <span className="demo-wave-ring" />
+      <span className="demo-wave-ring" />
+      <span className="demo-wave-core" />
+    </div>
+  );
+}
 
 function LiveDemo() {
   const [mode, setMode] = useState("copilot");
