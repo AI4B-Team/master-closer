@@ -765,7 +765,9 @@ export default function MasterCloser() {
 
       {/* LIVE DEMO */}
       <section id="demo" className="sec sec-demo-dark">
-        <div className="wrap">
+        <AudioAtmosphere />
+        <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
+
           <div className="sec-head">
             <Eyebrow light>Live Demo</Eyebrow>
             <h2 className="font-display sec-h2">Throw It A Real Objection.</h2>
