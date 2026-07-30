@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/calls")({
 });
 
 const MODE_LABEL: Record<string, string> = {
-  full_ai: "Full AI", hybrid: "Hybrid", copilot: "Copilot",
+  full_ai: "AI", hybrid: "Hybrid", copilot: "Copilot",
 };
 
 function CallsPage() {

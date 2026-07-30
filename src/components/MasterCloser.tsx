@@ -397,7 +397,7 @@ const USES = [
 
 const STEPS = [
   { icon: Upload, t: "Feed It Your Offer", d: "Drop in your script, pricing, and objections. It learns what you sell and how you win." },
-  { icon: SlidersHorizontal, t: "Set The Autonomy", d: "Choose Full AI, Hybrid, or Copilot, per campaign or per rep." },
+  { icon: SlidersHorizontal, t: "Set The Autonomy", d: "Choose AI, Hybrid, or Copilot, per campaign or per rep." },
   { icon: Headphones, t: "Run Or Assist The Call", d: "It runs the call itself or whispers the next line to your rep, live." },
   { icon: CreditCard, t: "Close & Get Paid", d: "Send the agreement, collect payment, and log the whole thing to your CRM." },
 ];
@@ -415,8 +415,8 @@ const COMPARE = [
 const FAQS = [
   { q: "Does Master Closer Record My Calls?", a: "Only if you choose to. The copilot works from a live transcript that is processed and can be discarded. When you turn recording on, a short disclosure is delivered at the top of the call, the same way a call center announces it." },
   { q: "Is This Compliant In Two-Party Consent States?", a: "Consent is built in as a feature. Master Closer delivers a light quality-and-training disclosure on capture and knows the rules state by state, so it only adds friction where the law requires it. It is not legal advice, and you should confirm your setup with counsel." },
-  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In Full AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
-  { q: "What Are The Three Modes?", a: "One setting decides who runs the call. Full AI runs it end to end. Hybrid warms the lead, then live-transfers to your closer while the AI stays on. Copilot lets your rep run it with the AI whispering support. Same brain, three settings, changeable per call." },
+  { q: "Can The AI Really Close And Take Payment?", a: "Yes. In AI or Hybrid mode it can send an agreement and a payment link mid-call. You decide how far it goes and where a human takes over." },
+  { q: "What Are The Three Modes?", a: "One setting decides who runs the call. AI runs it end to end. Hybrid warms the lead, then live-transfers to your closer while the AI stays on. Copilot lets your rep run it with the AI whispering support. Same brain, three settings, changeable per call." },
   { q: "Which Platforms Does It Work With?", a: "Zoom, Google Meet, Microsoft Teams, and phone. If there is audio, Master Closer can work the call." },
   { q: "How Fast Is Setup?", a: "Minutes. Add your offer and objections, pick an autonomy setting, and take your next call." },
 ];
@@ -992,7 +992,7 @@ export default function MasterCloser() {
             {[
               { q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.", n: "Marcus D.", r: "Solar" },
               { q: "The whisper hits before the silence gets awkward. My objection handling doubled.", n: "Priya R.", r: "SaaS AE" },
-              { q: "Full AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
+              { q: "AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
             ].map((t) => (
               <div key={t.n} className="quote">
                 <p className="quote-t">“{t.q}”</p>

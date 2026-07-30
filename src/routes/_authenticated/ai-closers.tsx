@@ -81,7 +81,7 @@ function AIClosers() {
                   <Select value={form.default_mode} onValueChange={(v) => setForm({ ...form, default_mode: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="full_ai">Full AI</SelectItem>
+                      <SelectItem value="full_ai">AI</SelectItem>
                       <SelectItem value="hybrid">Hybrid</SelectItem>
                       <SelectItem value="copilot">Copilot</SelectItem>
                     </SelectContent>
