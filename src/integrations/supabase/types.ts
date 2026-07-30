@@ -381,6 +381,42 @@ export type Database = {
           },
         ]
       }
+      disclosure_settings: {
+        Row: {
+          booking_confirmation: boolean
+          created_at: string
+          default_jurisdiction: string
+          id: string
+          org_id: string
+          outbound_pre_connect_audio: boolean
+          script: string
+          spoken_at_call_open: boolean
+          updated_at: string
+        }
+        Insert: {
+          booking_confirmation?: boolean
+          created_at?: string
+          default_jurisdiction?: string
+          id?: string
+          org_id: string
+          outbound_pre_connect_audio?: boolean
+          script?: string
+          spoken_at_call_open?: boolean
+          updated_at?: string
+        }
+        Update: {
+          booking_confirmation?: boolean
+          created_at?: string
+          default_jurisdiction?: string
+          id?: string
+          org_id?: string
+          outbound_pre_connect_audio?: boolean
+          script?: string
+          spoken_at_call_open?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dnc_list: {
         Row: {
           added_at: string
