@@ -714,9 +714,9 @@ export default function MasterCloser() {
       <section id="autonomy" className="sec">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>AI, Hybrid, Or Copilot</Eyebrow>
+            <Eyebrow>AI · Hybrid · Copilot</Eyebrow>
             <h2 className="font-display sec-h2">One Platform. Three Ways To Run The Call.</h2>
-            <p className="sec-lead">Same brain, three settings. Let the AI close for you, split the call with your team, or run it yourself with the AI in your ear. Set it per campaign, per rep, per call.</p>
+            <p className="sec-lead">One sales engine. Three ways to use it. Let AI run the call, transfer a qualified prospect to your closer, or privately coach your rep in real time.</p>
           </div>
           <div className="modes">
             {MODES.map((m, i) => {
