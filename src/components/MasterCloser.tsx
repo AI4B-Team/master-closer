@@ -4,7 +4,9 @@ import {
   Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
-  Ear, Eye, TrendingUp, Upload, SlidersHorizontal, Headphones, BadgeCheck, Sparkles
+  Ear, Eye, TrendingUp, Upload, SlidersHorizontal, Headphones, BadgeCheck, Sparkles,
+  PhoneIncoming, MapPin
+
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
