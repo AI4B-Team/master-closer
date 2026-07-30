@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="w-[240px] shrink-0 border-r border-[#E7E7EC] flex flex-col fixed h-screen bg-white">
         <div className="h-14 flex items-center gap-2 px-5 border-b border-[#E7E7EC]">
           <Crosshair className="h-5 w-5 text-[#CC0000]" strokeWidth={2.5} />
-          <span className="font-bold tracking-tight" style={{ fontFamily: "Hanken Grotesk, Inter, sans-serif" }}>
+          <span className="font-bold tracking-tight" style={{ fontFamily: "Sora, Inter, sans-serif" }}>
             Master Closer
           </span>
         </div>
@@ -117,7 +117,7 @@ export function PageHeader({
   return (
     <div className="flex items-start justify-between mb-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Hanken Grotesk, Inter, sans-serif" }}>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Sora, Inter, sans-serif" }}>
           {title}
         </h1>
         {description && <p className="text-sm text-[#6B6B76] mt-1">{description}</p>}
