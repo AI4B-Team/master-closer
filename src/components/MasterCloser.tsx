@@ -5,7 +5,8 @@ import {
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
   Ear, Eye, TrendingUp, Upload, SlidersHorizontal, Headphones, BadgeCheck, Sparkles,
-  PhoneIncoming, MapPin
+  PhoneIncoming, MapPin, Megaphone, Landmark, Key, Scale, Stethoscope, Compass,
+  Briefcase, Radio, Store, HardHat, Wind, Bug, Dumbbell, Plane, Truck, Network
 
 } from "lucide-react";
 
@@ -430,15 +431,60 @@ const CAPS = [
 ];
 
 const USES = [
-  { icon: Building2, t: "SaaS", o: "We just signed with a competitor last month." },
-  { icon: Home, t: "Real Estate", o: "Rates are insane right now, it doesn't feel right." },
-  { icon: Sun, t: "Solar", o: "My neighbor's panels were a nightmare, why risk it?" },
-  { icon: ShieldCheck, t: "Insurance", o: "Had a claim denied last year. You're all the same." },
-  { icon: Users, t: "Recruiting", o: "Last agency burned us for $30K. Not again." },
-  { icon: Car, t: "Automotive", o: "I can get it $4,000 cheaper across town." },
-  { icon: Wrench, t: "Home Services", o: "Yours is the highest quote by far." },
-  { icon: Heart, t: "Dating (Practice)", o: "Rehearse the ask before it counts, never live on the date." },
+  { icon: Building2, t: "SaaS", o: "We just signed with a competitor last month.", tags: ["Incumbent", "Skeptical"],
+    r: "Makes sense — you're not going to rip that out today. If I show you what your team is still doing manually, would that be worth fifteen minutes before your renewal?", s: "REFRAME RISK", n: "MOVING TO DISCOVERY" },
+  { icon: Home, t: "Real Estate", o: "Rates are insane right now, it doesn't feel right.", tags: ["Timing", "Anxious"],
+    r: "I hear that a lot this month. Are you holding off on the rate, or on the payment? Because those solve two very different ways — let's look at your actual number first.", s: "ISOLATE CONCERN", n: "MOVING TO QUALIFY" },
+  { icon: Sun, t: "Solar", o: "My neighbor's panels were a nightmare, why risk it?", tags: ["Trust", "Guarded"],
+    r: "That's a fair reason to be cautious. Do you know who installed theirs and what went wrong — the panels, the roof work, or the service after? That tells us what to avoid here.", s: "ISOLATE CONCERN", n: "MOVING TO DISCOVERY" },
+  { icon: ShieldCheck, t: "Insurance", o: "Had a claim denied last year. You're all the same.", tags: ["Trust", "Frustrated"],
+    r: "Getting denied after paying in is infuriating. Can you tell me the reason they gave? I want to read your current coverage before I say a word about mine.", s: "BUILD TRUST", n: "MOVING TO REVIEW" },
+  { icon: Users, t: "Recruiting", o: "Last agency burned us for $30K. Not again.", tags: ["Risk", "Burned"],
+    r: "Then you've earned the right to be picky. Was it the quality of the people or how long they stayed? Let's talk about how the terms protect you before we talk roles.", s: "REFRAME RISK", n: "MOVING TO SCOPE" },
+  { icon: Car, t: "Automotive", o: "I can get it for $4,000 less across town.", tags: ["Price", "Comparing"],
+    r: "That's worth comparing. Before you decide, can I ask whether their price includes the same warranty, condition and service support — or are we comparing the sticker price alone?", s: "CLARIFY VALUE", n: "MOVING TO DISCOVERY" },
+  { icon: Wrench, t: "Home Services", o: "Yours is the highest quote by far.", tags: ["Price", "Comparing"],
+    r: "I believe you. Can I see what's on the other quote? Half the time the gap is materials or permits nobody mentioned, and you deserve to know which one you're buying.", s: "CLARIFY VALUE", n: "MOVING TO SCOPE" },
+  { icon: Megaphone, t: "Marketing Agencies", o: "The last agency just sent us reports, not results.", tags: ["Results", "Skeptical"],
+    r: "Reports aren't results, agreed. What was the one number that mattered to you that never moved? Let's start there instead of a deck.", s: "ISOLATE CONCERN", n: "MOVING TO DISCOVERY" },
+  { icon: Landmark, t: "Financial Services", o: "I already have an advisor I've used for years.", tags: ["Incumbent", "Loyal"],
+    r: "Loyalty like that is usually earned. I'm not asking you to leave — when did you two last review the plan together, and does it still match what this year looks like?", s: "REFRAME RISK", n: "MOVING TO REVIEW" },
+  { icon: Key, t: "Mortgage", o: "I'll just wait until rates come down.", tags: ["Timing", "Cautious"],
+    r: "That's a reasonable plan. Is waiting about the monthly payment or the price of the home? If prices move while you wait, we should look at both numbers side by side.", s: "ISOLATE CONCERN", n: "MOVING TO QUALIFY" },
+  { icon: Scale, t: "Legal Services", o: "Your retainer is more than I expected.", tags: ["Price", "Hesitant"],
+    r: "It's a real number, I won't soften it. Can I walk you through what's covered inside it? Most people are comparing it to an hourly figure that isn't the same thing.", s: "CLARIFY VALUE", n: "MOVING TO SCOPE" },
+  { icon: Stethoscope, t: "Healthcare Services", o: "I need to check if my insurance covers this.", tags: ["Coverage", "Cautious"],
+    r: "Smart — let's not guess. If I can get you the coverage answer and the out-of-pocket range today, would you want to hold a slot while we confirm it?", s: "REMOVE FRICTION", n: "MOVING TO SCHEDULING" },
+  { icon: GraduationCap, t: "Education", o: "I'm not sure the program is worth the tuition.", tags: ["Value", "Unsure"],
+    r: "Then let's not hand-wave it. What would you need this to change in your work for it to be obviously worth it? I'll tell you straight if we're the wrong fit.", s: "CLARIFY VALUE", n: "MOVING TO DISCOVERY" },
+  { icon: Compass, t: "Coaching", o: "I've tried programs like this before and stalled.", tags: ["Doubt", "Tired"],
+    r: "That's useful information, not a dealbreaker. Where did it stall — the plan, the accountability, or the time? That's the part we'd build around.", s: "ISOLATE CONCERN", n: "MOVING TO DISCOVERY" },
+  { icon: Briefcase, t: "Consulting", o: "We can probably figure this out internally.", tags: ["Build vs Buy", "Confident"],
+    r: "You probably could. What's the cost of your team spending the next two quarters on it instead of their own roadmap? Let's compare that honestly.", s: "REFRAME RISK", n: "MOVING TO SCOPE" },
+  { icon: Radio, t: "Telecommunications", o: "We're locked into a contract until next year.", tags: ["Timing", "Contracted"],
+    r: "Good to know — no reason to break something early. What's the exact end date? If the numbers work, most people want the switch planned, not rushed.", s: "REMOVE FRICTION", n: "MOVING TO PLANNING" },
+  { icon: Store, t: "Merchant Services", o: "Everybody promises lower rates and nobody delivers.", tags: ["Trust", "Cynical"],
+    r: "Fair, the industry earned that. Send me last month's statement and I'll show you line by line where your fees actually go — even if I can't beat it.", s: "BUILD TRUST", n: "MOVING TO REVIEW" },
+  { icon: Lock, t: "Security Systems", o: "Nothing's ever happened here, I don't need it.", tags: ["Need", "Dismissive"],
+    r: "Glad to hear it, honestly. Is it that you don't need protection, or that you don't want another monthly bill? Those get solved differently.", s: "ISOLATE CONCERN", n: "MOVING TO DISCOVERY" },
+  { icon: HardHat, t: "Roofing", o: "I'll just patch it and get through the season.", tags: ["Timing", "Deferring"],
+    r: "That can be the right call. Do you know whether the leak is at the flashing or the decking? One is a patch, the other gets expensive quietly — let's find out which.", s: "REFRAME RISK", n: "MOVING TO INSPECTION" },
+  { icon: Wind, t: "HVAC", o: "It still runs, I'm not replacing it yet.", tags: ["Timing", "Deferring"],
+    r: "Then don't. What are you paying in summer months right now? If the repair keeps stacking against the bill, you should at least know your break-even.", s: "CLARIFY VALUE", n: "MOVING TO ASSESSMENT" },
+  { icon: Bug, t: "Pest Control", o: "I've been handling it myself with store products.", tags: ["DIY", "Independent"],
+    r: "A lot of people do, and it works until it doesn't. Is it coming back in the same spot? That usually means the source is somewhere the spray never reaches.", s: "CLARIFY VALUE", n: "MOVING TO INSPECTION" },
+  { icon: Dumbbell, t: "Fitness & Wellness", o: "I don't have time to actually use a membership.", tags: ["Time", "Realistic"],
+    r: "That's the honest reason most people quit. If we built it around three short sessions a week at the times you're actually free, would that be doable?", s: "REMOVE FRICTION", n: "MOVING TO SCHEDULING" },
+  { icon: Plane, t: "Travel & Hospitality", o: "I found the same trip cheaper online.", tags: ["Price", "Comparing"],
+    r: "Let's look at it together. Is the cheaper one the same dates, room type and cancellation terms? If it is, I'll tell you — and if it isn't, you'll want to know before you book.", s: "CLARIFY VALUE", n: "MOVING TO BOOKING" },
+  { icon: Truck, t: "Logistics", o: "Switching carriers is more trouble than it's worth.", tags: ["Friction", "Cautious"],
+    r: "Switching badly is. What broke last time you moved lanes? We'd run one route in parallel before you commit anything else.", s: "REMOVE FRICTION", n: "MOVING TO PILOT" },
+  { icon: Database, t: "Business Services", o: "Send me some information and I'll review it.", tags: ["Brush-off", "Busy"],
+    r: "Happy to. So I don't send you a folder you'll never open — what's the one thing you'd need answered for this to be worth a real look?", s: "ISOLATE CONCERN", n: "MOVING TO DISCOVERY" },
+  { icon: Network, t: "Franchises", o: "The initial investment is a lot to commit to.", tags: ["Risk", "Serious"],
+    r: "It should feel like a lot — it's a real commitment. Is the hesitation the capital itself or the ramp before it pays back? Let's pull the numbers on the one that's bothering you.", s: "ISOLATE CONCERN", n: "MOVING TO QUALIFY" },
 ];
+
 
 const STEPS = [
   { icon: Upload, t: "Feed It Your Offer", d: "Drop in your script, pricing, and objections. It learns what you sell and how you win." },
@@ -485,8 +531,88 @@ function FAQItem({ q, a }) {
   );
 }
 
+/* --------------------- Industry objection explorer --------------------- */
+function IndustryExplorer() {
+  const [active, setActive] = useState(5); // Automotive
+  const [locked, setLocked] = useState(false);
+  const u = USES[active];
+  const Icon = u.icon;
+  const half = Math.ceil(USES.length / 2);
+  const rows = [USES.slice(0, half), USES.slice(half)];
+
+  const Pill = ({ item, idx }) => {
+    const I = item.icon;
+    const on = idx === active;
+    return (
+      <button
+        type="button"
+        className={"indp " + (on ? "indp-on" : "")}
+        onClick={() => { setActive(idx); setLocked(true); }}
+        aria-pressed={on}
+      >
+        <I size={15} strokeWidth={2.2} />
+        <span>{item.t}</span>
+      </button>
+    );
+  };
+
+  return (
+    <div className="indx">
+      <div className={"indrows " + (locked ? "indrows-lock" : "")}>
+        {rows.map((row, r) => (
+          <div className="indrow" key={r}>
+            <div className={"indtrack " + (r === 1 ? "indtrack-rev" : "")}>
+              {[0, 1].map((dup) => (
+                <div className="indset" key={dup} aria-hidden={dup === 1}>
+                  {row.map((item) => (
+                    <Pill key={item.t} item={item} idx={USES.indexOf(item)} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="indpanel" key={u.t}>
+        <div className="indpanel-in">
+          <div className="indside">
+            <div className="indhead">
+              <span className="indhead-ico"><Icon size={17} strokeWidth={2.2} /></span>
+              <span className="indhead-t font-display">{u.t}</span>
+            </div>
+            <div className="indlbl font-mono">REAL-WORLD OBJECTION</div>
+            <p className="indquote font-display">“{u.o}”</p>
+            <div className="indtags">
+              {u.tags.map((t) => <span key={t} className="indtag font-mono">{t}</span>)}
+            </div>
+          </div>
+
+          <div className="indside indside-ai">
+            <span className="indorb-glow" />
+            <div className="indhead">
+              <MiniOrb size={44} variant="ai" />
+              <span className="indlbl font-mono indlbl-red">MASTER CLOSER · LIVE RESPONSE</span>
+            </div>
+            <p className="indresp">{u.r}</p>
+            <div className="indmeta">
+              <span className="indstrat font-mono"><Crosshair size={12} strokeWidth={2.6} />{u.s}</span>
+              <span className="indnext font-mono"><ArrowRight size={12} strokeWidth={2.6} />{u.n}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="indfoot">
+        <span>Don't see your industry? Master Closer adapts to your offer, sales process and approved playbook.</span>
+        <a href="#demo" className="indlink">Train It On My Business <ArrowRight size={14} strokeWidth={2.6} /></a>
+      </div>
+    </div>
+  );
+}
 
 /* --------------------- Mode sections: shared system -------------------- */
+
 
 /* The orb is THE Master Closer AI visual. Same mark everywhere. */
 function MiniOrb({ size = 88, variant = "ai" }) {
@@ -943,33 +1069,18 @@ export default function MasterCloser() {
         </div>
       </section>
 
-      {/* USE CASES */}
-      <section id="uses" className="sec sec-mist">
+      {/* INDUSTRY EXPLORER */}
+      <section id="uses" className="sec sec-inds">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Trained To Close</Eyebrow>
-            <h2 className="font-display sec-h2">A Master Closer For Any Close.</h2>
-            <p className="sec-lead">Real objections it handles live, tuned to your industry and your offer.</p>
+            <Eyebrow>Industry-Ready</Eyebrow>
+            <h2 className="font-display sec-h2">Built For The Objections Your Buyers Actually Raise.</h2>
+            <p className="sec-lead">Choose an industry and watch Master Closer turn a familiar objection into the next step toward a sale.</p>
           </div>
-          <div className="uses">
-            {USES.map((u) => {
-              const Icon = u.icon;
-              return (
-                <div key={u.t} className="use">
-                  <div className="use-top">
-                    <span className="use-ico"><Icon size={17} strokeWidth={2.2} /></span>
-                    <span className="use-t font-display">{u.t}</span>
-                  </div>
-                  <div className="use-o">
-                    <span className="use-o-tag font-mono">PROSPECT</span>
-                    “{u.o}”
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <IndustryExplorer />
         </div>
       </section>
+
 
       {/* SETUP / LOOP */}
       <section id="setup" className="sec">
@@ -1625,6 +1736,72 @@ a{text-decoration:none;color:inherit;}
   .modes-band .sec-story{padding:52px 0;}
   .modes-band .sec-story + .sec-story{padding-top:0;}
   .stg-lbl{font-size:8.5px;}}
+
+/* ---- industry objection explorer ---- */
+.sec-inds{background:#faf8f7;overflow:hidden;}
+.indx{margin-top:8px;}
+.indrows{display:flex;flex-direction:column;gap:12px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
+.indrow{overflow:hidden;}
+.indtrack{display:flex;width:max-content;animation:indm 68s linear infinite;}
+.indtrack-rev{animation-direction:reverse;}
+.indset{display:flex;gap:10px;padding-right:10px;}
+@keyframes indm{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.indrows:hover .indtrack,.indrows-lock .indtrack{animation-play-state:paused;}
+.indp{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:#4b535f;border-radius:999px;
+  padding:9px 16px;font-size:.88rem;font-weight:600;font-family:inherit;
+  transition:border-color .18s,background .18s,color .18s;}
+.indp svg{color:#9aa0ab;transition:color .18s;}
+.indp:hover{border-color:#d7d9de;color:#1b1f26;}
+.indp-on{border-color:var(--signal);background:#fdecec;color:var(--signal);}
+.indp-on svg{color:var(--signal);}
+
+.indpanel{margin-top:34px;background:#14161a;border:1px solid rgba(204,0,0,.28);
+  border-radius:24px;overflow:hidden;position:relative;
+  box-shadow:0 30px 70px -40px rgba(0,0,0,.6),0 0 60px -30px rgba(204,0,0,.45);
+  animation:indIn .38s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes indIn{from{opacity:0;transform:translateY(10px);}}
+.indpanel-in{display:grid;grid-template-columns:1fr 1fr;}
+.indside{position:relative;padding:40px 42px;min-width:0;}
+.indside + .indside{border-left:1px solid rgba(255,255,255,.09);}
+.indside-ai{background:rgba(255,255,255,.02);}
+.indorb-glow{position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(204,0,0,.22),rgba(204,0,0,0) 70%);pointer-events:none;}
+.indhead{display:flex;align-items:center;gap:12px;margin-bottom:22px;position:relative;}
+.indhead-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;
+  background:rgba(204,0,0,.14);color:#ff6a5e;}
+.indhead-t{font-size:1.05rem;font-weight:700;color:#fff;}
+.indlbl{font-size:10px;letter-spacing:.16em;color:#7d838d;margin-bottom:14px;display:block;}
+.indlbl-red{color:#ff6a5e;margin-bottom:0;}
+.indquote{font-size:clamp(1.25rem,1.9vw,1.6rem);font-weight:700;line-height:1.32;
+  letter-spacing:-.02em;color:#fff;margin:0 0 20px;}
+.indtags{display:flex;flex-wrap:wrap;gap:8px;}
+.indtag{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a7adb7;
+  border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 11px;}
+.indresp{position:relative;font-size:1.02rem;line-height:1.6;color:#e6e8ec;margin:0 0 22px;}
+.indmeta{position:relative;display:flex;flex-wrap:wrap;gap:10px;}
+.indstrat,.indnext{display:inline-flex;align-items:center;gap:7px;font-size:9.5px;
+  letter-spacing:.14em;border-radius:999px;padding:7px 13px;}
+.indstrat{color:#ff6a5e;background:rgba(204,0,0,.14);border:1px solid rgba(204,0,0,.3);}
+.indnext{color:#a7adb7;border:1px solid rgba(255,255,255,.14);}
+.indfoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;
+  margin-top:22px;font-size:.94rem;color:var(--muted);text-align:center;}
+.indlink{display:inline-flex;align-items:center;gap:6px;color:var(--signal);font-weight:700;
+  border-bottom:1px solid rgba(204,0,0,.35);}
+@media(max-width:860px){
+  .indrows{gap:0;}
+  .indrow:last-child{display:none;}
+  .indrow{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .indrow::-webkit-scrollbar{display:none;}
+  .indtrack{animation:none;}
+  .indset:last-child{display:none;}
+  .indpanel-in{grid-template-columns:1fr;}
+  .indside{padding:28px 22px;}
+  .indside + .indside{border-left:none;border-top:1px solid rgba(255,255,255,.09);}
+}
+@media(prefers-reduced-motion:reduce){.indtrack{animation:none;}.indrow{overflow-x:auto;}}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 `;
