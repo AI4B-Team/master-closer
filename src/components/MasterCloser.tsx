@@ -1737,5 +1737,71 @@ a{text-decoration:none;color:inherit;}
   .modes-band .sec-story + .sec-story{padding-top:0;}
   .stg-lbl{font-size:8.5px;}}
 
+/* ---- industry objection explorer ---- */
+.sec-inds{background:#faf8f7;overflow:hidden;}
+.indx{margin-top:8px;}
+.indrows{display:flex;flex-direction:column;gap:12px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
+.indrow{overflow:hidden;}
+.indtrack{display:flex;width:max-content;animation:indm 68s linear infinite;}
+.indtrack-rev{animation-direction:reverse;}
+.indset{display:flex;gap:10px;padding-right:10px;}
+@keyframes indm{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.indrows:hover .indtrack,.indrows-lock .indtrack{animation-play-state:paused;}
+.indp{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:#4b535f;border-radius:999px;
+  padding:9px 16px;font-size:.88rem;font-weight:600;font-family:inherit;
+  transition:border-color .18s,background .18s,color .18s;}
+.indp svg{color:#9aa0ab;transition:color .18s;}
+.indp:hover{border-color:#d7d9de;color:#1b1f26;}
+.indp-on{border-color:var(--signal);background:#fdecec;color:var(--signal);}
+.indp-on svg{color:var(--signal);}
+
+.indpanel{margin-top:34px;background:#14161a;border:1px solid rgba(204,0,0,.28);
+  border-radius:24px;overflow:hidden;position:relative;
+  box-shadow:0 30px 70px -40px rgba(0,0,0,.6),0 0 60px -30px rgba(204,0,0,.45);
+  animation:indIn .38s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes indIn{from{opacity:0;transform:translateY(10px);}}
+.indpanel-in{display:grid;grid-template-columns:1fr 1fr;}
+.indside{position:relative;padding:40px 42px;min-width:0;}
+.indside + .indside{border-left:1px solid rgba(255,255,255,.09);}
+.indside-ai{background:rgba(255,255,255,.02);}
+.indorb-glow{position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(204,0,0,.22),rgba(204,0,0,0) 70%);pointer-events:none;}
+.indhead{display:flex;align-items:center;gap:12px;margin-bottom:22px;position:relative;}
+.indhead-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;
+  background:rgba(204,0,0,.14);color:#ff6a5e;}
+.indhead-t{font-size:1.05rem;font-weight:700;color:#fff;}
+.indlbl{font-size:10px;letter-spacing:.16em;color:#7d838d;margin-bottom:14px;display:block;}
+.indlbl-red{color:#ff6a5e;margin-bottom:0;}
+.indquote{font-size:clamp(1.25rem,1.9vw,1.6rem);font-weight:700;line-height:1.32;
+  letter-spacing:-.02em;color:#fff;margin:0 0 20px;}
+.indtags{display:flex;flex-wrap:wrap;gap:8px;}
+.indtag{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a7adb7;
+  border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 11px;}
+.indresp{position:relative;font-size:1.02rem;line-height:1.6;color:#e6e8ec;margin:0 0 22px;}
+.indmeta{position:relative;display:flex;flex-wrap:wrap;gap:10px;}
+.indstrat,.indnext{display:inline-flex;align-items:center;gap:7px;font-size:9.5px;
+  letter-spacing:.14em;border-radius:999px;padding:7px 13px;}
+.indstrat{color:#ff6a5e;background:rgba(204,0,0,.14);border:1px solid rgba(204,0,0,.3);}
+.indnext{color:#a7adb7;border:1px solid rgba(255,255,255,.14);}
+.indfoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;
+  margin-top:22px;font-size:.94rem;color:var(--muted);text-align:center;}
+.indlink{display:inline-flex;align-items:center;gap:6px;color:var(--signal);font-weight:700;
+  border-bottom:1px solid rgba(204,0,0,.35);}
+@media(max-width:860px){
+  .indrows{gap:0;}
+  .indrow:last-child{display:none;}
+  .indrow{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .indrow::-webkit-scrollbar{display:none;}
+  .indtrack{animation:none;}
+  .indset:last-child{display:none;}
+  .indpanel-in{grid-template-columns:1fr;}
+  .indside{padding:28px 22px;}
+  .indside + .indside{border-left:none;border-top:1px solid rgba(255,255,255,.09);}
+}
+@media(prefers-reduced-motion:reduce){.indtrack{animation:none;}.indrow{overflow-x:auto;}}
+
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 `;
