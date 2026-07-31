@@ -5,7 +5,8 @@ import {
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
   Ear, Eye, TrendingUp, Upload, SlidersHorizontal, Headphones, BadgeCheck, Sparkles,
-  PhoneIncoming, MapPin
+  PhoneIncoming, MapPin, Megaphone, Landmark, Key, Scale, Stethoscope, Compass,
+  Briefcase, Radio, Store, HardHat, Wind, Bug, Dumbbell, Plane, Truck, Network
 
 } from "lucide-react";
 
