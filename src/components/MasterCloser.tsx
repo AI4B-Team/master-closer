@@ -1199,7 +1199,7 @@ export default function MasterCloser() {
                 h: "Close While Your Team Is Offline.",
                 c: "AI runs the conversation, handles objections and sends the prospect the next step — even after hours.",
                 rows: [
-                  { icon: CheckCircleLike, label: "Call Completed" },
+                  { icon: Check, label: "Call Completed" },
                   { icon: CreditCard, label: "Payment Link Sent" },
                 ],
                 panel: "orb",
