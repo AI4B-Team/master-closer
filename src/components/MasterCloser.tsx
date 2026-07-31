@@ -486,100 +486,134 @@ function FAQItem({ q, a }) {
 }
 
 
-/* --------------------- Feature story mocks (zigzag) -------------------- */
-function MockWhisper() {
+/* --------------------- Mode sections: shared system -------------------- */
+
+/* The orb is THE Master Closer AI visual. Same mark everywhere. */
+function MiniOrb({ size = 88, variant = "ai" }) {
   return (
-    <div className="fmock">
-      <div className="fmock-bar">
-        <span className="rec-dot" /><span className="font-mono fmock-live">LIVE · COPILOT</span>
-      </div>
-      <div className="fmock-body">
-        <div className="bubble bubble-them">
-          <div className="bubble-name font-mono">PROSPECT</div>
-          Honestly, your competitor is cheaper.
-        </div>
-        <div className="say">
-          <div className="say-head">
-            <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
-            <span className="font-mono say-tag">Next Best Response</span>
+    <div className={"morb morb-" + variant} style={{ width: size, height: size }}>
+      <span className="morb-glow" />
+      <span className="morb-ring morb-r1" />
+      <span className="morb-ring morb-r2" />
+      <span className="morb-ring morb-r3" />
+      <span className="morb-core" />
+      {variant === "hybrid" && <span className="morb-arc" />}
+    </div>
+  );
+}
+
+const STAGES = ["Discovery", "Qualify", "Present", "Objections", "Close", "Payment"];
+
+function StageStrip({ current }) {
+  return (
+    <div className="stg">
+      {STAGES.map((s, i) => {
+        const state = i < current ? "done" : i === current ? "now" : "next";
+        return (
+          <div key={s} className={"stg-i stg-" + state}>
+            <span className="stg-dot">
+              {state === "done" ? <Check size={11} strokeWidth={3.2} /> : <span className="stg-pip" />}
+            </span>
+            <span className="stg-lbl">{s}</span>
           </div>
-          <p className="say-line">Say: "Cheaper on the sticker, sure. Are they closing 4 in 10 for you?"</p>
-        </div>
-        <div className="fmock-note font-mono">ONLY YOUR REP SEES THIS</div>
-      </div>
+        );
+      })}
     </div>
   );
 }
-function MockVoice() {
+
+function CallCard({ status, elapsed, variant, children, footer }) {
   return (
     <div className="fmock">
       <div className="fmock-bar">
-        <span className="fmock-ico"><Bot size={14} strokeWidth={2.3} /></span>
-        <span className="font-mono fmock-live">AI CLOSER · SPEAKING</span>
+        <span className="rec-dot" />
+        <span className="font-mono fmock-live">LIVE</span>
+        <span className="fmock-time font-mono">{elapsed}</span>
+        <span className="fmock-status font-mono">{status}</span>
       </div>
       <div className="fmock-body">
-        <div className="wavebox">
-          {Array.from({ length: 26 }).map((_, i) => (
-            <span key={i} className="wavebar" style={{ animationDelay: (i * 0.055) + "s" }} />
-          ))}
+        <div className="orb-row">
+          <MiniOrb variant={variant} />
         </div>
-        <p className="fmock-quote">"If I lock today's rate and email the agreement now, are you good to start?"</p>
-        <div className="fmock-rows">
-          <div className="fmock-row"><span>Discovery</span><b className="text-green">Done</b></div>
-          <div className="fmock-row"><span>Demo</span><b className="text-green">Done</b></div>
-          <div className="fmock-row"><span>Close</span><b className="text-signal">In Progress</b></div>
-        </div>
+        {children}
       </div>
+      {footer}
     </div>
   );
 }
-function MockTransfer() {
+
+function Prob({ value, stage }) {
   return (
-    <div className="fmock">
-      <div className="fmock-bar">
-        <span className="fmock-ico"><PhoneForwarded size={14} strokeWidth={2.3} /></span>
-        <span className="font-mono fmock-live">WARM TRANSFER</span>
+    <div className="prob">
+      <div className="prob-top">
+        <span className="font-mono prob-lbl">CLOSE PROBABILITY</span>
+        <b className="font-display prob-val">{value}%</b>
       </div>
-      <div className="fmock-body">
-        <div className="xfer">
-          <div className="xfer-side"><span className="xfer-av xfer-av-ai"><Bot size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">AI Closer</span></div>
-          <span className="xfer-arrow"><ArrowRight size={18} strokeWidth={2.6} /></span>
-          <div className="xfer-side"><span className="xfer-av"><Headphones size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">Sarah</span></div>
-        </div>
-        <div className="say">
-          <div className="say-head">
-            <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
-            <span className="font-mono say-tag">Briefing Your Closer</span>
-          </div>
-          <p className="say-line">Warm lead, budget confirmed, one price objection left. Take the close.</p>
-        </div>
-      </div>
+      <div className="prob-track"><span className="prob-fill" style={{ width: value + "%" }} /></div>
+      <div className="prob-stage font-mono">STAGE · {stage}</div>
     </div>
   );
 }
-function MockCollect() {
+
+function MockAI() {
   return (
-    <div className="fmock">
-      <div className="fmock-bar">
-        <span className="fmock-ico"><CreditCard size={14} strokeWidth={2.3} /></span>
-        <span className="font-mono fmock-live">CLOSE & COLLECT</span>
+    <CallCard status="AI · SPEAKING" elapsed="04:12" variant="ai"
+      footer={<div className="fmock-foot"><StageStrip current={3} /></div>}>
+      <div className="line line-them">
+        <div className="line-name font-mono">PROSPECT</div>
+        Honestly, the price feels high. Your competitor is about half.
       </div>
-      <div className="fmock-body">
-        <div className="pay">
-          <div className="pay-label font-mono">AGREEMENT SENT</div>
-          <div className="pay-amt font-display">$4,200</div>
-          <div className="pay-meta">Gridline Ops · Annual Plan</div>
-          <div className="pay-btn font-display">Pay Now</div>
-        </div>
-        <div className="fmock-rows">
-          <div className="fmock-row"><span>Signature</span><b className="text-green">Received</b></div>
-          <div className="fmock-row"><span>Payment</span><b className="text-green">Captured</b></div>
-          <div className="fmock-row"><span>CRM Write-Back</span><b className="text-green">Logged</b></div>
-        </div>
+      <div className="line line-ai">
+        <div className="line-name font-mono">MASTER CLOSER</div>
+        When you say it feels high, is it the total investment or the monthly amount that gives you pause?
       </div>
-    </div>
+      <Prob value={72} stage="Handling Objection" />
+    </CallCard>
   );
 }
+
+function MockHybrid() {
+  return (
+    <CallCard status="AI · TRANSFERRING" elapsed="06:38" variant="hybrid"
+      footer={<div className="fmock-foot"><StageStrip current={4} /></div>}>
+      <div className="xfer">
+        <div className="xfer-side"><span className="xfer-av xfer-av-ai"><Bot size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">AI Closer</span></div>
+        <span className="xfer-arrow"><ArrowRight size={18} strokeWidth={2.6} /></span>
+        <div className="xfer-side"><span className="xfer-av"><Headphones size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">Sarah · Closer</span></div>
+      </div>
+      <div className="say">
+        <div className="say-head">
+          <PhoneForwarded size={13} strokeWidth={2.4} className="text-signal" />
+          <span className="font-mono say-tag">Briefing Your Closer</span>
+        </div>
+        <p className="say-line">Qualified. Budget confirmed at $4.2k, decision maker on the line, one price objection left. Take the close.</p>
+      </div>
+      <Prob value={64} stage="Warm Transfer" />
+    </CallCard>
+  );
+}
+
+function MockCopilot() {
+  return (
+    <CallCard status="REP · SPEAKING" elapsed="09:05" variant="copilot"
+      footer={<div className="fmock-foot"><StageStrip current={3} /></div>}>
+      <div className="line line-them">
+        <div className="line-name font-mono">PROSPECT</div>
+        I need to think about it and talk to my partner.
+      </div>
+      <div className="say">
+        <div className="say-head">
+          <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
+          <span className="font-mono say-tag">Next Best Response</span>
+        </div>
+        <p className="say-line">Say: "Totally fair. When you two talk, what's the one thing that decides it — the price or the timeline?"</p>
+        <div className="say-note font-mono">PRIVATE · PROSPECT CANNOT SEE OR HEAR THIS</div>
+      </div>
+      <Prob value={58} stage="Handling Objection" />
+    </CallCard>
+  );
+}
+
 
 const INDUSTRIES = [
   "SaaS", "Real Estate", "Solar", "Insurance", "Recruiting", "Automotive",
@@ -590,50 +624,61 @@ const INDUSTRIES = [
 
 const STORIES = [
   {
-    kicker: "Live Copilot",
-    icon: Mic,
-    t: "The Next Line, Before They Finish Talking.",
-    d: "Master Closer listens to the live call, names the objection, and puts the exact words on your rep's screen. Invisible to the prospect.",
-    bullets: ["Word-for-word response, not vague coaching", "Objection and tone labeled in real time", "Close probability updates every turn"],
-    Mock: MockWhisper,
-  },
-  {
-    kicker: "AI Voice Agent",
+    kicker: "01 · AI Mode",
     icon: Bot,
-    t: "Let The AI Run The Entire Call.",
-    d: "A natural voice that opens, qualifies, demos, and closes on its own. Turn it on for the calls your team never gets to.",
-    bullets: ["Runs discovery through close, end to end", "Never skips the disclosure or the ask", "Handles overflow and after-hours calls"],
-    Mock: MockVoice,
+    t: "Let AI Run The Entire Call.",
+    d: "From the first hello to the final payment, Master Closer handles discovery, presentation, objections and closing in one natural conversation.",
+    bullets: [
+      "Runs the complete sales conversation",
+      "Responds to objections in real time",
+      "Handles overflow and after-hours calls",
+      "Closes and collects payment",
+    ],
+    Mock: MockAI,
+    flip: true,
   },
   {
-    kicker: "Warm Transfer",
+    kicker: "02 · Hybrid Mode",
     icon: PhoneForwarded,
-    t: <>The AI Warms It,<br />Your Closer Lands It.</>,
-    d: "When the lead is hot, the AI live-transfers to a human with a full brief already delivered, then stays on the line to assist.",
-    bullets: ["Instant briefing before the human speaks", "No repeated questions, no cold restart", "Copilot keeps whispering after handoff"],
-    Mock: MockTransfer,
+    t: "AI Starts. Your Closer Finishes.",
+    d: "The AI opens, qualifies and warms the prospect, then hands your closer a live call with a short briefing already delivered.",
+    bullets: [
+      "Qualifies before a human ever picks up",
+      "Delivers a one-line brief on transfer",
+      "Live handoff, no cold restart",
+      "Copilot keeps guiding after the transfer",
+    ],
+    Mock: MockHybrid,
+    flip: false,
   },
   {
-    kicker: "Close & Collect",
-    icon: CreditCard,
-    t: <>Signed And Paid<br />Before The Call Ends.</>,
-    d: "Send the agreement and a payment link mid-call, then let the outcome, next step, and summary write themselves back to your CRM.",
-    bullets: ["Agreement and payment link in-call", "Outcome logged the moment you hang up", "Nothing left for your rep to type"],
-    Mock: MockCollect,
+    kicker: "03 · Copilot Mode",
+    icon: Mic,
+    t: "Your Rep Leads. AI Guides.",
+    d: "Your rep runs the conversation while Master Closer listens and privately puts the next best line on screen — the prospect never sees or hears it.",
+    bullets: [
+      "Word-for-word next line, not vague coaching",
+      "Objection and tone labeled in real time",
+      "Completely invisible to the prospect",
+      "Close probability updates every turn",
+    ],
+    Mock: MockCopilot,
+    flip: true,
   },
 ];
 
 function FeatureStories() {
   return (
-    <>
-      {STORIES.map((s, i) => {
+    <div className="modes-band">
+      <span className="modes-glow modes-glow-a" />
+      <span className="modes-glow modes-glow-b" />
+      {STORIES.map((s) => {
         const Icon = s.icon;
         const Mock = s.Mock;
-        const flip = i % 2 === 1;
         return (
-          <section key={s.kicker} className={"sec sec-story " + (flip ? "sec-mist" : "")}>
+          <section key={s.kicker} className="sec sec-story">
             <div className="wrap">
-              <div className={"story " + (flip ? "story-flip" : "")}>
+              <div className={"story " + (s.flip ? "story-flip" : "")}>
                 <div className="story-copy">
                   <div className="story-kick font-mono"><Icon size={14} strokeWidth={2.3} />{s.kicker}</div>
                   <h3 className="font-display story-h">{s.t}</h3>
@@ -650,9 +695,10 @@ function FeatureStories() {
           </section>
         );
       })}
-    </>
+    </div>
   );
 }
+
 
 export default function MasterCloser() {
   return (
@@ -1509,6 +1555,76 @@ a{text-decoration:none;color:inherit;}
 @media(max-width:900px){.story{grid-template-columns:1fr;gap:34px;}
   .story-flip .story-copy{order:1;}.story-flip .story-vis{order:2;}
   .caps-more{grid-template-columns:repeat(2,1fr);}}
+
+/* ---- unified mode sections (AI / Hybrid / Copilot) ---- */
+.modes-band{position:relative;isolation:isolate;background:#faf8f7;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;}
+.modes-glow{position:absolute;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);}
+.modes-glow-a{top:4%;left:-10%;width:560px;height:560px;background:rgba(204,0,0,.09);}
+.modes-glow-b{bottom:2%;right:-12%;width:620px;height:620px;background:rgba(140,0,0,.07);}
+.modes-band .sec-story{position:relative;z-index:1;padding:76px 0;}
+.modes-band .sec-story + .sec-story{padding-top:0;}
+.modes-band .story{grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.modes-band .story-vis .fmock{max-width:520px;margin:0 auto;border-radius:20px;
+  box-shadow:0 26px 60px -30px rgba(90,0,0,.35),0 2px 0 rgba(255,255,255,.6) inset;}
+.modes-band .story-copy{max-width:520px;}
+.modes-band .story-kick{letter-spacing:.16em;font-size:11.5px;}
+
+/* orb — the single AI mark */
+.morb{position:relative;display:grid;place-items:center;flex:0 0 auto;}
+.morb span{position:absolute;border-radius:50%;}
+.morb-glow{inset:-16%;background:radial-gradient(circle,rgba(204,0,0,.22),rgba(204,0,0,0) 68%);}
+.morb-ring{border:1.5px solid rgba(204,0,0,.45);animation:morbP 3.2s ease-in-out infinite;}
+.morb-r1{inset:0;opacity:.5;}
+.morb-r2{inset:14%;opacity:.7;border-color:rgba(160,0,0,.55);animation-delay:.5s;}
+.morb-r3{inset:28%;opacity:.85;border-color:rgba(204,0,0,.7);animation-delay:1s;}
+.morb-core{inset:38%;background:radial-gradient(circle at 35% 30%,#fff6f4,#cc0000 55%,#7a0000);
+  box-shadow:0 0 22px rgba(204,0,0,.45);animation:morbB 2.4s ease-in-out infinite;}
+.morb-arc{inset:6%;border:2px solid transparent;border-top-color:rgba(204,0,0,.75);
+  border-right-color:rgba(255,190,180,.6);animation:morbSpin 5s linear infinite;}
+.morb-copilot .morb-core{inset:42%;}
+.morb-copilot .morb-glow{inset:-8%;opacity:.7;}
+@keyframes morbP{0%,100%{transform:scale(1);opacity:.45;}50%{transform:scale(1.07);opacity:.9;}}
+@keyframes morbB{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+@keyframes morbSpin{to{transform:rotate(360deg);}}
+.orb-row{display:flex;justify-content:center;padding:4px 0 2px;}
+
+/* call card chrome */
+.fmock-time{margin-left:2px;font-size:11px;color:#8a919d;letter-spacing:.08em;}
+.fmock-status{margin-left:auto;font-size:10.5px;letter-spacing:.14em;color:var(--signal);}
+.line{border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:.95rem;
+  line-height:1.5;color:#1b1f26;background:#fff;}
+.line-name{font-size:9.5px;letter-spacing:.16em;color:#9aa0ab;margin-bottom:5px;}
+.line-them{background:#f6f6f7;}
+.line-ai{border-color:rgba(204,0,0,.28);background:#fffafa;}
+.line-ai .line-name{color:var(--signal);}
+.say-note{margin-top:8px;font-size:9.5px;letter-spacing:.14em;color:#9aa0ab;}
+.prob{border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fafafb;}
+.prob-top{display:flex;align-items:center;justify-content:space-between;}
+.prob-lbl{font-size:9.5px;letter-spacing:.16em;color:#8a919d;}
+.prob-val{font-size:1.05rem;font-weight:800;color:var(--signal);}
+.prob-track{height:6px;border-radius:99px;background:#eceef1;overflow:hidden;margin:9px 0 8px;}
+.prob-fill{display:block;height:100%;border-radius:99px;background:var(--signal);
+  animation:probIn 1.4s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes probIn{from{width:0;}}
+.prob-stage{font-size:9.5px;letter-spacing:.14em;color:#57606e;}
+.fmock-foot{display:flex;padding:12px 14px;border-top:1px solid var(--line);background:#fafafb;}
+.stg{display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;}
+.stg-i{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
+.stg-dot{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;
+  border:1px solid var(--line);background:#fff;color:#b9bec7;}
+.stg-pip{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.stg-lbl{font-size:9.5px;letter-spacing:.05em;color:#a2a8b2;font-weight:600;}
+.stg-done .stg-dot{border-color:#bfe6d1;background:#e6f6ee;color:var(--green);}
+.stg-done .stg-lbl{color:#6d7480;}
+.stg-now .stg-dot{border-color:var(--signal);background:#fff;color:var(--signal);
+  box-shadow:0 0 0 4px rgba(204,0,0,.12);animation:stgP 1.8s ease-in-out infinite;}
+.stg-now .stg-lbl{color:var(--signal);font-weight:700;}
+@keyframes stgP{0%,100%{box-shadow:0 0 0 3px rgba(204,0,0,.10);}50%{box-shadow:0 0 0 6px rgba(204,0,0,.16);}}
+@media(max-width:900px){.modes-band .story{grid-template-columns:1fr;}
+  .modes-band .sec-story{padding:52px 0;}
+  .modes-band .sec-story + .sec-story{padding-top:0;}
+  .stg-lbl{font-size:8.5px;}}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 `;
