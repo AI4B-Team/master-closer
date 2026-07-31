@@ -531,8 +531,88 @@ function FAQItem({ q, a }) {
   );
 }
 
+/* --------------------- Industry objection explorer --------------------- */
+function IndustryExplorer() {
+  const [active, setActive] = useState(5); // Automotive
+  const [locked, setLocked] = useState(false);
+  const u = USES[active];
+  const Icon = u.icon;
+  const half = Math.ceil(USES.length / 2);
+  const rows = [USES.slice(0, half), USES.slice(half)];
+
+  const Pill = ({ item, idx }) => {
+    const I = item.icon;
+    const on = idx === active;
+    return (
+      <button
+        type="button"
+        className={"indp " + (on ? "indp-on" : "")}
+        onClick={() => { setActive(idx); setLocked(true); }}
+        aria-pressed={on}
+      >
+        <I size={15} strokeWidth={2.2} />
+        <span>{item.t}</span>
+      </button>
+    );
+  };
+
+  return (
+    <div className="indx">
+      <div className={"indrows " + (locked ? "indrows-lock" : "")}>
+        {rows.map((row, r) => (
+          <div className="indrow" key={r}>
+            <div className={"indtrack " + (r === 1 ? "indtrack-rev" : "")}>
+              {[0, 1].map((dup) => (
+                <div className="indset" key={dup} aria-hidden={dup === 1}>
+                  {row.map((item) => (
+                    <Pill key={item.t} item={item} idx={USES.indexOf(item)} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="indpanel" key={u.t}>
+        <div className="indpanel-in">
+          <div className="indside">
+            <div className="indhead">
+              <span className="indhead-ico"><Icon size={17} strokeWidth={2.2} /></span>
+              <span className="indhead-t font-display">{u.t}</span>
+            </div>
+            <div className="indlbl font-mono">REAL-WORLD OBJECTION</div>
+            <p className="indquote font-display">“{u.o}”</p>
+            <div className="indtags">
+              {u.tags.map((t) => <span key={t} className="indtag font-mono">{t}</span>)}
+            </div>
+          </div>
+
+          <div className="indside indside-ai">
+            <span className="indorb-glow" />
+            <div className="indhead">
+              <MiniOrb size={44} variant="ai" />
+              <span className="indlbl font-mono indlbl-red">MASTER CLOSER · LIVE RESPONSE</span>
+            </div>
+            <p className="indresp">{u.r}</p>
+            <div className="indmeta">
+              <span className="indstrat font-mono"><Crosshair size={12} strokeWidth={2.6} />{u.s}</span>
+              <span className="indnext font-mono"><ArrowRight size={12} strokeWidth={2.6} />{u.n}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="indfoot">
+        <span>Don't see your industry? Master Closer adapts to your offer, sales process and approved playbook.</span>
+        <a href="#demo" className="indlink">Train It On My Business <ArrowRight size={14} strokeWidth={2.6} /></a>
+      </div>
+    </div>
+  );
+}
 
 /* --------------------- Mode sections: shared system -------------------- */
+
 
 /* The orb is THE Master Closer AI visual. Same mark everywhere. */
 function MiniOrb({ size = 88, variant = "ai" }) {
