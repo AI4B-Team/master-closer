@@ -39,12 +39,14 @@ export const closeObjection = createServerFn({ method: "POST" })
       `"objection": a 2-4 word label for what's really going on,\n` +
       `"tone": 1-2 words for the prospect's tone,\n` +
       `"confidence": an integer 0-100 estimate of close probability if the next move lands,\n` +
-      `"line": ${m.lineDesc}. Keep it under 45 words, conversational, never pushy or manipulative.`;
+      `"line": ${m.lineDesc}. Keep it under 30 words, conversational, never pushy or manipulative.`;
 
     const gateway = createLovableAiGatewayProvider(key);
     const { text } = await generateText({
-      model: gateway("google/gemini-3.6-flash"),
+      model: gateway("google/gemini-3.1-flash-lite"),
       prompt,
+      maxOutputTokens: 200,
+      temperature: 0.6,
     });
 
     const clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
