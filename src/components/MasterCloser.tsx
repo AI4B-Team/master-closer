@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState } from "react";
+import { closeObjection } from "@/lib/demo.functions";
 import {
   Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
@@ -343,29 +344,15 @@ function LiveDemo() {
     setInput(prospect); setLoading(true); setError(""); setResult(null);
     if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("mc-demo-pulse"));
 
-    const m = modeMeta[mode];
-    const prompt =
-      `You are Master Closer, a real-time sales AI. ${m.persona}\n\n` +
-      `The prospect just said: "${prospect}"\n\n` +
-      `Respond with ONLY a JSON object (no markdown, no backticks, no commentary) with exactly these keys:\n` +
-      `"objection": a 2-4 word label for what's really going on,\n` +
-      `"tone": 1-2 words for the prospect's tone,\n` +
-      `"confidence": an integer 0-100 estimate of close probability if the next move lands,\n` +
-      `"line": ${m.lineDesc}. Keep it under 45 words, conversational, never pushy or manipulative.`;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: prompt }] }),
-      });
-      const data = await res.json();
-      const raw = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
-      const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-      setResult(JSON.parse(clean));
+      const data = await closeObjection({ data: { prospect, mode } });
+      setResult(data);
       window.dispatchEvent(new CustomEvent("mc-demo-speak"));
     } catch (e) {
       setError("Couldn't Reach The Closer Just Now. Try Again In A Moment.");
     } finally { setLoading(false); }
   }
+
 
   return (
     <div className="demo">
