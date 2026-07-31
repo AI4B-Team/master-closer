@@ -142,7 +142,8 @@ function AudioAtmosphere() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobile = window.matchMedia("(max-width: 760px)").matches;
 
-    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0, h = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const resize = () => {
       const r = host.getBoundingClientRect();
       w = Math.max(1, r.width); h = Math.max(1, r.height);
@@ -158,106 +159,141 @@ function AudioAtmosphere() {
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0.02 });
     io.observe(host);
 
-    const PARTICLES = mobile ? 14 : 38;
-    const particles = Array.from({ length: PARTICLES }, () => ({
-      a: Math.random() * Math.PI * 2,
-      r: 0.25 + Math.random() * 0.85,
-      s: 0.0006 + Math.random() * 0.0016,
-      p: Math.random(),
-    }));
+    // phases: idle (breathing), listen (contract), speak (expressive)
+    let phase = "idle", phaseT = 0;
+    let mode = "copilot";
+    let handoff = -1;            // 0..1 sweep for hybrid transfer pulse
+    let energy = 0.3, radiusK = 1;
+    const PARTICLES = mobile ? 16 : 46;
+    const particles = [];
 
-    // states: 0 listening, 1 processing, 2 speaking
-    let state = 0, stateT = 0, nextSwitch = 3200;
-    let energy = 0.35, targetEnergy = 0.35;
-    let pulse = 0;
-    const onPulse = () => { pulse = 1; state = 1; stateT = 0; nextSwitch = 900; };
+    const spawnParticles = () => {
+      particles.length = 0;
+      for (let i = 0; i < PARTICLES; i++) {
+        particles.push({ a: Math.random() * Math.PI * 2, p: Math.random() * 0.4, s: 0.0016 + Math.random() * 0.0022 });
+      }
+    };
+
+    const onPulse = () => { phase = "listen"; phaseT = 0; spawnParticles(); };
+    const onSpeak = () => { phase = "speak"; phaseT = 0; };
+    const onMode = (e) => { const m = e?.detail; if (m) { if (m === "hybrid" && mode !== "hybrid") handoff = 0; mode = m; } };
     window.addEventListener("mc-demo-pulse", onPulse);
+    window.addEventListener("mc-demo-speak", onSpeak);
+    window.addEventListener("mc-demo-mode", onMode);
 
+    const LINES = mobile ? 46 : 130;
+    const STEP = mobile ? 18 : 12;
     let raf, last = performance.now(), t = 0;
-    const lines = mobile ? 3 : 5;
 
     const draw = (now) => {
       raf = requestAnimationFrame(draw);
       const dt = Math.min(48, now - last); last = now;
       if (!visible) return;
       t += dt * 0.001;
+      phaseT += dt;
 
-      stateT += dt;
-      if (stateT > nextSwitch) {
-        stateT = 0;
-        state = state === 0 ? 1 : state === 1 ? 2 : 0;
-        nextSwitch = state === 0 ? 4200 + Math.random() * 2500 : state === 1 ? 1100 + Math.random() * 600 : 2600 + Math.random() * 1400;
-      }
-      targetEnergy = state === 0 ? 0.32 : state === 1 ? 0.6 : 0.95;
-      energy += (targetEnergy + pulse * 0.6 - energy) * 0.045;
-      pulse *= 0.955;
+      if (phase === "listen" && phaseT > 650) { phase = "speak"; phaseT = 0; }
+      if (phase === "speak" && phaseT > 3200) { phase = "idle"; phaseT = 0; }
+
+      const modeScale = mode === "copilot" ? 0.86 : 1;
+      const targetEnergy = phase === "listen" ? 0.12 : phase === "speak" ? 1 : (mode === "copilot" ? 0.26 : 0.4);
+      const targetRadius = phase === "listen" ? 0.82 : phase === "speak" ? 1.06 : 1;
+      energy += (targetEnergy - energy) * 0.06;
+      radiusK += (targetRadius - radiusK) * 0.07;
+
+      // hybrid handoff sweep, occasionally re-fires
+      if (mode === "hybrid") {
+        if (handoff < 0 && Math.random() < 0.003) handoff = 0;
+        if (handoff >= 0) { handoff += dt * 0.0011; if (handoff > 1) handoff = -1; }
+      } else handoff = -1;
 
       ctx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h * 0.46;
+      const base = Math.min(Math.max(w * 0.36, 340), mobile ? 320 : 560) / 2 * modeScale * radiusK;
+
       if (reduced) {
-        ctx.globalAlpha = 0.1;
-        ctx.strokeStyle = "rgba(204,0,0,.6)";
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(0, h * 0.62); ctx.lineTo(w, h * 0.62); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, base, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(204,0,0,.14)"; ctx.lineWidth = 1.2; ctx.stroke();
         return;
       }
 
-      const cx = w / 2, cy = h * 0.6;
-
-      // diffused glow
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.55);
-      g.addColorStop(0, `rgba(204,0,0,${0.1 + energy * 0.07})`);
-      g.addColorStop(0.5, "rgba(120,0,0,0.05)");
+      // radial glow behind the orb
+      const g = ctx.createRadialGradient(cx, cy, base * 0.1, cx, cy, base * 2.1);
+      g.addColorStop(0, `rgba(190,10,10,${0.13 + energy * 0.07})`);
+      g.addColorStop(0.45, "rgba(120,0,0,0.05)");
       g.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
 
-      // flowing waveform lines
-      for (let i = 0; i < lines; i++) {
-        const off = i / lines;
-        const amp = h * (0.05 + 0.055 * energy) * (1 - off * 0.45);
-        const yBase = cy + (i - (lines - 1) / 2) * (h * 0.035);
+      // faint drifting echo circles
+      for (let e = 0; e < 3; e++) {
+        const br = base * (1.55 + e * 0.55) * (1 + Math.sin(t * (0.22 + e * 0.07) + e) * 0.025);
         ctx.beginPath();
-        const step = mobile ? 14 : 8;
-        for (let x = 0; x <= w; x += step) {
-          const nx = x / w;
-          const edge = Math.sin(Math.PI * Math.min(1, Math.max(0, nx)));
-          const y =
-            yBase +
-            Math.sin(nx * 7 + t * (0.7 + i * 0.18)) * amp * edge +
-            Math.sin(nx * 17 - t * (1.4 + i * 0.25)) * amp * 0.35 * edge +
-            Math.sin(nx * 31 + t * 2.3) * amp * 0.14 * edge * energy;
-          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = i === 0
-          ? `rgba(255,70,70,${0.16 + energy * 0.14})`
-          : `rgba(204,0,0,${0.09 + energy * 0.08})`;
-        ctx.lineWidth = i === 0 ? 1.6 : 1;
+        ctx.arc(cx + Math.sin(t * 0.18 + e) * 8, cy + Math.cos(t * 0.15 + e) * 6, br, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(214,40,40,${0.035 - e * 0.008})`;
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
 
-      // particles converging toward center
-      const conv = state === 1 ? 1 : 0.15;
-      for (const p of particles) {
-        p.p += p.s * dt * (0.6 + conv * 2.2);
-        if (p.p > 1) { p.p = 0; p.a = Math.random() * Math.PI * 2; p.r = 0.25 + Math.random() * 0.85; }
-        const dist = (1 - p.p) * p.r;
-        const px = cx + Math.cos(p.a) * dist * w * 0.5;
-        const py = cy + Math.sin(p.a) * dist * h * 0.62;
-        const fade = Math.sin(p.p * Math.PI);
+      // primary orb: many thin waveform rings
+      const deform = (ang, k) => {
+        const arcBoost = mode === "hybrid"
+          ? 1 + 0.45 * Math.cos(ang * 2)            // two overlapping lobes
+          : mode === "copilot"
+            ? 1 + 0.18 * Math.sin(ang * 5 + t * 1.4)
+            : 1;
+        return (
+          Math.sin(ang * 3 + t * 1.15 + k) * 0.055 +
+          Math.sin(ang * 7 - t * 1.9 + k * 1.7) * 0.032 +
+          Math.sin(ang * 13 + t * 2.7 + k * 0.6) * 0.016 * (0.4 + energy)
+        ) * (0.55 + energy * 1.1) * arcBoost;
+      };
+
+      for (let i = 0; i < LINES; i++) {
+        const k = i * 0.14;
+        const rBase = base * (0.9 + (i / LINES) * 0.2);
         ctx.beginPath();
-        ctx.arc(px, py, 1.1 + energy * 0.9, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,90,90,${0.16 * fade * (0.5 + energy)})`;
-        ctx.fill();
+        for (let d = 0; d <= 360; d += STEP) {
+          const ang = (d * Math.PI) / 180;
+          const rr = rBase * (1 + deform(ang, k));
+          const x = cx + Math.cos(ang) * rr;
+          const y = cy + Math.sin(ang) * rr;
+          d === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        const edge = i / LINES;
+        const alpha = (0.02 + edge * 0.05) * (0.75 + energy * 0.9);
+        ctx.strokeStyle = edge > 0.82
+          ? `rgba(255,120,110,${alpha * 1.25})`
+          : `rgba(196,12,12,${alpha})`;
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
       }
 
-      // click pulse ring toward card
-      if (pulse > 0.02) {
-        const rr = (1 - pulse) * Math.max(w, h) * 0.5;
+      // hybrid handoff: a bright travelling arc from left lobe to right lobe
+      if (handoff >= 0) {
+        const a0 = Math.PI + handoff * Math.PI;
         ctx.beginPath();
-        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255,60,60,${0.22 * pulse})`;
+        ctx.arc(cx, cy, base * 1.02, a0 - 0.28, a0 + 0.28);
+        ctx.strokeStyle = `rgba(255,140,120,${0.28 * Math.sin(handoff * Math.PI)})`;
         ctx.lineWidth = 2;
         ctx.stroke();
+      }
+
+      // converging particles while listening
+      if (phase === "listen") {
+        for (const p of particles) {
+          p.p += p.s * dt;
+          const dist = base * 1.9 * (1 - Math.min(1, p.p));
+          const px = cx + Math.cos(p.a) * dist;
+          const py = cy + Math.sin(p.a) * dist;
+          ctx.beginPath();
+          ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,110,100,${0.3 * (1 - p.p)})`;
+          ctx.fill();
+        }
       }
     };
     raf = requestAnimationFrame(draw);
@@ -266,6 +302,8 @@ function AudioAtmosphere() {
       cancelAnimationFrame(raf);
       ro.disconnect(); io.disconnect();
       window.removeEventListener("mc-demo-pulse", onPulse);
+      window.removeEventListener("mc-demo-speak", onSpeak);
+      window.removeEventListener("mc-demo-mode", onMode);
     };
   }, []);
 
@@ -275,6 +313,7 @@ function AudioAtmosphere() {
     </div>
   );
 }
+
 
 function LiveDemo() {
 
