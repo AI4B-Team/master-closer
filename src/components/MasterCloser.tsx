@@ -795,7 +795,7 @@ const STORIES = [
   {
     kicker: "03 · Copilot Mode",
     icon: Mic,
-    t: "Your Rep Leads. AI Guides.",
+    t: "Your Rep Leads.\nAI Guides.",
     d: "Your rep runs the conversation while Master Closer listens and privately puts the next best line on screen — the prospect never sees or hears it.",
     bullets: [
       "Word-for-word next line, not vague coaching",
