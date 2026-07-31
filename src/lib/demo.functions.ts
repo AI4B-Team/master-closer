@@ -4,14 +4,12 @@ import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { MODE_META } from "./demo.server";
 
-const Input = z.object({
-  prospect: z.string(),
-  mode: z.string(),
-});
-
 
 export const closeObjection = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => Input.parse(data))
+  .inputValidator((data: unknown) =>
+    z.object({ prospect: z.string(), mode: z.string() }).parse(data),
+  )
+
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
