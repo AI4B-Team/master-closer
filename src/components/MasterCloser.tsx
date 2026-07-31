@@ -1646,7 +1646,7 @@ a{text-decoration:none;color:inherit;}
 
 
 /* outcome cards */
-.sec-out{background:var(--surface);padding:72px 0 78px;}
+.sec-out{background:#f6f3f1;padding:72px 0 78px;}
 .outs{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch;}
 .out{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
   border-radius:24px;overflow:hidden;transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
