@@ -348,6 +348,7 @@ function LiveDemo() {
       setResult(data);
       window.dispatchEvent(new CustomEvent("mc-demo-speak"));
     } catch (e) {
+      console.error("MC_DEMO_ERR", e);
       setError("Couldn't Reach The Closer Just Now. Try Again In A Moment.");
     } finally { setLoading(false); }
   }
