@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState } from "react";
+import { closeObjection } from "@/lib/demo.functions";
 import {
   Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
