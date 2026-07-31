@@ -1183,30 +1183,97 @@ export default function MasterCloser() {
       </section>
 
 
-      {/* TESTIMONIALS */}
-      <section className="sec">
+      {/* THREE MODES / OUTCOMES */}
+      <section className="sec sec-out">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Proof</Eyebrow>
-            <h2 className="font-display sec-h2">Closers Don't Go Back.</h2>
+            <Eyebrow>Three Modes. One Outcome.</Eyebrow>
+            <h2 className="font-display sec-h2">However You Sell, Master Closer Keeps It Moving.</h2>
+            <p className="sec-lead">Let AI run the call, hand a qualified buyer to your closer, or privately guide your rep through the hardest moments.</p>
           </div>
-          <div className="quotes">
+
+          <div className="outs">
             {[
-              { q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.", n: "Marcus D.", r: "Solar" },
-              { q: "The whisper hits before the silence gets awkward. My objection handling doubled.", n: "Priya R.", r: "SaaS AE" },
-              { q: "AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
-            ].map((t) => (
-              <div key={t.n} className="quote">
-                <p className="quote-t">“{t.q}”</p>
-                <div className="quote-by">
-                  <span className="quote-n font-display">{t.n}</span>
-                  <span className="quote-r">{t.r}</span>
+              {
+                n: "01", variant: "ai", icon: Bot, tag: "AI",
+                h: "Close While Your Team Is Offline.",
+                c: "AI runs the conversation, handles objections and sends the prospect the next step — even after hours.",
+                rows: [
+                  { icon: Check, label: "Call Completed" },
+                  { icon: CreditCard, label: "Payment Link Sent" },
+                ],
+                panel: "orb",
+              },
+              {
+                n: "02", variant: "hybrid", icon: PhoneForwarded, tag: "Hybrid",
+                h: "Pick Up When The Buyer Is Ready.",
+                c: "AI qualifies and warms the prospect, then briefs your closer before making a seamless live transfer.",
+                rows: [
+                  { icon: BadgeCheck, label: "Lead Qualified" },
+                  { icon: PhoneForwarded, label: "Warm Transfer Ready" },
+                ],
+                panel: "handoff",
+              },
+              {
+                n: "03", variant: "copilot", icon: Headphones, tag: "Copilot",
+                h: "Never Let An Objection Stall The Call.",
+                c: "Your rep stays in control while AI privately delivers the next best response in real time.",
+                rows: [
+                  { icon: Crosshair, label: "Price Objection Detected" },
+                  { icon: Sparkles, label: "Response Ready" },
+                ],
+                panel: "whisper",
+              },
+            ].map((o) => (
+              <article key={o.n} className={"out out-" + o.variant}>
+                <span className="out-edge" />
+                <div className="out-top">
+                  <div className="out-head">
+                    <span className="out-ico"><o.icon size={20} strokeWidth={2.2} /></span>
+                    <span className="out-tag">{o.tag}</span>
+                    <span className="out-num">{o.n}</span>
+                  </div>
+                  <h3 className="font-display out-h">{o.h}</h3>
+                  <p className="out-c">{o.c}</p>
                 </div>
-              </div>
+                <div className="out-panel">
+                  <div className="out-rows">
+                    {o.rows.map((r) => (
+                      <div key={r.label} className="out-row">
+                        <span className="out-row-ico"><r.icon size={13} strokeWidth={2.6} /></span>
+                        <span className="out-row-l">{r.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="out-viz">
+                    {o.panel === "orb" && <MiniOrb size={62} variant="ai" />}
+                    {o.panel === "handoff" && (
+                      <div className="out-handoff">
+                        <MiniOrb size={46} variant="hybrid" />
+                        <span className="out-wire"><span className="out-pulse" /></span>
+                        <span className="out-human"><Users size={18} strokeWidth={2.2} /></span>
+                      </div>
+                    )}
+                    {o.panel === "whisper" && (
+                      <div className="out-whisper">
+                        <span className="out-mic"><Mic size={17} strokeWidth={2.2} /></span>
+                        <span className="out-wsp"><span /><span /><span /></span>
+                        <MiniOrb size={38} variant="copilot" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
             ))}
+          </div>
+
+          <div className="out-cta">
+            <a href="#demo" className="btn-primary btn-lg">Try It Live <ArrowRight size={17} strokeWidth={2.4} /></a>
+            <a href="#autonomy" className="out-link">See How The Three Modes Work <ArrowRight size={15} strokeWidth={2.4} /></a>
           </div>
         </div>
       </section>
+
 
       {/* FAQ */}
       <section id="faq" className="sec sec-mist">
@@ -1578,14 +1645,56 @@ a{text-decoration:none;color:inherit;}
 @media(max-width:900px){.comply{grid-template-columns:1fr;gap:32px;}.comply-list{grid-template-columns:1fr;}}
 
 
-/* quotes */
-.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.quote{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;}
-.quote-t{font-size:1.02rem;line-height:1.55;color:#22262e;margin:0 0 20px;font-weight:500;}
-.quote-by{display:flex;flex-direction:column;gap:2px;}
-.quote-n{font-weight:800;font-size:.98rem;}
-.quote-r{font-size:.84rem;color:var(--muted);}
-@media(max-width:860px){.quotes{grid-template-columns:1fr;}}
+/* outcome cards */
+.sec-out{background:#f6f3f1;padding:72px 0 78px;}
+.outs{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch;}
+.out{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
+  border-radius:24px;overflow:hidden;transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  box-shadow:0 18px 40px -32px rgba(17,19,24,.35);}
+.out:hover{transform:translateY(-5px);border-color:#e6c8c8;
+  box-shadow:0 30px 60px -34px rgba(196,32,32,.34), 0 0 0 1px rgba(196,32,32,.06);}
+.out-edge{position:absolute;top:0;left:0;right:0;height:3px;background:var(--signal);opacity:0;transition:opacity .25s ease;}
+.out:hover .out-edge{opacity:1;}
+.out-top{padding:28px 26px 26px;flex:1;}
+.out-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.out-ico{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#fbeaea;color:var(--signal);flex:0 0 auto;}
+.out-tag{font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8a9099;}
+.out-num{margin-left:auto;font-family:var(--font-display,inherit);font-weight:800;font-size:1.1rem;color:#dfe3e8;}
+.out-h{font-weight:800;font-size:1.24rem;line-height:1.24;letter-spacing:-.02em;margin:0 0 10px;color:#14171c;}
+.out-c{font-size:.96rem;line-height:1.6;color:var(--muted);margin:0;}
+.out-panel{background:#15181d;padding:20px 22px 22px;display:flex;flex-direction:column;gap:16px;position:relative;}
+.out-panel::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 80% 110%, rgba(196,32,32,.20), transparent 60%);}
+.out-rows{display:flex;flex-direction:column;gap:9px;position:relative;z-index:1;}
+.out-row{display:flex;align-items:center;gap:9px;}
+.out-row-ico{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;
+  background:rgba(196,32,32,.18);color:#ff6b6b;flex:0 0 auto;}
+.out-row-l{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#cfd4db;}
+.out-viz{position:relative;z-index:1;min-height:70px;display:grid;place-items:center;}
+.out-handoff{display:flex;align-items:center;gap:12px;}
+.out-wire{position:relative;width:64px;height:2px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden;}
+.out-pulse{position:absolute;top:0;left:0;width:22px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,#ff5a5a,transparent);animation:outTravel 2.2s ease-in-out infinite;}
+@keyframes outTravel{0%{transform:translateX(-24px);}100%{transform:translateX(66px);}}
+.out-human{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;
+  border:1.5px dashed rgba(255,255,255,.35);color:#e7eaef;}
+.out-whisper{display:flex;align-items:center;gap:12px;}
+.out-mic{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;
+  background:rgba(255,255,255,.07);color:#e7eaef;}
+.out-wsp{display:flex;align-items:center;gap:5px;}
+.out-wsp span{width:6px;height:6px;border-radius:50%;background:#ff5a5a;opacity:.35;animation:outWsp 1.5s ease-in-out infinite;}
+.out-wsp span:nth-child(2){animation-delay:.2s;}
+.out-wsp span:nth-child(3){animation-delay:.4s;}
+@keyframes outWsp{0%,100%{opacity:.25;transform:scale(.85);}50%{opacity:1;transform:scale(1.15);}}
+.out-cta{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:44px;flex-wrap:wrap;}
+.out-link{display:inline-flex;align-items:center;gap:6px;font-size:.95rem;font-weight:700;color:var(--signal);text-decoration:none;}
+.out-link:hover{text-decoration:underline;}
+@media(max-width:980px){.outs{grid-template-columns:1fr;}}
+@media(prefers-reduced-motion:reduce){
+  .out-pulse,.out-wsp span{animation:none;}
+  .out:hover{transform:none;}
+}
+
 
 /* faq */
 .faq{display:flex;flex-direction:column;gap:12px;}
