@@ -34,13 +34,25 @@ export const closeObjection = createServerFn({ method: "POST" })
     });
 
     const clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    const match = clean.match(/\{[\s\S]*\}/);
     let parsed: Record<string, unknown> = {};
     try {
+      const match = clean.match(/\{[\s\S]*\}/);
       parsed = JSON.parse(match ? match[0] : clean);
     } catch {
-      parsed = { line: clean };
+      // Model output was truncated or not valid JSON — salvage what we can.
+      const pick = (k: string) => {
+        const m = clean.match(new RegExp(`"${k}"\\s*:\\s*"([^"]*)`));
+        return m ? m[1] : undefined;
+      };
+      const num = clean.match(/"confidence"\s*:\s*(\d+)/);
+      parsed = {
+        objection: pick("objection"),
+        tone: pick("tone"),
+        confidence: num ? Number(num[1]) : undefined,
+        line: pick("line") ?? clean.replace(/[{}"]/g, " ").trim(),
+      };
     }
+
 
     return {
       objection: String(parsed.objection ?? "Objection"),
