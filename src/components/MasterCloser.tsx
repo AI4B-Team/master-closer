@@ -602,16 +602,43 @@ function IndustryExplorer() {
 /* --------------------- Mode sections: shared system -------------------- */
 
 
-/* The orb is THE Master Closer AI visual. Same mark everywhere. */
+/* The mesh voice orb is THE Master Closer AI mark — small, functional variants only. */
+function meshPath(cx, cy, r, amp, lobes, phase) {
+  const pts = [];
+  for (let i = 0; i <= 64; i++) {
+    const a = (i / 64) * Math.PI * 2;
+    const rr = r + Math.sin(a * lobes + phase) * amp + Math.sin(a * (lobes + 2) - phase) * amp * 0.5;
+    pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
+  }
+  return "M" + pts.map((p) => p[0].toFixed(2) + " " + p[1].toFixed(2)).join("L") + "Z";
+}
+
 function MiniOrb({ size = 88, variant = "ai" }) {
+  if (variant === "hybrid") {
+    return (
+      <div className="mlink" style={{ width: size * 1.6, height: size * 0.5 }} aria-hidden="true">
+        <span className="mlink-node mlink-ai" />
+        <span className="mlink-path"><span className="mlink-pulse" /></span>
+        <span className="mlink-node mlink-hu" />
+      </div>
+    );
+  }
+  if (variant === "copilot") {
+    return (
+      <div className="mwave" style={{ width: size * 1.1, height: size * 0.42 }} aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <span key={i} style={{ animationDelay: i * 0.09 + "s" }} />
+        ))}
+      </div>
+    );
+  }
   return (
-    <div className={"morb morb-" + variant} style={{ width: size, height: size }}>
-      <span className="morb-glow" />
-      <span className="morb-ring morb-r1" />
-      <span className="morb-ring morb-r2" />
-      <span className="morb-ring morb-r3" />
-      <span className="morb-core" />
-      {variant === "hybrid" && <span className="morb-arc" />}
+    <div className="morb" style={{ width: size, height: size }} aria-hidden="true">
+      <svg viewBox="0 0 100 100" width={size} height={size}>
+        <path className="morb-l morb-l1" d={meshPath(50, 50, 34, 3.6, 5, 0)} />
+        <path className="morb-l morb-l2" d={meshPath(50, 50, 27, 3.0, 7, 1.4)} />
+        <path className="morb-l morb-l3" d={meshPath(50, 50, 20, 2.4, 4, 2.8)} />
+      </svg>
     </div>
   );
 }
@@ -626,7 +653,8 @@ function StageStrip({ current }) {
         return (
           <div key={s} className={"stg-i stg-" + state}>
             <span className="stg-dot">
-              {state === "done" ? <Check size={11} strokeWidth={3.2} /> : <span className="stg-pip" />}
+              {state === "done" ? <Check size={11} strokeWidth={3.2} />
+                : <span className="stg-num font-mono">{i + 1}</span>}
             </span>
             <span className="stg-lbl">{s}</span>
           </div>
