@@ -1183,30 +1183,97 @@ export default function MasterCloser() {
       </section>
 
 
-      {/* TESTIMONIALS */}
-      <section className="sec">
+      {/* THREE MODES / OUTCOMES */}
+      <section className="sec sec-out">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Proof</Eyebrow>
-            <h2 className="font-display sec-h2">Closers Don't Go Back.</h2>
+            <Eyebrow>Three Modes. One Outcome.</Eyebrow>
+            <h2 className="font-display sec-h2">However You Sell, Master Closer Keeps It Moving.</h2>
+            <p className="sec-lead">Let AI run the call, hand a qualified buyer to your closer, or privately guide your rep through the hardest moments.</p>
           </div>
-          <div className="quotes">
+
+          <div className="outs">
             {[
-              { q: "Set it to hybrid and my AI warms every lead before I even pick up. I just close.", n: "Marcus D.", r: "Solar" },
-              { q: "The whisper hits before the silence gets awkward. My objection handling doubled.", n: "Priya R.", r: "SaaS AE" },
-              { q: "AI ran a demo while I slept and sent the payment link. Woke up to a closed deal.", n: "Jordan T.", r: "Agency Owner" },
-            ].map((t) => (
-              <div key={t.n} className="quote">
-                <p className="quote-t">“{t.q}”</p>
-                <div className="quote-by">
-                  <span className="quote-n font-display">{t.n}</span>
-                  <span className="quote-r">{t.r}</span>
+              {
+                n: "01", variant: "ai", icon: Bot, tag: "AI",
+                h: "Close While Your Team Is Offline.",
+                c: "AI runs the conversation, handles objections and sends the prospect the next step — even after hours.",
+                rows: [
+                  { icon: CheckCircleLike, label: "Call Completed" },
+                  { icon: CreditCard, label: "Payment Link Sent" },
+                ],
+                panel: "orb",
+              },
+              {
+                n: "02", variant: "hybrid", icon: PhoneForwarded, tag: "Hybrid",
+                h: "Pick Up When The Buyer Is Ready.",
+                c: "AI qualifies and warms the prospect, then briefs your closer before making a seamless live transfer.",
+                rows: [
+                  { icon: BadgeCheck, label: "Lead Qualified" },
+                  { icon: PhoneForwarded, label: "Warm Transfer Ready" },
+                ],
+                panel: "handoff",
+              },
+              {
+                n: "03", variant: "copilot", icon: Headphones, tag: "Copilot",
+                h: "Never Let An Objection Stall The Call.",
+                c: "Your rep stays in control while AI privately delivers the next best response in real time.",
+                rows: [
+                  { icon: Crosshair, label: "Price Objection Detected" },
+                  { icon: Sparkles, label: "Response Ready" },
+                ],
+                panel: "whisper",
+              },
+            ].map((o) => (
+              <article key={o.n} className={"out out-" + o.variant}>
+                <span className="out-edge" />
+                <div className="out-top">
+                  <div className="out-head">
+                    <span className="out-ico"><o.icon size={20} strokeWidth={2.2} /></span>
+                    <span className="out-tag">{o.tag}</span>
+                    <span className="out-num">{o.n}</span>
+                  </div>
+                  <h3 className="font-display out-h">{o.h}</h3>
+                  <p className="out-c">{o.c}</p>
                 </div>
-              </div>
+                <div className="out-panel">
+                  <div className="out-rows">
+                    {o.rows.map((r) => (
+                      <div key={r.label} className="out-row">
+                        <span className="out-row-ico"><r.icon size={13} strokeWidth={2.6} /></span>
+                        <span className="out-row-l">{r.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="out-viz">
+                    {o.panel === "orb" && <MiniOrb size={62} variant="ai" />}
+                    {o.panel === "handoff" && (
+                      <div className="out-handoff">
+                        <MiniOrb size={46} variant="hybrid" />
+                        <span className="out-wire"><span className="out-pulse" /></span>
+                        <span className="out-human"><Users size={18} strokeWidth={2.2} /></span>
+                      </div>
+                    )}
+                    {o.panel === "whisper" && (
+                      <div className="out-whisper">
+                        <span className="out-mic"><Mic size={17} strokeWidth={2.2} /></span>
+                        <span className="out-wsp"><span /><span /><span /></span>
+                        <MiniOrb size={38} variant="copilot" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
             ))}
+          </div>
+
+          <div className="out-cta">
+            <a href="#demo" className="btn-primary btn-lg">Try It Live <ArrowRight size={17} strokeWidth={2.4} /></a>
+            <a href="#modes" className="out-link">See How The Three Modes Work <ArrowRight size={15} strokeWidth={2.4} /></a>
           </div>
         </div>
       </section>
+
 
       {/* FAQ */}
       <section id="faq" className="sec sec-mist">
