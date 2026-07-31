@@ -1265,7 +1265,7 @@ export default function MasterCloser() {
                     {o.panel === "orb" && <MiniOrb size={62} variant="ai" />}
                     {o.panel === "handoff" && (
                       <div className="out-handoff">
-                        <MiniOrb size={46} variant="hybrid" />
+                        <MiniOrb size={40} variant="ai" />
                         <span className="out-wire"><span className="out-pulse" /></span>
                         <span className="out-human"><Users size={18} strokeWidth={2.2} /></span>
                       </div>
@@ -1273,8 +1273,7 @@ export default function MasterCloser() {
                     {o.panel === "whisper" && (
                       <div className="out-whisper">
                         <span className="out-mic"><Mic size={17} strokeWidth={2.2} /></span>
-                        <span className="out-wsp"><span /><span /><span /></span>
-                        <MiniOrb size={38} variant="copilot" />
+                        <MiniOrb size={54} variant="copilot" />
                       </div>
                     )}
                   </div>
