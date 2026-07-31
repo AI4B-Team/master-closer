@@ -26,7 +26,7 @@ export const closeObjection = createServerFn({ method: "POST" })
 
     const gateway = createLovableAiGatewayProvider(key);
     const { text } = await generateText({
-      model: gateway("google/gemini-3.1-flash-lite"),
+      model: gateway("google/gemini-3.6-flash"),
       prompt,
       maxOutputTokens: 200,
       temperature: 0.6,
