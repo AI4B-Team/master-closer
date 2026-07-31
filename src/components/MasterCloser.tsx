@@ -1069,33 +1069,18 @@ export default function MasterCloser() {
         </div>
       </section>
 
-      {/* USE CASES */}
-      <section id="uses" className="sec sec-mist">
+      {/* INDUSTRY EXPLORER */}
+      <section id="uses" className="sec sec-inds">
         <div className="wrap">
           <div className="sec-head">
-            <Eyebrow>Trained To Close</Eyebrow>
-            <h2 className="font-display sec-h2">A Master Closer For Any Close.</h2>
-            <p className="sec-lead">Real objections it handles live, tuned to your industry and your offer.</p>
+            <Eyebrow>Industry-Ready</Eyebrow>
+            <h2 className="font-display sec-h2">Built For The Objections Your Buyers Actually Raise.</h2>
+            <p className="sec-lead">Choose an industry and watch Master Closer turn a familiar objection into the next step toward a sale.</p>
           </div>
-          <div className="uses">
-            {USES.map((u) => {
-              const Icon = u.icon;
-              return (
-                <div key={u.t} className="use">
-                  <div className="use-top">
-                    <span className="use-ico"><Icon size={17} strokeWidth={2.2} /></span>
-                    <span className="use-t font-display">{u.t}</span>
-                  </div>
-                  <div className="use-o">
-                    <span className="use-o-tag font-mono">PROSPECT</span>
-                    “{u.o}”
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <IndustryExplorer />
         </div>
       </section>
+
 
       {/* SETUP / LOOP */}
       <section id="setup" className="sec">
