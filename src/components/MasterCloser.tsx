@@ -486,100 +486,134 @@ function FAQItem({ q, a }) {
 }
 
 
-/* --------------------- Feature story mocks (zigzag) -------------------- */
-function MockWhisper() {
+/* --------------------- Mode sections: shared system -------------------- */
+
+/* The orb is THE Master Closer AI visual. Same mark everywhere. */
+function MiniOrb({ size = 88, variant = "ai" }) {
   return (
-    <div className="fmock">
-      <div className="fmock-bar">
-        <span className="rec-dot" /><span className="font-mono fmock-live">LIVE · COPILOT</span>
-      </div>
-      <div className="fmock-body">
-        <div className="bubble bubble-them">
-          <div className="bubble-name font-mono">PROSPECT</div>
-          Honestly, your competitor is cheaper.
-        </div>
-        <div className="say">
-          <div className="say-head">
-            <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
-            <span className="font-mono say-tag">Next Best Response</span>
+    <div className={"morb morb-" + variant} style={{ width: size, height: size }}>
+      <span className="morb-glow" />
+      <span className="morb-ring morb-r1" />
+      <span className="morb-ring morb-r2" />
+      <span className="morb-ring morb-r3" />
+      <span className="morb-core" />
+      {variant === "hybrid" && <span className="morb-arc" />}
+    </div>
+  );
+}
+
+const STAGES = ["Discovery", "Qualify", "Present", "Objections", "Close", "Payment"];
+
+function StageStrip({ current }) {
+  return (
+    <div className="stg">
+      {STAGES.map((s, i) => {
+        const state = i < current ? "done" : i === current ? "now" : "next";
+        return (
+          <div key={s} className={"stg-i stg-" + state}>
+            <span className="stg-dot">
+              {state === "done" ? <Check size={11} strokeWidth={3.2} /> : <span className="stg-pip" />}
+            </span>
+            <span className="stg-lbl">{s}</span>
           </div>
-          <p className="say-line">Say: "Cheaper on the sticker, sure. Are they closing 4 in 10 for you?"</p>
-        </div>
-        <div className="fmock-note font-mono">ONLY YOUR REP SEES THIS</div>
-      </div>
+        );
+      })}
     </div>
   );
 }
-function MockVoice() {
+
+function CallCard({ status, elapsed, variant, children, footer }) {
   return (
     <div className="fmock">
       <div className="fmock-bar">
-        <span className="fmock-ico"><Bot size={14} strokeWidth={2.3} /></span>
-        <span className="font-mono fmock-live">AI CLOSER · SPEAKING</span>
+        <span className="rec-dot" />
+        <span className="font-mono fmock-live">LIVE</span>
+        <span className="fmock-time font-mono">{elapsed}</span>
+        <span className="fmock-status font-mono">{status}</span>
       </div>
       <div className="fmock-body">
-        <div className="wavebox">
-          {Array.from({ length: 26 }).map((_, i) => (
-            <span key={i} className="wavebar" style={{ animationDelay: (i * 0.055) + "s" }} />
-          ))}
+        <div className="orb-row">
+          <MiniOrb variant={variant} />
         </div>
-        <p className="fmock-quote">"If I lock today's rate and email the agreement now, are you good to start?"</p>
-        <div className="fmock-rows">
-          <div className="fmock-row"><span>Discovery</span><b className="text-green">Done</b></div>
-          <div className="fmock-row"><span>Demo</span><b className="text-green">Done</b></div>
-          <div className="fmock-row"><span>Close</span><b className="text-signal">In Progress</b></div>
-        </div>
+        {children}
       </div>
+      {footer}
     </div>
   );
 }
-function MockTransfer() {
+
+function Prob({ value, stage }) {
   return (
-    <div className="fmock">
-      <div className="fmock-bar">
-        <span className="fmock-ico"><PhoneForwarded size={14} strokeWidth={2.3} /></span>
-        <span className="font-mono fmock-live">WARM TRANSFER</span>
+    <div className="prob">
+      <div className="prob-top">
+        <span className="font-mono prob-lbl">CLOSE PROBABILITY</span>
+        <b className="font-display prob-val">{value}%</b>
       </div>
-      <div className="fmock-body">
-        <div className="xfer">
-          <div className="xfer-side"><span className="xfer-av xfer-av-ai"><Bot size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">AI Closer</span></div>
-          <span className="xfer-arrow"><ArrowRight size={18} strokeWidth={2.6} /></span>
-          <div className="xfer-side"><span className="xfer-av"><Headphones size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">Sarah</span></div>
-        </div>
-        <div className="say">
-          <div className="say-head">
-            <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
-            <span className="font-mono say-tag">Briefing Your Closer</span>
-          </div>
-          <p className="say-line">Warm lead, budget confirmed, one price objection left. Take the close.</p>
-        </div>
-      </div>
+      <div className="prob-track"><span className="prob-fill" style={{ width: value + "%" }} /></div>
+      <div className="prob-stage font-mono">STAGE · {stage}</div>
     </div>
   );
 }
-function MockCollect() {
+
+function MockAI() {
   return (
-    <div className="fmock">
-      <div className="fmock-bar">
-        <span className="fmock-ico"><CreditCard size={14} strokeWidth={2.3} /></span>
-        <span className="font-mono fmock-live">CLOSE & COLLECT</span>
+    <CallCard status="AI · SPEAKING" elapsed="04:12" variant="ai"
+      footer={<div className="fmock-foot"><StageStrip current={3} /></div>}>
+      <div className="line line-them">
+        <div className="line-name font-mono">PROSPECT</div>
+        Honestly, the price feels high. Your competitor is about half.
       </div>
-      <div className="fmock-body">
-        <div className="pay">
-          <div className="pay-label font-mono">AGREEMENT SENT</div>
-          <div className="pay-amt font-display">$4,200</div>
-          <div className="pay-meta">Gridline Ops · Annual Plan</div>
-          <div className="pay-btn font-display">Pay Now</div>
-        </div>
-        <div className="fmock-rows">
-          <div className="fmock-row"><span>Signature</span><b className="text-green">Received</b></div>
-          <div className="fmock-row"><span>Payment</span><b className="text-green">Captured</b></div>
-          <div className="fmock-row"><span>CRM Write-Back</span><b className="text-green">Logged</b></div>
-        </div>
+      <div className="line line-ai">
+        <div className="line-name font-mono">MASTER CLOSER</div>
+        When you say it feels high, is it the total investment or the monthly amount that gives you pause?
       </div>
-    </div>
+      <Prob value={72} stage="Handling Objection" />
+    </CallCard>
   );
 }
+
+function MockHybrid() {
+  return (
+    <CallCard status="AI · TRANSFERRING" elapsed="06:38" variant="hybrid"
+      footer={<div className="fmock-foot"><StageStrip current={4} /></div>}>
+      <div className="xfer">
+        <div className="xfer-side"><span className="xfer-av xfer-av-ai"><Bot size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">AI Closer</span></div>
+        <span className="xfer-arrow"><ArrowRight size={18} strokeWidth={2.6} /></span>
+        <div className="xfer-side"><span className="xfer-av"><Headphones size={18} strokeWidth={2.2} /></span><span className="xfer-name font-display">Sarah · Closer</span></div>
+      </div>
+      <div className="say">
+        <div className="say-head">
+          <PhoneForwarded size={13} strokeWidth={2.4} className="text-signal" />
+          <span className="font-mono say-tag">Briefing Your Closer</span>
+        </div>
+        <p className="say-line">Qualified. Budget confirmed at $4.2k, decision maker on the line, one price objection left. Take the close.</p>
+      </div>
+      <Prob value={64} stage="Warm Transfer" />
+    </CallCard>
+  );
+}
+
+function MockCopilot() {
+  return (
+    <CallCard status="REP · SPEAKING" elapsed="09:05" variant="copilot"
+      footer={<div className="fmock-foot"><StageStrip current={3} /></div>}>
+      <div className="line line-them">
+        <div className="line-name font-mono">PROSPECT</div>
+        I need to think about it and talk to my partner.
+      </div>
+      <div className="say">
+        <div className="say-head">
+          <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
+          <span className="font-mono say-tag">Next Best Response</span>
+        </div>
+        <p className="say-line">Say: "Totally fair. When you two talk, what's the one thing that decides it — the price or the timeline?"</p>
+        <div className="say-note font-mono">PRIVATE · PROSPECT CANNOT SEE OR HEAR THIS</div>
+      </div>
+      <Prob value={58} stage="Handling Objection" />
+    </CallCard>
+  );
+}
+
 
 const INDUSTRIES = [
   "SaaS", "Real Estate", "Solar", "Insurance", "Recruiting", "Automotive",
