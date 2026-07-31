@@ -767,7 +767,7 @@ const STORIES = [
   {
     kicker: "01 · AI Mode",
     icon: Bot,
-    t: "Let AI Run The Entire Call.",
+    t: "AI Runs The Call.\nFrom Hello To Payment.",
     d: "From the first hello to the final payment, Master Closer handles discovery, presentation, objections and closing in one natural conversation.",
     bullets: [
       "Runs the complete sales conversation",
@@ -795,7 +795,7 @@ const STORIES = [
   {
     kicker: "03 · Copilot Mode",
     icon: Mic,
-    t: "Your Rep Leads. AI Guides.",
+    t: "Your Rep Leads.\nAI Guides.",
     d: "Your rep runs the conversation while Master Closer listens and privately puts the next best line on screen — the prospect never sees or hears it.",
     bullets: [
       "Word-for-word next line, not vague coaching",
@@ -1745,7 +1745,7 @@ a{text-decoration:none;color:inherit;}
 .story-flip .story-vis{order:1;}
 .story-kick{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--signal);margin-bottom:16px;}
-.story-h{font-weight:800;font-size:clamp(1.6rem,2.7vw,2.3rem);line-height:1.1;letter-spacing:-.03em;margin:0 0 16px;}
+.story-h{font-weight:800;font-size:clamp(1.6rem,2.7vw,2.3rem);line-height:1.1;letter-spacing:-.03em;margin:0 0 16px;white-space:pre-line;}
 .story-d{font-size:1.05rem;color:var(--muted);line-height:1.6;margin:0 0 22px;max-width:34em;}
 .story-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;}
 .story-list li{display:flex;align-items:flex-start;gap:11px;font-size:.97rem;font-weight:500;color:#2b3038;}
