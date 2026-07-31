@@ -1269,7 +1269,7 @@ export default function MasterCloser() {
 
           <div className="out-cta">
             <a href="#demo" className="btn-primary btn-lg">Try It Live <ArrowRight size={17} strokeWidth={2.4} /></a>
-            <a href="#modes" className="out-link">See How The Three Modes Work <ArrowRight size={15} strokeWidth={2.4} /></a>
+            <a href="#autonomy" className="out-link">See How The Three Modes Work <ArrowRight size={15} strokeWidth={2.4} /></a>
           </div>
         </div>
       </section>
