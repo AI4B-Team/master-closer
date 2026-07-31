@@ -358,14 +358,14 @@ function LiveDemo() {
       <div className="demo-controls"><Segmented value={mode} onChange={setMode} /></div>
       <div className="demo-scenarios">
         {SCENARIOS.map((s) => (
-          <button key={s} className="scenario" onClick={() => run(s)}>{s}</button>
+          <button key={s} type="button" className="scenario" onClick={() => run(s)}>{s}</button>
         ))}
       </div>
       <div className="demo-input">
         <input value={input} onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && run()}
           placeholder="Type What The Prospect Just Said…" aria-label="What The Prospect Said" />
-        <button className="btn-primary demo-go" onClick={() => run()} disabled={loading}>
+        <button type="button" className="btn-primary demo-go" onClick={() => run()} disabled={loading}>
           {loading ? <Loader2 size={16} className="spin" /> : <ArrowRight size={16} strokeWidth={2.4} />}
           <span>Close It</span>
         </button>
