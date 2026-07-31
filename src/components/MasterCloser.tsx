@@ -1317,7 +1317,7 @@ a{text-decoration:none;color:inherit;}
 .sec-demo-dark .sec-h2{color:#fff;}
 .sec-demo-dark .sec-lead{color:rgba(255,255,255,.66);}
 .sec-demo-dark .eyebrow-light{color:#ff6b6b;}
-.sec-demo-dark .demo{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);box-shadow:0 26px 64px -36px rgba(0,0,0,.5);}
+.sec-demo-dark .demo{position:relative;z-index:1;background:rgba(16,16,18,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-color:rgba(255,255,255,.12);box-shadow:0 26px 64px -36px rgba(0,0,0,.65);}
 .sec-demo-dark .scenario{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:rgba(255,255,255,.85);}
 .sec-demo-dark .scenario:hover{border-color:var(--signal);color:#fff;background:rgba(255,255,255,.1);}
 .sec-demo-dark .demo-input input{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);color:#fff;}
