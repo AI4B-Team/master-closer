@@ -124,10 +124,9 @@ const SCENARIOS = [
 function DemoWave() {
   return (
     <div className="demo-wave" aria-hidden="true">
-      <span className="demo-wave-ring" />
-      <span className="demo-wave-ring" />
-      <span className="demo-wave-ring" />
-      <span className="demo-wave-core" />
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+        <span key={i} className="demo-bar" style={{ animationDelay: i * 0.12 + "s" }} />
+      ))}
     </div>
   );
 }
