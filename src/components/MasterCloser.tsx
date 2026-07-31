@@ -211,8 +211,10 @@ function AudioAtmosphere() {
       ctx.clearRect(0, 0, w, h);
 
       const cx = w / 2;
-      const cy = h * 0.46;
-      const base = Math.min(Math.max(w * 0.36, 340), mobile ? 320 : 560) / 2 * modeScale * radiusK;
+      const cy = h * 0.5;
+      const spanned = Math.max(h * 0.58, w * 0.34);
+      const base = Math.min(Math.max(spanned, 420), mobile ? 460 : 1100) * modeScale * radiusK;
+
 
       if (reduced) {
         ctx.beginPath(); ctx.arc(cx, cy, base, 0, Math.PI * 2);
