@@ -358,6 +358,7 @@ function LiveDemo() {
       const raw = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
       const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
       setResult(JSON.parse(clean));
+      window.dispatchEvent(new CustomEvent("mc-demo-speak"));
     } catch (e) {
       setError("Couldn't Reach The Closer Just Now. Try Again In A Moment.");
     } finally { setLoading(false); }
