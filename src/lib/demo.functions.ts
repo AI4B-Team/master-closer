@@ -28,13 +28,20 @@ export const closeObjection = createServerFn({ method: "POST" })
     const { text } = await generateText({
       model: gateway("google/gemini-3.6-flash"),
       prompt,
-      maxOutputTokens: 200,
+      maxOutputTokens: 800,
       temperature: 0.6,
+      providerOptions: { lovable: { reasoning: { enabled: false } } },
     });
 
     const clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
     const match = clean.match(/\{[\s\S]*\}/);
-    const parsed = JSON.parse(match ? match[0] : clean);
+    let parsed: Record<string, unknown> = {};
+    try {
+      parsed = JSON.parse(match ? match[0] : clean);
+    } catch {
+      parsed = { line: clean };
+    }
+
     return {
       objection: String(parsed.objection ?? "Objection"),
       tone: String(parsed.tone ?? "Neutral"),
