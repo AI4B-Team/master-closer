@@ -767,7 +767,7 @@ const STORIES = [
   {
     kicker: "01 · AI Mode",
     icon: Bot,
-    t: "Let AI Run The Entire Call.",
+    t: "AI Runs The Call.\nFrom Hello To Payment.",
     d: "From the first hello to the final payment, Master Closer handles discovery, presentation, objections and closing in one natural conversation.",
     bullets: [
       "Runs the complete sales conversation",
