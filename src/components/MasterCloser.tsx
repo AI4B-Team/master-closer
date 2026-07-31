@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { closeObjection } from "@/lib/demo.functions";
 import {
-  Crosshair, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
+  AudioLines, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
   Users, Car, Wrench, Heart, Mic, PhoneForwarded, Bot, CreditCard,
   Database, Languages, GraduationCap, ChevronDown, Lock, Loader2, PhoneCall,
   Ear, Eye, TrendingUp, Upload, SlidersHorizontal, Headphones, BadgeCheck, Sparkles,
@@ -103,7 +103,7 @@ function LiveCallCard() {
         </div>
         <div className="say">
           <div className="say-head">
-            <Crosshair size={14} strokeWidth={2.4} className="text-signal" />
+            <AudioLines size={14} strokeWidth={2.4} className="text-signal" />
             <span className="font-mono say-tag">{data.tag}</span>
           </div>
           <p className="say-line">{data.line}</p>
@@ -394,7 +394,7 @@ function LiveDemo() {
             </div>
             <div className="say say-flat">
               <div className="say-head">
-                <Crosshair size={14} strokeWidth={2.4} className="text-signal" />
+                <AudioLines size={14} strokeWidth={2.4} className="text-signal" />
                 <span className="font-mono say-tag">{modeMeta[mode].resultTag}</span>
               </div>
               <p className="say-line">{result.line}</p>
@@ -577,14 +577,13 @@ function IndustryExplorer() {
           </div>
 
           <div className="indside indside-ai">
-            <span className="indorb-glow" />
             <div className="indhead">
               <MiniOrb size={44} variant="ai" />
               <span className="indlbl font-mono indlbl-red">MASTER CLOSER · LIVE RESPONSE</span>
             </div>
             <p className="indresp">{u.r}</p>
             <div className="indmeta">
-              <span className="indstrat font-mono"><Crosshair size={12} strokeWidth={2.6} />{u.s}</span>
+              <span className="indstrat font-mono"><AudioLines size={12} strokeWidth={2.6} />{u.s}</span>
               <span className="indnext font-mono"><ArrowRight size={12} strokeWidth={2.6} />{u.n}</span>
             </div>
           </div>
@@ -745,7 +744,7 @@ function MockCopilot() {
       </div>
       <div className="say">
         <div className="say-head">
-          <Crosshair size={13} strokeWidth={2.4} className="text-signal" />
+          <AudioLines size={13} strokeWidth={2.4} className="text-signal" />
           <span className="font-mono say-tag">Next Best Response</span>
         </div>
         <p className="say-line">Say: "Totally fair. When you two talk, what's the one thing that decides it — the price or the timeline?"</p>
@@ -851,7 +850,7 @@ export default function MasterCloser() {
       <header className="nav">
         <div className="wrap nav-in">
           <div className="brand">
-            <span className="brand-mark"><Crosshair size={18} strokeWidth={2.6} /></span>
+            <span className="brand-mark"><AudioLines size={18} strokeWidth={2.6} /></span>
             <span className="brand-word font-display">Master Closer</span>
           </div>
           <nav className="nav-links">
@@ -1003,7 +1002,7 @@ export default function MasterCloser() {
               </div>
               <ul className="view-list">
                 {["The Real Objection, Named Instantly", "The Exact Next Line To Say", "Live Close Probability, Moving", "Agreement And Payment, Ready To Send"].map((x) => (
-                  <li key={x}><Crosshair size={15} strokeWidth={2.4} className="text-signal" /> {x}</li>
+                  <li key={x}><AudioLines size={15} strokeWidth={2.4} className="text-signal" /> {x}</li>
                 ))}
               </ul>
             </div>
@@ -1235,7 +1234,7 @@ export default function MasterCloser() {
                 h: "Never Let An Objection Stall The Call.",
                 c: "Your rep stays in control while AI privately delivers the next best response in real time.",
                 rows: [
-                  { icon: Crosshair, label: "Price Objection Detected" },
+                  { icon: AudioLines, label: "Price Objection Detected" },
                   { icon: Sparkles, label: "Response Ready" },
                 ],
                 panel: "whisper",
@@ -1318,7 +1317,7 @@ export default function MasterCloser() {
         <div className="wrap foot-in">
           <div className="foot-brand">
             <div className="brand">
-              <span className="brand-mark"><Crosshair size={16} strokeWidth={2.6} /></span>
+              <span className="brand-mark"><AudioLines size={16} strokeWidth={2.6} /></span>
               <span className="brand-word font-display" style={{ fontSize: 17, color: "#fff" }}>Master Closer</span>
             </div>
             <p className="foot-tag">AI closer, human closer, or both. On one platform.</p>
@@ -1445,8 +1444,8 @@ a{text-decoration:none;color:inherit;}
 /* device card */
 .device{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px -40px rgba(0,0,0,.6);overflow:hidden;}
 .device-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);background:#fcfcfd;}
-.rec-dot{width:9px;height:9px;border-radius:50%;background:var(--signal);animation:pulse 1.8s infinite;}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(204,0,0,.45);}70%{box-shadow:0 0 0 7px rgba(204,0,0,0);}100%{box-shadow:0 0 0 0 rgba(204,0,0,0);}}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--signal);animation:recFade 2.2s ease-in-out infinite;}
+@keyframes recFade{0%,100%{opacity:1;}50%{opacity:.35;}}
 .device-live{font-size:12px;font-weight:500;color:var(--signal);letter-spacing:.1em;}
 .device-time{font-size:12px;color:var(--muted);}
 .device-body{padding:18px;display:flex;flex-direction:column;gap:14px;}
@@ -1572,14 +1571,10 @@ a{text-decoration:none;color:inherit;}
 
 /* circular audio wave - ai thinking */
 .demo-thinking{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:120px;}
-.demo-wave{position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center;}
-.demo-wave-ring{position:absolute;border:2px solid rgba(204,0,0,.55);border-radius:50%;animation:demoWave 2s ease-out infinite;opacity:0;}
-.demo-wave-ring:nth-child(2){animation-delay:.45s;}
-.demo-wave-ring:nth-child(3){animation-delay:.9s;}
-.demo-wave-core{width:18px;height:18px;background:var(--signal);border-radius:50%;animation:demoPulse 1.2s ease-in-out infinite;box-shadow:0 0 18px rgba(204,0,0,.5);}
-.demo-thinking-text{font-size:.9rem;color:rgba(255,255,255,.7);font-weight:500;letter-spacing:.02em;}
-@keyframes demoWave{0%{width:22px;height:22px;opacity:.8;}100%{width:90px;height:90px;opacity:0;}}
-@keyframes demoPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.25);opacity:.75;}}
+.demo-wave{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;height:60px;}
+.demo-bar{width:4px;border-radius:99px;background:var(--signal);opacity:.85;height:14px;
+  animation:demoBar 1.15s ease-in-out infinite;}
+@keyframes demoBar{0%,100%{height:12px;opacity:.55;}50%{height:38px;opacity:1;}}
 
 /* compare */
 .compare{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;}
@@ -1805,23 +1800,37 @@ a{text-decoration:none;color:inherit;}
 .modes-band .story-copy{max-width:520px;}
 .modes-band .story-kick{letter-spacing:.16em;font-size:11.5px;}
 
-/* orb — the single AI mark */
-.morb{position:relative;display:grid;place-items:center;flex:0 0 auto;}
-.morb span{position:absolute;border-radius:50%;}
-.morb-glow{inset:-16%;background:radial-gradient(circle,rgba(204,0,0,.22),rgba(204,0,0,0) 68%);}
-.morb-ring{border:1.5px solid rgba(204,0,0,.45);animation:morbP 3.2s ease-in-out infinite;}
-.morb-r1{inset:0;opacity:.5;}
-.morb-r2{inset:14%;opacity:.7;border-color:rgba(160,0,0,.55);animation-delay:.5s;}
-.morb-r3{inset:28%;opacity:.85;border-color:rgba(204,0,0,.7);animation-delay:1s;}
-.morb-core{inset:38%;background:radial-gradient(circle at 35% 30%,#fff6f4,#cc0000 55%,#7a0000);
-  box-shadow:0 0 22px rgba(204,0,0,.45);animation:morbB 2.4s ease-in-out infinite;}
-.morb-arc{inset:6%;border:2px solid transparent;border-top-color:rgba(204,0,0,.75);
-  border-right-color:rgba(255,190,180,.6);animation:morbSpin 5s linear infinite;}
-.morb-copilot .morb-core{inset:42%;}
-.morb-copilot .morb-glow{inset:-8%;opacity:.7;}
-@keyframes morbP{0%,100%{transform:scale(1);opacity:.45;}50%{transform:scale(1.07);opacity:.9;}}
-@keyframes morbB{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
-@keyframes morbSpin{to{transform:rotate(360deg);}}
+/* mesh voice orb — the single AI mark, small functional scale */
+.morb{position:relative;display:grid;place-items:center;flex:0 0 auto;animation:morbBreathe 5s ease-in-out infinite;}
+.morb svg{display:block;overflow:visible;}
+.morb-l{fill:none;stroke:var(--signal);stroke-width:1.3;transform-origin:50% 50%;}
+.morb-l1{opacity:.45;animation:morbSpinA 22s linear infinite;}
+.morb-l2{opacity:.65;stroke-width:1.15;animation:morbSpinB 16s linear infinite;}
+.morb-l3{opacity:.85;stroke-width:1;animation:morbSpinA 11s linear infinite;}
+@keyframes morbBreathe{0%,100%{transform:scale(1);}50%{transform:scale(1.045);}}
+@keyframes morbSpinA{to{transform:rotate(360deg);}}
+@keyframes morbSpinB{to{transform:rotate(-360deg);}}
+
+/* hybrid — two endpoints, one signal path */
+.mlink{position:relative;display:flex;align-items:center;justify-content:center;gap:0;}
+.mlink-node{width:10px;height:10px;border-radius:50%;flex:none;}
+.mlink-ai{background:var(--signal);}
+.mlink-hu{background:#8a919d;}
+.mlink-path{position:relative;flex:1;height:1.5px;background:linear-gradient(90deg,rgba(204,0,0,.45),rgba(138,145,157,.4));overflow:hidden;}
+.mlink-pulse{position:absolute;top:0;left:0;width:26px;height:100%;border-radius:2px;
+  background:var(--signal);animation:mlinkGo 2.6s ease-in-out infinite;}
+@keyframes mlinkGo{0%{transform:translateX(-30px);opacity:0;}15%{opacity:1;}
+  85%{opacity:1;}100%{transform:translateX(320px);opacity:0;}}
+
+/* copilot — compact whisper waveform */
+.mwave{display:flex;align-items:center;justify-content:center;gap:3px;}
+.mwave span{width:3px;height:8px;border-radius:99px;background:var(--signal);opacity:.75;
+  animation:mwaveB 1.3s ease-in-out infinite;}
+@keyframes mwaveB{0%,100%{height:7px;opacity:.5;}50%{height:100%;opacity:.95;}}
+
+@media(prefers-reduced-motion:reduce){
+  .morb,.morb-l,.mlink-pulse,.mwave span,.demo-bar,.rec-dot{animation:none !important;}
+}
 .orb-row{display:flex;justify-content:center;padding:4px 0 2px;}
 
 /* call card chrome */
@@ -1848,12 +1857,11 @@ a{text-decoration:none;color:inherit;}
 .stg-i{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
 .stg-dot{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;
   border:1px solid var(--line);background:#fff;color:#b9bec7;}
-.stg-pip{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.stg-num{font-size:9px;font-weight:700;line-height:1;}
 .stg-lbl{font-size:9.5px;letter-spacing:.05em;color:#a2a8b2;font-weight:600;}
 .stg-done .stg-dot{border-color:#bfe6d1;background:#e6f6ee;color:var(--green);}
 .stg-done .stg-lbl{color:#6d7480;}
-.stg-now .stg-dot{border-color:var(--signal);background:#fff;color:var(--signal);
-  box-shadow:0 0 0 4px rgba(204,0,0,.12);animation:stgP 1.8s ease-in-out infinite;}
+.stg-now .stg-dot{border-color:var(--signal);background:var(--signal);color:#fff;}
 .stg-now .stg-lbl{color:var(--signal);font-weight:700;}
 @keyframes stgP{0%,100%{box-shadow:0 0 0 3px rgba(204,0,0,.10);}50%{box-shadow:0 0 0 6px rgba(204,0,0,.16);}}
 @media(max-width:900px){.modes-band .story{grid-template-columns:1fr;}
@@ -1891,8 +1899,6 @@ a{text-decoration:none;color:inherit;}
 .indside{position:relative;padding:40px 42px;min-width:0;}
 .indside + .indside{border-left:1px solid rgba(255,255,255,.09);}
 .indside-ai{background:rgba(255,255,255,.02);}
-.indorb-glow{position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;
-  background:radial-gradient(circle,rgba(204,0,0,.22),rgba(204,0,0,0) 70%);pointer-events:none;}
 .indhead{display:flex;align-items:center;gap:12px;margin-bottom:22px;position:relative;}
 .indhead-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;
   background:rgba(204,0,0,.14);color:#ff6a5e;}
