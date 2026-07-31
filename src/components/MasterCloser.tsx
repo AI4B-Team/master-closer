@@ -323,6 +323,11 @@ function LiveDemo() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent("mc-demo-mode", { detail: mode }));
+  }, [mode]);
+
+
   const modeMeta = {
     ai: { persona: "You ARE the AI closer speaking directly to the prospect on the call.", lineDesc: "the exact words the AI should say next to the prospect, moving naturally toward the close and, if it fits, offering to send the agreement or a payment link", resultTag: "AI Says To Prospect" },
     hybrid: { persona: "You are the AI that warmed up this lead and is about to live-transfer to a human closer.", lineDesc: "a short, private briefing line spoken to the human closer summarizing where the deal stands and the one move to make on the close", resultTag: "AI Briefs Your Closer" },
