@@ -624,50 +624,61 @@ const INDUSTRIES = [
 
 const STORIES = [
   {
-    kicker: "Live Copilot",
-    icon: Mic,
-    t: "The Next Line, Before They Finish Talking.",
-    d: "Master Closer listens to the live call, names the objection, and puts the exact words on your rep's screen. Invisible to the prospect.",
-    bullets: ["Word-for-word response, not vague coaching", "Objection and tone labeled in real time", "Close probability updates every turn"],
-    Mock: MockWhisper,
-  },
-  {
-    kicker: "AI Voice Agent",
+    kicker: "01 · AI Mode",
     icon: Bot,
-    t: "Let The AI Run The Entire Call.",
-    d: "A natural voice that opens, qualifies, demos, and closes on its own. Turn it on for the calls your team never gets to.",
-    bullets: ["Runs discovery through close, end to end", "Never skips the disclosure or the ask", "Handles overflow and after-hours calls"],
-    Mock: MockVoice,
+    t: "Let AI Run The Entire Call.",
+    d: "From the first hello to the final payment, Master Closer handles discovery, presentation, objections and closing in one natural conversation.",
+    bullets: [
+      "Runs the complete sales conversation",
+      "Responds to objections in real time",
+      "Handles overflow and after-hours calls",
+      "Closes and collects payment",
+    ],
+    Mock: MockAI,
+    flip: true,
   },
   {
-    kicker: "Warm Transfer",
+    kicker: "02 · Hybrid Mode",
     icon: PhoneForwarded,
-    t: <>The AI Warms It,<br />Your Closer Lands It.</>,
-    d: "When the lead is hot, the AI live-transfers to a human with a full brief already delivered, then stays on the line to assist.",
-    bullets: ["Instant briefing before the human speaks", "No repeated questions, no cold restart", "Copilot keeps whispering after handoff"],
-    Mock: MockTransfer,
+    t: "AI Starts. Your Closer Finishes.",
+    d: "The AI opens, qualifies and warms the prospect, then hands your closer a live call with a short briefing already delivered.",
+    bullets: [
+      "Qualifies before a human ever picks up",
+      "Delivers a one-line brief on transfer",
+      "Live handoff, no cold restart",
+      "Copilot keeps guiding after the transfer",
+    ],
+    Mock: MockHybrid,
+    flip: false,
   },
   {
-    kicker: "Close & Collect",
-    icon: CreditCard,
-    t: <>Signed And Paid<br />Before The Call Ends.</>,
-    d: "Send the agreement and a payment link mid-call, then let the outcome, next step, and summary write themselves back to your CRM.",
-    bullets: ["Agreement and payment link in-call", "Outcome logged the moment you hang up", "Nothing left for your rep to type"],
-    Mock: MockCollect,
+    kicker: "03 · Copilot Mode",
+    icon: Mic,
+    t: "Your Rep Leads. AI Guides.",
+    d: "Your rep runs the conversation while Master Closer listens and privately puts the next best line on screen — the prospect never sees or hears it.",
+    bullets: [
+      "Word-for-word next line, not vague coaching",
+      "Objection and tone labeled in real time",
+      "Completely invisible to the prospect",
+      "Close probability updates every turn",
+    ],
+    Mock: MockCopilot,
+    flip: true,
   },
 ];
 
 function FeatureStories() {
   return (
-    <>
-      {STORIES.map((s, i) => {
+    <div className="modes-band">
+      <span className="modes-glow modes-glow-a" />
+      <span className="modes-glow modes-glow-b" />
+      {STORIES.map((s) => {
         const Icon = s.icon;
         const Mock = s.Mock;
-        const flip = i % 2 === 1;
         return (
-          <section key={s.kicker} className={"sec sec-story " + (flip ? "sec-mist" : "")}>
+          <section key={s.kicker} className="sec sec-story">
             <div className="wrap">
-              <div className={"story " + (flip ? "story-flip" : "")}>
+              <div className={"story " + (s.flip ? "story-flip" : "")}>
                 <div className="story-copy">
                   <div className="story-kick font-mono"><Icon size={14} strokeWidth={2.3} />{s.kicker}</div>
                   <h3 className="font-display story-h">{s.t}</h3>
@@ -684,9 +695,10 @@ function FeatureStories() {
           </section>
         );
       })}
-    </>
+    </div>
   );
 }
+
 
 export default function MasterCloser() {
   return (
