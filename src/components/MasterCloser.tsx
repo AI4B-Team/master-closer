@@ -1584,7 +1584,7 @@ a{text-decoration:none;color:inherit;}
 .cmp-cap{padding:16px 20px;font-size:.94rem;font-weight:600;color:#2a2f38;}
 .cmp-head .cmp-cap{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:500;}
 .cmp-col{padding:16px 12px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#57606e;}
-.cmp-col-hi{background:#fdf6f6;color:var(--signal);}
+.cmp-col-hi{background:#e6f6ee;color:var(--success);}
 .cmark{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;}
 .cmark-yes{background:#e6f6ee;color:var(--success);}
 .cmark-no{background:#eef0f3;color:#b1b7c0;}
