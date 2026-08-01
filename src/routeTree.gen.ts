@@ -30,6 +30,7 @@ import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authentica
 import { Route as ApiV1ListsRouteImport } from './routes/api/v1/lists'
 import { Route as ApiV1LeadsRouteImport } from './routes/api/v1/leads'
 import { Route as ApiV1EventsRouteImport } from './routes/api/v1/events'
+import { Route as ApiV1DncRouteImport } from './routes/api/v1/dnc'
 import { Route as ApiV1CampaignsRouteImport } from './routes/api/v1/campaigns'
 import { Route as ApiV1CallsRouteImport } from './routes/api/v1/calls'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
@@ -139,6 +140,11 @@ const ApiV1EventsRoute = ApiV1EventsRouteImport.update({
   path: '/api/v1/events',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1DncRoute = ApiV1DncRouteImport.update({
+  id: '/api/v1/dnc',
+  path: '/api/v1/dnc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1CampaignsRoute = ApiV1CampaignsRouteImport.update({
   id: '/api/v1/campaigns',
   path: '/api/v1/campaigns',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/auth/hub': typeof AuthHubRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
+  '/api/v1/dnc': typeof ApiV1DncRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/auth/hub': typeof AuthHubRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
+  '/api/v1/dnc': typeof ApiV1DncRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/auth_/hub': typeof AuthHubRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
+  '/api/v1/dnc': typeof ApiV1DncRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/auth/hub'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
+    | '/api/v1/dnc'
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/v1/lists'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/auth/hub'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
+    | '/api/v1/dnc'
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/v1/lists'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/auth_/hub'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
+    | '/api/v1/dnc'
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/v1/lists'
@@ -318,6 +330,7 @@ export interface RootRouteChildren {
   AuthHubRoute: typeof AuthHubRoute
   ApiV1CallsRoute: typeof ApiV1CallsRoute
   ApiV1CampaignsRoute: typeof ApiV1CampaignsRoute
+  ApiV1DncRoute: typeof ApiV1DncRoute
   ApiV1EventsRoute: typeof ApiV1EventsRoute
   ApiV1LeadsRoute: typeof ApiV1LeadsRoute
   ApiV1ListsRoute: typeof ApiV1ListsRoute
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/dnc': {
+      id: '/api/v1/dnc'
+      path: '/api/v1/dnc'
+      fullPath: '/api/v1/dnc'
+      preLoaderRoute: typeof ApiV1DncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/campaigns': {
       id: '/api/v1/campaigns'
       path: '/api/v1/campaigns'
@@ -541,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthHubRoute: AuthHubRoute,
   ApiV1CallsRoute: ApiV1CallsRoute,
   ApiV1CampaignsRoute: ApiV1CampaignsRoute,
+  ApiV1DncRoute: ApiV1DncRoute,
   ApiV1EventsRoute: ApiV1EventsRoute,
   ApiV1LeadsRoute: ApiV1LeadsRoute,
   ApiV1ListsRoute: ApiV1ListsRoute,

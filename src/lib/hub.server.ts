@@ -131,7 +131,8 @@ export async function dispatchEvent(event: EventRow) {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          "x-masterclaser-event": event.event_type,
+          "x-app": "master-closer",
+          "x-app-event": event.event_type,
           "x-webhook-signature": signature,
         },
         body,
