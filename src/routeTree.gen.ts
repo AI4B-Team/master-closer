@@ -27,6 +27,7 @@ import { Route as AuthenticatedComplianceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
+import { Route as ApiV1ListsRouteImport } from './routes/api/v1/lists'
 import { Route as ApiV1LeadsRouteImport } from './routes/api/v1/leads'
 import { Route as ApiV1EventsRouteImport } from './routes/api/v1/events'
 import { Route as ApiV1CampaignsRouteImport } from './routes/api/v1/campaigns'
@@ -122,6 +123,11 @@ const AuthenticatedAiClosersRoute = AuthenticatedAiClosersRouteImport.update({
   path: '/ai-closers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiV1ListsRoute = ApiV1ListsRouteImport.update({
+  id: '/api/v1/lists',
+  path: '/api/v1/lists',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1LeadsRoute = ApiV1LeadsRouteImport.update({
   id: '/api/v1/leads',
   path: '/api/v1/leads',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
+  '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
 export interface FileRoutesByTo {
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
+  '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
 export interface FileRoutesById {
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
+  '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
 export interface FileRouteTypes {
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
     | '/api/v1/campaigns'
     | '/api/v1/events'
     | '/api/v1/leads'
+    | '/api/v1/lists'
     | '/api/public/hub/dispatch'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/api/v1/campaigns'
     | '/api/v1/events'
     | '/api/v1/leads'
+    | '/api/v1/lists'
     | '/api/public/hub/dispatch'
   id:
     | '__root__'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/api/v1/campaigns'
     | '/api/v1/events'
     | '/api/v1/leads'
+    | '/api/v1/lists'
     | '/api/public/hub/dispatch'
   fileRoutesById: FileRoutesById
 }
@@ -295,6 +307,7 @@ export interface RootRouteChildren {
   ApiV1CampaignsRoute: typeof ApiV1CampaignsRoute
   ApiV1EventsRoute: typeof ApiV1EventsRoute
   ApiV1LeadsRoute: typeof ApiV1LeadsRoute
+  ApiV1ListsRoute: typeof ApiV1ListsRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
 }
 
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiClosersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/v1/lists': {
+      id: '/api/v1/lists'
+      path: '/api/v1/lists'
+      fullPath: '/api/v1/lists'
+      preLoaderRoute: typeof ApiV1ListsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/leads': {
       id: '/api/v1/leads'
       path: '/api/v1/leads'
@@ -502,18 +522,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1CampaignsRoute: ApiV1CampaignsRoute,
   ApiV1EventsRoute: ApiV1EventsRoute,
   ApiV1LeadsRoute: ApiV1LeadsRoute,
+  ApiV1ListsRoute: ApiV1ListsRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
