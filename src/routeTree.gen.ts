@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthHubRouteImport } from './routes/auth.hub'
+import { Route as AuthHubRouteImport } from './routes/auth_.hub'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
@@ -46,9 +46,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthHubRoute = AuthHubRouteImport.update({
-  id: '/hub',
-  path: '/hub',
-  getParentRoute: () => AuthRoute,
+  id: '/auth_/hub',
+  path: '/auth/hub',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
@@ -139,7 +139,7 @@ const ApiPublicHubDispatchRoute = ApiPublicHubDispatchRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -161,7 +161,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -185,7 +185,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/_authenticated/ai-closers': typeof AuthenticatedAiClosersRoute
   '/_authenticated/calls': typeof AuthenticatedCallsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
@@ -200,7 +200,7 @@ export interface FileRoutesById {
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
-  '/auth/hub': typeof AuthHubRoute
+  '/auth_/hub': typeof AuthHubRoute
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
@@ -269,7 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/practice'
     | '/_authenticated/settings'
     | '/_authenticated/team'
-    | '/auth/hub'
+    | '/auth_/hub'
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/public/hub/dispatch'
@@ -278,7 +278,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  AuthHubRoute: typeof AuthHubRoute
   ApiV1EventsRoute: typeof ApiV1EventsRoute
   ApiV1LeadsRoute: typeof ApiV1LeadsRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
@@ -307,12 +308,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/hub': {
-      id: '/auth/hub'
-      path: '/hub'
+    '/auth_/hub': {
+      id: '/auth_/hub'
+      path: '/auth/hub'
       fullPath: '/auth/hub'
       preLoaderRoute: typeof AuthHubRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/team': {
       id: '/_authenticated/team'
@@ -473,20 +474,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface AuthRouteChildren {
-  AuthHubRoute: typeof AuthHubRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthHubRoute: AuthHubRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRouteWithChildren,
+  AuthRoute: AuthRoute,
+  AuthHubRoute: AuthHubRoute,
   ApiV1EventsRoute: ApiV1EventsRoute,
   ApiV1LeadsRoute: ApiV1LeadsRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,

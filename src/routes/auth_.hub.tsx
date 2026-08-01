@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { hubSignIn, hubLink } from "@/lib/hub.functions";
 import { Loader2, ShieldCheck, TriangleAlert } from "lucide-react";
 
-export const Route = createFileRoute("/auth/hub")({
+export const Route = createFileRoute("/auth_/hub")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     token: typeof search.token === "string" ? search.token : "",
