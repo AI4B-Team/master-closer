@@ -49,14 +49,24 @@ export async function verifyHubToken(token: string): Promise<HubClaims> {
   if (parts.length !== 3) throw new Error("Invalid hub token.");
   const [h, p, s] = parts;
 
-  const header = JSON.parse(new TextDecoder().decode(b64urlToBytes(h))) as { alg?: string };
+  let header: { alg?: string };
+  try {
+    header = JSON.parse(new TextDecoder().decode(b64urlToBytes(h))) as { alg?: string };
+  } catch {
+    throw new Error("Invalid hub token.");
+  }
   if (header.alg !== "HS256") throw new Error("Invalid hub token algorithm.");
 
   const key = await hmacKey(secret);
   const ok = await crypto.subtle.verify("HMAC", key, b64urlToBytes(s), enc.encode(`${h}.${p}`));
   if (!ok) throw new Error("Invalid hub token signature.");
 
-  const claims = JSON.parse(new TextDecoder().decode(b64urlToBytes(p))) as HubClaims;
+  let claims: HubClaims;
+  try {
+    claims = JSON.parse(new TextDecoder().decode(b64urlToBytes(p))) as HubClaims;
+  } catch {
+    throw new Error("Invalid hub token.");
+  }
   if (!claims.exp || claims.exp * 1000 < Date.now()) throw new Error("Hub token expired.");
   if (!claims.reo_org_id || !claims.reo_user_id || !claims.email) throw new Error("Hub token is missing fields.");
   return claims;
