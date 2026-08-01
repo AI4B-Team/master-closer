@@ -28,6 +28,7 @@ import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
 import { Route as ApiV1LeadsRouteImport } from './routes/api/v1/leads'
+import { Route as ApiV1EventsRouteImport } from './routes/api/v1/events'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
 
 const AuthRoute = AuthRouteImport.update({
@@ -125,6 +126,11 @@ const ApiV1LeadsRoute = ApiV1LeadsRouteImport.update({
   path: '/api/v1/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1EventsRoute = ApiV1EventsRouteImport.update({
+  id: '/api/v1/events',
+  path: '/api/v1/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHubDispatchRoute = ApiPublicHubDispatchRouteImport.update({
   id: '/api/public/hub/dispatch',
   path: '/api/public/hub/dispatch',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/hub'
+    | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/public/hub/dispatch'
   fileRoutesByTo: FileRoutesByTo
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/hub'
+    | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/public/hub/dispatch'
   id:
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/auth/hub'
+    | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/public/hub/dispatch'
   fileRoutesById: FileRoutesById
@@ -267,6 +279,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  ApiV1EventsRoute: typeof ApiV1EventsRoute
   ApiV1LeadsRoute: typeof ApiV1LeadsRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
 }
@@ -406,6 +419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1LeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/events': {
+      id: '/api/v1/events'
+      path: '/api/v1/events'
+      fullPath: '/api/v1/events'
+      preLoaderRoute: typeof ApiV1EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hub/dispatch': {
       id: '/api/public/hub/dispatch'
       path: '/api/public/hub/dispatch'
@@ -467,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  ApiV1EventsRoute: ApiV1EventsRoute,
   ApiV1LeadsRoute: ApiV1LeadsRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
 }
