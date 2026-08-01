@@ -62,7 +62,18 @@
 }
 
 :root {
+  /* App-family brand tokens — hub embedding restyles the app by overriding these. */
+  --brand: #cc0000;
+  --brand-hover: #a30000;
+  --brand-soft: #cc00001a;
+  --brand-ink: #17171b;
+  --brand-muted: #6b6b76;
+  --brand-line: #e7e7ec;
+  --brand-surface: #f4f4f6;
+  --brand-success: #0e9f6e;
+
   --radius: 0.625rem;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
