@@ -1,0 +1,1 @@
+drop function if exists public.link_org_to_hub(uuid, uuid);

@@ -449,6 +449,38 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          org_id: string
+          payload: Json
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          org_id: string
+          payload?: Json
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          org_id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
           config: Json
@@ -622,21 +654,59 @@ export type Database = {
           },
         ]
       }
+      org_webhooks: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          org_id: string
+          secret: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          org_id: string
+          secret: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          org_id?: string
+          secret?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_webhooks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
           id: string
           name: string
+          real_elite_org_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          real_elite_org_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          real_elite_org_id?: string | null
         }
         Relationships: []
       }
@@ -683,6 +753,7 @@ export type Database = {
           full_name: string | null
           id: string
           org_id: string
+          real_elite_user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -691,6 +762,7 @@ export type Database = {
           full_name?: string | null
           id: string
           org_id: string
+          real_elite_user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -699,6 +771,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           org_id?: string
+          real_elite_user_id?: string | null
         }
         Relationships: [
           {
@@ -802,6 +875,48 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_deliveries: {
+        Row: {
+          delivered_at: string
+          error: string | null
+          event_id: string
+          id: string
+          status_code: number | null
+          webhook_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          error?: string | null
+          event_id: string
+          id?: string
+          status_code?: number | null
+          webhook_id: string
+        }
+        Update: {
+          delivered_at?: string
+          error?: string | null
+          event_id?: string
+          id?: string
+          status_code?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "org_webhooks"
             referencedColumns: ["id"]
           },
         ]

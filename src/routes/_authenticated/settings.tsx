@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/back-office/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { HubPanel } from "@/components/back-office/HubPanel";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Master Closer" }] }),
@@ -58,6 +60,8 @@ function SettingsPage() {
       <div className="mt-4">
         <Button onClick={save} className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">Save Changes</Button>
       </div>
+      <HubPanel />
     </div>
+
   );
 }
