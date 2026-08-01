@@ -14,6 +14,8 @@ import { PageHeader } from "@/components/back-office/AppShell";
 import { Plus, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { emitOrgEvent } from "@/lib/hub.functions";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — Master Closer" }] }),
@@ -33,6 +35,7 @@ function LeadsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", status: "new" });
+  const emit = useServerFn(emitOrgEvent);
 
   const { data: leads } = useQuery({
     queryKey: ["leads"],
@@ -48,8 +51,18 @@ function LeadsPage() {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
-      const { error } = await supabase.from("leads").insert({ ...form, status: form.status as any, org_id: prof.org_id });
+      const { data: lead, error } = await supabase
+        .from("leads")
+        .insert({ ...form, status: form.status as any, org_id: prof.org_id })
+        .select("id, name")
+        .single();
       if (error) throw error;
+      // Family event vocabulary: notify the hub / webhooks about the new lead.
+      try {
+        await emit({ data: { event_type: "leads.new", payload: { lead_id: lead.id, name: lead.name } } });
+      } catch {
+        // Never block lead creation on hub availability.
+      }
     },
     onSuccess: () => {
       toast.success("Lead created.");
