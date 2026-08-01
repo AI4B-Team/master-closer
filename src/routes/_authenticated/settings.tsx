@@ -58,6 +58,8 @@ function SettingsPage() {
       <div className="mt-4">
         <Button onClick={save} className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">Save Changes</Button>
       </div>
+      <HubPanel />
     </div>
+
   );
 }
