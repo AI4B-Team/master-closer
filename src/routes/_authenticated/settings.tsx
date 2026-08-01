@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/back-office/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { HubPanel } from "@/components/back-office/HubPanel";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Master Closer" }] }),
