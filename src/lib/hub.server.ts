@@ -14,10 +14,10 @@ export type HubClaims = {
 
 const enc = new TextEncoder();
 
-function b64urlToBytes(input: string): Uint8Array {
+function b64urlToBytes(input: string): Uint8Array<ArrayBuffer> {
   const b64 = input.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(input.length / 4) * 4, "=");
   const raw = atob(b64);
-  const out = new Uint8Array(raw.length);
+  const out = new Uint8Array(new ArrayBuffer(raw.length));
   for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
   return out;
 }
