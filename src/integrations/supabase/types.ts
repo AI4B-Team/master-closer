@@ -934,10 +934,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      link_org_to_hub: {
-        Args: { _reo_org_id: string; _reo_user_id: string }
-        Returns: undefined
-      }
     }
     Enums: {
       app_role: "admin" | "manager" | "rep"
