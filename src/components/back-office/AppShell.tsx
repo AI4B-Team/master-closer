@@ -182,7 +182,10 @@ export function PageHeader({
         <h1 className="font-display page-title">{title}</h1>
         {description && <p className="page-sub">{description}</p>}
       </div>
-      {tabs ? <TabStrip tabs={tabs} /> : action}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {tabs && <TabStrip tabs={tabs} />}
+        {action}
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -83,8 +83,9 @@ function LeadsPage() {
   return (
     <div>
       <PageHeader
-        title="Leads & Contacts"
+        title="Leads"
         description="Everyone in the pipeline. Add, tag, and route."
+        tabs={TAB_GROUPS.leads}
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
