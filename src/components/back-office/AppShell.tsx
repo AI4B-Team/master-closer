@@ -50,11 +50,15 @@ function isActive(pathname: string, item: NavItem) {
   );
 }
 
+const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes"] as const;
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [scope, setScope] = useState<(typeof SEARCH_SCOPES)[number]>("Everything");
+  const [scopeOpen, setScopeOpen] = useState(false);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -62,8 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const name = (user?.user_metadata?.full_name as string) || user?.email || "Account";
-  const activeLabel =
-    [...NAV_PRIMARY, ...NAV_UTILITY].find((n) => isActive(pathname, n))?.label ?? "Back Office";
+
 
   const renderNav = (items: NavItem[], muted = false) =>
     items.map((item) => {
