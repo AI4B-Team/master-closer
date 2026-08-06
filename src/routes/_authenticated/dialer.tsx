@@ -1,15 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
+import { CallBanner, type CallMode } from "@/components/back-office/CallBanner";
+import { LiveAssistPanel, type AssistLine } from "@/components/back-office/LiveAssistPanel";
+import { EmptyState, Panel, StatusPill } from "@/components/back-office/ui";
 import {
-  PhoneOutgoing, PhoneOff, Bot, Megaphone, Lock, Check, Sparkles, AudioLines,
+  AudioLines, Check, CreditCard, Megaphone, PhoneOff, PhoneOutgoing,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,28 +16,31 @@ import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
 export const Route = createFileRoute("/_authenticated/dialer")({
   head: () => ({
     meta: [
-      { title: "Dialer — Master Closer" },
+      { title: "Live Dialer — Master Closer" },
       { name: "description", content: "Outbound dialing with disclosure-gated call flow across AI, Hybrid, and Copilot modes." },
-      { property: "og:title", content: "Dialer — Master Closer" },
+      { property: "og:title", content: "Live Dialer — Master Closer" },
       { property: "og:description", content: "Outbound dialing with disclosure-gated call flow across AI, Hybrid, and Copilot modes." },
     ],
   }),
   component: DialerPage,
 });
 
-type Mode = "full_ai" | "hybrid" | "copilot";
-type Line = { speaker: string; text: string; tone?: "disclosure" | "normal" };
-
-const MODE_LABEL: Record<Mode, string> = {
-  full_ai: "AI",
-  hybrid: "Hybrid",
-  copilot: "Copilot",
-};
+type Mode = CallMode;
 
 const WHISPERS = [
   "Say: When you say it's a lot, is it the total or the monthly that gives you pause?",
   "Say: If both options cost the same, which one would you choose — and why?",
 ];
+
+const AGENT_LINE: Record<Mode, string> = {
+  full_ai: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
+  hybrid: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
+  copilot: WHISPERS[0],
+};
+
+function fmt(sec: number) {
+  return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+}
 
 function DialerPage() {
   const [mode, setMode] = useState<Mode>("full_ai");
@@ -48,11 +48,13 @@ function DialerPage() {
   const [jurisdiction, setJurisdiction] = useState("FL");
   const [connected, setConnected] = useState(false);
   const [callId, setCallId] = useState<string | null>(null);
-  const [transcript, setTranscript] = useState<Line[]>([]);
+  const [transcript, setTranscript] = useState<AssistLine[]>([]);
   const [delivered, setDelivered] = useState(false);
   const [preConnectPlaying, setPreConnectPlaying] = useState(false);
   const [busy, setBusy] = useState(false);
-  const scroller = useRef<HTMLDivElement>(null);
+  const [muted, setMuted] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const tick = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: settings } = useQuery({
     queryKey: ["disclosure_settings"],
@@ -71,8 +73,15 @@ function DialerPage() {
   }, [settings, connected]);
 
   useEffect(() => {
-    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
-  }, [transcript]);
+    if (connected) {
+      setElapsed(0);
+      tick.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+    }
+    return () => {
+      if (tick.current) clearInterval(tick.current);
+      tick.current = null;
+    };
+  }, [connected]);
 
   const required = isDisclosureRequired(jurisdiction);
   const blocked = mode === "copilot" && shouldBlockLiveSurface(jurisdiction, delivered);
@@ -109,7 +118,6 @@ function DialerPage() {
       setTranscript([]);
 
       if (mode === "full_ai" || mode === "hybrid") {
-        // The agent speaks the disclosure as its first utterance.
         if (spokenAtOpen) {
           setTranscript([{ speaker: "Master Closer", text: script, tone: "disclosure" }]);
           await logDisclosure({
@@ -147,12 +155,7 @@ function DialerPage() {
   const markDelivered = async () => {
     setBusy(true);
     try {
-      await logDisclosure({
-        callId,
-        jurisdiction,
-        line: script,
-        method: "rep_delivered_disclosure",
-      });
+      await logDisclosure({ callId, jurisdiction, line: script, method: "rep_delivered_disclosure" });
       setDelivered(true);
       toast.success("Disclosure Logged.");
     } catch (e: any) {
@@ -175,214 +178,196 @@ function DialerPage() {
     setDelivered(false);
   };
 
+  const closeProbability = connected ? (mode === "full_ai" ? 68 : mode === "hybrid" ? 74 : 61) : 0;
+
   return (
     <div>
       <PageHeader
-        title="Dialer"
-        description="Native outbound with autonomy-aware pacing and disclosure guardrails."
+        title="Calls"
+        description="Live cockpit with your copilot and mode control."
+        tabs={TAB_GROUPS.calls}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Call Setup */}
-        <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
-          <h3 className="font-semibold mb-4">Call Setup</h3>
-          <div className="space-y-3">
-            <div>
-              <Label>Phone Number</Label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={connected}
-                className="mt-1.5 rounded-xl font-mono"
-              />
-            </div>
-            <div>
-              <Label>Mode</Label>
-              <Select value={mode} onValueChange={(v) => setMode(v as Mode)} disabled={connected}>
-                <SelectTrigger className="mt-1.5 rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_ai">AI</SelectItem>
-                  <SelectItem value="hybrid">Hybrid</SelectItem>
-                  <SelectItem value="copilot">Copilot</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Jurisdiction</Label>
-              <Input
-                value={jurisdiction}
-                onChange={(e) => setJurisdiction(e.target.value.toUpperCase().slice(0, 2))}
-                disabled={connected}
-                className="mt-1.5 rounded-xl w-24 font-mono uppercase"
-              />
-              <p className="text-xs mt-1.5 text-[#6B6B76]">
-                Disclosure{" "}
-                <span className={required ? "text-[#CC0000] font-medium" : "font-medium"}>
-                  {disclosureStatus(jurisdiction)}
-                </span>{" "}
-                here.
-              </p>
-            </div>
-          </div>
+      {connected && (
+        <CallBanner
+          name="Outbound Prospect"
+          phone={phone}
+          campaign={settings?.default_jurisdiction ? `Jurisdiction ${jurisdiction}` : "Direct Dial"}
+          timer={fmt(elapsed)}
+          mode={mode}
+          onModeChange={setMode}
+          onEnd={endCall}
+          muted={muted}
+          onToggleMute={() => setMuted((v) => !v)}
+          onHold={() => toast.info("Call On Hold.")}
+          onMerge={() => toast.info("Merge Requested.")}
+          onTransfer={() => toast.info("Transferring To A Human Closer.")}
+        />
+      )}
 
-          <div className="mt-5">
-            {!connected ? (
-              <Button
-                onClick={startCall}
-                disabled={busy}
-                className="w-full bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
-              >
-                <PhoneOutgoing className="h-4 w-4 mr-1.5" /> Start Call
-              </Button>
-            ) : (
-              <Button onClick={endCall} variant="outline" className="w-full rounded-xl">
-                <PhoneOff className="h-4 w-4 mr-1.5" /> End Call
-              </Button>
-            )}
-          </div>
-
-          {preConnectPlaying && (
-            <div className="mt-4 flex items-start gap-2 border border-[#CC0000]/30 bg-[#CC0000]/5 rounded-xl p-3">
-              <AudioLines className="h-4 w-4 text-[#CC0000] mt-0.5 shrink-0" />
-              <div>
-                <p className="text-xs font-semibold text-[#CC0000]">Playing Pre-Connect Audio</p>
-                <p className="text-xs text-[#6B6B76] mt-0.5">{script}</p>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* Live Surface */}
-        <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Live Call</h3>
-            {connected && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{MODE_LABEL[mode]}</Badge>
-                {delivered ? (
-                  <Badge className="bg-[#0B0B0F] hover:bg-[#0B0B0F] text-white">
-                    <Check className="h-3 w-3 mr-1" /> Disclosure Logged
-                  </Badge>
-                ) : required ? (
-                  <Badge className="bg-[#CC0000] hover:bg-[#CC0000] text-white">Disclosure Required</Badge>
-                ) : (
-                  <Badge variant="secondary">Disclosure Optional</Badge>
-                )}
-              </div>
-            )}
+      <div className="cockpit">
+        <div className="mc-card cockpit-main">
+          <div className="card-head">
+            <h3 className="font-display card-h">{connected ? "Lead Information" : "Call Setup"}</h3>
+            <StatusPill
+              label={connected ? "On Call" : "Idle"}
+              tone={connected ? "green" : "neutral"}
+            />
           </div>
 
           {!connected ? (
-            <div className="text-center py-20">
-              <PhoneOutgoing className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-              <p className="font-medium">No Active Call</p>
-              <p className="text-sm text-[#6B6B76] mt-1">
-                Start a call to see the transcript and live guidance.
-              </p>
-            </div>
-          ) : (
             <>
-              {mode === "copilot" && !delivered && (
-                <div className="border border-[#CC0000]/30 bg-[#CC0000]/5 rounded-xl p-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <Megaphone className="h-5 w-5 text-[#CC0000] mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-[11px] font-mono uppercase tracking-wider text-[#CC0000]">
-                        Read Disclosure
-                      </p>
-                      <p className="text-sm mt-1.5 font-medium">“{script}”</p>
-                      <p className="text-xs text-[#6B6B76] mt-2">
-                        {required
-                          ? "Required in this state. The transcript and suggestions unlock once you tap Delivered."
-                          : "Optional in this state. Deliver it if you want it on the record."}
-                      </p>
-                      <Button
-                        onClick={markDelivered}
-                        disabled={busy}
-                        size="sm"
-                        className="mt-3 bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
+              <div className="lead-grid">
+                <div className="lead-field">
+                  <span className="lead-k">Phone Number</span>
+                  <input
+                    className="font-num"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
+                  />
+                </div>
+                <div className="lead-field">
+                  <span className="lead-k">Mode</span>
+                  <div className="tabs" style={{ padding: 3 }}>
+                    {(["full_ai", "hybrid", "copilot"] as Mode[]).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        className={"tab " + (mode === m ? "tab-on" : "")}
+                        onClick={() => setMode(m)}
                       >
-                        <Check className="h-4 w-4 mr-1.5" /> Delivered
-                      </Button>
-                    </div>
+                        {m === "full_ai" ? "AI" : m === "hybrid" ? "Hybrid" : "Copilot"}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
-
-              {blocked ? (
-                <div className="text-center py-16 border border-dashed border-[#E7E7EC] rounded-xl">
-                  <Lock className="h-7 w-7 mx-auto text-[#CC0000] mb-3" />
-                  <p className="font-medium">Live Surface Locked</p>
-                  <p className="text-sm text-[#6B6B76] mt-1 max-w-sm mx-auto">
-                    {jurisdiction} is an all-party consent state. Read the disclosure and tap Delivered
-                    to reveal the transcript and whisper suggestions.
-                  </p>
+                <div className="lead-field">
+                  <span className="lead-k">Jurisdiction</span>
+                  <input
+                    className="font-num"
+                    value={jurisdiction}
+                    onChange={(e) => setJurisdiction(e.target.value.toUpperCase().slice(0, 2))}
+                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit", width: 90, textTransform: "uppercase" }}
+                  />
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    Disclosure{" "}
+                    <strong style={{ color: required ? "var(--signal)" : "var(--ink)" }}>
+                      {disclosureStatus(jurisdiction)}
+                    </strong>{" "}
+                    here.
+                  </span>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[11px] font-mono uppercase tracking-wider text-[#6B6B76] mb-2">
-                      Live Transcript
-                    </p>
-                    <div ref={scroller} className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                      {transcript.map((l, i) => (
-                        <div
-                          key={i}
-                          className={`rounded-xl px-3 py-2 border ${
-                            l.tone === "disclosure"
-                              ? "border-[#CC0000]/30 bg-[#CC0000]/5"
-                              : "border-[#E7E7EC] bg-white"
-                          }`}
-                        >
-                          <p className="text-[11px] font-mono uppercase tracking-wider text-[#6B6B76]">
-                            {l.speaker}
-                            {l.tone === "disclosure" && (
-                              <span className="text-[#CC0000]"> · Disclosure</span>
-                            )}
-                          </p>
-                          <p className="text-sm mt-0.5">{l.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              </div>
 
-                  <div>
-                    <p className="text-[11px] font-mono uppercase tracking-wider text-[#6B6B76] mb-2">
-                      {mode === "copilot" ? "Next Best Response" : "Agent Activity"}
-                    </p>
-                    {mode === "copilot" ? (
-                      <div className="space-y-2">
-                        {WHISPERS.map((w, i) => (
-                          <div key={i} className="border border-[#E7E7EC] rounded-xl px-3 py-2.5">
-                            <div className="flex items-center gap-1.5 text-[#CC0000]">
-                              <Sparkles className="h-3.5 w-3.5" />
-                              <span className="text-[11px] font-mono uppercase tracking-wider">
-                                Say This Now
-                              </span>
-                            </div>
-                            <p className="text-sm mt-1">{w}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="border border-[#E7E7EC] rounded-xl px-3 py-2.5">
-                        <div className="flex items-center gap-1.5 text-[#CC0000]">
-                          <Bot className="h-3.5 w-3.5" />
-                          <span className="text-[11px] font-mono uppercase tracking-wider">
-                            {mode === "full_ai" ? "Running The Call" : "Qualifying For Transfer"}
-                          </span>
-                        </div>
-                        <p className="text-sm mt-1">
-                          Disclosure delivered as the first utterance and written to the consent log.
-                        </p>
-                      </div>
-                    )}
+              <button type="button" className="btn-primary" onClick={startCall} disabled={busy}>
+                <PhoneOutgoing size={15} strokeWidth={2.2} /> Start Call
+              </button>
+
+              {preConnectPlaying && (
+                <div className="sugg" style={{ marginTop: 16 }}>
+                  <div className="sugg-head">
+                    <AudioLines size={13} strokeWidth={2.5} />
+                    <span>Playing Pre-Connect Audio</span>
                   </div>
+                  <p>{script}</p>
                 </div>
               )}
             </>
+          ) : (
+            <>
+              <div className="lead-grid">
+                {[
+                  ["Phone", phone],
+                  ["Mode", mode === "full_ai" ? "AI" : mode === "hybrid" ? "Hybrid" : "Copilot"],
+                  ["Jurisdiction", jurisdiction],
+                  ["Disclosure", disclosureStatus(jurisdiction)],
+                  ["Consent Log", delivered ? "Written" : "Pending"],
+                  ["Call Timer", fmt(elapsed)],
+                ].map(([k, v]) => (
+                  <div key={k} className="lead-field">
+                    <span className="lead-k">{k}</span>
+                    <span className="lead-v font-num">{v}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="prob">
+                <div className="prob-top">
+                  <span>CLOSE PROBABILITY</span>
+                  <span className="font-num prob-num">{closeProbability}%</span>
+                </div>
+                <div className="prob-track">
+                  <div className="prob-fill" style={{ width: `${closeProbability}%` }} />
+                </div>
+              </div>
+
+              {mode === "copilot" && !delivered && (
+                <div className="sugg" style={{ marginBottom: 16 }}>
+                  <div className="sugg-head">
+                    <Megaphone size={13} strokeWidth={2.5} />
+                    <span>Read Disclosure</span>
+                  </div>
+                  <p>“{script}”</p>
+                  <p className="muted" style={{ fontSize: 12, fontWeight: 400, marginTop: 8 }}>
+                    {required
+                      ? "Required in this state. The transcript and suggestions unlock once you tap Delivered."
+                      : "Optional in this state. Deliver it if you want it on the record."}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ marginTop: 12 }}
+                    onClick={markDelivered}
+                    disabled={busy}
+                  >
+                    <Check size={15} strokeWidth={2.3} /> Delivered
+                  </button>
+                </div>
+              )}
+
+              <div className="collect">
+                <div>
+                  <div className="collect-h font-display">Ready To Close</div>
+                  <div className="collect-s">
+                    Send the agreement and payment link without leaving the call.
+                  </div>
+                </div>
+                <button type="button" className="btn-primary" onClick={() => toast.success("Agreement Sent.")}>
+                  <CreditCard size={15} strokeWidth={2.2} /> Send Agreement
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className="tab"
+                style={{ marginTop: 12, alignSelf: "flex-start", color: "var(--signal)", fontWeight: 600 }}
+                onClick={endCall}
+              >
+                <PhoneOff size={13} style={{ display: "inline", marginRight: 6 }} /> End Call
+              </button>
+            </>
           )}
-        </Card>
+        </div>
+
+        {connected ? (
+          <LiveAssistPanel
+            mode={mode}
+            lines={transcript}
+            suggestions={blocked ? [] : [AGENT_LINE[mode]]}
+            jurisdiction={jurisdiction}
+            delivered={delivered}
+            locked={blocked}
+          />
+        ) : (
+          <Panel title="Live Assist">
+            <EmptyState
+              icon={PhoneOutgoing}
+              title="No Active Call"
+              hint="Start a call to see the live transcript, consent state, and copilot suggestions."
+            />
+          </Panel>
+        )}
       </div>
     </div>
   );
