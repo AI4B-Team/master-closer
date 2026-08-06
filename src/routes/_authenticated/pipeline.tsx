@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -75,8 +75,9 @@ function PipelinePage() {
   return (
     <div>
       <PageHeader
-        title="Pipeline"
-        description="Deals from first touch to signed."
+        title="Leads"
+        description="Pipeline — deals from first touch to signed."
+        tabs={TAB_GROUPS.leads}
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>

@@ -1,128 +1,191 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Users, KanbanSquare, PhoneCall, PhoneOutgoing, Megaphone,
-  Bot, BookOpen, GraduationCap, BarChart3, CreditCard, ShieldCheck, Plug,
-  Settings, Crosshair, LogOut, ChevronDown,
+  LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
+  CreditCard, ShieldCheck, Plug, Settings, Crosshair, ChevronsLeft, ChevronsRight,
+  ChevronRight, Search, Bell, LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
-  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
+import { Avatar, initialsOf } from "@/components/back-office/ui";
 
-const NAV = [
+type NavItem = { to: string; label: string; icon: any; also?: string[] };
+
+const NAV_PRIMARY: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/leads", label: "Leads & Contacts", icon: Users },
-  { to: "/pipeline", label: "Pipeline", icon: KanbanSquare },
-  { to: "/calls", label: "Calls & Transcripts", icon: PhoneCall },
-  { to: "/dialer", label: "Dialer", icon: PhoneOutgoing },
+  { to: "/leads", label: "Leads", icon: Users, also: ["/pipeline"] },
+  { to: "/calls", label: "Calls", icon: PhoneCall, also: ["/dialer"] },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone },
-  { to: "/ai-closers", label: "AI Closers", icon: Bot },
-  { to: "/playbook", label: "Playbook & Objections", icon: BookOpen },
-  { to: "/practice", label: "Practice", icon: GraduationCap },
-  { to: "/team", label: "Team & Performance", icon: BarChart3 },
-  { to: "/payments", label: "Payments & Agreements", icon: CreditCard },
+  { to: "/ai-closers", label: "AI Studio", icon: Bot, also: ["/playbook", "/practice"] },
+  { to: "/team", label: "Reports", icon: BarChart3 },
+];
+
+const NAV_UTILITY: NavItem[] = [
+  { to: "/payments", label: "Payments", icon: CreditCard },
   { to: "/compliance", label: "Compliance", icon: ShieldCheck },
   { to: "/integrations", label: "Integrations", icon: Plug },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
+/** Tab groups: consolidated nav homes that render as tabbed sub-views. */
+export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
+  leads: [
+    { label: "List", to: "/leads" },
+    { label: "Pipeline", to: "/pipeline" },
+  ],
+  calls: [
+    { label: "Live Dialer", to: "/dialer" },
+    { label: "History", to: "/calls" },
+  ],
+  studio: [
+    { label: "Closers", to: "/ai-closers" },
+    { label: "Playbook", to: "/playbook" },
+    { label: "Practice", to: "/practice" },
+  ],
+};
+
+function isActive(pathname: string, item: NavItem) {
+  return [item.to, ...(item.also ?? [])].some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
 
   const signOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   };
 
-  const initials = (user?.user_metadata?.full_name || user?.email || "?")
-    .split(" ").map((s: string) => s[0]).join("").slice(0, 2).toUpperCase();
+  const name = (user?.user_metadata?.full_name as string) || user?.email || "Account";
+  const activeLabel =
+    [...NAV_PRIMARY, ...NAV_UTILITY].find((n) => isActive(pathname, n))?.label ?? "Back Office";
+
+  const renderNav = (items: NavItem[], muted = false) =>
+    items.map((item) => {
+      const Icon = item.icon;
+      const active = isActive(pathname, item);
+      return (
+        <Link
+          key={item.to}
+          to={item.to}
+          title={item.label}
+          className={`nav-item ${muted ? "nav-muted" : ""} ${active ? "nav-on" : ""}`}
+        >
+          <span className="nav-ico">
+            <Icon size={muted ? 16 : 17} strokeWidth={muted ? 2 : 2.1} />
+          </span>
+          {!collapsed && <span className="nav-label">{item.label}</span>}
+        </Link>
+      );
+    });
 
   return (
-    <div className="min-h-screen flex bg-white text-[#0B0B0F]" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
-      {/* Sidebar */}
-      <aside className="w-[240px] shrink-0 border-r border-[#E7E7EC] flex flex-col fixed h-screen bg-white">
-        <div className="h-14 flex items-center gap-2 px-5 border-b border-[#E7E7EC]">
-          <Crosshair className="h-5 w-5 text-[#CC0000]" strokeWidth={2.5} />
-          <span className="font-bold tracking-tight" style={{ fontFamily: "Sora, Inter, sans-serif" }}>
-            Master Closer
+    <div className="mc-shell">
+      <aside className={"side " + (collapsed ? "side-collapsed" : "")}>
+        <div className="side-brand">
+          <span className="side-mark">
+            <Crosshair size={17} strokeWidth={2.6} />
           </span>
+          {!collapsed && <span className="side-word font-display">Master Closer</span>}
+          <button
+            type="button"
+            className="side-toggle"
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+          </button>
         </div>
-        <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {NAV.map((item) => {
-            const active = pathname === item.to || pathname.startsWith(item.to + "/");
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm mb-0.5 transition-colors ${
-                  active
-                    ? "bg-[#CC0000]/10 text-[#CC0000] font-medium"
-                    : "text-[#0B0B0F] hover:bg-[#F4F4F6]"
-                }`}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="p-3 text-[10px] text-[#6B6B76] border-t border-[#E7E7EC]">
-          v0.1 · Back Office Build
+
+        <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
+        <div className="side-divider" />
+        <nav className="side-nav side-util">{renderNav(NAV_UTILITY, true)}</nav>
+
+        <div className="side-foot">
+          <Avatar name={name} />
+          {!collapsed && (
+            <div className="side-user">
+              <span className="side-user-n">{initialsOf(name) && name.split("@")[0]}</span>
+              <span className="side-user-e">Owner</span>
+            </div>
+          )}
+          {!collapsed && (
+            <button
+              type="button"
+              onClick={signOut}
+              className="icon-btn"
+              style={{ marginLeft: "auto", width: 30, height: 30 }}
+              aria-label="Sign out"
+            >
+              <LogOut size={15} />
+            </button>
+          )}
         </div>
       </aside>
 
-      {/* Main */}
-      <div className="flex-1 ml-[240px] flex flex-col min-h-screen">
-        <header className="h-14 border-b border-[#E7E7EC] flex items-center justify-between px-6 sticky top-0 bg-white z-10">
-          <div className="text-sm text-[#6B6B76]">
-            <span className="font-medium text-[#0B0B0F]">Master Closer</span> · Back Office
+      <div className={"main " + (collapsed ? "main-collapsed" : "")}>
+        <header className="topbar">
+          <div className="crumb">
+            <span className="muted">Master Closer</span>
+            <ChevronRight size={13} className="crumb-sep" />
+            <span className="crumb-active">{activeLabel}</span>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#F4F4F6]">
-                <div className="h-7 w-7 rounded-full bg-[#CC0000] text-white flex items-center justify-center text-xs font-semibold">
-                  {initials}
-                </div>
-                <span className="text-sm max-w-[160px] truncate">{user?.email}</span>
-                <ChevronDown className="h-4 w-4 text-[#6B6B76]" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
-                <Settings className="h-4 w-4 mr-2" /> Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={signOut} className="text-[#CC0000]">
-                <LogOut className="h-4 w-4 mr-2" /> Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="topbar-right">
+            <div className="search">
+              <Search size={15} />
+              <input placeholder="Search Leads, Calls…" />
+            </div>
+            <span className="status-chip">
+              <span className="status-dot" /> On Call
+            </span>
+            <button type="button" className="icon-btn" aria-label="Notifications">
+              <Bell size={17} />
+            </button>
+          </div>
         </header>
-        <main className="flex-1 p-8 bg-[#FAFAFB]">{children}</main>
+
+        <main className="content">{children}</main>
       </div>
     </div>
   );
 }
 
-export function PageHeader({
-  title, description, action,
-}: { title: string; description?: string; action?: ReactNode }) {
+export function TabStrip({ tabs }: { tabs: { label: string; to: string }[] }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="tabs">
+      {tabs.map((t) => (
+        <Link key={t.to} to={t.to} className={"tab " + (pathname === t.to ? "tab-on" : "")}>
+          {t.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+export function PageHeader({
+  title, description, action, tabs,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  tabs?: { label: string; to: string }[];
+}) {
+  return (
+    <div className="page-head">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Sora, Inter, sans-serif" }}>
-          {title}
-        </h1>
-        {description && <p className="text-sm text-[#6B6B76] mt-1">{description}</p>}
+        <h1 className="font-display page-title">{title}</h1>
+        {description && <p className="page-sub">{description}</p>}
       </div>
-      {action}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {tabs && <TabStrip tabs={tabs} />}
+        {action}
+      </div>
     </div>
   );
 }

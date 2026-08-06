@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { PhoneCall } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,8 +29,9 @@ function CallsPage() {
   return (
     <div>
       <PageHeader
-        title="Calls & Transcripts"
-        description="Every conversation with transcript, AI summary, and moves."
+        title="Calls"
+        description="History — every conversation with transcript, AI summary, and moves."
+        tabs={TAB_GROUPS.calls}
       />
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none">

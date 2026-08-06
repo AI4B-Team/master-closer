@@ -11,7 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -62,8 +62,9 @@ function AIClosers() {
   return (
     <div>
       <PageHeader
-        title="AI Closers"
-        description="Build a Master Closer: identity, knowledge, autonomy, and where to transfer."
+        title="AI Studio"
+        description="Closers — identity, knowledge, autonomy, and where to transfer."
+        tabs={TAB_GROUPS.studio}
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
