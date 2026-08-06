@@ -1,34 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
-import {
-  PhoneCall, TrendingUp, DollarSign, Percent, Bot, Users, Hand,
-} from "lucide-react";
+import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, toneForStatus } from "@/components/back-office/ui";
+import { DollarSign, Eye, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell,
-} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Master Closer" }] }),
+  head: () => ({
+    meta: [
+      { title: "Dashboard — Master Closer" },
+      { name: "description", content: "Today's calls, close rate, revenue, and mode-split analytics across AI, Hybrid, and Copilot." },
+      { property: "og:title", content: "Dashboard — Master Closer" },
+      { property: "og:description", content: "Today's calls, close rate, revenue, and mode-split analytics across AI, Hybrid, and Copilot." },
+    ],
+  }),
   component: Dashboard,
 });
 
-function Kpi({ label, value, icon: Icon, sub }: { label: string; value: string; icon: any; sub?: string }) {
-  return (
-    <Card className="p-5 rounded-2xl border-[#E7E7EC] shadow-none">
-      <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-[#6B6B76] font-medium">{label}</span>
-        <Icon className="h-4 w-4 text-[#CC0000]" />
-      </div>
-      <div className="text-3xl font-bold mt-2" style={{ fontFamily: "DM Mono, monospace" }}>{value}</div>
-      {sub && <div className="text-xs text-[#6B6B76] mt-1">{sub}</div>}
-    </Card>
-  );
-}
+const MODE_COLORS = ["#CC0000", "#111318", "#B6B7C0"];
 
 function Dashboard() {
   const { data: stats } = useQuery({
@@ -53,10 +43,7 @@ function Dashboard() {
         name: m === "full_ai" ? "AI" : m === "hybrid" ? "Hybrid" : "Copilot",
         value: (calls ?? []).filter((c) => c.mode === m).length,
       }));
-      return {
-        callsToday: callsToday ?? 0,
-        revenue, closeRate, avgProb, modeSplit,
-      };
+      return { callsToday: callsToday ?? 0, revenue, closeRate, avgProb, modeSplit, totalCalls: calls?.length ?? 0 };
     },
   });
 
@@ -69,110 +56,105 @@ function Dashboard() {
     },
   });
 
-  const trend = Array.from({ length: 14 }, (_, i) => ({
-    day: `D${i + 1}`,
-    rate: 20 + Math.round(Math.sin(i / 2) * 8 + i * 1.2),
-  }));
-
-  const COLORS = ["#CC0000", "#0B0B0F", "#6B6B76"];
+  const split = stats?.modeSplit ?? [];
+  const total = split.reduce((s, m) => s + m.value, 0);
+  const pct = split.map((m) => (total ? (m.value / total) * 100 : 0));
+  const stops = pct.reduce<string[]>((acc, p, i) => {
+    const start = pct.slice(0, i).reduce((s, v) => s + v, 0);
+    acc.push(`${MODE_COLORS[i]} ${start}% ${start + p}%`);
+    return acc;
+  }, []);
+  const donut = total
+    ? `conic-gradient(${stops.join(", ")})`
+    : "conic-gradient(#EEF0F3 0 100%)";
 
   return (
     <div>
       <PageHeader
         title="Dashboard"
         description="Today's activity across every autonomy mode."
+        action={
+          <Link to="/campaigns" className="btn-primary">
+            <Sparkles size={15} strokeWidth={2.3} /> New Campaign
+          </Link>
+        }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Kpi label="Calls Today" value={String(stats?.callsToday ?? 0)} icon={PhoneCall} />
-        <Kpi label="Close Rate" value={`${(stats?.closeRate ?? 0).toFixed(1)}%`} icon={Percent} />
-        <Kpi label="Revenue Closed" value={`$${(stats?.revenue ?? 0).toLocaleString()}`} icon={DollarSign} />
-        <Kpi label="Avg Close Probability" value={`${(stats?.avgProb ?? 0).toFixed(0)}%`} icon={TrendingUp} />
+      <div className="kpis">
+        <Kpi label="Calls Today" value={String(stats?.callsToday ?? 0)} icon={PhoneCall} {...KPI_TINTS.blue} delta="Today" />
+        <Kpi label="Close Rate" value={`${(stats?.closeRate ?? 0).toFixed(1)}%`} icon={Percent} {...KPI_TINTS.red} delta="Last 200" />
+        <Kpi label="Revenue Closed" value={`$${(stats?.revenue ?? 0).toLocaleString()}`} icon={DollarSign} {...KPI_TINTS.mint} delta="Won" />
+        <Kpi label="Avg Close Probability" value={`${(stats?.avgProb ?? 0).toFixed(0)}%`} icon={TrendingUp} {...KPI_TINTS.lavender} delta="Live" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <Card className="p-5 rounded-2xl border-[#E7E7EC] shadow-none lg:col-span-2">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">Close Rate Trend</h3>
-            <span className="text-xs text-[#6B6B76]">Last 14 Days</span>
+      <div className="grid-2">
+        <Panel
+          title="Recent Deals"
+          action={<Link to="/pipeline" className="card-link">View All</Link>}
+        >
+          {recentDeals && recentDeals.length > 0 ? (
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Deal</th>
+                  <th>Updated</th>
+                  <th>Stage</th>
+                  <th>Value</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {recentDeals.map((d) => (
+                  <tr key={d.id}>
+                    <td>
+                      <div className="cell-name">
+                        <Avatar name={d.title ?? "Deal"} />
+                        <span>{d.title}</span>
+                      </div>
+                    </td>
+                    <td className="muted font-num">
+                      {new Date(d.updated_at as string).toLocaleDateString()}
+                    </td>
+                    <td>
+                      <StatusPill label={String(d.stage).replace(/_/g, " ")} tone={toneForStatus(d.stage)} />
+                    </td>
+                    <td className="font-num">${Number(d.value ?? 0).toLocaleString()}</td>
+                    <td>
+                      <div className="row-acts">
+                        <button type="button" aria-label="Call"><Phone size={15} /></button>
+                        <button type="button" aria-label="View"><Eye size={15} /></button>
+                        <button type="button" aria-label="More"><MoreVertical size={15} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <EmptyState icon={DollarSign} title="No Deals Yet" hint="Deals will appear here as your team closes." />
+          )}
+        </Panel>
+
+        <Panel title="How Calls Ran">
+          <div className="donut-wrap">
+            <div className="donut" style={{ background: donut }}>
+              <div className="donut-hole">
+                <span className="font-num">{stats?.totalCalls ?? 0}</span>
+                <small>calls</small>
+              </div>
+            </div>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer>
-              <LineChart data={trend}>
-                <CartesianGrid stroke="#E7E7EC" strokeDasharray="3 3" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#6B6B76" }} />
-                <YAxis tick={{ fontSize: 11, fill: "#6B6B76" }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="rate" stroke="#CC0000" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card className="p-5 rounded-2xl border-[#E7E7EC] shadow-none">
-          <h3 className="font-semibold mb-3">Mode Split</h3>
-          <div className="h-52">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie data={stats?.modeSplit ?? []} dataKey="value" innerRadius={45} outerRadius={80} paddingAngle={2}>
-                  {(stats?.modeSplit ?? []).map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-1.5 text-sm">
-            {(stats?.modeSplit ?? []).map((m, i) => (
-              <div key={m.name} className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full" style={{ background: COLORS[i] }} />
-                  {m.name}
-                </span>
-                <span className="font-medium">{m.value}</span>
+          <div className="legend">
+            {split.map((m, i) => (
+              <div key={m.name} className="legend-row">
+                <span className="legend-dot" style={{ background: MODE_COLORS[i] }} />
+                <span>{m.name}</span>
+                <span className="font-num legend-v">{pct[i].toFixed(0)}%</span>
               </div>
             ))}
           </div>
-        </Card>
+        </Panel>
       </div>
-
-      <Card className="p-5 rounded-2xl border-[#E7E7EC] shadow-none">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Recent Deals</h3>
-        </div>
-        {recentDeals && recentDeals.length > 0 ? (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                <th className="py-2">Title</th>
-                <th className="py-2">Stage</th>
-                <th className="py-2 text-right">Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentDeals.map((d) => (
-                <tr key={d.id} className="border-b border-[#E7E7EC] last:border-0">
-                  <td className="py-3 font-medium">{d.title}</td>
-                  <td className="py-3">
-                    <Badge variant="secondary" className="capitalize">{d.stage}</Badge>
-                  </td>
-                  <td className="py-3 text-right font-mono">${Number(d.value).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <EmptyState icon={DollarSign} title="No deals yet" hint="Deals will appear here as your team closes." />
-        )}
-      </Card>
-    </div>
-  );
-}
-
-function EmptyState({ icon: Icon, title, hint }: { icon: any; title: string; hint: string }) {
-  return (
-    <div className="text-center py-12">
-      <Icon className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-      <p className="font-medium">{title}</p>
-      <p className="text-sm text-[#6B6B76] mt-1">{hint}</p>
     </div>
   );
 }
