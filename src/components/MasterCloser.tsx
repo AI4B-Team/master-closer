@@ -860,8 +860,8 @@ export default function MasterCloser() {
             <a href="#faq">FAQ</a>
           </nav>
           <div className="nav-cta">
-            <a href="#" className="nav-login">Sign In</a>
-            <a href="#" className="btn-primary">Get Started</a>
+            <a href="/auth" className="nav-login">Sign In</a>
+            <a href="/auth" className="btn-primary">Get Started</a>
           </div>
         </div>
       </header>
@@ -1307,7 +1307,7 @@ export default function MasterCloser() {
           <Eyebrow light>Start Closing</Eyebrow>
           <h2 className="font-display cta-h">Your Next Call Could Be<br />Your Best Close.</h2>
           <p className="cta-sub">Set up in minutes. Pick your mode. Let it work.</p>
-          <a href="#" className="btn-primary btn-lg">Get Started <ArrowRight size={17} strokeWidth={2.4} /></a>
+          <a href="/auth" className="btn-primary btn-lg">Get Started <ArrowRight size={17} strokeWidth={2.4} /></a>
           <div className="cta-note">No Contracts · Cancel Anytime</div>
         </div>
       </section>
