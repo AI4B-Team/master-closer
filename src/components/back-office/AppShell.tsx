@@ -130,16 +130,39 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className={"main " + (collapsed ? "main-collapsed" : "")}>
         <header className="topbar">
-          <div className="crumb">
-            <span className="muted">Master Closer</span>
-            <ChevronRight size={13} className="crumb-sep" />
-            <span className="crumb-active">{activeLabel}</span>
-          </div>
-          <div className="topbar-right">
+          <div className="search-wrap">
             <div className="search">
               <Search size={15} />
-              <input placeholder="Search Leads, Calls…" />
+              <input placeholder={`Search ${scope}…`} />
+              <button
+                type="button"
+                className="search-caret"
+                onClick={() => setScopeOpen((v) => !v)}
+                aria-label="Search options"
+              >
+                {scope} <ChevronDown size={14} />
+              </button>
             </div>
+            {scopeOpen && (
+              <div className="search-menu">
+                <div className="search-menu-label">Search in</div>
+                {SEARCH_SCOPES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    data-on={s === scope}
+                    onClick={() => {
+                      setScope(s);
+                      setScopeOpen(false);
+                    }}
+                  >
+                    {s === scope && <Check size={14} />} {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="topbar-right">
             <span className="status-chip">
               <span className="status-dot" /> On Call
             </span>
@@ -148,6 +171,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
+
 
         <main className="content">{children}</main>
       </div>
