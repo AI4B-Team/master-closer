@@ -3,7 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
   CreditCard, ShieldCheck, Plug, Settings, Crosshair, ChevronsLeft, ChevronsRight,
-  ChevronRight, Search, Bell, LogOut,
+  ChevronDown, Check, Search, Bell, LogOut,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -50,11 +50,15 @@ function isActive(pathname: string, item: NavItem) {
   );
 }
 
+const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes"] as const;
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [scope, setScope] = useState<(typeof SEARCH_SCOPES)[number]>("Everything");
+  const [scopeOpen, setScopeOpen] = useState(false);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -62,8 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const name = (user?.user_metadata?.full_name as string) || user?.email || "Account";
-  const activeLabel =
-    [...NAV_PRIMARY, ...NAV_UTILITY].find((n) => isActive(pathname, n))?.label ?? "Back Office";
+
 
   const renderNav = (items: NavItem[], muted = false) =>
     items.map((item) => {
@@ -130,16 +133,39 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className={"main " + (collapsed ? "main-collapsed" : "")}>
         <header className="topbar">
-          <div className="crumb">
-            <span className="muted">Master Closer</span>
-            <ChevronRight size={13} className="crumb-sep" />
-            <span className="crumb-active">{activeLabel}</span>
-          </div>
-          <div className="topbar-right">
+          <div className="search-wrap">
             <div className="search">
               <Search size={15} />
-              <input placeholder="Search Leads, Calls…" />
+              <input placeholder={`Search ${scope}…`} />
+              <button
+                type="button"
+                className="search-caret"
+                onClick={() => setScopeOpen((v) => !v)}
+                aria-label="Search options"
+              >
+                {scope} <ChevronDown size={14} />
+              </button>
             </div>
+            {scopeOpen && (
+              <div className="search-menu">
+                <div className="search-menu-label">Search in</div>
+                {SEARCH_SCOPES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    data-on={s === scope}
+                    onClick={() => {
+                      setScope(s);
+                      setScopeOpen(false);
+                    }}
+                  >
+                    {s === scope && <Check size={14} />} {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="topbar-right">
             <span className="status-chip">
               <span className="status-dot" /> On Call
             </span>
@@ -148,6 +174,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
+
 
         <main className="content">{children}</main>
       </div>

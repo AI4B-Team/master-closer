@@ -95,15 +95,34 @@
   height: 60px; background: #fff; border-bottom: 1px solid var(--line); display: flex;
   align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10;
 }
-.crumb { font-size: 13px; display: flex; align-items: center; gap: 6px; }
-.crumb-sep { color: #c3c8d0; }
-.crumb-active { font-weight: 600; }
 .topbar-right { display: flex; align-items: center; gap: 14px; }
+.search-wrap { position: relative; }
 .search {
   display: flex; align-items: center; gap: 8px; background: var(--surface);
-  border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; color: var(--muted); width: 240px;
+  border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; color: var(--muted); width: 380px;
 }
 .search input { border: none; background: none; outline: none; font: inherit; font-size: 13px; width: 100%; color: var(--ink); }
+.search-caret {
+  display: flex; align-items: center; gap: 4px; border: none; background: none; cursor: pointer;
+  color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 600; padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
+.search-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; width: 240px; background: #fff;
+  border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 28px rgba(17, 19, 24, 0.12);
+  padding: 6px; z-index: 30;
+}
+.search-menu-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); padding: 8px 10px 4px;
+}
+.search-menu button {
+  display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: none; cursor: pointer;
+  font: inherit; font-size: 13px; color: var(--ink); padding: 8px 10px; border-radius: 8px; text-align: left;
+}
+.search-menu button:hover { background: var(--surface); }
+.search-menu button[data-on="true"] { color: var(--brand, #cc0000); font-weight: 600; }
+
 .status-chip {
   display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600;
   color: var(--success); background: #e6f6ee; padding: 6px 11px; border-radius: 999px;
