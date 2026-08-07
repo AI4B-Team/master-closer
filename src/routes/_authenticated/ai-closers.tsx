@@ -13,11 +13,21 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Bot } from "lucide-react";
+import { AgentDrawer } from "@/components/back-office/AgentDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/ai-closers")({
-  head: () => ({ meta: [{ title: "AI Closers — Master Closer" }] }),
+  head: () => ({
+    meta: [
+      { title: "AI Closers — Master Closer" },
+      { name: "description", content: "Build AI closers: identity, voice, industry knowledge, autonomy mode, and system prompt." },
+      { property: "og:title", content: "AI Closers — Master Closer" },
+      { property: "og:description", content: "Build AI closers: identity, voice, industry knowledge, autonomy mode, and system prompt." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: AIClosers,
 });
 
@@ -25,6 +35,7 @@ function AIClosers() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", industry: "", default_mode: "hybrid", voice: "aria" });
+  const [selected, setSelected] = useState<any>(null);
 
   const { data: agents } = useQuery({
     queryKey: ["agents"],
@@ -119,12 +130,18 @@ function AIClosers() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {agents.map((a) => (
-            <Card key={a.id} className="p-5 rounded-2xl border-[#E7E7EC] shadow-none">
+            <Card
+              key={a.id}
+              onClick={() => setSelected(a)}
+              className="p-5 rounded-2xl border-[#E7E7EC] shadow-none cursor-pointer transition-colors hover:border-[#CC0000]/40"
+            >
               <div className="flex items-start justify-between mb-3">
                 <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center">
                   <Bot className="h-5 w-5 text-[#CC0000]" />
                 </div>
-                <Switch checked={a.active} onCheckedChange={(v) => toggle.mutate({ id: a.id, active: v })} />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Switch checked={a.active} onCheckedChange={(v) => toggle.mutate({ id: a.id, active: v })} />
+                </div>
               </div>
               <h3 className="font-semibold">{a.name}</h3>
               <p className="text-xs text-[#6B6B76] mt-1">{a.industry ?? "General"}</p>
@@ -136,6 +153,8 @@ function AIClosers() {
           ))}
         </div>
       )}
+
+      <AgentDrawer agent={selected} onOpenChange={(o) => !o && setSelected(null)} />
     </div>
   );
 }
