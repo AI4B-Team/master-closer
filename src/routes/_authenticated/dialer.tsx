@@ -580,9 +580,10 @@ function DialerPage() {
               <div className="collect">
                 <div>
                   <div className="collect-h font-display">Ready To Close</div>
-                  <div className="collect-s">
+                  <div className="collect-s" style={{ whiteSpace: "nowrap" }}>
                     Send the agreement and payment link without leaving the call.
                   </div>
+
                 </div>
                 <button type="button" className="btn-primary" onClick={() => toast.success("Agreement Sent.")}>
                   <CreditCard size={15} strokeWidth={2.2} /> Send Agreement
