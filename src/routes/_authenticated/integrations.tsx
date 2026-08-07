@@ -63,8 +63,8 @@ function IntegrationsPage() {
         title="Integrations"
         description="Plug Master Closer into the tools your team already runs on."
       />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <AccountShell current="integrations">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {CONNECTORS.map((c) => {
           const connected = statusFor(c.key);
           const Icon = c.icon;
