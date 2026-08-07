@@ -218,7 +218,9 @@
 .banner-num { color: #9aa0ab; font-size: 12.5px; }
 .banner-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgba(14, 159, 110, 0.25); }
 .banner-camp { font-size: 11px; color: #c3c8d0; background: rgba(255, 255, 255, 0.08); padding: 2px 8px; border-radius: 999px; }
-.banner-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #7ee2b8; }
+.banner-status { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #7ee2b8; flex-wrap: nowrap; }
+.banner-ongoing { display: inline-flex; align-items: center; gap: 6px; color: #7ee2b8; }
+
 .banner-mid { display: flex; align-items: center; gap: 10px; margin-left: 8px; }
 .banner-mode-label { font-size: 10px; letter-spacing: 0.14em; color: #7b818d; }
 .mode-seg { display: flex; background: rgba(255, 255, 255, 0.08); border-radius: 999px; padding: 3px; gap: 2px; }
