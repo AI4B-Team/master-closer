@@ -17,7 +17,7 @@ const NAV_PRIMARY: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: Users, also: ["/pipeline"] },
   { to: "/calls", label: "Calls", icon: PhoneCall, also: ["/dialer"] },
-  { to: "/campaigns", label: "Campaigns", icon: Megaphone },
+  { to: "/campaigns", label: "Campaigns", icon: Megaphone, also: ["/lists"] },
   { to: "/ai-closers", label: "AI Studio", icon: Bot, also: ["/playbook", "/practice"] },
   { to: "/team", label: "Reports", icon: BarChart3 },
 ];
@@ -39,6 +39,10 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
     { label: "Closers", to: "/ai-closers" },
     { label: "Playbook", to: "/playbook" },
     { label: "Practice", to: "/practice" },
+  ],
+  campaigns: [
+    { label: "Campaigns", to: "/campaigns" },
+    { label: "Lists", to: "/lists" },
   ],
 };
 

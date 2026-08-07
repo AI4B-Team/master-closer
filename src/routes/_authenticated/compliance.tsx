@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/back-office/AppShell";
+import { AccountShell } from "@/components/back-office/AccountShell";
 import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -97,6 +98,7 @@ function CompliancePage() {
         description="Per-state consent rules, disclosure delivery, and a defensible log of every line spoken."
       />
 
+      <AccountShell current="compliance">
       {/* Disclosure Panel */}
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
         <div className="flex items-start gap-3 mb-5">
@@ -254,6 +256,7 @@ function CompliancePage() {
       </Card>
 
       <DisclosureLog />
+      </AccountShell>
     </div>
   );
 }

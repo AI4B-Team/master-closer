@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
+import { AccountShell } from "@/components/back-office/AccountShell";
 import { Video, Phone, Calendar, CreditCard, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -63,8 +64,8 @@ function IntegrationsPage() {
         title="Integrations"
         description="Plug Master Closer into the tools your team already runs on."
       />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <AccountShell current="integrations">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {CONNECTORS.map((c) => {
           const connected = statusFor(c.key);
           const Icon = c.icon;
@@ -97,6 +98,7 @@ function IntegrationsPage() {
           );
         })}
       </div>
+      </AccountShell>
     </div>
   );
 }

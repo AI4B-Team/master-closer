@@ -190,7 +190,10 @@ export type Database = {
         Row: {
           agent_id: string | null
           created_at: string
+          daily_cap: number
+          goal: string | null
           id: string
+          list_id: string | null
           mode: Database["public"]["Enums"]["autonomy_mode"]
           name: string
           org_id: string
@@ -199,7 +202,10 @@ export type Database = {
         Insert: {
           agent_id?: string | null
           created_at?: string
+          daily_cap?: number
+          goal?: string | null
           id?: string
+          list_id?: string | null
           mode?: Database["public"]["Enums"]["autonomy_mode"]
           name: string
           org_id: string
@@ -208,7 +214,10 @@ export type Database = {
         Update: {
           agent_id?: string | null
           created_at?: string
+          daily_cap?: number
+          goal?: string | null
           id?: string
+          list_id?: string | null
           mode?: Database["public"]["Enums"]["autonomy_mode"]
           name?: string
           org_id?: string
@@ -220,6 +229,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "call_lists"
             referencedColumns: ["id"]
           },
           {
@@ -489,6 +505,7 @@ export type Database = {
           org_id: string
           provider: string
           status: string
+          updated_at: string
         }
         Insert: {
           config?: Json
@@ -497,6 +514,7 @@ export type Database = {
           org_id: string
           provider: string
           status?: string
+          updated_at?: string
         }
         Update: {
           config?: Json
@@ -505,6 +523,7 @@ export type Database = {
           org_id?: string
           provider?: string
           status?: string
+          updated_at?: string
         }
         Relationships: [
           {

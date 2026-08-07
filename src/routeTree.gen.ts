@@ -19,6 +19,7 @@ import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedPlaybookRouteImport } from './routes/_authenticated/playbook'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
+import { Route as AuthenticatedListsRouteImport } from './routes/_authenticated/lists'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedDialerRouteImport } from './routes/_authenticated/dialer'
@@ -83,6 +84,11 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedListsRoute = AuthenticatedListsRouteImport.update({
+  id: '/lists',
+  path: '/lists',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/dialer': typeof AuthenticatedDialerRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/lists': typeof AuthenticatedListsRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/playbook': typeof AuthenticatedPlaybookRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/dialer': typeof AuthenticatedDialerRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/lists': typeof AuthenticatedListsRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/playbook': typeof AuthenticatedPlaybookRoute
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/_authenticated/dialer': typeof AuthenticatedDialerRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
+  '/_authenticated/lists': typeof AuthenticatedListsRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/playbook': typeof AuthenticatedPlaybookRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/dialer'
     | '/integrations'
     | '/leads'
+    | '/lists'
     | '/payments'
     | '/pipeline'
     | '/playbook'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/dialer'
     | '/integrations'
     | '/leads'
+    | '/lists'
     | '/payments'
     | '/pipeline'
     | '/playbook'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dialer'
     | '/_authenticated/integrations'
     | '/_authenticated/leads'
+    | '/_authenticated/lists'
     | '/_authenticated/payments'
     | '/_authenticated/pipeline'
     | '/_authenticated/playbook'
@@ -419,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/payments'
       fullPath: '/payments'
       preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lists': {
+      id: '/_authenticated/lists'
+      path: '/lists'
+      fullPath: '/lists'
+      preLoaderRoute: typeof AuthenticatedListsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/leads': {
@@ -546,6 +565,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDialerRoute: typeof AuthenticatedDialerRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
+  AuthenticatedListsRoute: typeof AuthenticatedListsRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedPlaybookRoute: typeof AuthenticatedPlaybookRoute
@@ -564,6 +584,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDialerRoute: AuthenticatedDialerRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
+  AuthenticatedListsRoute: AuthenticatedListsRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedPlaybookRoute: AuthenticatedPlaybookRoute,

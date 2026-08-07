@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/back-office/AppShell";
+import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -42,6 +43,7 @@ function SettingsPage() {
   return (
     <div>
       <PageHeader title="Settings" description="Your account and workspace." />
+      <AccountShell current="settings">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-3xl">
         <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
           <h3 className="font-semibold mb-4">Profile</h3>
@@ -61,6 +63,7 @@ function SettingsPage() {
         <Button onClick={save} className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">Save Changes</Button>
       </div>
       <HubPanel />
+      </AccountShell>
     </div>
 
   );
