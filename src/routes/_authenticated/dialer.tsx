@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
+import { closeObjection } from "@/lib/demo.functions";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
@@ -61,8 +63,56 @@ function DialerPage() {
   const tick = useRef<ReturnType<typeof setInterval> | null>(null);
   const [campaignId, setCampaignId] = useState<string>("");
   const [contact, setContact] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
+  const [thinking, setThinking] = useState(false);
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
+  const askCloser = useServerFn(closeObjection);
+
+  /** Persist a transcript line and get the next best response from the AI gateway. */
+  const runAssist = async (prospectLine: string, id?: string | null) => {
+    const activeCall = id ?? callId;
+    setThinking(true);
+    setTranscript((t) => [...t, { speaker: "Prospect", text: prospectLine }]);
+    try {
+      if (activeCall) {
+        await supabase.from("transcript_segments").insert({
+          call_id: activeCall,
+          speaker: "Prospect",
+          text: prospectLine,
+          ts_sec: elapsed,
+        });
+      }
+      const res = await askCloser({ data: { prospect: prospectLine, mode: MODE_KEY[mode] } });
+      setAiConfidence(res.confidence);
+      setSuggestions([res.line]);
+      if (mode === "full_ai") {
+        setTranscript((t) => [...t, { speaker: "Master Closer", text: res.line }]);
+      }
+      if (activeCall) {
+        await supabase.from("suggestions").insert({
+          call_id: activeCall,
+          objection: res.objection,
+          line: res.line,
+          ts_sec: elapsed,
+        });
+        if (mode === "full_ai") {
+          await supabase.from("transcript_segments").insert({
+            call_id: activeCall,
+            speaker: "Master Closer",
+            text: res.line,
+            ts_sec: elapsed,
+          });
+        }
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Copilot Is Unavailable.");
+    } finally {
+      setThinking(false);
+    }
+  };
+
 
   const { data: campaigns } = useQuery({
     queryKey: ["dialer-campaigns"],
