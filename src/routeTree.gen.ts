@@ -29,6 +29,7 @@ import { Route as AuthenticatedComplianceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
+import { Route as AuthenticatedAgreementsRouteImport } from './routes/_authenticated/agreements'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiV1ListsRouteImport } from './routes/api/v1/lists'
 import { Route as ApiV1LeadsRouteImport } from './routes/api/v1/leads'
@@ -138,6 +139,11 @@ const AuthenticatedAiClosersRoute = AuthenticatedAiClosersRouteImport.update({
   path: '/ai-closers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAgreementsRoute = AuthenticatedAgreementsRouteImport.update({
+  id: '/agreements',
+  path: '/agreements',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/agreements': typeof AuthenticatedAgreementsRoute
   '/_authenticated/ai-closers': typeof AuthenticatedAiClosersRoute
   '/_authenticated/calls': typeof AuthenticatedCallsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/account'
+    | '/agreements'
     | '/ai-closers'
     | '/calls'
     | '/campaigns'
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/account'
+    | '/agreements'
     | '/ai-closers'
     | '/calls'
     | '/campaigns'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/account'
+    | '/_authenticated/agreements'
     | '/_authenticated/ai-closers'
     | '/_authenticated/calls'
     | '/_authenticated/campaigns'
@@ -515,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiClosersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/agreements': {
+      id: '/_authenticated/agreements'
+      path: '/agreements'
+      fullPath: '/agreements'
+      preLoaderRoute: typeof AuthenticatedAgreementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -576,6 +595,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAgreementsRoute: typeof AuthenticatedAgreementsRoute
   AuthenticatedAiClosersRoute: typeof AuthenticatedAiClosersRoute
   AuthenticatedCallsRoute: typeof AuthenticatedCallsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
@@ -596,6 +616,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAgreementsRoute: AuthenticatedAgreementsRoute,
   AuthenticatedAiClosersRoute: AuthenticatedAiClosersRoute,
   AuthenticatedCallsRoute: AuthenticatedCallsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
