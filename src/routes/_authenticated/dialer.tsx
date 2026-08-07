@@ -254,7 +254,8 @@ function DialerPage() {
   useEffect(() => {
     if (connected) {
       setElapsed(0);
-      tick.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+      // Hold freezes billable talk time until the rep resumes the line.
+      tick.current = setInterval(() => setElapsed((s) => (holdRef.current ? s : s + 1)), 1000);
     }
     return () => {
       if (tick.current) clearInterval(tick.current);
@@ -268,11 +269,19 @@ function DialerPage() {
 
   useEffect(() => {
     if (!connected || !simulate) return;
-    const timers = SIM_SCRIPT.map((s) =>
-      setTimeout(() => void assistRef.current(s.text), s.at * 1000),
-    );
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const fire = (text: string) => {
+      // While the prospect is on hold nothing is heard — retry once the line resumes.
+      if (holdRef.current) {
+        timers.push(setTimeout(() => fire(text), 1500));
+        return;
+      }
+      void assistRef.current(text);
+    };
+    SIM_SCRIPT.forEach((s) => timers.push(setTimeout(() => fire(s.text), s.at * 1000)));
     return () => timers.forEach(clearTimeout);
   }, [connected, simulate, callId]);
+
 
 
   const required = isDisclosureRequired(jurisdiction);
