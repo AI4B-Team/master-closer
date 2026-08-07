@@ -14,7 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState, StatusPill } from "@/components/back-office/ui";
 import {
   Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History,
@@ -120,6 +120,7 @@ function AgreementsPage() {
       <PageHeader
         title="Agreements"
         description="Upload it, fill it, send it and get it signed while the call is still warm."
+        tabs={TAB_GROUPS.calls}
         action={
           <Button
             className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
