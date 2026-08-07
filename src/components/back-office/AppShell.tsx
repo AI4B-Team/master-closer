@@ -164,16 +164,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="status-chip">
               <span className="status-dot" /> On Call
             </span>
-            <button type="button" className="icon-btn" aria-label="Notifications">
+            <button type="button" className="icon-btn has-tip tip-below" data-tip="Notifications" aria-label="Notifications">
               <Bell size={17} />
             </button>
             <div className="profile-wrap">
               <button
                 type="button"
-                className="profile-btn"
+                className="profile-btn has-tip tip-below"
                 onClick={() => setProfileOpen((v) => !v)}
+                data-tip="Your account"
                 aria-label="Profile menu"
               >
+
                 <Avatar name={name} size={36} />
               </button>
               {profileOpen && (
