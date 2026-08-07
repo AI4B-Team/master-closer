@@ -490,6 +490,10 @@ function DialerPage() {
     setTranscript([]);
     setDelivered(false);
     setElapsed(0);
+    setHolding(false);
+    setMuted(false);
+    setParticipants([]);
+
     qc.invalidateQueries({ queryKey: ["calls"] });
     if (campaignId) await loadNext(campaignId);
   };
