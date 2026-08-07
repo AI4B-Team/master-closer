@@ -3,11 +3,13 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
   CreditCard, ShieldCheck, Plug, Settings, Crosshair, ChevronsLeft, ChevronsRight,
-  ChevronDown, Check, Search, Bell, LogOut,
+  ChevronDown, ChevronRight, Check, Search, Bell, LogOut, Zap, UserPlus, Mail, Languages, Sun,
+  Youtube, Instagram, MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, initialsOf } from "@/components/back-office/ui";
+
 
 type NavItem = { to: string; label: string; icon: any; also?: string[] };
 
