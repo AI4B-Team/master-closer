@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
 import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
+import { applyMerge, DEFAULT_AGREEMENT_BODY, signingUrl } from "@/lib/agreements";
 
 
 export const Route = createFileRoute("/_authenticated/dialer")({
@@ -646,7 +647,7 @@ function DialerPage() {
                   </div>
 
                 </div>
-                <button type="button" className="btn-primary" onClick={() => toast.success("Agreement Sent.")}>
+                <button type="button" className="btn-primary" onClick={sendAgreement} disabled={sendingAgreement}>
                   <CreditCard size={15} strokeWidth={2.2} /> Send Agreement
                 </button>
               </div>
