@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
-import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText } from "lucide-react";
+import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText, Ban, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -318,6 +318,175 @@ function DisclosureLog() {
           </tbody>
         </table>
       )}
+    </Card>
+  );
+}
+
+function DncRegistry() {
+  const qc = useQueryClient();
+  const [phone, setPhone] = useState("");
+  const [reason, setReason] = useState("");
+  const [search, setSearch] = useState("");
+
+  const { data: entries } = useQuery({
+    queryKey: ["dnc_list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("dnc_list")
+        .select("*")
+        .order("added_at", { ascending: false })
+        .limit(500);
+      return data ?? [];
+    },
+  });
+
+  const add = useMutation({
+    mutationFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      const numbers = phone
+        .split(/[\n,;]+/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (!numbers.length) throw new Error("Enter at least one number.");
+      const { error } = await supabase.from("dnc_list").insert(
+        numbers.map((p) => ({
+          org_id: prof.org_id,
+          phone: p,
+          reason: reason.trim() || "Added manually",
+        })),
+      );
+      if (error) throw error;
+      return numbers.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`${n} number${n === 1 ? "" : "s"} added to Do Not Call.`);
+      setPhone("");
+      setReason("");
+      qc.invalidateQueries({ queryKey: ["dnc_list"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("dnc_list").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Number released from Do Not Call.");
+      qc.invalidateQueries({ queryKey: ["dnc_list"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return entries ?? [];
+    return (entries ?? []).filter(
+      (e: any) =>
+        e.phone.toLowerCase().includes(q) || (e.reason ?? "").toLowerCase().includes(q),
+    );
+  }, [entries, search]);
+
+  return (
+    <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <div className="flex items-start gap-3">
+          <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+            <Ban className="h-5 w-5 text-[#CC0000]" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Do Not Call Registry</h3>
+            <p className="text-sm text-[#6B6B76]">
+              {entries?.length ?? 0} suppressed number{(entries?.length ?? 0) === 1 ? "" : "s"}. The
+              dialer skips every one of them automatically.
+            </p>
+          </div>
+        </div>
+        <div className="relative w-56">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B76]" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search Numbers"
+            className="pl-9 rounded-xl"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <Label>Add Numbers</Label>
+          <Textarea
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            rows={4}
+            placeholder={"+15551234567\n+15559876543"}
+            className="mt-1.5 rounded-xl font-mono text-sm"
+          />
+          <p className="text-xs text-[#6B6B76] mt-1.5">One per line, or comma separated.</p>
+
+          <div className="mt-4">
+            <Label>Reason</Label>
+            <Input
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Requested on call"
+              className="mt-1.5 rounded-xl"
+            />
+          </div>
+
+          <Button
+            onClick={() => add.mutate()}
+            disabled={add.isPending || !phone.trim()}
+            className="mt-4 bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
+          >
+            Suppress Numbers
+          </Button>
+        </div>
+
+        <div className="max-h-[320px] overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="text-sm text-[#6B6B76] py-8 text-center">
+              {entries?.length ? "No matches." : "No suppressed numbers yet."}
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-white">
+                <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                  <th className="py-2">Number</th>
+                  <th className="py-2">Reason</th>
+                  <th className="py-2 text-right">Added</th>
+                  <th className="py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((e: any) => (
+                  <tr key={e.id} className="border-b border-[#E7E7EC] last:border-0">
+                    <td className="py-2.5 font-mono text-xs">{e.phone}</td>
+                    <td className="py-2.5 text-[#6B6B76]">{e.reason ?? "—"}</td>
+                    <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
+                      {new Date(e.added_at).toLocaleDateString()}
+                    </td>
+                    <td className="py-2.5 text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => remove.mutate(e.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-[#6B6B76]" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </Card>
   );
 }
