@@ -537,10 +537,13 @@ function DialerPage() {
           onModeChange={setMode}
           onEnd={() => endCall("connected")}
           muted={muted}
-          onToggleMute={() => setMuted((v) => !v)}
-          onHold={() => toast.info("Call On Hold.")}
-          onMerge={() => toast.info("Merge Requested.")}
-          onTransfer={() => toast.info("Transferring To A Human Closer.")}
+          onToggleMute={toggleMute}
+          onHold={toggleHold}
+          holding={holding}
+          participants={participants}
+          onMerge={() => setMergeOpen(true)}
+          onTransfer={() => setTransferOpen(true)}
+
         />
       )}
 
