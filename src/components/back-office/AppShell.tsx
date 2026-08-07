@@ -61,6 +61,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [scope, setScope] = useState<(typeof SEARCH_SCOPES)[number]>("Everything");
   const [scopeOpen, setScopeOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
