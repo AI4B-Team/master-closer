@@ -225,35 +225,26 @@ function DialerPage() {
       setConnected(true);
       setDelivered(false);
       setTranscript([]);
+      setSuggestions([]);
+      setAiConfidence(null);
 
-      if (mode === "full_ai" || mode === "hybrid") {
-        if (spokenAtOpen) {
-          setTranscript([{ speaker: "Master Closer", text: script, tone: "disclosure" }]);
-          await logDisclosure({
-            callId: call.id,
-            jurisdiction,
-            line: script,
-            method: "pre_call_disclosure",
-          });
-          setDelivered(true);
-        }
-        setTimeout(() => {
-          setTranscript((t) => [
-            ...t,
-            { speaker: "Prospect", text: "Honestly, your competitor is cheaper." },
-            {
-              speaker: "Master Closer",
-              text: "That's helpful to know. If both options cost exactly the same, which one would you choose — and why?",
-            },
-          ]);
-        }, 1200);
-      } else {
-        // Copilot: rep delivers. In Required states the live surface stays hidden.
-        setTranscript([
-          { speaker: "Prospect", text: "Hey — who's this?" },
-          { speaker: "Prospect", text: "I need to think about it, the price is a lot." },
-        ]);
+      if ((mode === "full_ai" || mode === "hybrid") && spokenAtOpen) {
+        setTranscript([{ speaker: "Master Closer", text: script, tone: "disclosure" }]);
+        await logDisclosure({
+          callId: call.id,
+          jurisdiction,
+          line: script,
+          method: "pre_call_disclosure",
+        });
+        await supabase.from("transcript_segments").insert({
+          call_id: call.id,
+          speaker: "Master Closer",
+          text: script,
+          ts_sec: 0,
+        });
+        setDelivered(true);
       }
+
     } catch (e: any) {
       toast.error(e.message);
     } finally {
