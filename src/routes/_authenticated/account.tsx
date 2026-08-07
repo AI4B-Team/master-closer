@@ -68,13 +68,124 @@ function AccountPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
 
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const [mfaFactors, setMfaFactors] = useState<{ id: string; status: string }[]>([]);
+  const [mfaOpen, setMfaOpen] = useState(false);
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaSecret, setMfaSecret] = useState<string | null>(null);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaBusy, setMfaBusy] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     setFullName((user.user_metadata?.full_name as string) ?? "");
     setPhone((user.user_metadata?.phone as string) ?? "");
+    setAvatarPath((user.user_metadata?.avatar_path as string) ?? null);
     const saved = user.user_metadata?.notify as Partial<Record<NotifyKey, boolean>> | undefined;
     if (saved) setNotify((p) => ({ ...p, ...saved }));
   }, [user]);
+
+  /** Avatars live in a private bucket, so render them through a signed URL. */
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!avatarPath) {
+        setAvatarUrl(null);
+        return;
+      }
+      const { data } = await supabase.storage.from("avatars").createSignedUrl(avatarPath, 3600);
+      if (alive) setAvatarUrl(data?.signedUrl ?? null);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [avatarPath]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.mfa.listFactors();
+      setMfaFactors((data?.totp ?? []).map((f) => ({ id: f.id, status: f.status })));
+    })();
+  }, [user]);
+
+  const verifiedFactor = mfaFactors.find((f) => f.status === "verified");
+
+  const uploadAvatar = async (file: File) => {
+    if (!user) return;
+    if (!file.type.startsWith("image/")) return toast.error("Pick An Image File");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Image Must Be Under 5MB");
+    setUploading(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (error) {
+      setUploading(false);
+      return toast.error(error.message);
+    }
+    const { error: metaError } = await supabase.auth.updateUser({ data: { avatar_path: path } });
+    await supabase.from("profiles").update({ avatar_url: path }).eq("id", user.id);
+    setUploading(false);
+    if (metaError) return toast.error(metaError.message);
+    setAvatarPath(path);
+    toast.success("Photo Updated");
+  };
+
+  const startMfa = async () => {
+    setMfaBusy(true);
+    // Clean up any half-finished enrollment so re-opening never errors out.
+    for (const f of mfaFactors.filter((x) => x.status !== "verified")) {
+      await supabase.auth.mfa.unenroll({ factorId: f.id });
+    }
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+      friendlyName: `Authenticator ${Date.now()}`,
+    });
+    setMfaBusy(false);
+    if (error || !data) return toast.error(error?.message ?? "Could Not Start Setup");
+    setMfaFactorId(data.id);
+    setMfaQr(data.totp.qr_code);
+    setMfaSecret(data.totp.secret);
+    setMfaCode("");
+    setMfaOpen(true);
+  };
+
+  const confirmMfa = async () => {
+    if (!mfaFactorId) return;
+    if (mfaCode.trim().length !== 6) return toast.error("Enter The 6-Digit Code");
+    setMfaBusy(true);
+    const { data: chal, error: chalError } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+    if (chalError || !chal) {
+      setMfaBusy(false);
+      return toast.error(chalError?.message ?? "Challenge Failed");
+    }
+    const { error } = await supabase.auth.mfa.verify({
+      factorId: mfaFactorId,
+      challengeId: chal.id,
+      code: mfaCode.trim(),
+    });
+    setMfaBusy(false);
+    if (error) return toast.error(error.message);
+    const { data } = await supabase.auth.mfa.listFactors();
+    setMfaFactors((data?.totp ?? []).map((f) => ({ id: f.id, status: f.status })));
+    setMfaOpen(false);
+    toast.success("Two-Factor Authentication Enabled");
+  };
+
+  const disableMfa = async () => {
+    if (!verifiedFactor) return;
+    setMfaBusy(true);
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: verifiedFactor.id });
+    setMfaBusy(false);
+    if (error) return toast.error(error.message);
+    setMfaFactors((p) => p.filter((f) => f.id !== verifiedFactor.id));
+    toast.success("Two-Factor Authentication Disabled");
+  };
+
 
   const saveProfile = async () => {
     setSavingProfile(true);
