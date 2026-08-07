@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
 import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
+import { applyMerge, DEFAULT_AGREEMENT_BODY, signingUrl } from "@/lib/agreements";
 
 
 export const Route = createFileRoute("/_authenticated/dialer")({
@@ -74,6 +75,67 @@ function DialerPage() {
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const askCloser = useServerFn(closeObjection);
+
+  const [sendingAgreement, setSendingAgreement] = useState(false);
+
+  /** Creates a real agreement from the default template for the person on the line and copies the signing link. */
+  const sendAgreement = async () => {
+    setSendingAgreement(true);
+    try {
+      const { data: prof } = await supabase.from("profiles").select("org_id, full_name, email").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      const { data: tpl } = await supabase
+        .from("agreement_templates")
+        .select("id, body, file_path, file_name")
+        .order("is_default", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const signer = contact?.name ?? "The Prospect";
+      const body = applyMerge(tpl?.body || DEFAULT_AGREEMENT_BODY, {
+        lead_name: signer,
+        phone: contact?.phone ?? phone,
+        amount: "2,500",
+        deposit: "1,250",
+        currency: "USD",
+        rep_name: prof.full_name ?? prof.email ?? "Your Closer",
+        org_name: "Master Closer",
+        date: new Date().toLocaleDateString(),
+      });
+
+      const { data: row, error } = await supabase
+        .from("agreements")
+        .insert({
+          org_id: prof.org_id,
+          template_id: tpl?.id ?? null,
+          call_id: callId,
+          title: `${signer} — Agreement`,
+          body,
+          file_path: tpl?.file_path ?? null,
+          file_name: tpl?.file_name ?? null,
+          amount: 2500,
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          signer_name: signer,
+        })
+        .select("id, token")
+        .single();
+      if (error) throw error;
+
+      await supabase.from("agreement_events").insert({
+        agreement_id: row.id,
+        org_id: prof.org_id,
+        event_type: "sent",
+        meta: { from: "dialer", call_id: callId },
+      });
+      await navigator.clipboard.writeText(signingUrl(row.token)).catch(() => {});
+      toast.success("Agreement Sent. Signing link copied to your clipboard.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not create the agreement.");
+    } finally {
+      setSendingAgreement(false);
+    }
+  };
 
   /** Persist a transcript line and get the next best response from the AI gateway. */
   const runAssist = async (prospectLine: string, id?: string | null) => {
@@ -585,7 +647,7 @@ function DialerPage() {
                   </div>
 
                 </div>
-                <button type="button" className="btn-primary" onClick={() => toast.success("Agreement Sent.")}>
+                <button type="button" className="btn-primary" onClick={sendAgreement} disabled={sendingAgreement}>
                   <CreditCard size={15} strokeWidth={2.2} /> Send Agreement
                 </button>
               </div>

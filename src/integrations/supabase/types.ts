@@ -61,6 +61,224 @@ export type Database = {
           },
         ]
       }
+      agreement_events: {
+        Row: {
+          agreement_id: string
+          created_at: string
+          event_type: string
+          id: string
+          meta: Json
+          org_id: string
+        }
+        Insert: {
+          agreement_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          meta?: Json
+          org_id: string
+        }
+        Update: {
+          agreement_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          meta?: Json
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_events_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "agreements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreement_templates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          file_mime: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          is_default: boolean
+          name: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          file_mime?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          file_mime?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_templates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agreements: {
+        Row: {
+          amount: number
+          body: string
+          call_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deal_id: string | null
+          declined_at: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          lead_id: string | null
+          org_id: string
+          sent_at: string | null
+          signature_data: string | null
+          signature_type: string | null
+          signed_at: string | null
+          signer_email: string | null
+          signer_ip: string | null
+          signer_name: string | null
+          signer_phone: string | null
+          status: string
+          template_id: string | null
+          title: string
+          token: string
+          updated_at: string
+          viewed_at: string | null
+        }
+        Insert: {
+          amount?: number
+          body?: string
+          call_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          declined_at?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          lead_id?: string | null
+          org_id: string
+          sent_at?: string | null
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_ip?: string | null
+          signer_name?: string | null
+          signer_phone?: string | null
+          status?: string
+          template_id?: string | null
+          title: string
+          token?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          amount?: number
+          body?: string
+          call_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          declined_at?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          lead_id?: string | null
+          org_id?: string
+          sent_at?: string | null
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_ip?: string | null
+          signer_name?: string | null
+          signer_phone?: string | null
+          status?: string
+          template_id?: string | null
+          title?: string
+          token?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreements_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreements_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreements_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreements_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "agreement_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_lists: {
         Row: {
           created_at: string

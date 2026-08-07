@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignTokenRouteImport } from './routes/sign.$token'
 import { Route as AuthHubRouteImport } from './routes/auth_.hub'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -29,6 +30,7 @@ import { Route as AuthenticatedComplianceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
+import { Route as AuthenticatedAgreementsRouteImport } from './routes/_authenticated/agreements'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiV1ListsRouteImport } from './routes/api/v1/lists'
 import { Route as ApiV1LeadsRouteImport } from './routes/api/v1/leads'
@@ -50,6 +52,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignTokenRoute = SignTokenRouteImport.update({
+  id: '/sign/$token',
+  path: '/sign/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthHubRoute = AuthHubRouteImport.update({
@@ -138,6 +145,11 @@ const AuthenticatedAiClosersRoute = AuthenticatedAiClosersRouteImport.update({
   path: '/ai-closers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAgreementsRoute = AuthenticatedAgreementsRouteImport.update({
+  id: '/agreements',
+  path: '/agreements',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -183,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -200,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/dnc': typeof ApiV1DncRoute
@@ -212,6 +226,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -229,6 +244,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/dnc': typeof ApiV1DncRoute
@@ -243,6 +259,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/agreements': typeof AuthenticatedAgreementsRoute
   '/_authenticated/ai-closers': typeof AuthenticatedAiClosersRoute
   '/_authenticated/calls': typeof AuthenticatedCallsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
@@ -260,6 +277,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth_/hub': typeof AuthHubRoute
+  '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/dnc': typeof ApiV1DncRoute
@@ -274,6 +292,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/account'
+    | '/agreements'
     | '/ai-closers'
     | '/calls'
     | '/campaigns'
@@ -291,6 +310,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/hub'
+    | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
     | '/api/v1/dnc'
@@ -303,6 +323,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/account'
+    | '/agreements'
     | '/ai-closers'
     | '/calls'
     | '/campaigns'
@@ -320,6 +341,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/hub'
+    | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
     | '/api/v1/dnc'
@@ -333,6 +355,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/account'
+    | '/_authenticated/agreements'
     | '/_authenticated/ai-closers'
     | '/_authenticated/calls'
     | '/_authenticated/campaigns'
@@ -350,6 +373,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/auth_/hub'
+    | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
     | '/api/v1/dnc'
@@ -364,6 +388,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   AuthHubRoute: typeof AuthHubRoute
+  SignTokenRoute: typeof SignTokenRoute
   ApiV1CallsRoute: typeof ApiV1CallsRoute
   ApiV1CampaignsRoute: typeof ApiV1CampaignsRoute
   ApiV1DncRoute: typeof ApiV1DncRoute
@@ -394,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign/$token': {
+      id: '/sign/$token'
+      path: '/sign/$token'
+      fullPath: '/sign/$token'
+      preLoaderRoute: typeof SignTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth_/hub': {
@@ -515,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiClosersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/agreements': {
+      id: '/_authenticated/agreements'
+      path: '/agreements'
+      fullPath: '/agreements'
+      preLoaderRoute: typeof AuthenticatedAgreementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -576,6 +615,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAgreementsRoute: typeof AuthenticatedAgreementsRoute
   AuthenticatedAiClosersRoute: typeof AuthenticatedAiClosersRoute
   AuthenticatedCallsRoute: typeof AuthenticatedCallsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
@@ -596,6 +636,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAgreementsRoute: AuthenticatedAgreementsRoute,
   AuthenticatedAiClosersRoute: AuthenticatedAiClosersRoute,
   AuthenticatedCallsRoute: AuthenticatedCallsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
@@ -622,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   AuthHubRoute: AuthHubRoute,
+  SignTokenRoute: SignTokenRoute,
   ApiV1CallsRoute: ApiV1CallsRoute,
   ApiV1CampaignsRoute: ApiV1CampaignsRoute,
   ApiV1DncRoute: ApiV1DncRoute,
