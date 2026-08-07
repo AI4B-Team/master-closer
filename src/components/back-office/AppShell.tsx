@@ -19,7 +19,7 @@ const NAV_PRIMARY: NavItem[] = [
   { to: "/calls", label: "Calls", icon: PhoneCall, also: ["/dialer"] },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone, also: ["/lists"] },
   { to: "/ai-closers", label: "AI Studio", icon: Bot, also: ["/playbook", "/practice"] },
-  { to: "/team", label: "Reports", icon: BarChart3 },
+  { to: "/team", label: "Reports", icon: BarChart3, also: ["/members"] },
 ];
 
 /* Payments, Compliance, Integrations and Settings now live on the Account page. */
@@ -43,6 +43,10 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
   campaigns: [
     { label: "Campaigns", to: "/campaigns" },
     { label: "Lists", to: "/lists" },
+  ],
+  reports: [
+    { label: "Overview", to: "/team" },
+    { label: "Team", to: "/members" },
   ],
 };
 
