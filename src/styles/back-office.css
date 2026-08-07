@@ -364,3 +364,56 @@
 .pm-foot a { color: var(--muted); text-decoration: none; }
 .pm-foot a:hover { color: var(--ink); }
 .pm-social { display: flex; align-items: center; gap: 10px; color: #9aa0ac; }
+
+/* ---- Tooltips (white card, dark text) ---- */
+.has-tip { position: relative; }
+.has-tip::after,
+.has-tip::before {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+.has-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  background: #fff;
+  color: #14161a;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  padding: 7px 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 18, 22, 0.08);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+  z-index: 60;
+}
+.has-tip::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border-right: 1px solid rgba(16, 18, 22, 0.08);
+  border-bottom: 1px solid rgba(16, 18, 22, 0.08);
+  rotate: 45deg;
+  z-index: 61;
+}
+.has-tip:hover::after,
+.has-tip:focus-visible::after,
+.has-tip:hover::before,
+.has-tip:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
