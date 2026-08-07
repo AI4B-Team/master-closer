@@ -255,6 +255,8 @@ function CompliancePage() {
         </div>
       </Card>
 
+      <DncRegistry />
+
       <DisclosureLog />
       </AccountShell>
     </div>
