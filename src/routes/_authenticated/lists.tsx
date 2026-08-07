@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { StatusPill, toneForStatus } from "@/components/back-office/ui";
+import { StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { ListOrdered, Plus, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -215,7 +215,7 @@ function ListsPage() {
                     <td className="py-3 font-mono">{c.attempts}</td>
                     <td className="py-3">
                       {c.last_outcome
-                        ? <StatusPill label={c.last_outcome} tone={toneForStatus(c.last_outcome)} />
+                        ? <StatusPill label={titleCase(c.last_outcome)} tone={toneForStatus(c.last_outcome)} />
                         : <span className="text-[#6B6B76]">—</span>}
                     </td>
                     <td className="py-3 capitalize text-[#6B6B76]">{c.consent?.replace("_", " ")}</td>

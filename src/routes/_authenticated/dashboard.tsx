@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
-import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, toneForStatus } from "@/components/back-office/ui";
+import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { DollarSign, Eye, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -116,7 +116,7 @@ function Dashboard() {
                       {new Date(d.updated_at as string).toLocaleDateString()}
                     </td>
                     <td>
-                      <StatusPill label={String(d.stage).replace(/_/g, " ")} tone={toneForStatus(d.stage)} />
+                      <StatusPill label={titleCase(d.stage)} tone={toneForStatus(d.stage)} />
                     </td>
                     <td className="font-num">${Number(d.value ?? 0).toLocaleString()}</td>
                     <td>
