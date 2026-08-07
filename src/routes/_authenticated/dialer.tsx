@@ -29,16 +29,8 @@ export const Route = createFileRoute("/_authenticated/dialer")({
 
 type Mode = CallMode;
 
-const WHISPERS = [
-  "Say: When you say it's a lot, is it the total or the monthly that gives you pause?",
-  "Say: If both options cost the same, which one would you choose — and why?",
-];
+const MODE_KEY: Record<Mode, string> = { full_ai: "ai", hybrid: "hybrid", copilot: "copilot" };
 
-const AGENT_LINE: Record<Mode, string> = {
-  full_ai: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
-  hybrid: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
-  copilot: WHISPERS[0],
-};
 
 type DialOutcome = "connected" | "no_answer" | "voicemail" | "busy" | "failed" | "dnc";
 
