@@ -16,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
+import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
+
 
 export const Route = createFileRoute("/_authenticated/dialer")({
   head: () => ({
@@ -66,6 +68,9 @@ function DialerPage() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
   const [thinking, setThinking] = useState(false);
+  const [simulate, setSimulate] = useState(true);
+  const [dialing, setDialing] = useState(false);
+
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const askCloser = useServerFn(closeObjection);
@@ -186,6 +191,19 @@ function DialerPage() {
     };
   }, [connected]);
 
+  // Simulation: feed scripted prospect lines through the real assist pipeline.
+  const assistRef = useRef(runAssist);
+  assistRef.current = runAssist;
+
+  useEffect(() => {
+    if (!connected || !simulate) return;
+    const timers = SIM_SCRIPT.map((s) =>
+      setTimeout(() => void assistRef.current(s.text), s.at * 1000),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [connected, simulate, callId]);
+
+
   const required = isDisclosureRequired(jurisdiction);
   const blocked = mode === "copilot" && shouldBlockLiveSurface(jurisdiction, delivered);
 
@@ -194,6 +212,15 @@ function DialerPage() {
     try {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+
+      // Simulated ring cadence stands in for the carrier until credentials are live.
+      if (simulate) {
+        setDialing(true);
+        await new Promise((r) => setTimeout(r, SIM_RING_MS));
+        setDialing(false);
+      }
+
+
 
       const { data: call, error } = await supabase
         .from("calls")
@@ -365,10 +392,14 @@ function DialerPage() {
         <div className="mc-card cockpit-main">
           <div className="card-head">
             <h3 className="font-display card-h">{connected ? "Lead Information" : "Call Setup"}</h3>
-            <StatusPill
-              label={connected ? "On Call" : "Idle"}
-              tone={connected ? "green" : "neutral"}
-            />
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {simulate && <StatusPill label="Simulation" tone="amber" />}
+              <StatusPill
+                label={dialing ? "Dialing" : connected ? "On Call" : "Idle"}
+                tone={connected ? "green" : "neutral"}
+              />
+            </div>
+
           </div>
 
           {!connected ? (
@@ -434,11 +465,36 @@ function DialerPage() {
                     Here.
                   </span>
                 </div>
+                <div className="lead-field">
+                  <span className="lead-k">Simulation</span>
+                  <div className="tabs" style={{ padding: 3 }}>
+                    <button
+                      type="button"
+                      className={"tab " + (simulate ? "tab-on" : "")}
+                      onClick={() => setSimulate(true)}
+                    >
+                      Simulated Call
+                    </button>
+                    <button
+                      type="button"
+                      className={"tab " + (!simulate ? "tab-on" : "")}
+                      onClick={() => setSimulate(false)}
+                    >
+                      Live Carrier
+                    </button>
+                  </div>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {simulate
+                      ? "A scripted prospect answers and objects — the AI responses are real."
+                      : "Requires telephony credentials. Nothing will dial until they are connected."}
+                  </span>
+                </div>
               </div>
 
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 <button type="button" className="btn-primary" onClick={startCall} disabled={busy}>
-                  <PhoneOutgoing size={15} strokeWidth={2.2} /> Start Call
+                  <PhoneOutgoing size={15} strokeWidth={2.2} />{" "}
+                  {dialing ? "Dialing…" : simulate ? "Start Simulated Call" : "Start Call"}
                 </button>
                 {campaign && contact && (
                   <button type="button" className="tab" onClick={() => loadNext(campaignId)}>
@@ -446,6 +502,18 @@ function DialerPage() {
                   </button>
                 )}
               </div>
+
+              {dialing && (
+                <div className="sugg" style={{ marginTop: 16 }}>
+                  <div className="sugg-head">
+                    <PhoneOutgoing size={13} strokeWidth={2.5} />
+                    <span>Ringing {phone}</span>
+                  </div>
+                  <p>Waiting for the prospect to pick up.</p>
+                </div>
+              )}
+
+
 
               {preConnectPlaying && (
                 <div className="sugg" style={{ marginTop: 16 }}>
