@@ -16,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
+import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
+
 
 export const Route = createFileRoute("/_authenticated/dialer")({
   head: () => ({
