@@ -8,6 +8,12 @@ const MODES: { key: CallMode; label: string }[] = [
   { key: "copilot", label: "Copilot" },
 ];
 
+const MODE_TIPS: Record<CallMode, string> = {
+  full_ai: "AI runs the whole call on its own",
+  hybrid: "AI opens, then hands off to your closer",
+  copilot: "You lead, AI feeds you the next line",
+};
+
 export function CallBanner({
   name,
   phone,
@@ -59,7 +65,8 @@ export function CallBanner({
             <button
               key={m.key}
               type="button"
-              className={"mode-btn " + (mode === m.key ? "mode-on" : "")}
+              className={"mode-btn has-tip " + (mode === m.key ? "mode-on" : "")}
+              data-tip={MODE_TIPS[m.key]}
               onClick={() => onModeChange(m.key)}
             >
               {m.label}
@@ -69,26 +76,27 @@ export function CallBanner({
       </div>
 
       <div className="banner-actions">
-        <button type="button" className="banner-act" onClick={onMerge}>
+        <button type="button" className="banner-act has-tip" data-tip="Merge another line into this call" onClick={onMerge}>
           <UserPlus size={16} />
           <span>Merge</span>
         </button>
-        <button type="button" className="banner-act" onClick={onTransfer}>
+        <button type="button" className="banner-act has-tip" data-tip="Transfer the call to a teammate" onClick={onTransfer}>
           <PhoneForwarded size={16} />
           <span>Transfer</span>
         </button>
         <button
           type="button"
-          className={"banner-icon " + (muted ? "on" : "")}
+          className={"banner-icon has-tip " + (muted ? "on" : "")}
+          data-tip={muted ? "Unmute your microphone" : "Mute your microphone"}
           onClick={onToggleMute}
           aria-label={muted ? "Unmute" : "Mute"}
         >
           {muted ? <MicOff size={16} /> : <Mic size={16} />}
         </button>
-        <button type="button" className="banner-icon" onClick={onHold} aria-label="Hold">
+        <button type="button" className="banner-icon has-tip" data-tip="Put the prospect on hold" onClick={onHold} aria-label="Hold">
           <Pause size={16} />
         </button>
-        <button type="button" className="banner-end" onClick={onEnd}>
+        <button type="button" className="banner-end has-tip" data-tip="Hang up and wrap the call" onClick={onEnd}>
           <PhoneOff size={15} /> End Call
         </button>
       </div>
