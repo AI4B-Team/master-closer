@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { CallBanner, type CallMode } from "@/components/back-office/CallBanner";
 import { LiveAssistPanel, type AssistLine } from "@/components/back-office/LiveAssistPanel";
 import { EmptyState, Panel, StatusPill } from "@/components/back-office/ui";
 import {
-  AudioLines, Check, CreditCard, Megaphone, PhoneOff, PhoneOutgoing,
+  AudioLines, Ban, Check, CreditCard, Megaphone, PhoneOff, PhoneOutgoing, SkipForward,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { emitOrgEvent } from "@/lib/hub.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
@@ -38,6 +40,16 @@ const AGENT_LINE: Record<Mode, string> = {
   copilot: WHISPERS[0],
 };
 
+type DialOutcome = "connected" | "no_answer" | "voicemail" | "busy" | "failed" | "dnc";
+
+const DISPOSITIONS: { value: DialOutcome; label: string }[] = [
+  { value: "connected", label: "Connected" },
+  { value: "no_answer", label: "No Answer" },
+  { value: "voicemail", label: "Voicemail" },
+  { value: "busy", label: "Busy" },
+  { value: "failed", label: "Failed" },
+];
+
 function fmt(sec: number) {
   return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 }
@@ -55,6 +67,55 @@ function DialerPage() {
   const [muted, setMuted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const tick = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [campaignId, setCampaignId] = useState<string>("");
+  const [contact, setContact] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const qc = useQueryClient();
+  const emit = useServerFn(emitOrgEvent);
+
+  const { data: campaigns } = useQuery({
+    queryKey: ["dialer-campaigns"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("campaigns")
+        .select("id, name, mode, status, list_id")
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const campaign = (campaigns ?? []).find((c: any) => c.id === campaignId);
+
+  /** Queue rule: lowest attempts first, never a contact already flagged DNC. */
+  const loadNext = async (id: string) => {
+    const c = (campaigns ?? []).find((x: any) => x.id === id);
+    if (!c?.list_id) {
+      setContact(null);
+      return;
+    }
+    const { data } = await supabase
+      .from("list_contacts")
+      .select("id, name, phone, last_outcome")
+      .eq("list_id", c.list_id)
+      .neq("last_outcome", "dnc")
+      .order("attempts", { ascending: true })
+      .limit(1);
+    const next = data?.[0];
+    if (next) {
+      setContact({ id: next.id, name: next.name, phone: next.phone });
+      setPhone(next.phone);
+    } else {
+      setContact(null);
+      toast.info("Queue Is Empty.");
+    }
+  };
+
+  const pickCampaign = async (id: string) => {
+    setCampaignId(id);
+    const c = (campaigns ?? []).find((x: any) => x.id === id);
+    if (c?.mode) setMode(c.mode as Mode);
+    await loadNext(id);
+  };
 
   const { data: settings } = useQuery({
     queryKey: ["disclosure_settings"],
@@ -94,7 +155,13 @@ function DialerPage() {
 
       const { data: call, error } = await supabase
         .from("calls")
-        .insert({ org_id: prof.org_id, mode, outcome: "in_progress" })
+        .insert({
+          org_id: prof.org_id,
+          mode,
+          outcome: "in_progress",
+          campaign_id: campaignId || null,
+          list_contact_id: contact?.id ?? null,
+        })
         .select("id")
         .single();
       if (error) throw error;
@@ -165,17 +232,70 @@ function DialerPage() {
     }
   };
 
-  const endCall = async () => {
+  const endCall = async (dial: DialOutcome = "connected", disposition?: string) => {
     if (callId) {
       await supabase
         .from("calls")
-        .update({ outcome: "completed", ended_at: new Date().toISOString() })
+        .update({
+          outcome: "completed",
+          dial_outcome: dial,
+          disposition: disposition ?? DISPOSITIONS.find((d) => d.value === dial)?.label ?? null,
+          duration_sec: elapsed,
+          close_probability: closeProbability,
+          ended_at: new Date().toISOString(),
+        })
         .eq("id", callId);
+
+      if (contact) {
+        const { data: row } = await supabase
+          .from("list_contacts")
+          .select("attempts")
+          .eq("id", contact.id)
+          .maybeSingle();
+        await supabase
+          .from("list_contacts")
+          .update({ attempts: (row?.attempts ?? 0) + 1, last_outcome: dial })
+          .eq("id", contact.id);
+      }
+
+      try {
+        await emit({
+          data: {
+            event_type: "call.completed",
+            payload: { call_id: callId, mode, dial_outcome: dial, campaign_id: campaignId || null },
+          },
+        });
+      } catch {
+        // Never block wrap-up on hub availability.
+      }
     }
     setConnected(false);
     setCallId(null);
     setTranscript([]);
     setDelivered(false);
+    setElapsed(0);
+    qc.invalidateQueries({ queryKey: ["calls"] });
+    if (campaignId) await loadNext(campaignId);
+  };
+
+  const flagDnc = async () => {
+    setBusy(true);
+    try {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      await supabase.from("dnc_list").insert({ org_id: prof.org_id, phone, reason: "Requested on call" });
+      try {
+        await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, call_id: callId } } });
+      } catch {
+        // Hub delivery is best-effort.
+      }
+      toast.success("Added To Do Not Call.");
+      await endCall("dnc", "Do Not Call");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const closeProbability = connected ? (mode === "full_ai" ? 68 : mode === "hybrid" ? 74 : 61) : 0;
@@ -190,13 +310,13 @@ function DialerPage() {
 
       {connected && (
         <CallBanner
-          name="Outbound Prospect"
+          name={contact?.name ?? "Outbound Prospect"}
           phone={phone}
-          campaign={settings?.default_jurisdiction ? `Jurisdiction ${jurisdiction}` : "Direct Dial"}
+          campaign={campaign?.name ?? "Direct Dial"}
           timer={fmt(elapsed)}
           mode={mode}
           onModeChange={setMode}
-          onEnd={endCall}
+          onEnd={() => endCall("connected")}
           muted={muted}
           onToggleMute={() => setMuted((v) => !v)}
           onHold={() => toast.info("Call On Hold.")}
@@ -218,6 +338,26 @@ function DialerPage() {
           {!connected ? (
             <>
               <div className="lead-grid">
+                <div className="lead-field">
+                  <span className="lead-k">Campaign Queue</span>
+                  <select
+                    value={campaignId}
+                    onChange={(e) => pickCampaign(e.target.value)}
+                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
+                  >
+                    <option value="">Direct Dial</option>
+                    {(campaigns ?? []).map((c: any) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {campaign
+                      ? contact
+                        ? `Next: ${contact.name}`
+                        : "Queue empty — attach a list to this campaign."
+                      : "No campaign — dial the number below."}
+                  </span>
+                </div>
                 <div className="lead-field">
                   <span className="lead-k">Phone Number</span>
                   <input
@@ -260,9 +400,16 @@ function DialerPage() {
                 </div>
               </div>
 
-              <button type="button" className="btn-primary" onClick={startCall} disabled={busy}>
-                <PhoneOutgoing size={15} strokeWidth={2.2} /> Start Call
-              </button>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <button type="button" className="btn-primary" onClick={startCall} disabled={busy}>
+                  <PhoneOutgoing size={15} strokeWidth={2.2} /> Start Call
+                </button>
+                {campaign && contact && (
+                  <button type="button" className="tab" onClick={() => loadNext(campaignId)}>
+                    <SkipForward size={13} style={{ display: "inline", marginRight: 6 }} /> Skip Contact
+                  </button>
+                )}
+              </div>
 
               {preConnectPlaying && (
                 <div className="sugg" style={{ marginTop: 16 }}>
@@ -338,14 +485,32 @@ function DialerPage() {
                 </button>
               </div>
 
-              <button
-                type="button"
-                className="tab"
-                style={{ marginTop: 12, alignSelf: "flex-start", color: "var(--signal)", fontWeight: 600 }}
-                onClick={endCall}
-              >
-                <PhoneOff size={13} style={{ display: "inline", marginRight: 6 }} /> End Call
-              </button>
+              <div style={{ marginTop: 16 }}>
+                <div className="lead-k" style={{ marginBottom: 8 }}>Wrap Up — Disposition</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {DISPOSITIONS.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      className="tab"
+                      style={{ fontWeight: 600 }}
+                      disabled={busy}
+                      onClick={() => endCall(d.value)}
+                    >
+                      <PhoneOff size={13} style={{ display: "inline", marginRight: 6 }} /> {d.label}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="tab"
+                    style={{ color: "var(--signal)", fontWeight: 600 }}
+                    disabled={busy}
+                    onClick={flagDnc}
+                  >
+                    <Ban size={13} style={{ display: "inline", marginRight: 6 }} /> Do Not Call
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </div>
