@@ -420,18 +420,69 @@ function AccountPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-muted-foreground">
-                      Require A One-Time Code From Your Phone On Every New Sign-In.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="rounded-full"
-                      onClick={() => toast.info("Two-Factor Setup Is Coming Soon.")}
-                    >
-                      Enable
-                    </Button>
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">
+                        Require A One-Time Code From Your Authenticator App On Every New Sign-In.
+                      </p>
+                      {verifiedFactor && (
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-foreground">
+                          <ShieldCheck className="h-3.5 w-3.5" /> Enabled On This Account
+                        </div>
+                      )}
+                    </div>
+                    {verifiedFactor ? (
+                      <Button variant="outline" className="rounded-full" disabled={mfaBusy} onClick={disableMfa}>
+                        Disable
+                      </Button>
+                    ) : (
+                      <Button variant="outline" className="rounded-full" disabled={mfaBusy} onClick={startMfa}>
+                        Enable
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
+
+                <Dialog open={mfaOpen} onOpenChange={setMfaOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="font-display">Set Up Two-Factor Authentication</DialogTitle>
+                      <DialogDescription>
+                        Scan this code with Google Authenticator, 1Password, or Authy, then enter the
+                        6-digit code to confirm.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {mfaQr && (
+                        <img
+                          src={mfaQr}
+                          alt="Two-factor authentication setup QR code"
+                          className="mx-auto h-44 w-44 rounded-xl border border-border bg-background p-2"
+                        />
+                      )}
+                      {mfaSecret && (
+                        <p className="break-all text-center text-xs text-muted-foreground">
+                          Manual key: <span className="font-mono">{mfaSecret}</span>
+                        </p>
+                      )}
+                      <div>
+                        <Label htmlFor="mfa-code">6-Digit Code</Label>
+                        <Input
+                          id="mfa-code"
+                          inputMode="numeric"
+                          maxLength={6}
+                          value={mfaCode}
+                          onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+                          className="mt-1 tracking-[0.4em]"
+                          placeholder="000000"
+                        />
+                      </div>
+                      <Button className="w-full rounded-full" disabled={mfaBusy} onClick={confirmMfa}>
+                        {mfaBusy ? "Verifying..." : "Confirm And Enable"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
 
                 <Card>
                   <CardHeader>
