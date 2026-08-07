@@ -331,7 +331,10 @@ function DialerPage() {
     }
   };
 
-  const closeProbability = connected ? (mode === "full_ai" ? 68 : mode === "hybrid" ? 74 : 61) : 0;
+  const closeProbability = !connected
+    ? 0
+    : (aiConfidence ?? (mode === "full_ai" ? 68 : mode === "hybrid" ? 74 : 61));
+
 
   return (
     <div>
@@ -552,12 +555,15 @@ function DialerPage() {
           <LiveAssistPanel
             mode={mode}
             lines={transcript}
-            suggestions={blocked ? [] : [AGENT_LINE[mode]]}
+            suggestions={blocked ? [] : suggestions}
             jurisdiction={jurisdiction}
             delivered={delivered}
             locked={blocked}
+            thinking={thinking}
+            onAsk={(line) => runAssist(line)}
           />
         ) : (
+
           <Panel title="Live Assist">
             <EmptyState
               icon={PhoneOutgoing}
