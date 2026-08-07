@@ -461,11 +461,36 @@ function DialerPage() {
                     Here.
                   </span>
                 </div>
+                <div className="lead-field">
+                  <span className="lead-k">Simulation</span>
+                  <div className="tabs" style={{ padding: 3 }}>
+                    <button
+                      type="button"
+                      className={"tab " + (simulate ? "tab-on" : "")}
+                      onClick={() => setSimulate(true)}
+                    >
+                      Simulated Call
+                    </button>
+                    <button
+                      type="button"
+                      className={"tab " + (!simulate ? "tab-on" : "")}
+                      onClick={() => setSimulate(false)}
+                    >
+                      Live Carrier
+                    </button>
+                  </div>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {simulate
+                      ? "A scripted prospect answers and objects — the AI responses are real."
+                      : "Requires telephony credentials. Nothing will dial until they are connected."}
+                  </span>
+                </div>
               </div>
 
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 <button type="button" className="btn-primary" onClick={startCall} disabled={busy}>
-                  <PhoneOutgoing size={15} strokeWidth={2.2} /> Start Call
+                  <PhoneOutgoing size={15} strokeWidth={2.2} />{" "}
+                  {dialing ? "Dialing…" : simulate ? "Start Simulated Call" : "Start Call"}
                 </button>
                 {campaign && contact && (
                   <button type="button" className="tab" onClick={() => loadNext(campaignId)}>
@@ -473,6 +498,18 @@ function DialerPage() {
                   </button>
                 )}
               </div>
+
+              {dialing && (
+                <div className="sugg" style={{ marginTop: 16 }}>
+                  <div className="sugg-head">
+                    <PhoneOutgoing size={13} strokeWidth={2.5} />
+                    <span>Ringing {phone}</span>
+                  </div>
+                  <p>Waiting for the prospect to pick up.</p>
+                </div>
+              )}
+
+
 
               {preConnectPlaying && (
                 <div className="sugg" style={{ marginTop: 16 }}>
