@@ -44,6 +44,10 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
     { label: "Campaigns", to: "/campaigns" },
     { label: "Lists", to: "/lists" },
   ],
+  reports: [
+    { label: "Overview", to: "/team" },
+    { label: "Team", to: "/members" },
+  ],
 };
 
 function isActive(pathname: string, item: NavItem) {
