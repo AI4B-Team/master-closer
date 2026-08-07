@@ -71,6 +71,15 @@ function DialerPage() {
   const [thinking, setThinking] = useState(false);
   const [simulate, setSimulate] = useState(true);
   const [dialing, setDialing] = useState(false);
+  const [holding, setHolding] = useState(false);
+  const [participants, setParticipants] = useState<string[]>([]);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeValue, setMergeValue] = useState("");
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferTo, setTransferTo] = useState("");
+  const holdRef = useRef(false);
+  holdRef.current = holding;
+
 
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
