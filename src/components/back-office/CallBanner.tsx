@@ -105,9 +105,16 @@ export function CallBanner({
         >
           {muted ? <MicOff size={16} /> : <Mic size={16} />}
         </button>
-        <button type="button" className="banner-icon has-tip" data-tip="Put the prospect on hold" onClick={onHold} aria-label="Hold">
-          <Pause size={16} />
+        <button
+          type="button"
+          className={"banner-icon has-tip " + (holding ? "on" : "")}
+          data-tip={holding ? "Take the prospect off hold" : "Put the prospect on hold"}
+          onClick={onHold}
+          aria-label={holding ? "Resume" : "Hold"}
+        >
+          {holding ? <Play size={16} /> : <Pause size={16} />}
         </button>
+
         <button type="button" className="banner-end has-tip" data-tip="Hang up and wrap the call" onClick={onEnd}>
           <PhoneOff size={15} /> End Call
         </button>
