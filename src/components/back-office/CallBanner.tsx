@@ -51,10 +51,13 @@ export function CallBanner({
           <span className="banner-num font-num">{phone}</span>
           <span className="banner-live-dot" />
           {campaign && <span className="banner-camp">{campaign}</span>}
+        </div>
+        <div className="banner-status">
           <span className="banner-ongoing">
             <Radio size={12} /> Ongoing {timer}
           </span>
         </div>
+
 
       </div>
 
