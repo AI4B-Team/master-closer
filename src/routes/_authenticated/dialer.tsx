@@ -191,6 +191,19 @@ function DialerPage() {
     };
   }, [connected]);
 
+  // Simulation: feed scripted prospect lines through the real assist pipeline.
+  const assistRef = useRef(runAssist);
+  assistRef.current = runAssist;
+
+  useEffect(() => {
+    if (!connected || !simulate) return;
+    const timers = SIM_SCRIPT.map((s) =>
+      setTimeout(() => void assistRef.current(s.text), s.at * 1000),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [connected, simulate, callId]);
+
+
   const required = isDisclosureRequired(jurisdiction);
   const blocked = mode === "copilot" && shouldBlockLiveSurface(jurisdiction, delivered);
 
