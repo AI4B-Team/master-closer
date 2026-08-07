@@ -40,13 +40,16 @@ export function CallBanner({
       <div className="banner-lead">
         <div className="banner-name">
           <span className="font-display">{name}</span>
+        </div>
+        <div className="banner-status font-num">
           <span className="banner-num font-num">{phone}</span>
           <span className="banner-live-dot" />
           {campaign && <span className="banner-camp">{campaign}</span>}
+          <span className="banner-ongoing">
+            <Radio size={12} /> Ongoing {timer}
+          </span>
         </div>
-        <div className="banner-status font-num">
-          <Radio size={12} /> Ongoing {timer}
-        </div>
+
       </div>
 
       <div className="banner-mid">
