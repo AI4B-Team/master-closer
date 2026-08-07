@@ -77,14 +77,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Master Closer — AI That Closes Calls" },
+      {
+        name: "description",
+        content:
+          "Master Closer runs your sales calls end to end, hands off to a human closer, or whispers the next best line while your rep talks.",
+      },
+      { property: "og:title", content: "Master Closer — AI That Closes Calls" },
+      {
+        property: "og:description",
+        content: "AI, Hybrid, or Copilot. One dialer, every call, fully logged and compliant.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
