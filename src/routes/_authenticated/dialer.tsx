@@ -18,6 +18,11 @@ import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/li
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
 import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
 import { applyMerge, DEFAULT_AGREEMENT_BODY, signingUrl } from "@/lib/agreements";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 
 
 export const Route = createFileRoute("/_authenticated/dialer")({
