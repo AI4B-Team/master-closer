@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignTokenRouteImport } from './routes/sign.$token'
 import { Route as AuthHubRouteImport } from './routes/auth_.hub'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -51,6 +52,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignTokenRoute = SignTokenRouteImport.update({
+  id: '/sign/$token',
+  path: '/sign/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthHubRoute = AuthHubRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/dnc': typeof ApiV1DncRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/auth/hub': typeof AuthHubRoute
+  '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/dnc': typeof ApiV1DncRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/auth_/hub': typeof AuthHubRoute
+  '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
   '/api/v1/dnc': typeof ApiV1DncRoute
@@ -301,6 +310,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/hub'
+    | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
     | '/api/v1/dnc'
@@ -331,6 +341,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/auth/hub'
+    | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
     | '/api/v1/dnc'
@@ -362,6 +373,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/auth_/hub'
+    | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
     | '/api/v1/dnc'
@@ -376,6 +388,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   AuthHubRoute: typeof AuthHubRoute
+  SignTokenRoute: typeof SignTokenRoute
   ApiV1CallsRoute: typeof ApiV1CallsRoute
   ApiV1CampaignsRoute: typeof ApiV1CampaignsRoute
   ApiV1DncRoute: typeof ApiV1DncRoute
@@ -406,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign/$token': {
+      id: '/sign/$token'
+      path: '/sign/$token'
+      fullPath: '/sign/$token'
+      preLoaderRoute: typeof SignTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth_/hub': {
@@ -643,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   AuthHubRoute: AuthHubRoute,
+  SignTokenRoute: SignTokenRoute,
   ApiV1CallsRoute: ApiV1CallsRoute,
   ApiV1CampaignsRoute: ApiV1CampaignsRoute,
   ApiV1DncRoute: ApiV1DncRoute,
