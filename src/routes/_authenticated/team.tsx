@@ -118,6 +118,7 @@ function ReportsPage() {
       <PageHeader
         title="Reports"
         description="Leaderboards, responsiveness, and per-rep mode-usage breakdown."
+        tabs={TAB_GROUPS.reports}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
