@@ -68,6 +68,9 @@ function DialerPage() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
   const [thinking, setThinking] = useState(false);
+  const [simulate, setSimulate] = useState(true);
+  const [dialing, setDialing] = useState(false);
+
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const askCloser = useServerFn(closeObjection);
