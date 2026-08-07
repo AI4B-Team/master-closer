@@ -255,7 +255,7 @@ function DialerPage() {
                     <strong style={{ color: required ? "var(--signal)" : "var(--ink)" }}>
                       {disclosureStatus(jurisdiction)}
                     </strong>{" "}
-                    here.
+                    Here.
                   </span>
                 </div>
               </div>
