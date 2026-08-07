@@ -34,6 +34,7 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
   calls: [
     { label: "Live Dialer", to: "/dialer" },
     { label: "History", to: "/calls" },
+    { label: "Agreements", to: "/agreements" },
   ],
   studio: [
     { label: "Closers", to: "/ai-closers" },
