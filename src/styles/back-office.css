@@ -417,3 +417,25 @@
   visibility: visible;
   transform: translate(-50%, 0);
 }
+
+/* Tooltip variant: card below the trigger (top bar, sidebar, panel headers) */
+.has-tip.tip-below::after {
+  bottom: auto;
+  top: calc(100% + 10px);
+  transform: translate(-50%, -4px);
+}
+.has-tip.tip-below::before {
+  bottom: auto;
+  top: calc(100% + 4px);
+  transform: translate(-50%, -4px);
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid rgba(16, 18, 22, 0.08);
+  border-top: 1px solid rgba(16, 18, 22, 0.08);
+}
+.has-tip.tip-below:hover::after,
+.has-tip.tip-below:focus-visible::after,
+.has-tip.tip-below:hover::before,
+.has-tip.tip-below:focus-visible::before {
+  transform: translate(-50%, 0);
+}

@@ -41,10 +41,12 @@ export function LiveAssistPanel({
         </span>
         <button
           type="button"
-          className={"switch " + (live ? "on" : "")}
+          className={"switch has-tip tip-below " + (live ? "on" : "")}
           onClick={() => setLive((v) => !v)}
+          data-tip={live ? "Pause live transcription" : "Resume live transcription"}
           aria-label="Toggle live transcription"
         />
+
       </div>
 
       <div className={"assist-consent " + (delivered ? "" : "pending")}>
@@ -124,9 +126,10 @@ export function LiveAssistPanel({
           onChange={(e) => setQ(e.target.value)}
           placeholder="Type What The Prospect Just Said…"
         />
-        <button type="submit" className="ask-send" aria-label="Send" disabled={thinking}>
+        <button type="submit" className="ask-send has-tip" data-tip="Get the next best line" aria-label="Send" disabled={thinking}>
           <ArrowUp size={15} strokeWidth={2.5} />
         </button>
+
       </form>
 
     </aside>

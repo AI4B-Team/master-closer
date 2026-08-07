@@ -109,12 +109,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           {!collapsed && <span className="side-word font-display">Master Closer</span>}
           <button
             type="button"
-            className="side-toggle"
+            className="side-toggle has-tip tip-below"
             onClick={() => setCollapsed((v) => !v)}
+            data-tip={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
           </button>
+
         </div>
 
         <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
@@ -130,12 +132,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <input placeholder={`Search ${scope}…`} />
               <button
                 type="button"
-                className="search-caret"
+                className="search-caret has-tip tip-below"
                 onClick={() => setScopeOpen((v) => !v)}
+                data-tip="Choose what to search"
                 aria-label="Search options"
               >
                 {scope} <ChevronDown size={14} />
               </button>
+
             </div>
             {scopeOpen && (
               <div className="search-menu">
@@ -160,16 +164,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="status-chip">
               <span className="status-dot" /> On Call
             </span>
-            <button type="button" className="icon-btn" aria-label="Notifications">
+            <button type="button" className="icon-btn has-tip tip-below" data-tip="Notifications" aria-label="Notifications">
               <Bell size={17} />
             </button>
             <div className="profile-wrap">
               <button
                 type="button"
-                className="profile-btn"
+                className="profile-btn has-tip tip-below"
                 onClick={() => setProfileOpen((v) => !v)}
+                data-tip="Your account"
                 aria-label="Profile menu"
               >
+
                 <Avatar name={name} size={36} />
               </button>
               {profileOpen && (
