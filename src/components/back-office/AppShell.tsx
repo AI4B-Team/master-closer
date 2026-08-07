@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
-  CreditCard, ShieldCheck, Plug, Settings, Crosshair, ChevronsLeft, ChevronsRight,
+  CreditCard, Settings, Crosshair, ChevronsLeft, ChevronsRight,
   ChevronDown, ChevronRight, Check, Search, Bell, LogOut, Zap, UserPlus, Mail, Languages, Sun,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
@@ -22,12 +22,8 @@ const NAV_PRIMARY: NavItem[] = [
   { to: "/team", label: "Reports", icon: BarChart3 },
 ];
 
-const NAV_UTILITY: NavItem[] = [
-  { to: "/payments", label: "Payments", icon: CreditCard },
-  { to: "/compliance", label: "Compliance", icon: ShieldCheck },
-  { to: "/integrations", label: "Integrations", icon: Plug },
-  { to: "/settings", label: "Settings", icon: Settings },
-];
+/* Payments, Compliance, Integrations and Settings now live on the Account page. */
+
 
 /** Tab groups: consolidated nav homes that render as tabbed sub-views. */
 export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
@@ -113,8 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
-        <div className="side-divider" />
-        <nav className="side-nav side-util">{renderNav(NAV_UTILITY, true)}</nav>
+
       </aside>
 
 
@@ -187,7 +182,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   <div className="pm-sep" />
 
-                  <Link to="/settings" className="pm-row" onClick={() => setProfileOpen(false)}>
+                  <Link to="/account" className="pm-row" onClick={() => setProfileOpen(false)}>
                     <Settings size={18} /> Account
                   </Link>
                   <Link to="/payments" className="pm-row" onClick={() => setProfileOpen(false)}>
