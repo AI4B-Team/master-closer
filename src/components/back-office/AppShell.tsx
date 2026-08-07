@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
-  CreditCard, ShieldCheck, Plug, Settings, Crosshair, ChevronsLeft, ChevronsRight,
+  CreditCard, Settings, Crosshair, ChevronsLeft, ChevronsRight,
   ChevronDown, ChevronRight, Check, Search, Bell, LogOut, Zap, UserPlus, Mail, Languages, Sun,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
