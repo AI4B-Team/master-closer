@@ -213,6 +213,15 @@ function DialerPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
 
+      // Simulated ring cadence stands in for the carrier until credentials are live.
+      if (simulate) {
+        setDialing(true);
+        await new Promise((r) => setTimeout(r, SIM_RING_MS));
+        setDialing(false);
+      }
+
+
+
       const { data: call, error } = await supabase
         .from("calls")
         .insert({
