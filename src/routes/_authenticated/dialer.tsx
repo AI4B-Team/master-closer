@@ -392,10 +392,14 @@ function DialerPage() {
         <div className="mc-card cockpit-main">
           <div className="card-head">
             <h3 className="font-display card-h">{connected ? "Lead Information" : "Call Setup"}</h3>
-            <StatusPill
-              label={connected ? "On Call" : "Idle"}
-              tone={connected ? "green" : "neutral"}
-            />
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {simulate && <StatusPill label="Simulation" tone="amber" />}
+              <StatusPill
+                label={dialing ? "Dialing" : connected ? "On Call" : "Idle"}
+                tone={connected ? "green" : "neutral"}
+              />
+            </div>
+
           </div>
 
           {!connected ? (
