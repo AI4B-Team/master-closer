@@ -17,6 +17,7 @@ export function LiveAssistPanel({
   jurisdiction,
   delivered,
   locked,
+  thinking,
   onAsk,
 }: {
   mode: CallMode;
@@ -25,10 +26,12 @@ export function LiveAssistPanel({
   jurisdiction: string;
   delivered: boolean;
   locked?: boolean;
+  thinking?: boolean;
   onAsk?: (q: string) => void;
 }) {
   const [live, setLive] = useState(true);
   const [q, setQ] = useState("");
+
 
   return (
     <aside className="assist">
