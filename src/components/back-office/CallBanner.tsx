@@ -1,4 +1,4 @@
-import { Mic, MicOff, Pause, PhoneForwarded, PhoneOff, Radio, UserPlus } from "lucide-react";
+import { Mic, MicOff, Pause, PhoneForwarded, PhoneOff, Play, Radio, UserPlus } from "lucide-react";
 
 export type CallMode = "full_ai" | "hybrid" | "copilot";
 
