@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar, initialsOf } from "@/components/back-office/ui";
+import { Avatar } from "@/components/back-office/ui";
 
 
 type NavItem = { to: string; label: string; icon: any; also?: string[] };
