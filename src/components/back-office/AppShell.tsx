@@ -3,12 +3,15 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
   CreditCard, Settings, Crosshair, ChevronsLeft, ChevronsRight,
-  ChevronDown, ChevronRight, Check, Search, Bell, LogOut, Zap, UserPlus, Mail, Languages, Sun,
+  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@/components/back-office/ui";
+import { HelpMenu } from "@/components/back-office/HelpMenu";
+import { NotificationsMenu } from "@/components/back-office/NotificationsMenu";
+import { ProductTour, useProductTour } from "@/components/back-office/ProductTour";
 
 
 type NavItem = { to: string; label: string; icon: any; also?: string[] };
@@ -67,6 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [scope, setScope] = useState<(typeof SEARCH_SCOPES)[number]>("Everything");
   const [scopeOpen, setScopeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const tour = useProductTour();
 
 
   const signOut = async () => {
@@ -89,6 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           key={item.to}
           to={item.to}
           title={item.label}
+          data-tour={`nav-${item.to.replace("/", "")}`}
           className={`nav-item ${muted ? "nav-muted" : ""} ${active ? "nav-on" : ""}`}
         >
           <span className="nav-ico">
@@ -164,9 +169,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="status-chip">
               <span className="status-dot" /> On Call
             </span>
-            <button type="button" className="icon-btn has-tip tip-below" data-tip="Notifications" aria-label="Notifications">
-              <Bell size={17} />
-            </button>
+            <HelpMenu onStartTour={tour.start} />
+            <NotificationsMenu />
+
             <div className="profile-wrap">
               <button
                 type="button"
@@ -251,6 +256,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="content">{children}</main>
       </div>
+      <ProductTour open={tour.open} onClose={tour.close} />
     </div>
   );
 }

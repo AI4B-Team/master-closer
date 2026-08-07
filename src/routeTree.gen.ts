@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignTokenRouteImport } from './routes/sign.$token'
 import { Route as AuthHubRouteImport } from './routes/auth_.hub'
+import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
@@ -24,6 +25,7 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedListsRouteImport } from './routes/_authenticated/lists'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedDialerRouteImport } from './routes/_authenticated/dialer'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedComplianceRouteImport } from './routes/_authenticated/compliance'
@@ -63,6 +65,11 @@ const AuthHubRoute = AuthHubRouteImport.update({
   id: '/auth_/hub',
   path: '/auth/hub',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
+  id: '/tutorials',
+  path: '/tutorials',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
@@ -115,6 +122,11 @@ const AuthenticatedIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDialerRoute = AuthenticatedDialerRouteImport.update({
   id: '/dialer',
   path: '/dialer',
@@ -202,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/compliance': typeof AuthenticatedComplianceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dialer': typeof AuthenticatedDialerRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/lists': typeof AuthenticatedListsRoute
@@ -212,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/practice': typeof AuthenticatedPracticeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth/hub': typeof AuthHubRoute
   '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
@@ -233,6 +247,7 @@ export interface FileRoutesByTo {
   '/compliance': typeof AuthenticatedComplianceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dialer': typeof AuthenticatedDialerRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/lists': typeof AuthenticatedListsRoute
@@ -243,6 +258,7 @@ export interface FileRoutesByTo {
   '/practice': typeof AuthenticatedPracticeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth/hub': typeof AuthHubRoute
   '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
@@ -266,6 +282,7 @@ export interface FileRoutesById {
   '/_authenticated/compliance': typeof AuthenticatedComplianceRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dialer': typeof AuthenticatedDialerRoute
+  '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/lists': typeof AuthenticatedListsRoute
@@ -276,6 +293,7 @@ export interface FileRoutesById {
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth_/hub': typeof AuthHubRoute
   '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
@@ -299,6 +317,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/dashboard'
     | '/dialer'
+    | '/help'
     | '/integrations'
     | '/leads'
     | '/lists'
@@ -309,6 +328,7 @@ export interface FileRouteTypes {
     | '/practice'
     | '/settings'
     | '/team'
+    | '/tutorials'
     | '/auth/hub'
     | '/sign/$token'
     | '/api/v1/calls'
@@ -330,6 +350,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/dashboard'
     | '/dialer'
+    | '/help'
     | '/integrations'
     | '/leads'
     | '/lists'
@@ -340,6 +361,7 @@ export interface FileRouteTypes {
     | '/practice'
     | '/settings'
     | '/team'
+    | '/tutorials'
     | '/auth/hub'
     | '/sign/$token'
     | '/api/v1/calls'
@@ -362,6 +384,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance'
     | '/_authenticated/dashboard'
     | '/_authenticated/dialer'
+    | '/_authenticated/help'
     | '/_authenticated/integrations'
     | '/_authenticated/leads'
     | '/_authenticated/lists'
@@ -372,6 +395,7 @@ export interface FileRouteTypes {
     | '/_authenticated/practice'
     | '/_authenticated/settings'
     | '/_authenticated/team'
+    | '/_authenticated/tutorials'
     | '/auth_/hub'
     | '/sign/$token'
     | '/api/v1/calls'
@@ -434,6 +458,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/hub'
       preLoaderRoute: typeof AuthHubRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tutorials': {
+      id: '/_authenticated/tutorials'
+      path: '/tutorials'
+      fullPath: '/tutorials'
+      preLoaderRoute: typeof AuthenticatedTutorialsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/team': {
       id: '/_authenticated/team'
@@ -503,6 +534,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/integrations'
       preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/help': {
+      id: '/_authenticated/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedHelpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dialer': {
@@ -622,6 +660,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceRoute: typeof AuthenticatedComplianceRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDialerRoute: typeof AuthenticatedDialerRoute
+  AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
   AuthenticatedListsRoute: typeof AuthenticatedListsRoute
@@ -632,6 +671,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedTutorialsRoute: typeof AuthenticatedTutorialsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -643,6 +683,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceRoute: AuthenticatedComplianceRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDialerRoute: AuthenticatedDialerRoute,
+  AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
   AuthenticatedListsRoute: AuthenticatedListsRoute,
@@ -653,6 +694,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedTutorialsRoute: AuthenticatedTutorialsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -675,13 +717,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

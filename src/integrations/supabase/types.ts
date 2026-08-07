@@ -715,6 +715,44 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          id: string
+          org_id: string
+          page: string | null
+          user_id: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          org_id: string
+          page?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          org_id?: string
+          page?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
           config: Json
@@ -991,6 +1029,7 @@ export type Database = {
           id: string
           org_id: string
           real_elite_user_id: string | null
+          tour_status: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1000,6 +1039,7 @@ export type Database = {
           id: string
           org_id: string
           real_elite_user_id?: string | null
+          tour_status?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1009,6 +1049,7 @@ export type Database = {
           id?: string
           org_id?: string
           real_elite_user_id?: string | null
+          tour_status?: string | null
         }
         Relationships: [
           {
