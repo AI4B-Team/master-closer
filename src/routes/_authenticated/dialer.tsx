@@ -805,6 +805,57 @@ function DialerPage() {
           </Panel>
         )}
       </div>
+
+      <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Merge Another Line</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Select value={mergeValue} onValueChange={setMergeValue}>
+              <SelectTrigger><SelectValue placeholder="Pick a teammate" /></SelectTrigger>
+              <SelectContent>
+                {(teammates ?? []).map((t: any) => (
+                  <SelectItem key={t.id} value={t.id}>{t.full_name || t.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Or type a phone number"
+              value={mergeValue.includes("-") ? "" : mergeValue}
+              onChange={(e) => setMergeValue(e.target.value)}
+            />
+            <Button type="button" className="w-full" onClick={confirmMerge} disabled={!mergeValue.trim()}>
+              Merge Into Call
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transfer This Call</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Select value={transferTo} onValueChange={setTransferTo}>
+              <SelectTrigger><SelectValue placeholder="Pick a closer" /></SelectTrigger>
+              <SelectContent>
+                {(teammates ?? []).map((t: any) => (
+                  <SelectItem key={t.id} value={t.id}>{t.full_name || t.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-[#6B6B76]">
+              The call switches to Hybrid and the AI hands its briefing to the closer.
+            </p>
+            <Button type="button" className="w-full" onClick={confirmTransfer} disabled={!transferTo}>
+              Transfer Call
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
