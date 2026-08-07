@@ -18,6 +18,11 @@ import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/li
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
 import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
 import { applyMerge, DEFAULT_AGREEMENT_BODY, signingUrl } from "@/lib/agreements";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 
 
 export const Route = createFileRoute("/_authenticated/dialer")({
@@ -71,6 +76,15 @@ function DialerPage() {
   const [thinking, setThinking] = useState(false);
   const [simulate, setSimulate] = useState(true);
   const [dialing, setDialing] = useState(false);
+  const [holding, setHolding] = useState(false);
+  const [participants, setParticipants] = useState<string[]>([]);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeValue, setMergeValue] = useState("");
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferTo, setTransferTo] = useState("");
+  const holdRef = useRef(false);
+  holdRef.current = holding;
+
 
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
@@ -245,7 +259,8 @@ function DialerPage() {
   useEffect(() => {
     if (connected) {
       setElapsed(0);
-      tick.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+      // Hold freezes billable talk time until the rep resumes the line.
+      tick.current = setInterval(() => setElapsed((s) => (holdRef.current ? s : s + 1)), 1000);
     }
     return () => {
       if (tick.current) clearInterval(tick.current);
@@ -259,11 +274,19 @@ function DialerPage() {
 
   useEffect(() => {
     if (!connected || !simulate) return;
-    const timers = SIM_SCRIPT.map((s) =>
-      setTimeout(() => void assistRef.current(s.text), s.at * 1000),
-    );
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const fire = (text: string) => {
+      // While the prospect is on hold nothing is heard — retry once the line resumes.
+      if (holdRef.current) {
+        timers.push(setTimeout(() => fire(text), 1500));
+        return;
+      }
+      void assistRef.current(text);
+    };
+    SIM_SCRIPT.forEach((s) => timers.push(setTimeout(() => fire(s.text), s.at * 1000)));
     return () => timers.forEach(clearTimeout);
   }, [connected, simulate, callId]);
+
 
 
   const required = isDisclosureRequired(jurisdiction);
@@ -354,6 +377,82 @@ function DialerPage() {
     }
   };
 
+  /** Writes a control event onto the live transcript and persists it with the call record. */
+  const logSystem = async (text: string) => {
+    setTranscript((t) => [...t, { speaker: "System", text }]);
+    if (callId) {
+      await supabase
+        .from("transcript_segments")
+        .insert({ call_id: callId, speaker: "System", text, ts_sec: elapsed });
+    }
+  };
+
+  const toggleMute = async () => {
+    const next = !muted;
+    setMuted(next);
+    await logSystem(next ? "Rep microphone muted." : "Rep microphone unmuted.");
+  };
+
+  const toggleHold = async () => {
+    const next = !holding;
+    setHolding(next);
+    await logSystem(next ? "Prospect placed on hold." : "Call resumed from hold.");
+    toast.info(next ? "Call On Hold." : "Call Resumed.");
+  };
+
+  /** Teammates available as merge or transfer targets in this workspace. */
+  const { data: teammates } = useQuery({
+    queryKey: ["dialer-teammates"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, full_name, email").limit(50);
+      return data ?? [];
+    },
+  });
+
+  const teammateLabel = (id: string) => {
+    const t = (teammates ?? []).find((p: any) => p.id === id);
+    return t?.full_name || t?.email || "Teammate";
+  };
+
+  const confirmMerge = async () => {
+    const target = mergeValue.trim();
+    if (!target) return;
+    const label = (teammates ?? []).some((p: any) => p.id === target) ? teammateLabel(target) : target;
+    setParticipants((p) => (p.includes(label) ? p : [...p, label]));
+    setMergeOpen(false);
+    setMergeValue("");
+    await logSystem(`${label} merged into the call.`);
+    if (callId) {
+      try {
+        await emit({ data: { event_type: "call.merged", payload: { call_id: callId, participant: label } } });
+      } catch {
+        // Hub delivery is best-effort.
+      }
+    }
+    toast.success(`${label} Joined The Call.`);
+  };
+
+  const confirmTransfer = async () => {
+    if (!transferTo) return;
+    const label = teammateLabel(transferTo);
+    setTransferOpen(false);
+    setMode("hybrid");
+    setHolding(false);
+    setMuted(true);
+    await logSystem(`Call transferred to ${label}. AI briefing handed over.`);
+    if (callId) {
+      await supabase.from("calls").update({ mode: "hybrid" }).eq("id", callId);
+      try {
+        await emit({ data: { event_type: "call.transferred", payload: { call_id: callId, to: label } } });
+      } catch {
+        // Hub delivery is best-effort.
+      }
+    }
+    toast.success(`Transferred To ${label}.`);
+  };
+
+
+
   const endCall = async (dial: DialOutcome = "connected", disposition?: string) => {
     if (callId) {
       await supabase
@@ -396,6 +495,10 @@ function DialerPage() {
     setTranscript([]);
     setDelivered(false);
     setElapsed(0);
+    setHolding(false);
+    setMuted(false);
+    setParticipants([]);
+
     qc.invalidateQueries({ queryKey: ["calls"] });
     if (campaignId) await loadNext(campaignId);
   };
@@ -443,10 +546,13 @@ function DialerPage() {
           onModeChange={setMode}
           onEnd={() => endCall("connected")}
           muted={muted}
-          onToggleMute={() => setMuted((v) => !v)}
-          onHold={() => toast.info("Call On Hold.")}
-          onMerge={() => toast.info("Merge Requested.")}
-          onTransfer={() => toast.info("Transferring To A Human Closer.")}
+          onToggleMute={toggleMute}
+          onHold={toggleHold}
+          holding={holding}
+          participants={participants}
+          onMerge={() => setMergeOpen(true)}
+          onTransfer={() => setTransferOpen(true)}
+
         />
       )}
 
@@ -704,6 +810,57 @@ function DialerPage() {
           </Panel>
         )}
       </div>
+
+      <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Merge Another Line</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Select value={mergeValue} onValueChange={setMergeValue}>
+              <SelectTrigger><SelectValue placeholder="Pick a teammate" /></SelectTrigger>
+              <SelectContent>
+                {(teammates ?? []).map((t: any) => (
+                  <SelectItem key={t.id} value={t.id}>{t.full_name || t.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Or type a phone number"
+              value={mergeValue.includes("-") ? "" : mergeValue}
+              onChange={(e) => setMergeValue(e.target.value)}
+            />
+            <Button type="button" className="w-full" onClick={confirmMerge} disabled={!mergeValue.trim()}>
+              Merge Into Call
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transfer This Call</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Select value={transferTo} onValueChange={setTransferTo}>
+              <SelectTrigger><SelectValue placeholder="Pick a closer" /></SelectTrigger>
+              <SelectContent>
+                {(teammates ?? []).map((t: any) => (
+                  <SelectItem key={t.id} value={t.id}>{t.full_name || t.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-[#6B6B76]">
+              The call switches to Hybrid and the AI hands its briefing to the closer.
+            </p>
+            <Button type="button" className="w-full" onClick={confirmTransfer} disabled={!transferTo}>
+              Transfer Call
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }

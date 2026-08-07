@@ -1,4 +1,4 @@
-import { Mic, MicOff, Pause, PhoneForwarded, PhoneOff, Radio, UserPlus } from "lucide-react";
+import { Mic, MicOff, Pause, PhoneForwarded, PhoneOff, Play, Radio, UserPlus } from "lucide-react";
 
 export type CallMode = "full_ai" | "hybrid" | "copilot";
 
@@ -25,6 +25,8 @@ export function CallBanner({
   muted,
   onToggleMute,
   onHold,
+  holding,
+  participants,
   onMerge,
   onTransfer,
 }: {
@@ -38,6 +40,8 @@ export function CallBanner({
   muted?: boolean;
   onToggleMute?: () => void;
   onHold?: () => void;
+  holding?: boolean;
+  participants?: string[];
   onMerge?: () => void;
   onTransfer?: () => void;
 }) {
@@ -51,15 +55,20 @@ export function CallBanner({
           <span className="banner-num font-num">{phone}</span>
           <span className="banner-live-dot" />
           {campaign && <span className="banner-camp">{campaign}</span>}
+          {(participants ?? []).map((p) => (
+            <span key={p} className="banner-camp">+ {p}</span>
+          ))}
         </div>
         <div className="banner-status">
-          <span className="banner-ongoing">
-            <Radio size={12} /> Ongoing {timer}
+          <span className="banner-ongoing" style={holding ? { color: "#f4c66a" } : undefined}>
+            <Radio size={12} /> {holding ? "On Hold" : "Ongoing"} {timer}
           </span>
+          {muted && <span className="banner-camp">Muted</span>}
         </div>
 
 
       </div>
+
 
       <div className="banner-mid">
         <span className="banner-mode-label">MODE</span>
@@ -96,9 +105,16 @@ export function CallBanner({
         >
           {muted ? <MicOff size={16} /> : <Mic size={16} />}
         </button>
-        <button type="button" className="banner-icon has-tip" data-tip="Put the prospect on hold" onClick={onHold} aria-label="Hold">
-          <Pause size={16} />
+        <button
+          type="button"
+          className={"banner-icon has-tip " + (holding ? "on" : "")}
+          data-tip={holding ? "Take the prospect off hold" : "Put the prospect on hold"}
+          onClick={onHold}
+          aria-label={holding ? "Resume" : "Hold"}
+        >
+          {holding ? <Play size={16} /> : <Pause size={16} />}
         </button>
+
         <button type="button" className="banner-end has-tip" data-tip="Hang up and wrap the call" onClick={onEnd}>
           <PhoneOff size={15} /> End Call
         </button>
