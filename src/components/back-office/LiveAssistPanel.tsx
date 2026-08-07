@@ -126,9 +126,10 @@ export function LiveAssistPanel({
           onChange={(e) => setQ(e.target.value)}
           placeholder="Type What The Prospect Just Said…"
         />
-        <button type="submit" className="ask-send" aria-label="Send" disabled={thinking}>
+        <button type="submit" className="ask-send has-tip" data-tip="Get the next best line" aria-label="Send" disabled={thinking}>
           <ArrowUp size={15} strokeWidth={2.5} />
         </button>
+
       </form>
 
     </aside>
