@@ -372,6 +372,82 @@ function DialerPage() {
     }
   };
 
+  /** Writes a control event onto the live transcript and persists it with the call record. */
+  const logSystem = async (text: string) => {
+    setTranscript((t) => [...t, { speaker: "System", text }]);
+    if (callId) {
+      await supabase
+        .from("transcript_segments")
+        .insert({ call_id: callId, speaker: "System", text, ts_sec: elapsed });
+    }
+  };
+
+  const toggleMute = async () => {
+    const next = !muted;
+    setMuted(next);
+    await logSystem(next ? "Rep microphone muted." : "Rep microphone unmuted.");
+  };
+
+  const toggleHold = async () => {
+    const next = !holding;
+    setHolding(next);
+    await logSystem(next ? "Prospect placed on hold." : "Call resumed from hold.");
+    toast.info(next ? "Call On Hold." : "Call Resumed.");
+  };
+
+  /** Teammates available as merge or transfer targets in this workspace. */
+  const { data: teammates } = useQuery({
+    queryKey: ["dialer-teammates"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, full_name, email").limit(50);
+      return data ?? [];
+    },
+  });
+
+  const teammateLabel = (id: string) => {
+    const t = (teammates ?? []).find((p: any) => p.id === id);
+    return t?.full_name || t?.email || "Teammate";
+  };
+
+  const confirmMerge = async () => {
+    const target = mergeValue.trim();
+    if (!target) return;
+    const label = (teammates ?? []).some((p: any) => p.id === target) ? teammateLabel(target) : target;
+    setParticipants((p) => (p.includes(label) ? p : [...p, label]));
+    setMergeOpen(false);
+    setMergeValue("");
+    await logSystem(`${label} merged into the call.`);
+    if (callId) {
+      try {
+        await emit({ data: { event_type: "call.merged", payload: { call_id: callId, participant: label } } });
+      } catch {
+        // Hub delivery is best-effort.
+      }
+    }
+    toast.success(`${label} Joined The Call.`);
+  };
+
+  const confirmTransfer = async () => {
+    if (!transferTo) return;
+    const label = teammateLabel(transferTo);
+    setTransferOpen(false);
+    setMode("hybrid");
+    setHolding(false);
+    setMuted(true);
+    await logSystem(`Call transferred to ${label}. AI briefing handed over.`);
+    if (callId) {
+      await supabase.from("calls").update({ mode: "hybrid" }).eq("id", callId);
+      try {
+        await emit({ data: { event_type: "call.transferred", payload: { call_id: callId, to: label } } });
+      } catch {
+        // Hub delivery is best-effort.
+      }
+    }
+    toast.success(`Transferred To ${label}.`);
+  };
+
+
+
   const endCall = async (dial: DialOutcome = "connected", disposition?: string) => {
     if (callId) {
       await supabase
