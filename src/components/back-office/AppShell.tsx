@@ -110,28 +110,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
         <div className="side-divider" />
         <nav className="side-nav side-util">{renderNav(NAV_UTILITY, true)}</nav>
-
-        <div className="side-foot">
-          <Avatar name={name} />
-          {!collapsed && (
-            <div className="side-user">
-              <span className="side-user-n">{initialsOf(name) && name.split("@")[0]}</span>
-              <span className="side-user-e">Owner</span>
-            </div>
-          )}
-          {!collapsed && (
-            <button
-              type="button"
-              onClick={signOut}
-              className="icon-btn"
-              style={{ marginLeft: "auto", width: 30, height: 30 }}
-              aria-label="Sign out"
-            >
-              <LogOut size={15} />
-            </button>
-          )}
-        </div>
       </aside>
+
 
       <div className={"main " + (collapsed ? "main-collapsed" : "")}>
         <header className="topbar">
