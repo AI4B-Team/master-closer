@@ -154,7 +154,83 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button type="button" className="icon-btn" aria-label="Notifications">
               <Bell size={17} />
             </button>
+            <div className="profile-wrap">
+              <button
+                type="button"
+                className="profile-btn"
+                onClick={() => setProfileOpen((v) => !v)}
+                aria-label="Profile menu"
+              >
+                <Avatar name={name} size={36} />
+              </button>
+              {profileOpen && (
+                <div className="profile-menu">
+                  <div className="pm-id">
+                    <Avatar name={name} size={48} />
+                    <div className="pm-id-t">
+                      <span className="pm-name font-display">{displayName}</span>
+                      <span className="pm-email">{user?.email ?? "—"}</span>
+                    </div>
+                  </div>
+
+                  <button type="button" className="pm-cta pm-cta-primary">
+                    <Zap size={17} /> Upgrade
+                  </button>
+                  <button type="button" className="pm-cta pm-cta-outline">
+                    <UserPlus size={17} /> Add Members
+                  </button>
+
+                  <div className="pm-sep" />
+
+                  <Link to="/settings" className="pm-row" onClick={() => setProfileOpen(false)}>
+                    <Settings size={18} /> Account
+                  </Link>
+                  <Link to="/payments" className="pm-row" onClick={() => setProfileOpen(false)}>
+                    <CreditCard size={18} /> Subscription
+                    <span className="pm-row-meta">Pro</span>
+                  </Link>
+                  <Link to="/team" className="pm-row" onClick={() => setProfileOpen(false)}>
+                    <Mail size={18} /> Invites
+                  </Link>
+
+                  <div className="pm-sep" />
+
+                  <button type="button" className="pm-row">
+                    <Languages size={18} /> Language:
+                    <span className="pm-row-meta">
+                      English <ChevronRight size={15} />
+                    </span>
+                  </button>
+                  <button type="button" className="pm-row">
+                    <Sun size={18} /> Theme:
+                    <span className="pm-row-meta">
+                      Light <ChevronRight size={15} />
+                    </span>
+                  </button>
+
+                  <div style={{ height: 10 }} />
+                  <button type="button" className="pm-cta pm-cta-amber">
+                    Join Affiliate Program
+                  </button>
+                  <button type="button" className="pm-cta pm-cta-primary" onClick={signOut}>
+                    <LogOut size={17} /> Log Out
+                  </button>
+
+                  <div className="pm-foot">
+                    <span>
+                      <a href="#">Terms</a> &nbsp;|&nbsp; <a href="#">Privacy</a>
+                    </span>
+                    <span className="pm-social">
+                      <MessageCircle size={16} />
+                      <Youtube size={16} />
+                      <Instagram size={16} />
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+
         </header>
 
 
