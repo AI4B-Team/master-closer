@@ -15,6 +15,12 @@ export function initialsOf(text: string) {
     .toUpperCase();
 }
 
+export function titleCase(text: string) {
+  return String(text ?? "")
+    .replace(/_/g, " ")
+    .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
 export function Avatar({ name, size = 30 }: { name: string; size?: number }) {
   const seed = Array.from(name || "?").reduce((s, c) => s + c.charCodeAt(0), 0);
   const color = AVATAR_COLORS[seed % AVATAR_COLORS.length];
