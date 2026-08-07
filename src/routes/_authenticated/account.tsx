@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
-  Camera, KeyRound, Smartphone, MonitorSmartphone, History, Mail, Bell,
+  Camera, KeyRound, Smartphone, MonitorSmartphone, History, Mail, Bell, ShieldCheck,
 } from "lucide-react";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
@@ -15,8 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+
 
 const searchSchema = z.object({
   tab: z.enum(["profile", "security", "notifications"]).optional(),
@@ -64,13 +68,124 @@ function AccountPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
 
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const [mfaFactors, setMfaFactors] = useState<{ id: string; status: string }[]>([]);
+  const [mfaOpen, setMfaOpen] = useState(false);
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaSecret, setMfaSecret] = useState<string | null>(null);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaBusy, setMfaBusy] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     setFullName((user.user_metadata?.full_name as string) ?? "");
     setPhone((user.user_metadata?.phone as string) ?? "");
+    setAvatarPath((user.user_metadata?.avatar_path as string) ?? null);
     const saved = user.user_metadata?.notify as Partial<Record<NotifyKey, boolean>> | undefined;
     if (saved) setNotify((p) => ({ ...p, ...saved }));
   }, [user]);
+
+  /** Avatars live in a private bucket, so render them through a signed URL. */
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!avatarPath) {
+        setAvatarUrl(null);
+        return;
+      }
+      const { data } = await supabase.storage.from("avatars").createSignedUrl(avatarPath, 3600);
+      if (alive) setAvatarUrl(data?.signedUrl ?? null);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [avatarPath]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.mfa.listFactors();
+      setMfaFactors((data?.totp ?? []).map((f) => ({ id: f.id, status: f.status })));
+    })();
+  }, [user]);
+
+  const verifiedFactor = mfaFactors.find((f) => f.status === "verified");
+
+  const uploadAvatar = async (file: File) => {
+    if (!user) return;
+    if (!file.type.startsWith("image/")) return toast.error("Pick An Image File");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Image Must Be Under 5MB");
+    setUploading(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (error) {
+      setUploading(false);
+      return toast.error(error.message);
+    }
+    const { error: metaError } = await supabase.auth.updateUser({ data: { avatar_path: path } });
+    await supabase.from("profiles").update({ avatar_url: path }).eq("id", user.id);
+    setUploading(false);
+    if (metaError) return toast.error(metaError.message);
+    setAvatarPath(path);
+    toast.success("Photo Updated");
+  };
+
+  const startMfa = async () => {
+    setMfaBusy(true);
+    // Clean up any half-finished enrollment so re-opening never errors out.
+    for (const f of mfaFactors.filter((x) => x.status !== "verified")) {
+      await supabase.auth.mfa.unenroll({ factorId: f.id });
+    }
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+      friendlyName: `Authenticator ${Date.now()}`,
+    });
+    setMfaBusy(false);
+    if (error || !data) return toast.error(error?.message ?? "Could Not Start Setup");
+    setMfaFactorId(data.id);
+    setMfaQr(data.totp.qr_code);
+    setMfaSecret(data.totp.secret);
+    setMfaCode("");
+    setMfaOpen(true);
+  };
+
+  const confirmMfa = async () => {
+    if (!mfaFactorId) return;
+    if (mfaCode.trim().length !== 6) return toast.error("Enter The 6-Digit Code");
+    setMfaBusy(true);
+    const { data: chal, error: chalError } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+    if (chalError || !chal) {
+      setMfaBusy(false);
+      return toast.error(chalError?.message ?? "Challenge Failed");
+    }
+    const { error } = await supabase.auth.mfa.verify({
+      factorId: mfaFactorId,
+      challengeId: chal.id,
+      code: mfaCode.trim(),
+    });
+    setMfaBusy(false);
+    if (error) return toast.error(error.message);
+    const { data } = await supabase.auth.mfa.listFactors();
+    setMfaFactors((data?.totp ?? []).map((f) => ({ id: f.id, status: f.status })));
+    setMfaOpen(false);
+    toast.success("Two-Factor Authentication Enabled");
+  };
+
+  const disableMfa = async () => {
+    if (!verifiedFactor) return;
+    setMfaBusy(true);
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: verifiedFactor.id });
+    setMfaBusy(false);
+    if (error) return toast.error(error.message);
+    setMfaFactors((p) => p.filter((f) => f.id !== verifiedFactor.id));
+    toast.success("Two-Factor Authentication Disabled");
+  };
+
 
   const saveProfile = async () => {
     setSavingProfile(true);
@@ -149,22 +264,44 @@ function AccountPage() {
                   <CardHeader><CardTitle className="font-display text-base">Profile</CardTitle></CardHeader>
                   <CardContent className="space-y-6">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-lg font-display font-bold text-primary-foreground">
-                        {initials || "MC"}
-                      </div>
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={`${displayName} profile photo`}
+                          className="h-16 w-16 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-lg font-display font-bold text-primary-foreground">
+                          {initials || "MC"}
+                        </div>
+                      )}
                       <div>
                         <div className="font-display font-bold text-foreground">{displayName}</div>
                         <div className="text-xs text-muted-foreground">Owner</div>
+                        <input
+                          ref={fileRef}
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = "";
+                            if (f) void uploadAvatar(f);
+                          }}
+                        />
                         <Button
                           variant="outline"
                           size="sm"
                           className="mt-2 rounded-full"
-                          onClick={() => toast.info("Photo Upload Is Coming Soon.")}
+                          disabled={uploading}
+                          onClick={() => fileRef.current?.click()}
                         >
-                          <Camera className="mr-1.5 h-3.5 w-3.5" /> Change Photo
+                          <Camera className="mr-1.5 h-3.5 w-3.5" />
+                          {uploading ? "Uploading..." : "Change Photo"}
                         </Button>
                       </div>
                     </div>
+
 
                     <Separator />
 
@@ -283,18 +420,69 @@ function AccountPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-muted-foreground">
-                      Require A One-Time Code From Your Phone On Every New Sign-In.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="rounded-full"
-                      onClick={() => toast.info("Two-Factor Setup Is Coming Soon.")}
-                    >
-                      Enable
-                    </Button>
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">
+                        Require A One-Time Code From Your Authenticator App On Every New Sign-In.
+                      </p>
+                      {verifiedFactor && (
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-foreground">
+                          <ShieldCheck className="h-3.5 w-3.5" /> Enabled On This Account
+                        </div>
+                      )}
+                    </div>
+                    {verifiedFactor ? (
+                      <Button variant="outline" className="rounded-full" disabled={mfaBusy} onClick={disableMfa}>
+                        Disable
+                      </Button>
+                    ) : (
+                      <Button variant="outline" className="rounded-full" disabled={mfaBusy} onClick={startMfa}>
+                        Enable
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
+
+                <Dialog open={mfaOpen} onOpenChange={setMfaOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="font-display">Set Up Two-Factor Authentication</DialogTitle>
+                      <DialogDescription>
+                        Scan this code with Google Authenticator, 1Password, or Authy, then enter the
+                        6-digit code to confirm.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {mfaQr && (
+                        <img
+                          src={mfaQr}
+                          alt="Two-factor authentication setup QR code"
+                          className="mx-auto h-44 w-44 rounded-xl border border-border bg-background p-2"
+                        />
+                      )}
+                      {mfaSecret && (
+                        <p className="break-all text-center text-xs text-muted-foreground">
+                          Manual key: <span className="font-mono">{mfaSecret}</span>
+                        </p>
+                      )}
+                      <div>
+                        <Label htmlFor="mfa-code">6-Digit Code</Label>
+                        <Input
+                          id="mfa-code"
+                          inputMode="numeric"
+                          maxLength={6}
+                          value={mfaCode}
+                          onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+                          className="mt-1 tracking-[0.4em]"
+                          placeholder="000000"
+                        />
+                      </div>
+                      <Button className="w-full rounded-full" disabled={mfaBusy} onClick={confirmMfa}>
+                        {mfaBusy ? "Verifying..." : "Confirm And Enable"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
 
                 <Card>
                   <CardHeader>

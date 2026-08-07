@@ -17,6 +17,7 @@ export function LiveAssistPanel({
   jurisdiction,
   delivered,
   locked,
+  thinking,
   onAsk,
 }: {
   mode: CallMode;
@@ -25,10 +26,12 @@ export function LiveAssistPanel({
   jurisdiction: string;
   delivered: boolean;
   locked?: boolean;
+  thinking?: boolean;
   onAsk?: (q: string) => void;
 }) {
   const [live, setLive] = useState(true);
   const [q, setQ] = useState("");
+
 
   return (
     <aside className="assist">
@@ -93,6 +96,16 @@ export function LiveAssistPanel({
                 <p>{s}</p>
               </div>
             ))}
+
+            {thinking && (
+              <div className="sugg">
+                <div className="sugg-head">
+                  <Sparkles size={13} strokeWidth={2.5} />
+                  <span>Thinking…</span>
+                </div>
+                <p className="muted">Reading the objection and drafting your next best response.</p>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -106,11 +119,16 @@ export function LiveAssistPanel({
           setQ("");
         }}
       >
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask Copilot Anything…" />
-        <button type="submit" className="ask-send" aria-label="Send">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Type What The Prospect Just Said…"
+        />
+        <button type="submit" className="ask-send" aria-label="Send" disabled={thinking}>
           <ArrowUp size={15} strokeWidth={2.5} />
         </button>
       </form>
+
     </aside>
   );
 }

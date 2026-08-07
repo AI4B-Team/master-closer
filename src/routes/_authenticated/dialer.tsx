@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
+import { closeObjection } from "@/lib/demo.functions";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/lib/compliance";
@@ -29,16 +31,8 @@ export const Route = createFileRoute("/_authenticated/dialer")({
 
 type Mode = CallMode;
 
-const WHISPERS = [
-  "Say: When you say it's a lot, is it the total or the monthly that gives you pause?",
-  "Say: If both options cost the same, which one would you choose — and why?",
-];
+const MODE_KEY: Record<Mode, string> = { full_ai: "ai", hybrid: "hybrid", copilot: "copilot" };
 
-const AGENT_LINE: Record<Mode, string> = {
-  full_ai: "Totally fair on price. If I lock today's rate and email the agreement now, are you good to start?",
-  hybrid: "Warm lead, budget confirmed, one price objection left. Transferring you in — take the close.",
-  copilot: WHISPERS[0],
-};
 
 type DialOutcome = "connected" | "no_answer" | "voicemail" | "busy" | "failed" | "dnc";
 
@@ -69,8 +63,56 @@ function DialerPage() {
   const tick = useRef<ReturnType<typeof setInterval> | null>(null);
   const [campaignId, setCampaignId] = useState<string>("");
   const [contact, setContact] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
+  const [thinking, setThinking] = useState(false);
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
+  const askCloser = useServerFn(closeObjection);
+
+  /** Persist a transcript line and get the next best response from the AI gateway. */
+  const runAssist = async (prospectLine: string, id?: string | null) => {
+    const activeCall = id ?? callId;
+    setThinking(true);
+    setTranscript((t) => [...t, { speaker: "Prospect", text: prospectLine }]);
+    try {
+      if (activeCall) {
+        await supabase.from("transcript_segments").insert({
+          call_id: activeCall,
+          speaker: "Prospect",
+          text: prospectLine,
+          ts_sec: elapsed,
+        });
+      }
+      const res = await askCloser({ data: { prospect: prospectLine, mode: MODE_KEY[mode] } });
+      setAiConfidence(res.confidence);
+      setSuggestions([res.line]);
+      if (mode === "full_ai") {
+        setTranscript((t) => [...t, { speaker: "Master Closer", text: res.line }]);
+      }
+      if (activeCall) {
+        await supabase.from("suggestions").insert({
+          call_id: activeCall,
+          objection: res.objection,
+          line: res.line,
+          ts_sec: elapsed,
+        });
+        if (mode === "full_ai") {
+          await supabase.from("transcript_segments").insert({
+            call_id: activeCall,
+            speaker: "Master Closer",
+            text: res.line,
+            ts_sec: elapsed,
+          });
+        }
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Copilot Is Unavailable.");
+    } finally {
+      setThinking(false);
+    }
+  };
+
 
   const { data: campaigns } = useQuery({
     queryKey: ["dialer-campaigns"],
@@ -183,35 +225,26 @@ function DialerPage() {
       setConnected(true);
       setDelivered(false);
       setTranscript([]);
+      setSuggestions([]);
+      setAiConfidence(null);
 
-      if (mode === "full_ai" || mode === "hybrid") {
-        if (spokenAtOpen) {
-          setTranscript([{ speaker: "Master Closer", text: script, tone: "disclosure" }]);
-          await logDisclosure({
-            callId: call.id,
-            jurisdiction,
-            line: script,
-            method: "pre_call_disclosure",
-          });
-          setDelivered(true);
-        }
-        setTimeout(() => {
-          setTranscript((t) => [
-            ...t,
-            { speaker: "Prospect", text: "Honestly, your competitor is cheaper." },
-            {
-              speaker: "Master Closer",
-              text: "That's helpful to know. If both options cost exactly the same, which one would you choose — and why?",
-            },
-          ]);
-        }, 1200);
-      } else {
-        // Copilot: rep delivers. In Required states the live surface stays hidden.
-        setTranscript([
-          { speaker: "Prospect", text: "Hey — who's this?" },
-          { speaker: "Prospect", text: "I need to think about it, the price is a lot." },
-        ]);
+      if ((mode === "full_ai" || mode === "hybrid") && spokenAtOpen) {
+        setTranscript([{ speaker: "Master Closer", text: script, tone: "disclosure" }]);
+        await logDisclosure({
+          callId: call.id,
+          jurisdiction,
+          line: script,
+          method: "pre_call_disclosure",
+        });
+        await supabase.from("transcript_segments").insert({
+          call_id: call.id,
+          speaker: "Master Closer",
+          text: script,
+          ts_sec: 0,
+        });
+        setDelivered(true);
       }
+
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -298,7 +331,10 @@ function DialerPage() {
     }
   };
 
-  const closeProbability = connected ? (mode === "full_ai" ? 68 : mode === "hybrid" ? 74 : 61) : 0;
+  const closeProbability = !connected
+    ? 0
+    : (aiConfidence ?? (mode === "full_ai" ? 68 : mode === "hybrid" ? 74 : 61));
+
 
   return (
     <div>
@@ -519,12 +555,15 @@ function DialerPage() {
           <LiveAssistPanel
             mode={mode}
             lines={transcript}
-            suggestions={blocked ? [] : [AGENT_LINE[mode]]}
+            suggestions={blocked ? [] : suggestions}
             jurisdiction={jurisdiction}
             delivered={delivered}
             locked={blocked}
+            thinking={thinking}
+            onAsk={(line) => runAssist(line)}
           />
         ) : (
+
           <Panel title="Live Assist">
             <EmptyState
               icon={PhoneOutgoing}
