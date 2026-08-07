@@ -22,12 +22,8 @@ const NAV_PRIMARY: NavItem[] = [
   { to: "/team", label: "Reports", icon: BarChart3 },
 ];
 
-const NAV_UTILITY: NavItem[] = [
-  { to: "/payments", label: "Payments", icon: CreditCard },
-  { to: "/compliance", label: "Compliance", icon: ShieldCheck },
-  { to: "/integrations", label: "Integrations", icon: Plug },
-  { to: "/settings", label: "Settings", icon: Settings },
-];
+/* Payments, Compliance, Integrations and Settings now live on the Account page. */
+
 
 /** Tab groups: consolidated nav homes that render as tabbed sub-views. */
 export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
