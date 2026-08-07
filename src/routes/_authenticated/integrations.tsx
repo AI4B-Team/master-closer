@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
+import { AccountShell } from "@/components/back-office/AccountShell";
 import { Video, Phone, Calendar, CreditCard, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -97,6 +98,7 @@ function IntegrationsPage() {
           );
         })}
       </div>
+      </AccountShell>
     </div>
   );
 }
