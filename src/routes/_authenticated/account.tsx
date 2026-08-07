@@ -264,22 +264,44 @@ function AccountPage() {
                   <CardHeader><CardTitle className="font-display text-base">Profile</CardTitle></CardHeader>
                   <CardContent className="space-y-6">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-lg font-display font-bold text-primary-foreground">
-                        {initials || "MC"}
-                      </div>
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={`${displayName} profile photo`}
+                          className="h-16 w-16 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-lg font-display font-bold text-primary-foreground">
+                          {initials || "MC"}
+                        </div>
+                      )}
                       <div>
                         <div className="font-display font-bold text-foreground">{displayName}</div>
                         <div className="text-xs text-muted-foreground">Owner</div>
+                        <input
+                          ref={fileRef}
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = "";
+                            if (f) void uploadAvatar(f);
+                          }}
+                        />
                         <Button
                           variant="outline"
                           size="sm"
                           className="mt-2 rounded-full"
-                          onClick={() => toast.info("Photo Upload Is Coming Soon.")}
+                          disabled={uploading}
+                          onClick={() => fileRef.current?.click()}
                         >
-                          <Camera className="mr-1.5 h-3.5 w-3.5" /> Change Photo
+                          <Camera className="mr-1.5 h-3.5 w-3.5" />
+                          {uploading ? "Uploading..." : "Change Photo"}
                         </Button>
                       </div>
                     </div>
+
 
                     <Separator />
 
