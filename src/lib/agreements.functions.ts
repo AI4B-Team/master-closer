@@ -95,8 +95,9 @@ export const signAgreement = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(async ({ data, request }) => {
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
       .select("id, org_id, status, deal_id")
