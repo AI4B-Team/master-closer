@@ -109,12 +109,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           {!collapsed && <span className="side-word font-display">Master Closer</span>}
           <button
             type="button"
-            className="side-toggle"
+            className="side-toggle has-tip tip-below"
             onClick={() => setCollapsed((v) => !v)}
+            data-tip={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
           </button>
+
         </div>
 
         <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
