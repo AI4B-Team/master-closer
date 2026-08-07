@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
-  Camera, KeyRound, Smartphone, MonitorSmartphone, History, Mail, Bell,
+  Camera, KeyRound, Smartphone, MonitorSmartphone, History, Mail, Bell, ShieldCheck,
 } from "lucide-react";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
@@ -15,8 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+
 
 const searchSchema = z.object({
   tab: z.enum(["profile", "security", "notifications"]).optional(),
