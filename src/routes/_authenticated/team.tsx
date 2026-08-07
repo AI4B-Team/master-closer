@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/back-office/AppShell";
+import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill } from "@/components/back-office/ui";
 import { BarChart3, PhoneCall, Trophy, Percent, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
