@@ -1,0 +1,165 @@
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Save, Trash2 } from "lucide-react";
+
+type Agent = {
+  id: string;
+  name: string;
+  industry: string | null;
+  voice: string | null;
+  default_mode: string;
+  active: boolean;
+  system_prompt: string | null;
+};
+
+export function AgentDrawer({
+  agent,
+  onOpenChange,
+}: {
+  agent: Agent | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState<Partial<Agent>>({});
+
+  useEffect(() => {
+    if (agent) setForm({ ...agent });
+  }, [agent]);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("agents")
+        .update({
+          name: form.name ?? "",
+          industry: form.industry || null,
+          voice: form.voice || null,
+          default_mode: (form.default_mode ?? "hybrid") as never,
+          active: form.active ?? true,
+          system_prompt: form.system_prompt || null,
+        })
+        .eq("id", agent!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Closer updated.");
+      qc.invalidateQueries({ queryKey: ["agents"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("agents").delete().eq("id", agent!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Closer deleted.");
+      qc.invalidateQueries({ queryKey: ["agents"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Sheet open={!!agent} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="text-xl">{agent?.name ?? "AI Closer"}</SheetTitle>
+        </SheetHeader>
+
+        <div className="mt-5 space-y-4">
+          <div className="flex items-center justify-between rounded-xl border border-[#E7E7EC] px-4 py-3">
+            <div>
+              <p className="text-sm font-medium">Active</p>
+              <p className="text-xs text-[#6B6B76]">Inactive closers are skipped by campaigns.</p>
+            </div>
+            <Switch
+              checked={form.active ?? false}
+              onCheckedChange={(v) => setForm({ ...form, active: v })}
+            />
+          </div>
+
+          <div>
+            <Label>Name</Label>
+            <Input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Industry</Label>
+              <Input value={form.industry ?? ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
+            </div>
+            <div>
+              <Label>Voice</Label>
+              <Select value={form.voice ?? "aria"} onValueChange={(v) => setForm({ ...form, voice: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aria">Aria</SelectItem>
+                  <SelectItem value="marcus">Marcus</SelectItem>
+                  <SelectItem value="june">June</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label>Default mode</Label>
+            <Select value={form.default_mode ?? "hybrid"} onValueChange={(v) => setForm({ ...form, default_mode: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="full_ai">AI — AI runs the call</SelectItem>
+                <SelectItem value="hybrid">Hybrid — AI starts, human closes</SelectItem>
+                <SelectItem value="copilot">Copilot — human leads, AI assists</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>System prompt</Label>
+            <Textarea
+              rows={10}
+              value={form.system_prompt ?? ""}
+              onChange={(e) => setForm({ ...form, system_prompt: e.target.value })}
+              placeholder="You are a closer for a home services company. Open with the disclosure, qualify budget and timeline, and never argue price — reframe to value."
+              className="text-sm"
+            />
+            <p className="text-xs text-[#6B6B76] mt-1">
+              This drives how the closer speaks, qualifies, and handles objections on every call.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              type="button"
+              onClick={() => save.mutate()}
+              disabled={!form.name || save.isPending}
+              className="bg-[#111114] hover:bg-[#111114]/90 rounded-xl"
+            >
+              <Save className="h-4 w-4 mr-1" /> Save changes
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-[#CC0000] hover:text-[#A30000]"
+              onClick={() => remove.mutate()}
+              disabled={remove.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
