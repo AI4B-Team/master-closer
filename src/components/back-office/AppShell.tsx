@@ -40,6 +40,10 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
     { label: "Playbook", to: "/playbook" },
     { label: "Practice", to: "/practice" },
   ],
+  campaigns: [
+    { label: "Campaigns", to: "/campaigns" },
+    { label: "Lists", to: "/lists" },
+  ],
 };
 
 function isActive(pathname: string, item: NavItem) {
