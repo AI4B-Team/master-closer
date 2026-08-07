@@ -182,7 +182,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   <div className="pm-sep" />
 
-                  <Link to="/settings" className="pm-row" onClick={() => setProfileOpen(false)}>
+                  <Link to="/account" className="pm-row" onClick={() => setProfileOpen(false)}>
                     <Settings size={18} /> Account
                   </Link>
                   <Link to="/payments" className="pm-row" onClick={() => setProfileOpen(false)}>
