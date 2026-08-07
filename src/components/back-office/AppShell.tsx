@@ -132,12 +132,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <input placeholder={`Search ${scope}…`} />
               <button
                 type="button"
-                className="search-caret"
+                className="search-caret has-tip tip-below"
                 onClick={() => setScopeOpen((v) => !v)}
+                data-tip="Choose what to search"
                 aria-label="Search options"
               >
                 {scope} <ChevronDown size={14} />
               </button>
+
             </div>
             {scopeOpen && (
               <div className="search-menu">
