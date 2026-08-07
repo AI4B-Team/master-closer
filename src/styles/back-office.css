@@ -221,7 +221,7 @@
 .banner-status { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #7ee2b8; flex-wrap: nowrap; }
 .banner-ongoing { display: inline-flex; align-items: center; gap: 6px; color: #7ee2b8; }
 
-.banner-mid { display: flex; align-items: center; gap: 10px; margin-left: 8px; }
+.banner-mid { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; margin-left: 8px; }
 .banner-mode-label { font-size: 10px; letter-spacing: 0.14em; color: #7b818d; }
 .mode-seg { display: flex; background: rgba(255, 255, 255, 0.08); border-radius: 999px; padding: 3px; gap: 2px; }
 .mode-btn {
