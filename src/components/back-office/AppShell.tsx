@@ -70,6 +70,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const name = (user?.user_metadata?.full_name as string) || user?.email || "Account";
+  const displayName =
+    (user?.user_metadata?.full_name as string) || (user?.email ?? "Account").split("@")[0];
+
 
 
   const renderNav = (items: NavItem[], muted = false) =>
