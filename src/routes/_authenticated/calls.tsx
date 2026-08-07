@@ -28,14 +28,21 @@ function fmtDur(sec: number) {
   return `${Math.floor((sec ?? 0) / 60)}m ${(sec ?? 0) % 60}s`;
 }
 
+const OUTCOMES = ["scheduled", "in_progress", "completed", "no_answer", "voicemail", "failed"];
+const RANGES: Record<string, number> = { "7": 7, "30": 30, "90": 90 };
+
 function CallsPage() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [mode, setMode] = useState("all");
+  const [outcome, setOutcome] = useState("all");
+  const [range, setRange] = useState("all");
 
   const { data: calls } = useQuery({
     queryKey: ["calls"],
     queryFn: async () => {
       const { data, error } = await supabase.from("calls")
-        .select("*, leads(name, company)").order("started_at", { ascending: false }).limit(100);
+        .select("*, leads(name, company)").order("started_at", { ascending: false }).limit(500);
       if (error) throw error;
       return data ?? [];
     },
@@ -43,19 +50,107 @@ function CallsPage() {
 
   const active = calls?.find((c: any) => c.id === openId);
 
+  const filtered = (calls ?? []).filter((c: any) => {
+    const q = search.toLowerCase();
+    if (search && !(
+      c.leads?.name?.toLowerCase().includes(q) ||
+      c.leads?.company?.toLowerCase().includes(q) ||
+      c.disposition?.toLowerCase().includes(q) ||
+      c.summary?.toLowerCase().includes(q)
+    )) return false;
+    if (mode !== "all" && c.mode !== mode) return false;
+    if (outcome !== "all" && c.outcome !== outcome) return false;
+    if (range !== "all") {
+      const cutoff = Date.now() - RANGES[range] * 86400000;
+      if (new Date(c.started_at).getTime() < cutoff) return false;
+    }
+    return true;
+  });
+
+  function exportCsv() {
+    const header = "date,lead,company,mode,outcome,disposition,duration_sec,close_probability";
+    const rows = filtered.map((c: any) =>
+      [
+        new Date(c.started_at).toISOString(),
+        c.leads?.name ?? "",
+        c.leads?.company ?? "",
+        MODE_LABEL[c.mode] ?? c.mode,
+        c.outcome,
+        c.disposition ?? "",
+        c.duration_sec ?? 0,
+        c.close_probability ?? 0,
+      ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")
+    );
+    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `master-closer-calls-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const connected = filtered.filter((c: any) => c.outcome === "completed").length;
+  const talkTime = filtered.reduce((s: number, c: any) => s + (c.duration_sec ?? 0), 0);
+
   return (
     <div>
       <PageHeader
         title="Calls"
         description="History — every conversation with transcript, AI summary, and moves."
         tabs={TAB_GROUPS.calls}
+        action={
+          <Button type="button" variant="outline" className="rounded-xl" onClick={exportCsv} disabled={filtered.length === 0}>
+            <Download className="h-4 w-4 mr-1" /> Export CSV
+          </Button>
+        }
       />
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none">
-        {!calls || calls.length === 0 ? (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B76]" />
+            <Input placeholder="Search lead, company, disposition, or summary" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <Select value={mode} onValueChange={setMode}>
+            <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All modes</SelectItem>
+              <SelectItem value="full_ai">AI</SelectItem>
+              <SelectItem value="hybrid">Hybrid</SelectItem>
+              <SelectItem value="copilot">Copilot</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={outcome} onValueChange={setOutcome}>
+            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All outcomes</SelectItem>
+              {OUTCOMES.map((o) => (
+                <SelectItem key={o} value={o} className="capitalize">{o.replace(/_/g, " ")}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={range} onValueChange={setRange}>
+            <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All time</SelectItem>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="90">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-sm text-[#6B6B76] mb-4">
+          <span><b className="text-[#111114]">{filtered.length}</b> calls</span>
+          <span><b className="text-[#111114]">{connected}</b> completed</span>
+          <span><b className="text-[#111114]">{Math.round(talkTime / 60)}</b> min talk time</span>
+        </div>
+
+        {filtered.length === 0 ? (
           <div className="text-center py-16">
             <PhoneCall className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-            <p className="font-medium">No calls yet</p>
+            <p className="font-medium">No calls found</p>
             <p className="text-sm text-[#6B6B76] mt-1">Calls appear here once the dialer runs.</p>
           </div>
         ) : (
@@ -68,7 +163,7 @@ function CallsPage() {
               </tr>
             </thead>
             <tbody>
-              {calls.map((c: any) => (
+              {filtered.map((c: any) => (
                 <tr
                   key={c.id}
                   onClick={() => setOpenId(c.id)}
