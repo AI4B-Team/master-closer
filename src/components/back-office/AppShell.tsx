@@ -113,8 +113,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
-        <div className="side-divider" />
-        <nav className="side-nav side-util">{renderNav(NAV_UTILITY, true)}</nav>
+
       </aside>
 
 
