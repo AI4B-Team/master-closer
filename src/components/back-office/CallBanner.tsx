@@ -25,6 +25,8 @@ export function CallBanner({
   muted,
   onToggleMute,
   onHold,
+  holding,
+  participants,
   onMerge,
   onTransfer,
 }: {
@@ -38,6 +40,8 @@ export function CallBanner({
   muted?: boolean;
   onToggleMute?: () => void;
   onHold?: () => void;
+  holding?: boolean;
+  participants?: string[];
   onMerge?: () => void;
   onTransfer?: () => void;
 }) {
@@ -51,15 +55,20 @@ export function CallBanner({
           <span className="banner-num font-num">{phone}</span>
           <span className="banner-live-dot" />
           {campaign && <span className="banner-camp">{campaign}</span>}
+          {(participants ?? []).map((p) => (
+            <span key={p} className="banner-camp">+ {p}</span>
+          ))}
         </div>
         <div className="banner-status">
-          <span className="banner-ongoing">
-            <Radio size={12} /> Ongoing {timer}
+          <span className="banner-ongoing" style={holding ? { color: "#f4c66a" } : undefined}>
+            <Radio size={12} /> {holding ? "On Hold" : "Ongoing"} {timer}
           </span>
+          {muted && <span className="banner-camp">Muted</span>}
         </div>
 
 
       </div>
+
 
       <div className="banner-mid">
         <span className="banner-mode-label">MODE</span>
