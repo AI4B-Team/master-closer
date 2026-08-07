@@ -41,10 +41,12 @@ export function LiveAssistPanel({
         </span>
         <button
           type="button"
-          className={"switch " + (live ? "on" : "")}
+          className={"switch has-tip tip-below " + (live ? "on" : "")}
           onClick={() => setLive((v) => !v)}
+          data-tip={live ? "Pause live transcription" : "Resume live transcription"}
           aria-label="Toggle live transcription"
         />
+
       </div>
 
       <div className={"assist-consent " + (delivered ? "" : "pending")}>
