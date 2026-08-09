@@ -489,8 +489,20 @@ function TasksPage() {
                         Clear Due Date
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Assign</DropdownMenuLabel>
+                      {(team ?? []).map((p: any) => (
+                        <DropdownMenuItem key={p.id} onClick={() => assign.mutate({ id: t.id, assignee: p.id })}>
+                          {p.full_name || p.email}
+                          {t.assignee_id === p.id ? " ·" : ""}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuItem onClick={() => assign.mutate({ id: t.id, assignee: null })}>
+                        Unassign
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuLabel>Priority</DropdownMenuLabel>
                       {PRIORITIES.map((p) => (
+
                         <DropdownMenuItem
                           key={p}
                           className="capitalize"
