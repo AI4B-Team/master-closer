@@ -17,6 +17,9 @@ import { HubPanel } from "@/components/back-office/HubPanel";
 import { Webhook, Trash2, Plus, Eye, EyeOff, Copy, Send } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
+import { deleteWorkspace, leaveWorkspace } from "@/lib/workspaces.functions";
+import { useMutation } from "@tanstack/react-query";
+import { AlertTriangle, LogOut } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -136,6 +139,7 @@ function SettingsPage() {
           <Button onClick={save} className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">Save Changes</Button>
         </div>
 
+        <WorkspaceDangerZone />
         <WebhooksCard orgId={orgId} />
         <HubPanel />
       </AccountShell>
@@ -143,6 +147,104 @@ function SettingsPage() {
   );
 }
 
+
+/** Leave (members/admins) or permanently delete (owner) the active workspace. */
+function WorkspaceDangerZone() {
+  const qc = useQueryClient();
+  const { data: ws } = useWorkspace();
+  const [confirmName, setConfirmName] = useState("");
+  const leave = useServerFn(leaveWorkspace);
+  const destroy = useServerFn(deleteWorkspace);
+
+  const { data: myRole } = useQuery({
+    queryKey: ["my-workspace-role", ws?.id],
+    enabled: !!ws?.id,
+    queryFn: async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id;
+      if (!uid) return null;
+      const { data } = await supabase
+        .from("workspace_members")
+        .select("role")
+        .eq("workspace_id", ws!.id)
+        .eq("user_id", uid)
+        .maybeSingle();
+      return data?.role ?? null;
+    },
+  });
+
+  const done = async (msg: string) => {
+    toast.success(msg);
+    setConfirmName("");
+    await qc.invalidateQueries({ queryKey: ["active-workspace"] });
+    await qc.invalidateQueries({ queryKey: ["my-workspaces"] });
+    await qc.invalidateQueries();
+  };
+
+  const leaveMut = useMutation({
+    mutationFn: () => leave({}),
+    onSuccess: () => done("You Left The Workspace"),
+    onError: (e: any) => toast.error(e?.message ?? "Could not leave this workspace."),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: () => destroy({ data: { confirmName } }),
+    onSuccess: () => done("Workspace Deleted"),
+    onError: (e: any) => toast.error(e?.message ?? "Could not delete this workspace."),
+  });
+
+  if (!ws) return null;
+  const isOwner = myRole === "owner";
+
+  return (
+    <Card className="mt-4 p-6 rounded-2xl border-[#F3C2C2] shadow-none max-w-3xl">
+      <h3 className="font-semibold mb-1 flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4 text-[#CC0000]" />
+        Danger Zone
+      </h3>
+      <p className="text-sm text-[#6B6B76] mb-4">
+        These actions affect the <strong>{ws.name}</strong> workspace only.
+      </p>
+
+      {isOwner ? (
+        <div className="space-y-3">
+          <p className="text-sm text-[#6B6B76]">
+            Deleting removes every lead, call, campaign and agreement in this workspace. Type the
+            workspace name to confirm.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={ws.name}
+              className="w-64"
+              aria-label="Confirm Workspace Name"
+            />
+            <Button
+              variant="outline"
+              className="rounded-xl border-[#CC0000] text-[#CC0000] hover:bg-[#CC0000]/5"
+              disabled={confirmName.trim() !== ws.name || deleteMut.isPending}
+              onClick={() => deleteMut.mutate()}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Workspace
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          className="rounded-xl border-[#CC0000] text-[#CC0000] hover:bg-[#CC0000]/5"
+          disabled={leaveMut.isPending}
+          onClick={() => leaveMut.mutate()}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Leave Workspace
+        </Button>
+      )}
+    </Card>
+  );
+}
 
 function WebhooksCard({ orgId }: { orgId: string | null }) {
   const qc = useQueryClient();
