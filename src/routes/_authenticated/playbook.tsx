@@ -425,7 +425,32 @@ function Objections() {
             <p className="text-sm text-[#6B6B76]">Trigger phrase in, exact response out.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-xl"
+          onClick={() => fileRef.current?.click()}
+          disabled={bulkImport.isPending}
+        >
+          <Upload className="h-4 w-4 mr-1" /> {bulkImport.isPending ? "Importing…" : "Import CSV"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-xl"
+          onClick={exportCsv}
+          disabled={!objections || objections.length === 0}
+        >
+          <Download className="h-4 w-4 mr-1" /> Export CSV
+        </Button>
         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
           <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
         </Button>
