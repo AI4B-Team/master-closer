@@ -337,15 +337,23 @@ function Objections() {
         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
           <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
         </Button>
-        <Dialog open={open} onOpenChange={setOpen}>
-
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) {
+              setEditId(null);
+              setForm({ trigger: "", response: "", category: "" });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button size="sm" variant="outline" className="rounded-xl">
               <Plus className="h-4 w-4 mr-1" /> New Objection
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New Objection</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? "Edit Objection" : "New Objection"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>Trigger</Label>
