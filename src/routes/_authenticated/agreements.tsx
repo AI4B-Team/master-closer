@@ -72,16 +72,19 @@ function AgreementsPage() {
 
   const { data: templates } = useQuery({
     queryKey: ["agreement_templates", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreement_templates")
         .select("*")
+        .eq("workspace_id", wsId!)
         .order("is_default", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const { data: agreements, isLoading: agreementsLoading } = useQuery({
     queryKey: ["agreements", wsId],
