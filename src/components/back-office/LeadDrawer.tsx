@@ -61,13 +61,20 @@ export function LeadDrawer({
     queryKey: ["org-members-min", wsId],
     enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: rows, error } = await supabase
         .from("workspace_members")
-        .select("user_id, profiles:user_id(id, full_name, email)")
+        .select("user_id")
         .eq("workspace_id", wsId!)
         .limit(200);
       if (error) throw error;
-      return (data ?? []).map((m: any) => m.profiles).filter(Boolean) as { id: string; full_name: string | null; email: string | null }[];
+      const ids = (rows ?? []).map((r) => r.user_id).filter(Boolean);
+      if (!ids.length) return [] as { id: string; full_name: string | null; email: string | null }[];
+      const { data: profs, error: pErr } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      if (pErr) throw pErr;
+      return (profs ?? []) as { id: string; full_name: string | null; email: string | null }[];
     },
   });
 
