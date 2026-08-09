@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
-import { DollarSign, Eye, ListChecks, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
+import { Activity, DollarSign, Eye, FileSignature, ListChecks, MoreVertical, Percent, Phone, PhoneCall, ShieldOff, Sparkles, TrendingUp, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
 import { dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
