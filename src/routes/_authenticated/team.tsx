@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -553,7 +553,13 @@ function ReportsPage() {
                 <tr key={a.id} className="border-b border-[#F0F1F4] last:border-0">
                   <td className="py-3">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{a.name}</span>
+                      {a.isAgent ? (
+                        <Link to="/calls" search={{ agent: a.id } as any} className="font-medium hover:text-[#CC0000] underline-offset-2 hover:underline">
+                          {a.name}
+                        </Link>
+                      ) : (
+                        <span className="font-medium">{a.name}</span>
+                      )}
                       {a.isAgent ? (
                         <StatusPill tone={a.active ? "green" : "neutral"} label={a.active ? "Active" : "Paused"} />
                       ) : null}
@@ -592,7 +598,9 @@ function ReportsPage() {
               <div key={c.id}>
                 <div className="flex items-center justify-between text-sm gap-3">
                   <span className="flex items-center gap-2 min-w-0">
-                    <span className="font-medium truncate">{c.name}</span>
+                    <Link to="/calls" search={{ campaign: c.id } as any} className="font-medium truncate hover:text-[#CC0000] underline-offset-2 hover:underline">
+                      {c.name}
+                    </Link>
                     <span className="text-xs text-[#6B6B76] shrink-0">{c.mode}</span>
                     {c.status ? <StatusPill tone={c.status === "Active" ? "green" : "neutral"} label={c.status} /> : null}
                   </span>
