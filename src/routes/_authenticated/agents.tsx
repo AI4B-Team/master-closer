@@ -17,7 +17,13 @@ import {
   listWorklist, sendWorklistFeedback, undoWorklistFeedback, conversationsReport,
 } from "@/lib/governance.functions";
 
+type AgentsView = "registry" | "proposals" | "worklist" | "insights";
+
 export const Route = createFileRoute("/_authenticated/agents")({
+  validateSearch: (s: Record<string, unknown>): { view?: AgentsView } => {
+    const v = String(s.view ?? "");
+    return ["registry", "proposals", "worklist", "insights"].includes(v) ? { view: v as AgentsView } : {};
+  },
   head: () => ({
     meta: [
       { title: "Background Agents — Master Closer" },
@@ -69,7 +75,8 @@ function valueText(v: unknown) {
 
 function AgentsPage() {
   const qc = useQueryClient();
-  const [view, setView] = useState<(typeof VIEWS)[number]["key"]>("registry");
+  const { view: viewParam } = Route.useSearch();
+  const [view, setView] = useState<AgentsView>(viewParam ?? "registry");
 
   const fetchAgents = useServerFn(listAgents);
   const fetchProposals = useServerFn(listProposals);

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Plus, Bot, GraduationCap, Search, PhoneCall } from "lucide-react";
+import { Plus, Bot, GraduationCap, Search, PhoneCall, ShieldCheck } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
@@ -158,6 +158,12 @@ function AIClosers() {
         description="Closers — identity, knowledge, autonomy, and where to transfer."
         tabs={TAB_GROUPS.studio}
         action={
+          <div className="flex items-center gap-2">
+          <Button asChild variant="outline" className="rounded-xl">
+            <Link to="/agents" search={{ view: "proposals" }}>
+              <ShieldCheck className="h-4 w-4 mr-1" /> Agent Governance
+            </Link>
+          </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
@@ -189,6 +195,7 @@ function AIClosers() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
