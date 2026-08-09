@@ -247,6 +247,8 @@ function Objections() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [cat, setCat] = useState<string>("All");
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState({ trigger: "", response: "", category: "" });
   const [genOpen, setGenOpen] = useState(false);
   const [gen, setGen] = useState({ industry: "", focus: "" });
