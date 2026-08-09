@@ -370,10 +370,10 @@ function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
-        <Kpi label="Calls Logged" value={String(totals.calls)} icon={PhoneCall} {...KPI_TINTS.blue} />
-        <Kpi label="Connect Rate" value={`${totals.connectRate}%`} icon={Percent} {...KPI_TINTS.mint} />
-        <Kpi label="Closed Revenue" value={money(totals.revenue)} icon={DollarSign} {...KPI_TINTS.red} />
-        <Kpi label="Win Rate" value={`${totals.winRate}%`} icon={Trophy} {...KPI_TINTS.lavender} />
+        <Kpi label="Calls Logged" value={String(totals.calls)} icon={PhoneCall} {...KPI_TINTS.blue} to="/calls" />
+        <Kpi label="Connect Rate" value={`${totals.connectRate}%`} icon={Percent} {...KPI_TINTS.mint} to="/calls" />
+        <Kpi label="Closed Revenue" value={money(totals.revenue)} icon={DollarSign} {...KPI_TINTS.red} to="/pipeline" />
+        <Kpi label="Win Rate" value={`${totals.winRate}%`} icon={Trophy} {...KPI_TINTS.lavender} to="/pipeline" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">

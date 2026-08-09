@@ -45,6 +45,7 @@ function Dashboard() {
         : 0;
       const modeSplit = ["full_ai", "hybrid", "copilot"].map((m) => ({
         name: m === "full_ai" ? "AI" : m === "hybrid" ? "Hybrid" : "Copilot",
+        mode: m,
         value: (calls ?? []).filter((c) => c.mode === m).length,
       }));
       return { callsToday: callsToday ?? 0, revenue, closeRate, avgProb, modeSplit, totalCalls: calls?.length ?? 0 };
@@ -181,11 +182,16 @@ function Dashboard() {
           </div>
           <div className="legend">
             {split.map((m, i) => (
-              <div key={m.name} className="legend-row">
+              <Link
+                key={m.name}
+                to="/calls"
+                search={{ mode: m.mode }}
+                className="legend-row legend-link"
+              >
                 <span className="legend-dot" style={{ background: MODE_COLORS[i] }} />
                 <span>{m.name}</span>
                 <span className="font-num legend-v">{pct[i].toFixed(0)}%</span>
-              </div>
+              </Link>
             ))}
           </div>
         </Panel>
