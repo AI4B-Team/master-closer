@@ -115,6 +115,23 @@ function AgreementsPage() {
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [detail, setDetail] = useState<any | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  /* Filter the sent list by free text (title, signer, lead) and status. */
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (agreements ?? []).filter((a: any) => {
+      const hit =
+        !q ||
+        [a.title, a.signer_name, a.signer_email, a.leads?.name, a.leads?.company]
+          .filter(Boolean)
+          .some((v: string) => String(v).toLowerCase().includes(q));
+      return hit && (statusFilter === "all" || a.status === statusFilter);
+    });
+  }, [agreements, search, statusFilter]);
+
+
 
   return (
     <div>
