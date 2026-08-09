@@ -155,13 +155,20 @@ function AgreementsPage() {
 
           <Card className="rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
             {(agreements ?? []).length === 0 ? (
-              <div className="p-10">
-                <EmptyState
-                  icon={FileSignature}
-                  title="No Agreements Yet"
-                  hint="Create one from a template and send the signing link straight to the prospect."
-                />
-              </div>
+              <EmptyPanel
+                icon={FileSignature}
+                title="No Agreements Yet"
+                hint="Create one from a template and send the signing link straight to the prospect."
+                action={
+                  <Button
+                    type="button"
+                    onClick={() => setTab("templates")}
+                    className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]"
+                  >
+                    <FileText className="h-4 w-4 mr-1.5" /> Go To Templates
+                  </Button>
+                }
+              />
             ) : (
               <table className="w-full text-sm">
                 <thead>
