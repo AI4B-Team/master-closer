@@ -301,9 +301,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   <div className="pm-foot">
                     <span>
-                      <Link to="/legal/terms" onClick={() => setProfileOpen(false)}>Terms</Link>
+                      <Link to="/legal/terms" onClick={() => setProfileOpen(false)}>{prefs.t("Terms")}</Link>
                       &nbsp;|&nbsp;
-                      <Link to="/legal/privacy" onClick={() => setProfileOpen(false)}>Privacy</Link>
+                      <Link to="/legal/privacy" onClick={() => setProfileOpen(false)}>{prefs.t("Privacy")}</Link>
                     </span>
                     <span className="pm-social">
                       <MessageCircle size={16} />
