@@ -13,6 +13,8 @@ import { AccountShell } from "@/components/back-office/AccountShell";
 import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText, Ban, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
+
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
