@@ -43,6 +43,9 @@ function ListsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [raw, setRaw] = useState("");
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [search, setSearch] = useState("");
 
   const { data: lists, isLoading: listsLoading } = useQuery({
     queryKey: ["call_lists"],
@@ -56,7 +59,100 @@ function ListsPage() {
     },
   });
 
+  const { data: dnc } = useQuery({
+    queryKey: ["dnc-phones"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("dnc_list").select("phone");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const active = (lists ?? []).find((l: any) => l.id === selected) ?? (lists ?? [])[0];
+  const digits = (p?: string | null) => (p ?? "").replace(/\D/g, "");
+  const dncSet = new Set((dnc ?? []).map((d: any) => digits(d.phone)).filter(Boolean));
+
+  const contacts = ((active?.list_contacts ?? []) as any[]).filter((c) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return [c.name, c.phone, c.email].some((v: string | null) => (v ?? "").toLowerCase().includes(q));
+  });
+
+  const renameList = useMutation({
+    mutationFn: async () => {
+      if (!active) throw new Error("No list selected.");
+      const { error } = await supabase.from("call_lists").update({ name: renameValue }).eq("id", active.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("List Renamed.");
+      setRenameOpen(false);
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+      qc.invalidateQueries({ queryKey: ["lists-min"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteList = useMutation({
+    mutationFn: async () => {
+      if (!active) throw new Error("No list selected.");
+      await supabase.from("list_contacts").delete().eq("list_id", active.id);
+      const { error } = await supabase.from("call_lists").delete().eq("id", active.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("List Deleted.");
+      setSelected(null);
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+      qc.invalidateQueries({ queryKey: ["lists-min"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteContact = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("list_contacts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Contact Removed.");
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const addToDnc = useMutation({
+    mutationFn: async (contact: any) => {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      const { error } = await supabase
+        .from("dnc_list")
+        .insert({ org_id: prof.org_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
+      if (error) throw error;
+      await supabase.from("list_contacts").update({ consent: "opt_out" }).eq("id", contact.id);
+    },
+    onSuccess: () => {
+      toast.success("Added To Do Not Call.");
+      qc.invalidateQueries({ queryKey: ["dnc-phones"] });
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  function exportCsv() {
+    if (!active) return;
+    const header = ["Name", "Phone", "Email", "Attempts", "Last Outcome", "Consent"];
+    const rows = contacts.map((c) => [c.name, c.phone, c.email ?? "", c.attempts, c.last_outcome ?? "", c.consent ?? ""]);
+    const csv = [header, ...rows]
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${active.name.replace(/\s+/g, "-").toLowerCase()}-contacts.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   const createList = useMutation({
     mutationFn: async () => {
