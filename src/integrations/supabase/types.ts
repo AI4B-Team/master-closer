@@ -1115,6 +1115,63 @@ export type Database = {
           },
         ]
       }
+      practice_sessions: {
+        Row: {
+          agent_id: string | null
+          confidence: number
+          created_at: string
+          id: string
+          line: string | null
+          mode: string
+          objection: string | null
+          org_id: string
+          prospect: string
+          tone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          confidence?: number
+          created_at?: string
+          id?: string
+          line?: string | null
+          mode?: string
+          objection?: string | null
+          org_id: string
+          prospect: string
+          tone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          confidence?: number
+          created_at?: string
+          id?: string
+          line?: string | null
+          mode?: string
+          objection?: string | null
+          org_id?: string
+          prospect?: string
+          tone?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_sessions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
