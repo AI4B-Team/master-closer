@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { EmptyPanel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonRows, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { ListOrdered, Plus, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -44,7 +44,7 @@ function ListsPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [raw, setRaw] = useState("");
 
-  const { data: lists } = useQuery({
+  const { data: lists, isLoading: listsLoading } = useQuery({
     queryKey: ["call_lists"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -191,7 +191,9 @@ function ListsPage() {
         </Card>
 
         <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none">
-          {!active || (active.list_contacts ?? []).length === 0 ? (
+          {listsLoading ? (
+            <SkeletonRows rows={5} />
+          ) : !active || (active.list_contacts ?? []).length === 0 ? (
             <EmptyPanel
               icon={ListOrdered}
               title={active ? "No Contacts In This List" : "Pick Or Create A List"}
