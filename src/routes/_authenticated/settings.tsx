@@ -85,6 +85,9 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
   const qc = useQueryClient();
   const [url, setUrl] = useState("");
   const [reveal, setReveal] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const emit = useServerFn(emitOrgEvent);
+
 
   const { data: hooks } = useQuery({
     queryKey: ["org-webhooks"],
