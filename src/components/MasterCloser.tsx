@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { closeObjection } from "@/lib/demo.functions";
 import {
   AudioLines, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
