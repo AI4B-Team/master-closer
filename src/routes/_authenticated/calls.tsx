@@ -49,7 +49,7 @@ function CallsPage() {
   const sp = Route.useSearch();
   const [openId, setOpenId] = useState<string | null>(sp.call ?? null);
   const [search, setSearch] = useState("");
-  const [mode, setMode] = useState("all");
+  const [mode, setMode] = useState(sp.mode ?? "all");
   const [outcome, setOutcome] = useState("all");
   const [range, setRange] = useState("all");
   const [agent, setAgent] = useState(sp.agent ?? "all");
