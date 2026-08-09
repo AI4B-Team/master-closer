@@ -368,12 +368,14 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 /* ---------------------------------- Templates ---------------------------------- */
 
 function TemplatesTab({
-  templates, orgId, onChange,
+  templates, orgId, wsId, onChange,
 }: {
   templates: any[];
   orgId: string | null;
+  wsId: string | null;
   onChange: () => void;
 }) {
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const active = templates.find((t) => t.id === selectedId) ?? templates[0];
   const [draft, setDraft] = useState<{ id: string | null; name: string; body: string }>({
