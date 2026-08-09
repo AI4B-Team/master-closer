@@ -930,12 +930,13 @@ function DialerPage() {
                 <div className="lead-field">
 
                   <span className="lead-k">Mode</span>
-                  <div className="tabs" style={{ padding: 3 }}>
+                  <div className="tabs" style={{ padding: 3, gap: 3 }}>
                     {(["full_ai", "hybrid", "copilot"] as Mode[]).map((m) => (
                       <button
                         key={m}
                         type="button"
                         className={"tab " + (mode === m ? "tab-on" : "")}
+                        style={{ padding: "6px 8px", fontSize: 11.5 }}
                         onClick={() => setMode(m)}
                       >
                         {m === "full_ai" ? "AI" : m === "hybrid" ? "Hybrid" : "Copilot"}
@@ -954,28 +955,32 @@ function DialerPage() {
                   <span className="muted" style={{ fontSize: 12 }}>
                     Disclosure{" "}
                     <strong style={{ color: required ? "var(--signal)" : "var(--ink)" }}>
-                      {disclosureStatus(jurisdiction)}
+                      {disclosureStatus(jurisdiction).toLowerCase()}
                     </strong>{" "}
-                    Here.
+                    in this state.
                   </span>
+
                 </div>
                 <div className="lead-field">
                   <span className="lead-k">Simulation</span>
-                  <div className="tabs" style={{ padding: 3 }}>
+                  <div className="tabs" style={{ padding: 3, gap: 3 }}>
                     <button
                       type="button"
                       className={"tab " + (simulate ? "tab-on" : "")}
+                      style={{ padding: "6px 8px", fontSize: 11.5 }}
                       onClick={() => setSimulate(true)}
                     >
-                      Simulated Call
+                      Simulated
                     </button>
                     <button
                       type="button"
                       className={"tab " + (!simulate ? "tab-on" : "")}
+                      style={{ padding: "6px 8px", fontSize: 11.5 }}
                       onClick={() => setSimulate(false)}
                     >
-                      Live Carrier
+                      Live
                     </button>
+
                   </div>
                   <span className="muted" style={{ fontSize: 12 }}>
                     {simulate
