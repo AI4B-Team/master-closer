@@ -317,7 +317,7 @@
 .lead-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .lead-field > select, .lead-field > input { max-width: 100%; box-sizing: border-box; }
 .lead-field > span { overflow-wrap: anywhere; }
-.lead-field > .tabs { max-width: 100%; overflow-x: auto; }
+.lead-field > .tabs { max-width: 100%; flex-wrap: wrap; }
 
 .lead-k { font-size: 9.5px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
 .lead-v { font-size: 13.5px; font-weight: 600; }
