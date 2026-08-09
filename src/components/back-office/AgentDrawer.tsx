@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone } from "lucide-react";
+import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone, Copy } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
 import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
 
@@ -99,6 +99,30 @@ export function AgentDrawer({
     },
     onSuccess: () => {
       toast.success("Closer deleted.");
+      qc.invalidateQueries({ queryKey: ["agents"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const duplicate = useMutation({
+    mutationFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No profile");
+      const { error } = await supabase.from("agents").insert({
+        org_id: prof.org_id,
+        name: `${form.name ?? agent!.name} (Copy)`,
+        industry: form.industry || null,
+        voice: form.voices?.[0] || form.voice || null,
+        voices: form.voices ?? [],
+        default_mode: (form.default_mode ?? "hybrid") as never,
+        active: false,
+        system_prompt: form.system_prompt || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Closer duplicated — the copy starts inactive.");
       qc.invalidateQueries({ queryKey: ["agents"] });
       onOpenChange(false);
     },
@@ -230,6 +254,15 @@ export function AgentDrawer({
               className="bg-[#111114] hover:bg-[#111114]/90 rounded-xl"
             >
               <Save className="h-4 w-4 mr-1" /> Save Changes
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl border-[#E7E7EC]"
+              onClick={() => duplicate.mutate()}
+              disabled={duplicate.isPending || !form.name}
+            >
+              <Copy className="h-4 w-4 mr-1" /> Duplicate
             </Button>
             <Button
               type="button"
