@@ -111,14 +111,10 @@ export function NotificationsMenu() {
     setSeenAt(now);
   };
 
-  const routeFor = (type: string) => {
-    if (type.startsWith("agreement")) return "/agreements";
-    if (type.startsWith("call") || type.startsWith("consent")) return "/calls";
-    if (type.startsWith("lead")) return "/leads";
-    if (type.startsWith("deal")) return "/pipeline";
-    if (type.startsWith("campaign")) return "/campaigns";
+  const routeFor = (e: EventRow) => {
+    const type = e.event_type;
     if (type.startsWith("task")) return "/tasks";
-    return "/dashboard";
+    return eventHref(e) ?? "/dashboard";
   };
 
   return (
