@@ -131,6 +131,39 @@ function ReportsPage() {
     });
   }, [calls]);
 
+  const agentPerf = useMemo(() => {
+    const map = new Map<string, { id: string; calls: number; connects: number; talkSec: number; prob: number; probN: number }>();
+    for (const c of calls ?? []) {
+      const key = c.agent_id ?? "none";
+      const row = map.get(key) ?? { id: key, calls: 0, connects: 0, talkSec: 0, prob: 0, probN: 0 };
+      row.calls += 1;
+      if (c.dial_outcome === "connected" || c.outcome === "completed") row.connects += 1;
+      row.talkSec += c.duration_sec ?? 0;
+      if (c.close_probability != null) {
+        row.prob += c.close_probability;
+        row.probN += 1;
+      }
+      map.set(key, row);
+    }
+    return Array.from(map.values())
+      .map((r) => {
+        const agent = agents?.find((a) => a.id === r.id);
+        return {
+          ...r,
+          name: agent?.name ?? "No Agent",
+          mode: agent ? MODE_LABEL[agent.default_mode] ?? titleCase(agent.default_mode) : "—",
+          active: agent?.active ?? false,
+          isAgent: Boolean(agent),
+          connectRate: r.calls ? Math.round((r.connects / r.calls) * 100) : 0,
+          avgProbability: r.probN ? Math.round(r.prob / r.probN) : 0,
+          avgTalk: r.calls ? Math.round(r.talkSec / r.calls) : 0,
+        };
+      })
+      .sort((a, b) => b.calls - a.calls);
+  }, [calls, agents]);
+
+
+
   const topObjections = useMemo(() => {
     const ids = new Set((calls ?? []).map((c) => c.id));
     const rows = (suggestions ?? []).filter((s) => !s.call_id || ids.has(s.call_id));
