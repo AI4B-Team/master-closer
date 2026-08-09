@@ -88,12 +88,13 @@ function CallsPage() {
   });
 
   function exportCsv() {
-    const header = "date,lead,company,mode,outcome,disposition,duration_sec,close_probability";
+    const header = "date,lead,company,agent,mode,outcome,disposition,duration_sec,close_probability";
     const rows = filtered.map((c: any) =>
       [
         new Date(c.started_at).toISOString(),
         c.leads?.name ?? "",
         c.leads?.company ?? "",
+        c.agents?.name ?? "",
         MODE_LABEL[c.mode] ?? c.mode,
         c.outcome,
         c.disposition ?? "",
