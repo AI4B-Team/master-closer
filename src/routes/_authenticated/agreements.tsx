@@ -417,7 +417,7 @@ function TemplatesTab({
   });
 
   const upload = async (file: File) => {
-    if (!orgId) return toast.error("No workspace found.");
+    if (!orgId || !wsId) return toast.error("No workspace found.");
     setUploading(true);
     try {
       const path = `${orgId}/templates/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
@@ -432,6 +432,7 @@ function TemplatesTab({
 
       const { error } = await supabase.from("agreement_templates").insert({
         org_id: orgId,
+        workspace_id: wsId,
         name: file.name.replace(/\.[^.]+$/, ""),
         body,
         file_path: path,
@@ -451,9 +452,10 @@ function TemplatesTab({
   };
 
   const makeDefault = async (id: string) => {
-    if (!orgId) return;
-    await supabase.from("agreement_templates").update({ is_default: false }).eq("org_id", orgId);
+    if (!wsId) return;
+    await supabase.from("agreement_templates").update({ is_default: false }).eq("workspace_id", wsId);
     const { error } = await supabase.from("agreement_templates").update({ is_default: true }).eq("id", id);
+
     if (error) return toast.error(error.message);
     toast.success("Default Template Set.");
     onChange();
