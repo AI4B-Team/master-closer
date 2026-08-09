@@ -37,7 +37,7 @@ function ReportsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("calls")
-        .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, agent_id, started_at")
+        .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, agent_id, campaign_id, started_at")
         .order("started_at", { ascending: false })
         .limit(500);
       return data ?? [];
