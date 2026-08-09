@@ -259,7 +259,35 @@ function Dashboard() {
         )}
       </Panel>
 
+      {digest ? (
+        <Panel
+          title="Latest Digest"
+          action={<Link to="/team" className="card-link">Manage Schedules</Link>}
+        >
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <FileBarChart className="h-4 w-4 shrink-0 text-[#CC0000]" />
+            <span className="text-base font-semibold">{(digest as any).payload?.message}</span>
+            <span className="text-sm text-[#6B6B76]">
+              {(digest as any).payload?.name} · {new Date(digest.created_at as string).toLocaleString([], {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+          <ul className="mt-3 space-y-2">
+            {((digest as any).payload?.lines ?? []).map((line: string) => (
+              <li key={line} className="rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm text-[#3A3A44]">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+
       <Panel
+
         title="Suggested Today"
         action={<Link to="/agents" className="card-link">View Worklist</Link>}
       >
