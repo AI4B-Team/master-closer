@@ -415,60 +415,57 @@ function Objections() {
 
   return (
     <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
-            <MessageSquareQuote className="h-5 w-5 text-[#CC0000]" />
-          </div>
-          <div>
-            <h3 className="font-semibold">Objections</h3>
-            <p className="text-sm text-[#6B6B76]">Trigger phrase in, exact response out.</p>
-          </div>
+      <div className="flex items-start gap-3 mb-4">
+        <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+          <MessageSquareQuote className="h-5 w-5 text-[#CC0000]" />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
-        />
-        <Button
-          size="sm"
-          variant="outline"
-          className="rounded-xl"
-          onClick={() => fileRef.current?.click()}
-          disabled={bulkImport.isPending}
-        >
-          <Upload className="h-4 w-4 mr-1" /> {bulkImport.isPending ? "Importing…" : "Import CSV"}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="rounded-xl"
-          onClick={exportCsv}
-          disabled={!objections || objections.length === 0}
-        >
-          <Download className="h-4 w-4 mr-1" /> Export CSV
-        </Button>
-        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
-          <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
-        </Button>
-        <Dialog
-          open={open}
-          onOpenChange={(v) => {
-            setOpen(v);
-            if (!v) {
-              setEditId(null);
-              setForm({ trigger: "", response: "", category: "" });
-            }
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button size="sm" variant="outline" className="rounded-xl">
-              <Plus className="h-4 w-4 mr-1" /> New Objection
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold">Objections</h3>
+          <p className="text-sm text-[#6B6B76] whitespace-nowrap">Trigger phrase in, exact response out.</p>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => fileRef.current?.click()}
+              disabled={bulkImport.isPending}
+            >
+              <Upload className="h-4 w-4 mr-1" /> {bulkImport.isPending ? "Importing…" : "Import CSV"}
             </Button>
-          </DialogTrigger>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl"
+              onClick={exportCsv}
+              disabled={!objections || objections.length === 0}
+            >
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+            <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
+              <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
+            </Button>
+            <Dialog
+              open={open}
+              onOpenChange={(v) => {
+                setOpen(v);
+                if (!v) {
+                  setEditId(null);
+                  setForm({ trigger: "", response: "", category: "" });
+                }
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="rounded-xl">
+                  <Plus className="h-4 w-4 mr-1" /> New Objection
+                </Button>
+              </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editId ? "Edit Objection" : "New Objection"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
