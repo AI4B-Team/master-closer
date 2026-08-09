@@ -243,7 +243,7 @@ function AgreementsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(agreements ?? []).map((a: any) => (
+                  {visible.map((a: any) => (
                     <tr key={a.id} className="border-b border-[#F3F3F6] last:border-0">
                       <td className="px-4 py-3">
                         <button type="button" className="font-medium hover:underline" onClick={() => setDetail(a)}>
