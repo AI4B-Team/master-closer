@@ -500,6 +500,33 @@
   transform: translate(-50%, 0);
 }
 
+/* Tooltip variant: card to the right of the trigger (collapsed sidebar rail) */
+.has-tip.tip-right::after {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 12px);
+  transform: translate(-4px, -50%);
+}
+.has-tip.tip-right::before {
+  bottom: auto;
+  top: 50%;
+  left: calc(100% + 7px);
+  transform: translate(-4px, -50%) rotate(45deg);
+  rotate: none;
+  border-right: none;
+  border-bottom: 1px solid rgba(16, 18, 22, 0.08);
+  border-left: 1px solid rgba(16, 18, 22, 0.08);
+}
+.has-tip.tip-right:hover::after,
+.has-tip.tip-right:focus-visible::after {
+  transform: translate(0, -50%);
+}
+.has-tip.tip-right:hover::before,
+.has-tip.tip-right:focus-visible::before {
+  transform: translate(0, -50%) rotate(45deg);
+}
+
+
 /* ============ Help menu, tour, notifications, help pages ============ */
 
 .icon-btn { position: relative; }
