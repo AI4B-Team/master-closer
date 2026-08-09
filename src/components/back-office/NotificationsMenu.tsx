@@ -36,13 +36,15 @@ function detail(e: EventRow) {
 }
 
 function ago(iso: string) {
-  const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-  if (s < 60) return `${s}s ago`;
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.max(1, Math.round(Math.abs(diff) / 1000));
+  const suffix = diff < 0 ? (v: string) => `in ${v}` : (v: string) => `${v} ago`;
+  if (s < 60) return suffix(`${s}s`);
   const m = Math.round(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return suffix(`${m}m`);
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  if (h < 24) return suffix(`${h}h`);
+  return suffix(`${Math.round(h / 24)}d`);
 }
 
 /** Bell menu in the top bar: recent workspace activity with an unread dot. */
