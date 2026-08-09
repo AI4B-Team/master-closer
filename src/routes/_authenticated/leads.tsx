@@ -68,6 +68,8 @@ function LeadsPage() {
   const { q: qParam, lead: leadParam } = Route.useSearch();
   const [search, setSearch] = useState(qParam ?? "");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [ownerFilter, setOwnerFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [csv, setCsv] = useState("");
