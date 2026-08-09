@@ -122,7 +122,7 @@ function LeadsPage() {
       if (error) throw error;
       // Family event vocabulary: notify the hub / webhooks about the new lead.
       try {
-        await emit({ data: { event_type: "leads.new", payload: { lead_id: lead.id, name: lead.name } } });
+        await emit({ data: { event_type: "leads.new", payload: { kind: "leads.new", lead_id: lead.id, name: lead.name } } });
       } catch {
         // Never block lead creation on hub availability.
       }
