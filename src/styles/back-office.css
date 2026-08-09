@@ -9,9 +9,11 @@
   --muted: #6b7280;
   --line: #e7e7ec;
   --surface: #f7f8fa;
+  --card: #ffffff;
   --signal: #cc0000;
   --signal-deep: #a30000;
   --success: #0e9f6e;
+
 
   display: flex;
   min-height: 100vh;
