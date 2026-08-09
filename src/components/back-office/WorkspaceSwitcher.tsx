@@ -314,7 +314,6 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
                   />
                   <span className="ws-item-t">
                     <span className="ws-item-name">{w.name}</span>
-                    <span className="ws-item-slug">{w.slug}</span>
                   </span>
                   <span className="ws-item-actions">
                     {canManage(w.role) && (
