@@ -10,14 +10,25 @@ export const listMembers = createServerFn({ method: "GET" })
     const { resolveWorkspace } = await import("./team.server");
     const { orgId, wsId, wsRole } = await resolveWorkspace(context.supabase, context.userId);
 
+    // workspace_members.user_id points at auth.users, so PostgREST cannot embed
+    // profiles here — fetch the profile rows separately and stitch them.
     const [{ data: members }, { data: roles }] = await Promise.all([
       context.supabase
         .from("workspace_members")
-        .select("user_id, role, created_at, profiles:user_id(id, email, full_name, avatar_url)")
+        .select("user_id, role, created_at")
         .eq("workspace_id", wsId)
         .order("created_at", { ascending: true }),
       context.supabase.from("user_roles").select("user_id, role").eq("org_id", orgId),
     ]);
+
+    const memberIds = (members ?? []).map((m) => m.user_id);
+    const { data: profileRows } = memberIds.length
+      ? await context.supabase
+          .from("profiles")
+          .select("id, email, full_name, avatar_url")
+          .in("id", memberIds)
+      : { data: [] as any[] };
+    const profileFor = (id: string) => profileRows?.find((p) => p.id === id) ?? null;
 
     const orgRoleFor = (id: string) => roles?.find((r) => r.user_id === id)?.role ?? "rep";
     const isAdmin = wsRole === "owner" || wsRole === "admin";
@@ -30,9 +41,9 @@ export const listMembers = createServerFn({ method: "GET" })
       isAdmin,
       members: (members ?? []).map((m: any) => ({
         id: m.user_id as string,
-        email: m.profiles?.email ?? null,
-        fullName: m.profiles?.full_name ?? null,
-        avatarUrl: m.profiles?.avatar_url ?? null,
+        email: profileFor(m.user_id)?.email ?? null,
+        fullName: profileFor(m.user_id)?.full_name ?? null,
+        avatarUrl: profileFor(m.user_id)?.avatar_url ?? null,
         joinedAt: m.created_at as string,
         role: orgRoleFor(m.user_id),
         workspaceRole: m.role as string,
