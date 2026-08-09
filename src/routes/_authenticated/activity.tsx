@@ -76,17 +76,22 @@ function ActivityPage() {
   }, [events, search, type]);
 
   const exportCsv = () => {
-    const header = "created_at,event_type,payload\n";
-    const body = rows
-      .map((e: any) => `"${e.created_at}","${e.event_type}","${JSON.stringify(e.payload ?? {}).replace(/"/g, "'")}"`)
-      .join("\n");
-    const url = URL.createObjectURL(new Blob([header + body], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "activity-log.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+    const csv = toCsv(
+      ["Date", "Event", "Detail", "Kind", "Payload"],
+      rows.map((e: any) => {
+        const a = describeEvent(e);
+        return [
+          new Date(e.created_at).toLocaleString(),
+          a.label,
+          a.detail ?? "",
+          a.kind,
+          JSON.stringify(e.payload ?? {}),
+        ];
+      }),
+    );
+    downloadCsv(stampedName("activity"), csv);
   };
+
 
   return (
     <div>
