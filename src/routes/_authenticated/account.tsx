@@ -44,6 +44,7 @@ const NOTIFY_ROWS = [
   { key: "handoffAlerts", label: "Handoff Alerts", hint: "Ping Me When AI Hands A Call To A Human Closer." },
   { key: "dealUpdates", label: "Deal Updates", hint: "Stage Changes And Won/Lost Notifications." },
   { key: "complianceFlags", label: "Compliance Flags", hint: "Disclosure Or DNC Issues Detected On A Call." },
+  { key: "followUps", label: "Follow-Ups", hint: "Remind Me When A Follow-Up Task Is Due Or Overdue." },
 ] as const;
 
 type NotifyKey = (typeof NOTIFY_ROWS)[number]["key"];
@@ -61,6 +62,7 @@ function AccountPage() {
     handoffAlerts: true,
     dealUpdates: true,
     complianceFlags: true,
+    followUps: true,
   });
   const [savingPrefs, setSavingPrefs] = useState(false);
 
