@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
-import { describeEvent } from "@/lib/activity-labels";
+import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { Activity, DollarSign, Eye, ListChecks, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
@@ -222,14 +222,27 @@ function Dashboard() {
           <ul className="space-y-2">
             {activity.map((e: any) => {
               const a = describeEvent(e);
-              return (
-                <li key={e.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+              const href = eventHref(e);
+              const body = (
+                <>
                   <a.icon className="h-4 w-4 text-[#CC0000]" />
                   <span className="font-medium">{a.label}</span>
                   <span className="text-[#6B6B76] truncate">{a.detail}</span>
                   <span className="ml-auto text-[#6B6B76] shrink-0">
                     {new Date(e.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                   </span>
+                </>
+              );
+              const cls = "flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm";
+              return (
+                <li key={e.id}>
+                  {href ? (
+                    <Link to={href} className={`${cls} hover:border-[#CC0000] transition-colors`}>
+                      {body}
+                    </Link>
+                  ) : (
+                    <div className={cls}>{body}</div>
+                  )}
                 </li>
               );
             })}

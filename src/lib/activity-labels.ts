@@ -69,3 +69,20 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
   }
 }
+
+/**
+ * Where a feed row should navigate. Only leads support a deep param today,
+ * so everything else lands on the owning list page.
+ */
+export function eventHref(e: EventRow): string | null {
+  const p = (e.payload ?? {}) as Record<string, any>;
+  const kind = String(p.kind ?? e.event_type);
+  if (kind.startsWith("agreement.")) return "/agreements";
+  if (kind.startsWith("deal.")) return "/pipeline";
+  if (kind === "leads.new" && p.lead_id) return `/leads?lead=${p.lead_id}`;
+  if (kind.startsWith("leads.")) return "/leads";
+  if (kind === "lead.flagged_dnc") return "/lists";
+  if (kind.startsWith("campaign.")) return "/campaigns";
+  if (kind.startsWith("call.")) return "/calls";
+  return null;
+}

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
-import { describeEvent } from "@/lib/activity-labels";
+import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { Activity, Download, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/activity")({
@@ -127,12 +127,18 @@ function ActivityPage() {
             <div className="space-y-1.5">
               {rows.map((e: any) => {
                 const a = describeEvent(e);
+                const href = eventHref(e);
                 return (
                   <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
                     <div className="flex items-center gap-2.5">
                       <a.icon className="h-4 w-4 text-[#CC0000] shrink-0" />
                       <span className="text-sm font-medium">{a.label}</span>
                       {a.detail ? <span className="text-sm text-[#6B6B76] truncate">{a.detail}</span> : null}
+                      {href ? (
+                        <Link to={href} className="text-xs text-[#CC0000] hover:underline shrink-0">
+                          Open
+                        </Link>
+                      ) : null}
                       <Badge variant="secondary" className="font-mono text-[11px] ml-auto shrink-0">{a.kind}</Badge>
                       <span className="text-xs text-[#6B6B76] shrink-0">
                         {new Date(e.created_at).toLocaleString()}
