@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -593,6 +593,7 @@ function TemplatesTab({
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{draft.id ? "Edit Template" : "New Template"}</DialogTitle>
+            <DialogDescription className="sr-only">Edit the template body, fields and signing settings.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -745,6 +746,7 @@ function ComposeDialog({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{step === "setup" ? "New Agreement" : "Review & Send"}</DialogTitle>
+          <DialogDescription className="sr-only">Set up the agreement, then review it before sending.</DialogDescription>
         </DialogHeader>
 
         {step === "setup" ? (

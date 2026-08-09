@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogDescription, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
@@ -410,6 +410,7 @@ function PipelinePage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>New Deal</DialogTitle></DialogHeader>
+                <DialogDescription className="sr-only">Add a deal with its value, stage and owner.</DialogDescription>
                 <div className="space-y-3">
                   <div>
                     <Label>Title</Label>
@@ -471,6 +472,7 @@ function PipelinePage() {
       <Dialog open={colOpen} onOpenChange={setColOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Edit Column" : "Add Column"}</DialogTitle></DialogHeader>
+          <DialogDescription className="sr-only">Name this pipeline column and set its order.</DialogDescription>
           <div className="space-y-3">
             <div>
               <Label>Column Name</Label>

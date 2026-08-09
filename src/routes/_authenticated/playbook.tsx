@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogDescription, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState } from "@/components/back-office/ui";
@@ -181,6 +181,7 @@ function Scripts() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editId ? "Edit Script" : "New Script"}</DialogTitle></DialogHeader>
+            <DialogDescription className="sr-only">Write the script your closers and AI follow on calls.</DialogDescription>
             <div className="space-y-3">
               <div>
                 <Label>Name</Label>
@@ -482,6 +483,7 @@ function Objections() {
               </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editId ? "Edit Objection" : "New Objection"}</DialogTitle></DialogHeader>
+            <DialogDescription className="sr-only">Define an objection and the response that answers it.</DialogDescription>
             <div className="space-y-3">
               <div>
                 <Label>Trigger</Label>
@@ -548,6 +550,7 @@ function Objections() {
       <Dialog open={genOpen} onOpenChange={setGenOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Generate Objections With AI</DialogTitle></DialogHeader>
+          <DialogDescription className="sr-only">Let AI draft objections and responses for your playbook.</DialogDescription>
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>

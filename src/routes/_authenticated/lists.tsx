@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonRows, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
@@ -230,6 +230,7 @@ function ListsPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Rename List</DialogTitle></DialogHeader>
+                <DialogDescription className="sr-only">Give this calling list a new name.</DialogDescription>
                 <div>
                   <Label>List Name</Label>
                   <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} />
@@ -269,6 +270,7 @@ function ListsPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Import Into {active?.name ?? "List"}</DialogTitle>
+                  <DialogDescription className="sr-only">Upload a CSV to add contacts to this list.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2">
                   <Label>One Contact Per Line — Name, Phone, Email</Label>
@@ -299,6 +301,7 @@ function ListsPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>New Calling List</DialogTitle></DialogHeader>
+                <DialogDescription className="sr-only">Name a new calling list to group contacts.</DialogDescription>
                 <div>
                   <Label>List Name</Label>
                   <Input value={listName} onChange={(e) => setListName(e.target.value)} />

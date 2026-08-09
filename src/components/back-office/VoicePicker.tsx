@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -179,6 +179,7 @@ export function VoicePicker({
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#CC0000]" /> Create New Voice
             </DialogTitle>
+            <DialogDescription className="sr-only">Preview and pick the voice your AI closer uses on calls.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
