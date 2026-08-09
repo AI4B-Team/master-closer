@@ -17,7 +17,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import {
   Plus, Trash2, GripVertical, KanbanSquare, MoreHorizontal, Pencil,
-  ArrowLeft, ArrowRight, Columns3, Clock,
+  ArrowLeft, ArrowRight, Columns3, Clock, Search as SearchIcon,
 } from "lucide-react";
 import { DealDrawer, type DealRow } from "@/components/back-office/DealDrawer";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +74,8 @@ function PipelinePage() {
   const [selected, setSelected] = useState<DealRow | null>(null);
   const [editing, setEditing] = useState<Stage | null>(null);
   const [colForm, setColForm] = useState({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
+  const [search, setSearch] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("all");
   const [form, setForm] = useState({
     title: "",
     value: "0",
@@ -112,6 +114,14 @@ function PipelinePage() {
     },
   });
 
+  const { data: members } = useQuery({
+    queryKey: ["org-members"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, full_name, email");
+      return data ?? [];
+    },
+  });
+
   const leadName = useMemo(() => {
     const map = new Map<string, string>();
     for (const l of leads ?? []) map.set(l.id, l.company ? `${l.name} · ${l.company}` : l.name);
@@ -128,6 +138,19 @@ function PipelinePage() {
   // Deals with no column yet land in the first column.
   const columnOf = (d: any) => (d.stage_id && stageById.has(d.stage_id) ? d.stage_id : firstStage?.id ?? null);
   const itemsIn = (stageId: string) => (deals ?? []).filter((d) => columnOf(d) === stageId);
+
+  const filterActive = search.trim().length > 0 || ownerFilter !== "all";
+  const matches = (d: any) => {
+    const q = search.trim().toLowerCase();
+    const hit =
+      !q ||
+      d.title?.toLowerCase().includes(q) ||
+      (d.lead_id ? (leadName.get(d.lead_id) ?? "").toLowerCase().includes(q) : false);
+    const ownerOk =
+      ownerFilter === "all" ||
+      (ownerFilter === "unassigned" ? !d.owner_id : d.owner_id === ownerFilter);
+    return hit && ownerOk;
+  };
 
   const create = useMutation({
     mutationFn: async () => {
@@ -472,9 +495,46 @@ function PipelinePage() {
           }
         />
       ) : (
+      <>
+      <Card className="p-3 rounded-2xl border-[#E7E7EC] shadow-none mb-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[220px]">
+            <SearchIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B76]" />
+            <Input
+              placeholder="Search deals by title or linked lead"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Owners</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {(members ?? []).map((m: any) => (
+                <SelectItem key={m.id} value={m.id}>{m.full_name || m.email || "Teammate"}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {filterActive ? (
+            <>
+              <span className="text-xs text-[#6B6B76]">Drag is paused while filtering</span>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-9"
+                onClick={() => { setSearch(""); setOwnerFilter("all"); }}
+              >
+                Clear Filters
+              </Button>
+            </>
+          ) : null}
+        </div>
+      </Card>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {columns.map((s, colIdx) => {
-          const items = itemsIn(s.id);
+          const items = itemsIn(s.id).filter(matches);
           const total = items.reduce((sum, d) => sum + Number(d.value ?? 0), 0);
           const isOver = overStage === s.id;
           const limit = s.wip_limit ?? 0;
@@ -561,7 +621,7 @@ function PipelinePage() {
                       <div className="h-0.5 rounded-full bg-[#CC0000] mb-2" />
                     ) : null}
                   <Card
-                    draggable
+                    draggable={!filterActive}
                     onDragStart={() => setDragId(d.id)}
                     onDragEnd={() => { setDragId(null); setOverStage(null); setOverIndex(null); }}
                     onDragOver={(e) => {
@@ -643,6 +703,7 @@ function PipelinePage() {
           );
         })}
       </div>
+      </>
       )}
 
       <DealDrawer
