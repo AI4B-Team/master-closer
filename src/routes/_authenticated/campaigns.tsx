@@ -199,6 +199,16 @@ function CampaignsPage() {
   );
   const totalDialed = (callStats ?? []).length;
 
+  const term = search.trim().toLowerCase();
+  const visible = all.filter((c: any) => {
+    if (statusFilter !== "all" && c.status !== statusFilter) return false;
+    if (term) {
+      const hay = [c.name, c.goal ?? "", c.agents?.name ?? "", c.call_lists?.name ?? ""].join(" ").toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
+    return true;
+  });
+
   return (
     <div>
       <PageHeader
