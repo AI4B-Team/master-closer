@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,9 @@ import { logActivity } from "@/lib/activity";
 
 
 export const Route = createFileRoute("/_authenticated/pipeline")({
+  validateSearch: (q: Record<string, unknown>) => ({
+    deal: typeof q.deal === "string" ? q.deal : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Pipeline — Master Closer" },
@@ -74,6 +77,7 @@ function PipelinePage() {
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [colOpen, setColOpen] = useState(false);
   const [selected, setSelected] = useState<DealRow | null>(null);
+  const sp = Route.useSearch();
   const [editing, setEditing] = useState<Stage | null>(null);
   const [colForm, setColForm] = useState({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
   const [search, setSearch] = useState("");
@@ -131,6 +135,13 @@ function PipelinePage() {
   }, [leads]);
 
   const columns = stages ?? [];
+  /* Deep link: ?deal=<id> opens that card's drawer once deals load. */
+  useEffect(() => {
+    if (!sp.deal || selected) return;
+    const hit = (deals ?? []).find((d: any) => d.id === sp.deal);
+    if (hit) setSelected(hit as DealRow);
+  }, [sp.deal, deals, selected]);
+
   const selectedDeal = selected
     ? ((deals ?? []).find((d) => d.id === selected.id) as DealRow | undefined) ?? selected
     : null;

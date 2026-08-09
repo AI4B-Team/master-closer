@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,9 @@ import { logActivity } from "@/lib/activity";
 
 
 export const Route = createFileRoute("/_authenticated/agreements")({
+  validateSearch: (q: Record<string, unknown>) => ({
+    agreement: typeof q.agreement === "string" ? q.agreement : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Agreements — Master Closer" },
@@ -117,8 +120,19 @@ function AgreementsPage() {
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [detail, setDetail] = useState<any | null>(null);
+  const sp = Route.useSearch();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  /* Deep link: ?agreement=<id> opens that agreement's detail once the list loads. */
+  useEffect(() => {
+    if (!sp.agreement || detail) return;
+    const hit = (agreements ?? []).find((a: any) => a.id === sp.agreement);
+    if (hit) {
+      setTab("sent");
+      setDetail(hit);
+    }
+  }, [sp.agreement, agreements, detail]);
 
   /* Filter the sent list by free text (title, signer, lead) and status. */
   const visible = useMemo(() => {
