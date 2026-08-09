@@ -151,7 +151,52 @@ export function AgentDrawer({
           </div>
 
           <div>
-            <Label>System Prompt</Label>
+            <div className="flex items-center justify-between mb-1.5">
+              <Label>System Prompt</Label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading}
+                  onClick={() => runAiHelp("generate")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  {aiLoading ? <RefreshCw className="h-3 w-3 mr-1 animate-spin" /> : <Wand2 className="h-3 w-3 mr-1" />}
+                  Generate
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !form.system_prompt}
+                  onClick={() => runAiHelp("improve")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  <Sparkles className="h-3 w-3 mr-1" /> Improve
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !form.system_prompt}
+                  onClick={() => runAiHelp("shorten")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  <Scissors className="h-3 w-3 mr-1" /> Shorten
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !form.system_prompt}
+                  onClick={() => runAiHelp("tone")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  <Megaphone className="h-3 w-3 mr-1" /> Tone Up
+                </Button>
+              </div>
+            </div>
             <Textarea
               rows={10}
               value={form.system_prompt ?? ""}
