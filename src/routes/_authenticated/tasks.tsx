@@ -243,6 +243,10 @@ function TasksPage() {
       if (filter === "overdue" && !isOverdue(t.due_at)) return false;
     }
     if (mineOnly && t.assignee_id !== me) return false;
+    if (assignee !== "all") {
+      if (assignee === "unassigned" ? !!t.assignee_id : t.assignee_id !== assignee) return false;
+    }
+    if (priority !== "all" && t.priority !== priority) return false;
     if (term) {
       const hay = [t.title, t.notes ?? "", t.leads?.name ?? "", t.leads?.company ?? ""].join(" ").toLowerCase();
       if (!hay.includes(term)) return false;
