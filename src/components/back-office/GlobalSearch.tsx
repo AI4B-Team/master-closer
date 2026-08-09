@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronDown, Check, Users, PhoneCall, Megaphone, KanbanSquare, StickyNote } from "lucide-react";
+import { Search, ChevronDown, Check, Users, PhoneCall, Megaphone, KanbanSquare, StickyNote, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes"] as const;
+export const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes", "Agents"] as const;
 export type SearchScope = (typeof SEARCH_SCOPES)[number];
 
 type Hit = {
-  kind: "Lead" | "Call" | "Campaign" | "Deal" | "Note";
+  kind: "Lead" | "Call" | "Campaign" | "Deal" | "Note" | "Agent";
   id: string;
   title: string;
   sub: string;
@@ -22,6 +22,7 @@ const ICONS: Record<Hit["kind"], any> = {
   Campaign: Megaphone,
   Deal: KanbanSquare,
   Note: StickyNote,
+  Agent: Bot,
 };
 
 function esc(q: string) {
