@@ -3,9 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
-import { DollarSign, Eye, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
+import { DollarSign, Eye, ListChecks, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
+import { dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -55,6 +56,22 @@ function Dashboard() {
       const { data } = await supabase.from("deals")
         .select("id,title,value,stage,updated_at").order("updated_at", { ascending: false }).limit(6);
       return data ?? [];
+    },
+  });
+
+  const { data: dueTasks } = useQuery({
+    queryKey: ["dashboard-tasks"],
+    queryFn: async () => {
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+      const { data } = await supabase
+        .from("tasks")
+        .select("id,title,due_at,priority,status,leads(name)")
+        .eq("status", "open")
+        .lte("due_at", end.toISOString())
+        .order("due_at", { ascending: true })
+        .limit(6);
+      return (data ?? []) as (TaskRow & { leads: { name: string } | null })[];
     },
   });
 
@@ -159,6 +176,29 @@ function Dashboard() {
           </div>
         </Panel>
       </div>
+
+      <Panel
+        title="Follow-Ups Due"
+        action={<Link to="/tasks" className="card-link">View All</Link>}
+      >
+        {dueTasks && dueTasks.length > 0 ? (
+          <ul className="space-y-2">
+            {dueTasks.map((t) => {
+              const d = dueLabel(t.due_at);
+              return (
+                <li key={t.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+                  <ListChecks className="h-4 w-4 text-[#CC0000]" />
+                  <span className="font-medium">{t.title}</span>
+                  <span className="text-[#6B6B76]">{t.leads?.name ?? "Unlinked"}</span>
+                  <span className={"ml-auto " + (d.tone === "late" ? "text-[#CC0000]" : "text-[#B45309]")}>{d.text}</span>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <EmptyState icon={ListChecks} title="Nothing Due Today" hint="Follow-ups you schedule will surface here." />
+        )}
+      </Panel>
     </div>
   );
 }
