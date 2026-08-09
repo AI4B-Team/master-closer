@@ -155,7 +155,7 @@ function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <SkeletonRows count={6} />
+        <SkeletonRows rows={6} />
       ) : filtered.length === 0 ? (
         <EmptyPanel
           icon={visible.length === 0 ? Inbox : Bell}
