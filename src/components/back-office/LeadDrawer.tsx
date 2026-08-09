@@ -44,10 +44,24 @@ export function LeadDrawer({
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [form, setForm] = useState<Partial<Lead>>({});
+  const [tagDraft, setTagDraft] = useState("");
 
   useEffect(() => {
     if (lead) setForm({ ...lead });
+    setTagDraft("");
   }, [lead]);
+
+  /* Owners come from the org's profiles so leads can be routed to a real closer. */
+  const { data: members } = useQuery({
+    queryKey: ["org-members-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+
 
   const { data: calls } = useQuery({
     queryKey: ["lead-calls", lead?.id],
