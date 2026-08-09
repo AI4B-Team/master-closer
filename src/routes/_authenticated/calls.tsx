@@ -279,6 +279,8 @@ function CallsPage() {
 }
 
 function CallDetail({ call }: { call: any }) {
+  const { data: detailWorkspace } = useWorkspace();
+  const wsId = detailWorkspace?.id ?? null;
   const [saved, setSaved] = useState<string[]>([]);
   const promote = useMutation({
     mutationFn: async (p: { id: string; trigger: string; response: string }) => {
