@@ -24,11 +24,15 @@ type Lead = {
   status: string;
   consent: string;
   notes: string | null;
+  owner_id: string | null;
+  tags: string[] | null;
   created_at: string;
 };
 
 const STATUSES = ["new", "contacted", "qualified", "unqualified", "customer"];
 const CONSENTS = ["unknown", "implied", "express_written", "opt_out"];
+const UNASSIGNED = "__unassigned__";
+
 
 export function LeadDrawer({
   lead,
