@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -47,12 +48,17 @@ function ListsPage() {
   const [renameValue, setRenameValue] = useState("");
   const [search, setSearch] = useState("");
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: lists, isLoading: listsLoading } = useQuery({
-    queryKey: ["call_lists"],
+    queryKey: ["call_lists", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("call_lists")
         .select("*, list_contacts(id, name, phone, email, attempts, last_outcome, consent)")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -60,9 +66,10 @@ function ListsPage() {
   });
 
   const { data: dnc } = useQuery({
-    queryKey: ["dnc-phones"],
+    queryKey: ["dnc-phones", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("dnc_list").select("phone");
+      const { data, error } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
       if (error) throw error;
       return data ?? [];
     },
