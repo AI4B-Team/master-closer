@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
+import { describeEvent } from "@/lib/activity-labels";
 import { Activity, Download, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/activity")({
@@ -41,18 +42,26 @@ function ActivityPage() {
     },
   });
 
-  const types = useMemo(
-    () => Array.from(new Set((events ?? []).map((e: any) => e.event_type))).sort(),
-    [events],
-  );
+  // Filter on the payload `kind` (falling back to event_type) so hub events that
+  // all arrive as `job.completed` still split into meaningful buckets.
+  const types = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const e of events ?? []) {
+      const a = describeEvent(e as any);
+      map.set(a.kind, a.label);
+    }
+    return Array.from(map, ([kind, label]) => ({ kind, label })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [events]);
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (events ?? []).filter((e: any) => {
-      if (type !== "all" && e.event_type !== type) return false;
+      const a = describeEvent(e);
+      if (type !== "all" && a.kind !== type) return false;
       if (!q) return true;
       return (
-        e.event_type.toLowerCase().includes(q) ||
+        a.label.toLowerCase().includes(q) ||
+        a.kind.toLowerCase().includes(q) ||
         JSON.stringify(e.payload ?? {}).toLowerCase().includes(q)
       );
     });
@@ -99,8 +108,8 @@ function ActivityPage() {
             <div className="flex flex-wrap gap-1.5">
               <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
               {types.map((t) => (
-                <FilterChip key={t} active={type === t} onClick={() => setType(t)}>
-                  {t}
+                <FilterChip key={t.kind} active={type === t.kind} onClick={() => setType(t.kind)}>
+                  {t.label}
                 </FilterChip>
               ))}
             </div>
@@ -116,21 +125,27 @@ function ActivityPage() {
             <p className="text-sm text-[#6B6B76]">No events yet. Activity appears here as calls, leads and campaigns run.</p>
           ) : (
             <div className="space-y-1.5">
-              {rows.map((e: any) => (
-                <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="font-mono text-[11px]">{e.event_type}</Badge>
-                    <span className="text-xs text-[#6B6B76] ml-auto shrink-0">
-                      {new Date(e.created_at).toLocaleString()}
-                    </span>
+              {rows.map((e: any) => {
+                const a = describeEvent(e);
+                return (
+                  <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
+                    <div className="flex items-center gap-2.5">
+                      <a.icon className="h-4 w-4 text-[#CC0000] shrink-0" />
+                      <span className="text-sm font-medium">{a.label}</span>
+                      {a.detail ? <span className="text-sm text-[#6B6B76] truncate">{a.detail}</span> : null}
+                      <Badge variant="secondary" className="font-mono text-[11px] ml-auto shrink-0">{a.kind}</Badge>
+                      <span className="text-xs text-[#6B6B76] shrink-0">
+                        {new Date(e.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    {e.payload && Object.keys(e.payload).length > 0 ? (
+                      <pre className="mt-1.5 text-[11px] text-[#6B6B76] font-mono whitespace-pre-wrap break-all">
+                        {JSON.stringify(e.payload)}
+                      </pre>
+                    ) : null}
                   </div>
-                  {e.payload && Object.keys(e.payload).length > 0 ? (
-                    <pre className="mt-1.5 text-[11px] text-[#6B6B76] font-mono whitespace-pre-wrap break-all">
-                      {JSON.stringify(e.payload)}
-                    </pre>
-                  ) : null}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
