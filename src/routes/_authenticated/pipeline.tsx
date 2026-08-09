@@ -325,6 +325,7 @@ function PipelinePage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
