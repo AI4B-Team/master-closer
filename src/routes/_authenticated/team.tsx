@@ -452,9 +452,24 @@ function ReportsPage() {
             </button>
           ))}
         </div>
-        <Button variant="outline" onClick={exportCsv} className="rounded-xl gap-2">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="rounded-xl gap-2">
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Export A Report</DropdownMenuLabel>
+            {EXPORTS.map((e) => (
+              <DropdownMenuItem key={e.slug} onClick={() => exportOne(e.slug)}>
+                {e.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={exportAll}>Everything (One File)</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
