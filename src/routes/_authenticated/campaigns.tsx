@@ -340,6 +340,16 @@ function CampaignsPage() {
               </Button>
             )}
             <span className="ml-auto text-xs text-[#6B6B76]">{visible.length} Of {all.length}</span>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-xl text-xs"
+              onClick={exportCsv}
+              disabled={visible.length === 0}
+            >
+              <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+            </Button>
+
           </div>
         )}
         {campaignsLoading ? (
