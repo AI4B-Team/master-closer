@@ -8,7 +8,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download } from "lucide-react";
+import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check } from "lucide-react";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 
