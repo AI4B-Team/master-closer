@@ -92,7 +92,8 @@ function ActivityPage() {
     const q = search.trim().toLowerCase();
     return (events ?? []).filter((e: any) => {
       const a = describeEvent(e);
-      if (type !== "all" && a.kind !== type) return false;
+      // Exact kind from a badge click, or a family prefix (e.g. "call") from a deep link.
+      if (type !== "all" && a.kind !== type && !a.kind.startsWith(`${type}.`)) return false;
       if (!q) return true;
       return (
         a.label.toLowerCase().includes(q) ||
