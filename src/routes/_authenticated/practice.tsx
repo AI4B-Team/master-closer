@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,10 +59,14 @@ function PracticePage() {
   const [prospect, setProspect] = useState(PRESETS[0]);
   const [latest, setLatest] = useState<Rep | null>(null);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: agents } = useQuery({
-    queryKey: ["agents"],
+    queryKey: ["agents", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("agents").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase.from("agents").select("*").eq("workspace_id", wsId!).order("created_at", { ascending: false });
       return data ?? [];
     },
   });
@@ -72,11 +77,13 @@ function PracticePage() {
   );
 
   const { data: history } = useQuery({
-    queryKey: ["practice-sessions", agentId],
+    queryKey: ["practice-sessions", agentId, wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       let q = supabase
         .from("practice_sessions")
         .select("*")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(40);
       if (agentId !== "none") q = q.eq("agent_id", agentId);

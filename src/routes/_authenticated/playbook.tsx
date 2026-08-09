@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -109,10 +110,14 @@ function Scripts() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", description: "", content: "" });
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: scripts } = useQuery({
-    queryKey: ["playbooks"],
+    queryKey: ["playbooks", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("playbooks").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase.from("playbooks").select("*").eq("workspace_id", wsId!).order("created_at", { ascending: false });
       return data ?? [];
     },
   });
@@ -258,21 +263,27 @@ function Objections() {
   const [picked, setPicked] = useState<Record<number, boolean>>({});
 
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: objections } = useQuery({
-    queryKey: ["objections"],
+    queryKey: ["objections", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("objections").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase.from("objections").select("*").eq("workspace_id", wsId!).order("created_at", { ascending: false });
       return data ?? [];
     },
   });
 
   // Live usage: which library objections actually surfaced on calls, and how often the rep said the line.
   const { data: usage } = useQuery({
-    queryKey: ["objection-usage"],
+    queryKey: ["objection-usage", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("suggestions")
         .select("objection, was_used")
+        .eq("workspace_id", wsId!)
         .order("ts_sec", { ascending: false })
         .limit(1000);
       return data ?? [];

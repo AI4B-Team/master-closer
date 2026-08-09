@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Play, Loader2, Plus, Check, Sparkles } from "lucide-react";
@@ -34,12 +35,17 @@ export function VoicePicker({
   const [createOpen, setCreateOpen] = useState(false);
   const [draft, setDraft] = useState({ name: "", base_voice: "alloy", style: "" });
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: customVoices } = useQuery({
-    queryKey: ["custom-voices"],
+    queryKey: ["custom-voices", wsId],
+    enabled: !!wsId,
     queryFn: async (): Promise<CustomVoice[]> => {
       const { data } = await supabase
         .from("custom_voices")
         .select("id, name, base_voice, style")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       return data ?? [];
     },

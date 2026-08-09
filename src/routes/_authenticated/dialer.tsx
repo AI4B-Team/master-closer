@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
@@ -184,12 +185,17 @@ function DialerPage() {
   };
 
   /** Active AI closers available to run this call. */
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: agents } = useQuery({
-    queryKey: ["dialer-agents"],
+    queryKey: ["dialer-agents", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("agents")
         .select("id, name, industry, default_mode, system_prompt, transfer_to, active")
+        .eq("workspace_id", wsId!)
         .eq("active", true)
         .order("created_at", { ascending: false });
       return data ?? [];
@@ -298,11 +304,13 @@ function DialerPage() {
 
 
   const { data: campaigns } = useQuery({
-    queryKey: ["dialer-campaigns"],
+    queryKey: ["dialer-campaigns", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("campaigns")
         .select("id, name, mode, status, list_id, agent_id")
+        .eq("workspace_id", wsId!)
         .eq("status", "active")
         .order("created_at", { ascending: false });
       return data ?? [];
@@ -322,12 +330,13 @@ function DialerPage() {
       supabase
         .from("list_contacts")
         .select("id, name, phone, last_outcome, consent")
+        .eq("workspace_id", wsId!)
         .eq("list_id", c.list_id)
         .neq("last_outcome", "dnc")
         .neq("consent", "opt_out")
         .order("attempts", { ascending: true })
         .limit(50),
-      supabase.from("dnc_list").select("phone"),
+      supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
     ]);
     const onlyDigits = (p?: string | null) => (p ?? "").replace(/\D/g, "");
     const blocked = new Set((dncRows ?? []).map((d: any) => onlyDigits(d.phone)).filter(Boolean));
@@ -354,9 +363,10 @@ function DialerPage() {
   };
 
   const { data: settings } = useQuery({
-    queryKey: ["disclosure_settings"],
+    queryKey: ["disclosure_settings", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("disclosure_settings").select("*").maybeSingle();
+      const { data } = await supabase.from("disclosure_settings").select("*").eq("workspace_id", wsId!).maybeSingle();
       return data;
     },
   });
@@ -415,7 +425,7 @@ function DialerPage() {
       // Hard stop: never dial a number on the Do Not Call list.
       const target = (phone ?? "").replace(/\D/g, "");
       if (target) {
-        const { data: dncRows } = await supabase.from("dnc_list").select("phone");
+        const { data: dncRows } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
         const blocked = (dncRows ?? []).some((d: any) => (d.phone ?? "").replace(/\D/g, "") === target);
         if (blocked) throw new Error("This Number Is On The Do Not Call List.");
       }
@@ -529,10 +539,17 @@ function DialerPage() {
 
   /** Teammates available as merge or transfer targets in this workspace. */
   const { data: teammates } = useQuery({
-    queryKey: ["dialer-teammates"],
+    queryKey: ["dialer-teammates", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email").limit(50);
-      return data ?? [];
+      const { data } = await supabase
+        .from("workspace_members")
+        .select("user_id, profiles:user_id(id, full_name, email)")
+        .eq("workspace_id", wsId!)
+        .limit(50);
+      return (data ?? [])
+        .map((m: any) => m.profiles)
+        .filter(Boolean);
     },
   });
 

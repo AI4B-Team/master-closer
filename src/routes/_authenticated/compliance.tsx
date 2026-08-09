@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -42,10 +43,14 @@ function CompliancePage() {
   });
   const [jurisdiction, setJurisdiction] = useState("FL");
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: settings } = useQuery({
-    queryKey: ["disclosure_settings"],
+    queryKey: ["disclosure_settings", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("disclosure_settings").select("*").maybeSingle();
+      const { data } = await supabase.from("disclosure_settings").select("*").eq("workspace_id", wsId!).maybeSingle();
       return data;
     },
   });
@@ -267,12 +272,16 @@ function CompliancePage() {
 }
 
 function DisclosureLog() {
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
   const { data: logs } = useQuery({
-    queryKey: ["consent_logs"],
+    queryKey: ["consent_logs", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("consent_logs")
         .select("*")
+        .eq("workspace_id", wsId!)
         .order("disclosed_at", { ascending: false })
         .limit(50);
       return data ?? [];
@@ -331,12 +340,17 @@ function DncRegistry() {
   const [reason, setReason] = useState("");
   const [search, setSearch] = useState("");
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: entries } = useQuery({
-    queryKey: ["dnc_list"],
+    queryKey: ["dnc_list", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("dnc_list")
         .select("*")
+        .eq("workspace_id", wsId!)
         .order("added_at", { ascending: false })
         .limit(500);
       return data ?? [];

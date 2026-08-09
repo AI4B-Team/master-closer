@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -58,10 +59,14 @@ function IntegrationsPage() {
   const [configKey, setConfigKey] = useState<string | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: connections } = useQuery({
-    queryKey: ["integrations"],
+    queryKey: ["integrations", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("integrations").select("*");
+      const { data } = await supabase.from("integrations").select("*").eq("workspace_id", wsId!);
       return data ?? [];
     },
   });

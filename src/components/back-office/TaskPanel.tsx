@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,13 +56,15 @@ export function TaskPanel({ leadId, dealId }: { leadId?: string; dealId?: string
   const [title, setTitle] = useState("");
   const [due, setDue] = useState("");
   const [priority, setPriority] = useState("normal");
-  const scopeKey = ["tasks", { leadId: leadId ?? null, dealId: dealId ?? null }];
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+  const scopeKey = ["tasks", { leadId: leadId ?? null, dealId: dealId ?? null, wsId }];
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: scopeKey,
-    enabled: !!(leadId || dealId),
+    enabled: !!(leadId || dealId) && !!wsId,
     queryFn: async () => {
-      let q = supabase.from("tasks").select("*").order("due_at", { ascending: true, nullsFirst: false });
+      let q = supabase.from("tasks").select("*").eq("workspace_id", wsId!).order("due_at", { ascending: true, nullsFirst: false });
       if (leadId) q = q.eq("lead_id", leadId);
       if (dealId) q = q.eq("deal_id", dealId);
       const { data, error } = await q;
