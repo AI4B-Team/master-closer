@@ -13,7 +13,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { HubPanel } from "@/components/back-office/HubPanel";
-import { Webhook, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { Webhook, Trash2, Plus, Eye, EyeOff, Copy, Send } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { emitOrgEvent } from "@/lib/hub.functions";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -85,6 +88,9 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
   const qc = useQueryClient();
   const [url, setUrl] = useState("");
   const [reveal, setReveal] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const emit = useServerFn(emitOrgEvent);
+
 
   const { data: hooks } = useQuery({
     queryKey: ["org-webhooks"],
@@ -133,12 +139,40 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
     qc.invalidateQueries({ queryKey: ["org-webhooks"] });
   };
 
+  const copySecret = async (secret: string) => {
+    await navigator.clipboard.writeText(secret);
+    toast.success("Signing Secret Copied.");
+  };
+
+  const sendTest = async () => {
+    setTesting(true);
+    try {
+      await emit({ data: { event_type: "job.completed", payload: { test: true, source: "settings" } } });
+      toast.success("Test Event Sent.");
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["webhook-deliveries"] }), 1200);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send test event.");
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mt-6 max-w-3xl">
       <div className="flex items-center gap-2 mb-1">
         <Webhook className="h-4 w-4 text-[#CC0000]" />
         <h3 className="font-semibold">Webhooks</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={sendTest}
+          disabled={testing || (hooks ?? []).length === 0}
+          className="ml-auto rounded-xl"
+        >
+          <Send className="h-3.5 w-3.5 mr-1" /> {testing ? "Sending…" : "Send Test Event"}
+        </Button>
       </div>
+
       <p className="text-sm text-[#6B6B76] mb-4">
         We POST every event (call.completed, lead.flagged_dnc, deal.updated) with an
         <code className="mx-1 text-xs">X-Signature</code> HMAC-SHA256 header of the raw body.
@@ -170,6 +204,15 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
                     >
                       {reveal === h.id ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => copySecret(h.secret)}
+                      className="text-[#6B6B76] hover:text-[#111]"
+                      aria-label="Copy Signing Secret"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+
                   </div>
                 </div>
                 <Switch checked={h.enabled} onCheckedChange={(v) => toggle(h.id, v)} />
