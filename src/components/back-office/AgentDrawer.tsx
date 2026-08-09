@@ -195,6 +195,30 @@ export function AgentDrawer({
           </div>
 
           <div>
+            <Label>Transfer To</Label>
+            <Select
+              value={form.transfer_to ?? NO_TRANSFER}
+              onValueChange={(v) => setForm({ ...form, transfer_to: v === NO_TRANSFER ? null : v })}
+            >
+              <SelectTrigger><SelectValue placeholder="No Human Closer" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_TRANSFER}>No Human Closer</SelectItem>
+                {(members ?? []).map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.full_name || m.email || "Teammate"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-[#6B6B76] mt-1">
+              {form.default_mode === "hybrid"
+                ? "This closer hands the call to this teammate once the prospect is warm."
+                : "Used when a call is escalated or the prospect asks for a human."}
+            </p>
+          </div>
+
+          <div>
+
             <div className="flex items-start justify-between gap-3 mb-1.5">
               <Label className="mt-1.5 shrink-0">System Prompt</Label>
               <div className="flex flex-wrap justify-end items-center gap-1.5">
