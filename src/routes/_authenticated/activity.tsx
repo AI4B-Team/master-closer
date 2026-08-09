@@ -42,18 +42,26 @@ function ActivityPage() {
     },
   });
 
-  const types = useMemo(
-    () => Array.from(new Set((events ?? []).map((e: any) => e.event_type))).sort(),
-    [events],
-  );
+  // Filter on the payload `kind` (falling back to event_type) so hub events that
+  // all arrive as `job.completed` still split into meaningful buckets.
+  const types = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const e of events ?? []) {
+      const a = describeEvent(e as any);
+      map.set(a.kind, a.label);
+    }
+    return Array.from(map, ([kind, label]) => ({ kind, label })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [events]);
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (events ?? []).filter((e: any) => {
-      if (type !== "all" && e.event_type !== type) return false;
+      const a = describeEvent(e);
+      if (type !== "all" && a.kind !== type) return false;
       if (!q) return true;
       return (
-        e.event_type.toLowerCase().includes(q) ||
+        a.label.toLowerCase().includes(q) ||
+        a.kind.toLowerCase().includes(q) ||
         JSON.stringify(e.payload ?? {}).toLowerCase().includes(q)
       );
     });
