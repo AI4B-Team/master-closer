@@ -25,18 +25,26 @@ export const Route = createFileRoute("/_authenticated/activity")({
   component: ActivityPage,
 });
 
+const RANGES = [
+  { key: "7", label: "Last 7 Days", days: 7 },
+  { key: "30", label: "Last 30 Days", days: 30 },
+  { key: "90", label: "Last 90 Days", days: 90 },
+  { key: "all", label: "All Time", days: null as number | null },
+];
+
 function ActivityPage() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState<string>("all");
+  const [range, setRange] = useState<string>("30");
+  const [limit, setLimit] = useState(200);
 
   const { data: events, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["org-events"],
+    queryKey: ["org-events", range, limit],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(300);
+      const days = RANGES.find((r) => r.key === range)?.days ?? null;
+      let q = supabase.from("events").select("*").order("created_at", { ascending: false }).limit(limit);
+      if (days) q = q.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
+      const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
     },
