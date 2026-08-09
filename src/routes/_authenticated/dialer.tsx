@@ -999,7 +999,78 @@ function DialerPage() {
         )}
       </div>
 
+      <Dialog open={!!wrap} onOpenChange={(o) => !o && setWrap(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Call Wrap-Up</DialogTitle>
+          </DialogHeader>
+          {wrap && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-[#6B6B76]">
+                <span className="font-semibold text-[#111]">{wrap.prospect}</span>
+                <span>·</span>
+                <span>{wrap.disposition}</span>
+                {wrap.sentiment && <StatusPill label={wrap.sentiment} tone={wrap.sentiment === "Hot" ? "green" : "amber"} />}
+              </div>
+
+              <div>
+                <div className="lead-k" style={{ marginBottom: 6 }}>Summary</div>
+                <textarea
+                  value={wrap.loading ? "Writing the summary…" : wrap.summary}
+                  readOnly={wrap.loading}
+                  onChange={(e) => setWrap({ ...wrap, summary: e.target.value })}
+                  rows={5}
+                  style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 10, padding: 10, font: "inherit" }}
+                />
+              </div>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={wrap.task}
+                  onChange={(e) => setWrap({ ...wrap, task: e.target.checked })}
+                />
+                Create A Follow-Up Task
+              </label>
+
+              {wrap.task && (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Next step"
+                    value={wrap.nextStep}
+                    onChange={(e) => setWrap({ ...wrap, nextStep: e.target.value })}
+                  />
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[1, 2, 5, 7].map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className="tab"
+                        style={{ fontWeight: 600, borderColor: wrap.dueDays === d ? "var(--signal)" : undefined }}
+                        onClick={() => setWrap({ ...wrap, dueDays: d })}
+                      >
+                        In {d} {d === 1 ? "Day" : "Days"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button type="button" className="flex-1" onClick={saveWrap} disabled={busy || wrap.loading}>
+                  Save Wrap-Up
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setWrap(null)} disabled={busy}>
+                  Skip
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
+
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Merge Another Line</DialogTitle>
