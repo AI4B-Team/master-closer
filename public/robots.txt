@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /$
+Disallow: /auth
+Disallow: /sign/
+Disallow: /account
+Disallow: /dashboard
+Disallow: /dialer
+Disallow: /leads
+Disallow: /pipeline
+Disallow: /calls
+Disallow: /campaigns
+Disallow: /agreements
+Disallow: /api/
+
