@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState } from "@/components/back-office/ui";
 import { UserPlus, Trash2, ShieldCheck, Users } from "lucide-react";
-import { inviteMember, listMembers, removeMember, setMemberRole } from "@/lib/team.functions";
+import { inviteMember, listMembers, removeMember, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({
@@ -41,12 +41,25 @@ const ROLE_STYLE: Record<string, string> = {
   rep: "bg-gray-100 text-gray-600",
 };
 
+const WS_ROLES = [
+  { value: "admin", label: "Workspace Admin" },
+  { value: "member", label: "Workspace Member" },
+  { value: "owner", label: "Transfer Ownership" },
+] as const;
+
+const WS_ROLE_STYLE: Record<string, string> = {
+  owner: "bg-amber-100 text-amber-800",
+  admin: "bg-violet-100 text-violet-700",
+  member: "bg-gray-100 text-gray-600",
+};
+
 function MembersPage() {
   const qc = useQueryClient();
   const fetchMembers = useServerFn(listMembers);
   const invite = useServerFn(inviteMember);
   const changeRole = useServerFn(setMemberRole);
   const kick = useServerFn(removeMember);
+  const changeAccess = useServerFn(setWorkspaceRole);
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -80,6 +93,15 @@ function MembersPage() {
       refresh();
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not update the role."),
+  });
+
+  const accessMut = useMutation({
+    mutationFn: (v: { userId: string; role: "owner" | "admin" | "member" }) => changeAccess({ data: v }),
+    onSuccess: () => {
+      toast.success("Workspace Access Updated.");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not update workspace access."),
   });
 
   const removeMut = useMutation({
@@ -188,6 +210,25 @@ function MembersPage() {
                   </Select>
                 ) : (
                   <Badge className={ROLE_STYLE[m.role] ?? ROLE_STYLE.rep}>{m.role}</Badge>
+                )}
+                {isAdmin && !m.isSelf && m.workspaceRole !== "owner" ? (
+                  <Select
+                    value={m.workspaceRole}
+                    onValueChange={(v) =>
+                      accessMut.mutate({ userId: m.id, role: v as "owner" | "admin" | "member" })
+                    }
+                  >
+                    <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {WS_ROLES.map((r) => (
+                        <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge className={WS_ROLE_STYLE[m.workspaceRole] ?? WS_ROLE_STYLE.member}>
+                    {m.workspaceRole === "owner" ? "Owner" : m.workspaceRole === "admin" ? "Workspace Admin" : "Workspace Member"}
+                  </Badge>
                 )}
                 {isAdmin && !m.isSelf ? (
                   <Button
