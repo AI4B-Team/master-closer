@@ -19,6 +19,7 @@ import { EmptyPanel, EmptyState, SkeletonRows, StatusPill } from "@/components/b
 import {
   Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History, Mail, Printer,
 } from "lucide-react";
+import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -147,7 +148,27 @@ function AgreementsPage() {
     });
   }, [agreements, search, statusFilter]);
 
-
+  function exportCsv() {
+    const rows = visible.map((a: any) => [
+      a.title,
+      a.status,
+      a.signer_name ?? "",
+      a.signer_email ?? "",
+      a.leads?.name ?? "",
+      a.leads?.company ?? "",
+      a.signed_at ?? "",
+      a.created_at ?? "",
+    ]);
+    if (rows.length === 0) {
+      toast.error("Nothing to export yet.");
+      return;
+    }
+    downloadCsv(
+      stampedName("agreements"),
+      toCsv(["Title", "Status", "Signer", "Email", "Lead", "Company", "Signed", "Created"], rows),
+    );
+    toast.success(`Exported ${rows.length} Agreement(s).`);
+  }
 
   return (
     <div>
@@ -156,13 +177,19 @@ function AgreementsPage() {
         description="Upload it, fill it, send it and get it signed while the call is still warm."
         tabs={TAB_GROUPS.calls}
         action={
-          <Button
-            className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
-            onClick={() => setComposeOpen(true)}
-          >
-            <FilePlus2 className="h-4 w-4 mr-1" /> New Agreement
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+            <Button
+              className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
+              onClick={() => setComposeOpen(true)}
+            >
+              <FilePlus2 className="h-4 w-4 mr-1" /> New Agreement
+            </Button>
+          </div>
         }
+
       />
 
       <div className="tabs" style={{ marginBottom: 16 }}>
