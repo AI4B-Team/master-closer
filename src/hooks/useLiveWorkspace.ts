@@ -43,6 +43,11 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       "pipeline",
       "leads",
       "agreements",
+      "bg-agents",
+      "bg-proposals",
+      "bg-worklist",
+      "bg-report",
+      "dashboard-worklist",
       ...extraKeys,
     ];
     const bump = () => {
@@ -68,6 +73,15 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       .on("postgres_changes", { event: "*", schema: "public", table: "calls" }, bump)
       .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, bump)
       .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "worklist_nominations" }, bump)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "agent_proposals" }, (payload) => {
+        bump();
+        const row = payload.new as any;
+        toast("Agent Proposal Waiting", {
+          description: row?.title || row?.target_field || "A background agent drafted a change for review.",
+        });
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "agreements" }, (payload) => {
         bump();
         if (payload.eventType !== "UPDATE") return;

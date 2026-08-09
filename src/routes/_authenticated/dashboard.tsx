@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { describeEvent, eventHref } from "@/lib/activity-labels";
-import { Activity, DollarSign, Eye, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
+import { Activity, Bot, DollarSign, Eye, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
 import { dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
+import { useServerFn } from "@tanstack/react-start";
+import { listWorklist } from "@/lib/governance.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -75,6 +77,13 @@ function Dashboard() {
         .limit(6);
       return (data ?? []) as (TaskRow & { leads: { name: string } | null })[];
     },
+  });
+
+  /* Lead Scout's picks for today, so the book gets worked, not just the recent end of it. */
+  const fetchWorklist = useServerFn(listWorklist);
+  const { data: worklist } = useQuery({
+    queryKey: ["dashboard-worklist"],
+    queryFn: () => fetchWorklist(),
   });
 
   const { data: activity } = useQuery({
@@ -216,6 +225,33 @@ function Dashboard() {
           </ul>
         ) : (
           <EmptyState icon={ListChecks} title="Nothing Due Today" hint="Follow-ups you schedule will surface here." />
+        )}
+      </Panel>
+
+      <Panel
+        title="Suggested Today"
+        action={<Link to="/agents" className="card-link">View Worklist</Link>}
+      >
+        {worklist?.rows?.length ? (
+          <ul className="space-y-2">
+            {worklist.rows.slice(0, 5).map((r: any) => (
+              <li key={r.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+                <Bot className="h-4 w-4 text-[#CC0000]" />
+                <span className="font-medium">{r.who}</span>
+                {r.product_line ? (
+                  <span className="text-[#6B6B76] capitalize">{String(r.product_line).replace(/_/g, " ")}</span>
+                ) : null}
+                <span className="text-[#6B6B76] truncate">{r.reason_text ?? titleCase(String(r.reason_code ?? ""))}</span>
+                <span className="ml-auto shrink-0 text-[#6B6B76]">{Math.round(Number(r.score ?? 0))}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            icon={Bot}
+            title="No Suggestions Yet"
+            hint="Lead Scout nominates who is genuinely worth a call each time it runs."
+          />
         )}
       </Panel>
 
