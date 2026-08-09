@@ -13,7 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonRows, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
-import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users } from "lucide-react";
+import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -44,9 +44,14 @@ function CampaignsPage() {
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({
     name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100",
   });
+
+  const emptyForm = { name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100" };
 
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
     queryKey: ["campaigns"],
@@ -109,11 +114,63 @@ function CampaignsPage() {
     onSuccess: () => {
       toast.success("Campaign Created.");
       setOpen(false);
-      setForm({ name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100" });
+      setForm(emptyForm);
       qc.invalidateQueries({ queryKey: ["campaigns"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      const { error } = await supabase
+        .from("campaigns")
+        .update({
+          name: form.name,
+          mode: form.mode as any,
+          agent_id: form.agent_id || null,
+          list_id: form.list_id || null,
+          goal: form.goal || null,
+          daily_cap: Number(form.daily_cap) || 100,
+        })
+        .eq("id", editId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Campaign Updated.");
+      setEditId(null);
+      setOpen(false);
+      setForm(emptyForm);
+      qc.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("campaigns").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Campaign Deleted.");
+      qc.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  function startEdit(c: any) {
+    setEditId(c.id);
+    setForm({
+      name: c.name ?? "",
+      mode: c.mode ?? "copilot",
+      agent_id: c.agent_id ?? "",
+      list_id: c.list_id ?? "",
+      goal: c.goal ?? "",
+      daily_cap: String(c.daily_cap ?? 100),
+    });
+    setOpen(true);
+  }
+
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status, name, mode }: { id: string; status: string; name: string; mode: string }) => {
@@ -142,6 +199,16 @@ function CampaignsPage() {
   );
   const totalDialed = (callStats ?? []).length;
 
+  const term = search.trim().toLowerCase();
+  const visible = all.filter((c: any) => {
+    if (statusFilter !== "all" && c.status !== statusFilter) return false;
+    if (term) {
+      const hay = [c.name, c.goal ?? "", c.agents?.name ?? "", c.call_lists?.name ?? ""].join(" ").toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
+    return true;
+  });
+
   return (
     <div>
       <PageHeader
@@ -149,14 +216,20 @@ function CampaignsPage() {
         description="Outbound campaigns tied to lists, closers, and autonomy modes."
         tabs={TAB_GROUPS.campaigns}
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(v) => {
+              setOpen(v);
+              if (!v) { setEditId(null); setForm(emptyForm); }
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
                 <Plus className="h-4 w-4 mr-1" /> New Campaign
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>New Campaign</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? "Edit Campaign" : "New Campaign"}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
                   <Label>Name</Label>
@@ -217,11 +290,11 @@ function CampaignsPage() {
               </div>
               <DialogFooter>
                 <Button
-                  onClick={() => create.mutate()}
-                  disabled={!form.name || create.isPending}
+                  onClick={() => (editId ? save.mutate() : create.mutate())}
+                  disabled={!form.name || create.isPending || save.isPending}
                   className="bg-[#CC0000] hover:bg-[#A30000]"
                 >
-                  Create
+                  {editId ? "Save Changes" : "Create"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -237,6 +310,36 @@ function CampaignsPage() {
       </div>
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none mt-4">
+        {all.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Input
+              placeholder="Search Campaigns, Goals, Closers, Or Lists"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 max-w-sm rounded-xl"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-9 w-[150px] rounded-xl"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+              </SelectContent>
+            </Select>
+            {(search || statusFilter !== "all") && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-9 rounded-xl text-xs"
+                onClick={() => { setSearch(""); setStatusFilter("all"); }}
+              >
+                Clear Filters
+              </Button>
+            )}
+            <span className="ml-auto text-xs text-[#6B6B76]">{visible.length} Of {all.length}</span>
+          </div>
+        )}
         {campaignsLoading ? (
           <SkeletonRows rows={5} />
         ) : all.length === 0 ? (
@@ -250,6 +353,8 @@ function CampaignsPage() {
               </Button>
             }
           />
+        ) : visible.length === 0 ? (
+          <EmptyPanel icon={Megaphone} title="No Matches" hint="Adjust your search or status filter." />
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -261,7 +366,7 @@ function CampaignsPage() {
               </tr>
             </thead>
             <tbody>
-              {all.map((c: any) => {
+              {visible.map((c: any) => {
                 const s = statsFor(c.id);
                 return (
                   <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
@@ -295,8 +400,21 @@ function CampaignsPage() {
                             <Play className="h-3.5 w-3.5 mr-1" /> Launch
                           </Button>
                         )}
+                        <Button size="sm" variant="ghost" className="rounded-xl" onClick={() => startEdit(c)}>
+                          <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                        </Button>
                         <Button size="sm" variant="ghost" className="rounded-xl" asChild>
                           <Link to="/dialer">Dial</Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-xl text-[#CC0000]"
+                          onClick={() => {
+                            if (confirm(`Delete campaign "${c.name}"?`)) remove.mutate(c.id);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </td>
