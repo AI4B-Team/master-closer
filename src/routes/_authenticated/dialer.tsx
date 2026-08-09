@@ -142,9 +142,11 @@ function DialerPage() {
       const { data: tpl } = await supabase
         .from("agreement_templates")
         .select("id, body, file_path, file_name")
+        .eq("workspace_id", prof.active_workspace_id)
         .order("is_default", { ascending: false })
         .limit(1)
         .maybeSingle();
+
 
       const signer = contact?.name ?? "The Prospect";
       const body = applyMerge(tpl?.body || DEFAULT_AGREEMENT_BODY, {
