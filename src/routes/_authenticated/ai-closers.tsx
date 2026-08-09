@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Plus, Bot } from "lucide-react";
+import { Plus, Bot, GraduationCap } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
@@ -44,6 +44,26 @@ function AIClosers() {
     queryFn: async () => {
       const { data } = await supabase.from("agents").select("*").order("created_at", { ascending: false });
       return data ?? [];
+    },
+  });
+
+  const { data: scores } = useQuery({
+    queryKey: ["practice-scores"],
+    queryFn: async () => {
+      const { data } = await supabase.from("practice_sessions").select("agent_id, confidence");
+      const map: Record<string, { avg: number; count: number }> = {};
+      const sums: Record<string, { total: number; count: number }> = {};
+      for (const row of data ?? []) {
+        if (!row.agent_id) continue;
+        const s = sums[row.agent_id] ?? { total: 0, count: 0 };
+        s.total += row.confidence ?? 0;
+        s.count += 1;
+        sums[row.agent_id] = s;
+      }
+      for (const [id, s] of Object.entries(sums)) {
+        map[id] = { avg: Math.round(s.total / s.count), count: s.count };
+      }
+      return map;
     },
   });
 
@@ -149,11 +169,17 @@ function AIClosers() {
               </div>
               <h3 className="font-semibold">{a.name}</h3>
               <p className="text-xs text-[#6B6B76] mt-1">{a.industry ?? "General"}</p>
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 mt-3">
                 <Badge variant="secondary" className="capitalize">{a.default_mode.replace("_", " ")}</Badge>
                 {((a.voices?.length ? a.voices : [a.voice]).filter(Boolean) as string[]).map((v) => (
                   <Badge key={v} variant="outline" className="capitalize">{v.replace("custom:", "Custom ")}</Badge>
                 ))}
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-[#6B6B76]">
+                <GraduationCap className="h-3.5 w-3.5 text-[#CC0000]" />
+                {scores?.[a.id]
+                  ? `${scores[a.id].avg}% Drill Score · ${scores[a.id].count} Rep${scores[a.id].count === 1 ? "" : "s"}`
+                  : "No Drills Yet"}
               </div>
             </Card>
           ))}

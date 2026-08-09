@@ -1,15 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { GraduationCap, Sparkles, Send, RotateCcw } from "lucide-react";
+import { GraduationCap, Sparkles, Send, RotateCcw, Bot } from "lucide-react";
 import { closeObjection } from "@/lib/demo.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/practice")({
@@ -39,7 +41,7 @@ const PRESETS = [
 ];
 
 type Rep = {
-  id: number;
+  id: string;
   prospect: string;
   objection: string;
   tone: string;
@@ -49,22 +51,93 @@ type Rep = {
 
 function PracticePage() {
   const run = useServerFn(closeObjection);
+  const qc = useQueryClient();
   const [mode, setMode] = useState<string>("copilot");
+  const [agentId, setAgentId] = useState<string>("none");
   const [prospect, setProspect] = useState(PRESETS[0]);
-  const [reps, setReps] = useState<Rep[]>([]);
+  const [latest, setLatest] = useState<Rep | null>(null);
+
+  const { data: agents } = useQuery({
+    queryKey: ["agents"],
+    queryFn: async () => {
+      const { data } = await supabase.from("agents").select("*").order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const agent = useMemo(
+    () => (agents ?? []).find((a: any) => a.id === agentId) ?? null,
+    [agents, agentId],
+  );
+
+  const { data: history } = useQuery({
+    queryKey: ["practice-sessions", agentId],
+    queryFn: async () => {
+      let q = supabase
+        .from("practice_sessions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (agentId !== "none") q = q.eq("agent_id", agentId);
+      const { data } = await q;
+      return (data ?? []) as any[];
+    },
+  });
 
   const ask = useMutation({
-    mutationFn: async () => run({ data: { prospect, mode } }),
-    onSuccess: (r) =>
-      setReps((prev) => [
-        { id: Date.now(), prospect, objection: r.objection, tone: r.tone, confidence: r.confidence, line: r.line },
-        ...prev,
-      ]),
+    mutationFn: async () => {
+      const r = await run({
+        data: {
+          prospect,
+          mode,
+          agentName: agent?.name ?? null,
+          industry: agent?.industry ?? null,
+          systemPrompt: agent?.system_prompt ? String(agent.system_prompt).slice(0, 4000) : null,
+        },
+      });
+      const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
+      if (prof?.org_id) {
+        await supabase.from("practice_sessions").insert({
+          org_id: prof.org_id,
+          user_id: prof.id,
+          agent_id: agentId === "none" ? null : agentId,
+          mode,
+          prospect,
+          objection: r.objection,
+          tone: r.tone,
+          confidence: r.confidence,
+          line: r.line,
+        });
+      }
+      return r;
+    },
+    onSuccess: (r) => {
+      setLatest({ id: String(Date.now()), prospect, ...r });
+      qc.invalidateQueries({ queryKey: ["practice-sessions"] });
+      qc.invalidateQueries({ queryKey: ["practice-scores"] });
+    },
     onError: () => toast.error("Couldn't Reach The Closer Just Now. Try Again In A Moment."),
   });
 
+  const clear = useMutation({
+    mutationFn: async () => {
+      let q = supabase.from("practice_sessions").delete();
+      q = agentId === "none" ? q.is("agent_id", null) : q.eq("agent_id", agentId);
+      const { error } = await q;
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setLatest(null);
+      toast.success("Session Cleared.");
+      qc.invalidateQueries({ queryKey: ["practice-sessions"] });
+      qc.invalidateQueries({ queryKey: ["practice-scores"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const reps = history ?? [];
   const avg = reps.length
-    ? Math.round(reps.reduce((s, r) => s + r.confidence, 0) / reps.length)
+    ? Math.round(reps.reduce((s, r) => s + (r.confidence ?? 0), 0) / reps.length)
     : 0;
 
   return (
@@ -87,24 +160,58 @@ function PracticePage() {
             </div>
           </div>
 
-          <Label>Mode</Label>
-          <div className="mt-1.5 grid grid-cols-3 gap-2">
-            {MODES.map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => setMode(m.key)}
-                className={
-                  "rounded-xl border px-3 py-2.5 text-left transition-colors " +
-                  (mode === m.key
-                    ? "border-[#CC0000] bg-[#CC0000]/5"
-                    : "border-[#E7E7EC] hover:bg-[#F4F4F6]")
-                }
-              >
-                <span className="block text-sm font-semibold">{m.label}</span>
-                <span className="block text-[11px] text-[#6B6B76]">{m.hint}</span>
-              </button>
-            ))}
+          <Label>Drill Against</Label>
+          <Select
+            value={agentId}
+            onValueChange={(v) => {
+              setAgentId(v);
+              setLatest(null);
+              const a = (agents ?? []).find((x: any) => x.id === v);
+              if (a?.default_mode) setMode(a.default_mode);
+            }}
+          >
+            <SelectTrigger className="mt-1.5 rounded-xl">
+              <SelectValue placeholder="Select An Agent" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Generic Closer</SelectItem>
+              {(agents ?? []).map((a: any) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.name}
+                  {a.industry ? ` · ${a.industry}` : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {agent && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-[#6B6B76]">
+              <Bot className="h-3.5 w-3.5 text-[#CC0000]" />
+              {agent.system_prompt
+                ? "Using this agent's system prompt and industry knowledge."
+                : "This agent has no system prompt yet — add one for sharper drills."}
+            </p>
+          )}
+
+          <div className="mt-5">
+            <Label>Mode</Label>
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
+              {MODES.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => setMode(m.key)}
+                  className={
+                    "rounded-xl border px-3 py-2.5 text-left transition-colors " +
+                    (mode === m.key
+                      ? "border-[#CC0000] bg-[#CC0000]/5"
+                      : "border-[#E7E7EC] hover:bg-[#F4F4F6]")
+                  }
+                >
+                  <span className="block text-sm font-semibold">{m.label}</span>
+                  <span className="block text-[11px] text-[#6B6B76]">{m.hint}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mt-5">
@@ -140,23 +247,29 @@ function PracticePage() {
               {ask.isPending ? "Thinking…" : "Run The Rep"}
             </Button>
             {reps.length > 0 && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => setReps([])}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => clear.mutate()}
+                disabled={clear.isPending}
+              >
                 <RotateCcw className="h-3.5 w-3.5 mr-1" /> Clear Session
               </Button>
             )}
           </div>
 
-          {reps[0] && (
+          {latest && (
             <div className="mt-6 rounded-2xl bg-[#111318] p-5 text-white">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
                 <Sparkles className="h-3.5 w-3.5 text-[#FF4D4D]" /> Next Best Response
               </div>
-              <p className="mt-3 text-lg leading-snug">{reps[0].line}</p>
+              <p className="mt-3 text-lg leading-snug">{latest.line}</p>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded-full bg-white/10 px-2.5 py-1">{reps[0].objection}</span>
-                <span className="rounded-full bg-white/10 px-2.5 py-1">Tone · {reps[0].tone}</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-1">{latest.objection}</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-1">Tone · {latest.tone}</span>
                 <span className="rounded-full bg-[#CC0000] px-2.5 py-1 font-semibold">
-                  {reps[0].confidence}% Close Probability
+                  {latest.confidence}% Close Probability
                 </span>
               </div>
             </div>
@@ -164,8 +277,10 @@ function PracticePage() {
         </Card>
 
         <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
-          <h3 className="font-semibold">Session Score</h3>
-          <p className="text-sm text-[#6B6B76]">Average close probability across this drill.</p>
+          <h3 className="font-semibold">Drill Score</h3>
+          <p className="text-sm text-[#6B6B76]">
+            {agent ? `Average close probability for ${agent.name}.` : "Average close probability across saved drills."}
+          </p>
           <div className="mt-4 font-num text-4xl font-semibold">{avg}%</div>
           <div className="mt-1 text-xs text-[#6B6B76]">
             {reps.length} rep{reps.length === 1 ? "" : "s"} drilled
@@ -178,7 +293,7 @@ function PracticePage() {
               reps.map((r) => (
                 <div key={r.id} className="rounded-xl border border-[#E7E7EC] px-3 py-2.5">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge variant="secondary" className="text-[10px]">{r.objection}</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{r.objection ?? "Objection"}</Badge>
                     <span className="font-num text-sm font-semibold">{r.confidence}%</span>
                   </div>
                   <p className="mt-1.5 text-xs text-[#6B6B76] line-clamp-2">“{r.prospect}”</p>
