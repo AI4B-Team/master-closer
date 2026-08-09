@@ -13,7 +13,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { HubPanel } from "@/components/back-office/HubPanel";
-import { Webhook, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { Webhook, Trash2, Plus, Eye, EyeOff, Copy, Send } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { emitOrgEvent } from "@/lib/hub.functions";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
