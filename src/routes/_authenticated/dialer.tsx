@@ -575,6 +575,12 @@ function DialerPage() {
         // Never block wrap-up on hub availability.
       }
     }
+
+    const endedCallId = callId;
+    const endedLines = transcript;
+    const label = disposition ?? DISPOSITIONS.find((d) => d.value === dial)?.label ?? "Completed";
+    const prospectName = contact?.name ?? "Outbound Prospect";
+
     setConnected(false);
     setCallId(null);
     setTranscript([]);
@@ -585,8 +591,84 @@ function DialerPage() {
     setParticipants([]);
 
     qc.invalidateQueries({ queryKey: ["calls"] });
+
+    if (endedCallId && dial !== "dnc") {
+      setWrap({
+        callId: endedCallId,
+        prospect: prospectName,
+        disposition: label,
+        summary: "",
+        nextStep: "",
+        sentiment: null,
+        lines: endedLines,
+        loading: true,
+        task: true,
+        dueDays: 2,
+      });
+      try {
+        const res: any = await summarize({
+          data: {
+            mode,
+            outcome: label,
+            prospect: prospectName,
+            lines: endedLines.map((l) => ({ speaker: l.speaker, text: l.text })),
+          },
+        });
+        setWrap((w) =>
+          w && w.callId === endedCallId
+            ? {
+                ...w,
+                loading: false,
+                summary: res?.summary ?? "",
+                nextStep: res?.next_step ?? "",
+                sentiment: res?.sentiment ?? null,
+              }
+            : w,
+        );
+      } catch {
+        setWrap((w) => (w && w.callId === endedCallId ? { ...w, loading: false } : w));
+      }
+    }
+
     if (campaignId) await loadNext(campaignId);
   };
+
+  const saveWrap = async () => {
+    if (!wrap) return;
+    setBusy(true);
+    try {
+      await supabase.from("calls").update({ summary: wrap.summary || null }).eq("id", wrap.callId);
+
+      if (wrap.task && wrap.nextStep.trim()) {
+        const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
+        if (prof) {
+          const due = new Date();
+          due.setDate(due.getDate() + wrap.dueDays);
+          await supabase.from("tasks").insert({
+            org_id: prof.org_id,
+            title: wrap.nextStep.trim().slice(0, 200),
+            notes: wrap.summary || null,
+            due_at: due.toISOString(),
+            priority: "medium",
+            status: "open",
+            assignee_id: prof.id,
+            created_by: prof.id,
+            call_id: wrap.callId,
+          });
+          qc.invalidateQueries({ queryKey: ["tasks"] });
+        }
+      }
+
+      toast.success(wrap.task && wrap.nextStep.trim() ? "Wrap-Up Saved And Follow-Up Created." : "Wrap-Up Saved.");
+      setWrap(null);
+      qc.invalidateQueries({ queryKey: ["calls"] });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
 
   const flagDnc = async () => {
     setBusy(true);
