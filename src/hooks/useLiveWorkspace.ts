@@ -33,6 +33,8 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       "notifications",
       "org-events",
       "activity",
+      "activity-panel",
+      "activity-latest",
       "dashboard-stats",
       "dashboard-tasks",
       "dashboard-activity",
