@@ -832,6 +832,14 @@
   .tab { white-space: nowrap; flex: none; }
 }
 
+/* Wide data tables scroll sideways instead of being clipped. */
+.mc-tablewrap { width: 100%; }
+@media (max-width: 900px) {
+  .mc-tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .mc-tablewrap > table { min-width: 720px; }
+}
+
+
 
 
 .side-collapsed .nav-label, .side-collapsed .side-word { display: none; }
