@@ -665,6 +665,8 @@ function ComposeDialog({
   const create = useMutation({
     mutationFn: async (send: boolean) => {
       if (!orgId) throw new Error("No workspace found.");
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      if (!prof?.active_workspace_id) throw new Error("No active workspace");
       if (!signerName.trim() || !signerEmail.trim()) throw new Error("Signer name and email are required.");
       const { data: auth } = await supabase.auth.getUser();
       const { data, error } = await supabase
