@@ -137,6 +137,36 @@ function TasksPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const reschedule = useMutation({
+    mutationFn: async ({ id, due }: { id: string; due: string | null }) => {
+      const { error } = await supabase.from("tasks").update({ due_at: due }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Follow-up rescheduled.");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const setPriority = useMutation({
+    mutationFn: async ({ id, priority }: { id: string; priority: string }) => {
+      const { error } = await supabase.from("tasks").update({ priority }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const inDays = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(17, 0, 0, 0);
+    return d.toISOString();
+  };
+
+
+
   const all = tasks ?? [];
   const openTasks = all.filter((t) => t.status !== "done");
   const counts = {
