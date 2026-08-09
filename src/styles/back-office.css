@@ -383,7 +383,7 @@
 /* ---------------------------- profile menu ---------------------------- */
 .profile-wrap { position: relative; }
 .profile-btn {
-  border: none; background: #fff; padding: 2px; cursor: pointer; border-radius: 50%;
+  border: none; background: var(--card); padding: 2px; cursor: pointer; border-radius: 50%;
   display: grid; place-items: center; line-height: 0;
   box-shadow: 0 0 0 2px #cc0000;
 }
