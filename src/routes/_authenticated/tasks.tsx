@@ -319,14 +319,49 @@ function TasksPage() {
                   <span className={"ml-auto shrink-0 text-sm " + (done ? "text-[#9A9AA5]" : TONE_STYLE[d.tone])}>
                     {done ? "Done" : d.text}
                   </span>
-                  <button
-                    type="button"
-                    aria-label="Delete Task"
-                    className="mt-0.5 text-[#9A9AA5] hover:text-[#CC0000]"
-                    onClick={() => remove.mutate(t.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Task Actions"
+                        className="mt-0.5 text-[#9A9AA5] hover:text-[#111114]"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuLabel>Reschedule</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: inDays(0) })}>
+                        Today
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: inDays(1) })}>
+                        Tomorrow
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: inDays(7) })}>
+                        Next Week
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: null })}>
+                        Clear Due Date
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Priority</DropdownMenuLabel>
+                      {PRIORITIES.map((p) => (
+                        <DropdownMenuItem
+                          key={p}
+                          className="capitalize"
+                          onClick={() => setPriority.mutate({ id: t.id, priority: p })}
+                        >
+                          {p}
+                          {t.priority === p ? " ·" : ""}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-[#CC0000]" onClick={() => remove.mutate(t.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                 </li>
               );
             })}
