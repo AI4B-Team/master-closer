@@ -67,12 +67,32 @@ export function NotificationsMenu() {
     queryKey: ["notifications"],
     refetchInterval: 30000,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("events")
-        .select("id,event_type,payload,created_at")
-        .order("created_at", { ascending: false })
-        .limit(20);
-      return (data ?? []) as EventRow[];
+      const [evt, tasks] = await Promise.all([
+        supabase
+          .from("events")
+          .select("id,event_type,payload,created_at")
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("tasks")
+          .select("id,title,due_at,priority,status")
+          .eq("status", "open")
+          .not("due_at", "is", null)
+          .lte("due_at", new Date(Date.now() + 86400000).toISOString())
+          .order("due_at", { ascending: true })
+          .limit(10),
+      ]);
+
+      const taskRows: EventRow[] = (tasks.data ?? []).map((t: any) => ({
+        id: `task:${t.id}`,
+        event_type: new Date(t.due_at) < new Date() ? "task.overdue" : "task.due",
+        payload: { title: t.title, priority: t.priority },
+        created_at: t.due_at,
+      }));
+
+      return [...taskRows, ...((evt.data ?? []) as EventRow[])]
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
+        .slice(0, 24);
     },
   });
 
