@@ -29,12 +29,13 @@ export async function apiClient(request: Request) {
 
   const { data: prof } = await supabase
     .from("profiles")
-    .select("org_id")
+    .select("org_id, active_workspace_id")
     .eq("id", data.claims.sub as string)
     .maybeSingle();
   if (!prof) throw new Response("No workspace for this user", { status: 403 });
+  if (!prof.active_workspace_id) throw new Response("No active workspace", { status: 403 });
 
-  return { supabase, userId: data.claims.sub as string, orgId: prof.org_id };
+  return { supabase, userId: data.claims.sub as string, orgId: prof.org_id, workspaceId: prof.active_workspace_id };
 }
 
 export function apiError(e: unknown) {
