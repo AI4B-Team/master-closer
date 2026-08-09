@@ -74,11 +74,20 @@ export async function verifyHubToken(token: string): Promise<HubClaims> {
 
 /** Emit a standard family event and fan it out to enabled org webhooks. */
 export async function emitEvent(orgId: string, eventType: string, payload: Record<string, unknown> = {}) {
-  const { data: org } = await supabaseAdmin
-    .from("organizations")
-    .select("real_elite_org_id")
-    .eq("id", orgId)
-    .maybeSingle();
+  const [{ data: org }, { data: workspace }] = await Promise.all([
+    supabaseAdmin
+      .from("organizations")
+      .select("real_elite_org_id")
+      .eq("id", orgId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("workspaces")
+      .select("id")
+      .eq("org_id", orgId)
+      .order("is_default", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const body = {
     ...payload,
@@ -87,8 +96,13 @@ export async function emitEvent(orgId: string, eventType: string, payload: Recor
 
   const { data: event, error } = await supabaseAdmin
     .from("events")
-    .insert({ org_id: orgId, event_type: eventType, payload: body })
-    .select("id, org_id, event_type, payload, created_at")
+    .insert({
+      org_id: orgId,
+      workspace_id: workspace?.id ?? orgId,
+      event_type: eventType,
+      payload: body,
+    })
+    .select("id, org_id, workspace_id, event_type, payload, created_at")
     .single();
   if (error) throw error;
 
