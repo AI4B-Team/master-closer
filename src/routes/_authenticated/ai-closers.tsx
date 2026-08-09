@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Bot, GraduationCap, Search, PhoneCall, ShieldCheck } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
-import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonCards, modeLabel } from "@/components/back-office/ui";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -269,7 +269,7 @@ function AIClosers() {
               <h3 className="font-semibold">{a.name}</h3>
               <p className="text-xs text-[#6B6B76] mt-1">{a.industry ?? "General"}</p>
               <div className="flex flex-wrap gap-2 mt-3">
-                <Badge variant="secondary" className="capitalize">{a.default_mode.replace("_", " ")}</Badge>
+                <Badge variant="secondary">{modeLabel(a.default_mode)}</Badge>
                 {((a.voices?.length ? a.voices : [a.voice]).filter(Boolean) as string[]).map((v) => (
                   <Badge key={v} variant="outline" className="capitalize">{v.replace("custom:", "Custom ")}</Badge>
                 ))}

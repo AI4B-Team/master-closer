@@ -23,6 +23,18 @@ export function titleCase(text: string) {
     .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
+/** Canonical autonomy-mode labels: AI, Hybrid, Copilot. */
+export const MODE_LABELS: Record<string, string> = {
+  full_ai: "AI",
+  hybrid: "Hybrid",
+  copilot: "Copilot",
+};
+
+export function modeLabel(mode?: string | null) {
+  if (!mode) return "—";
+  return MODE_LABELS[mode] ?? titleCase(mode);
+}
+
 export function Avatar({ name, size = 30 }: { name: string; size?: number }) {
   const seed = Array.from(name || "?").reduce((s, c) => s + c.charCodeAt(0), 0);
   const color = AVATAR_COLORS[seed % AVATAR_COLORS.length];
