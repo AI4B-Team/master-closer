@@ -598,6 +598,7 @@ function Objections() {
       ) : (
         <div className="space-y-2">
           {objections
+            .filter((o: any) => (cat === "All" ? true : (o.category ?? "") === cat))
             .filter((o: any) => {
               const needle = q.trim().toLowerCase();
               if (!needle) return true;
