@@ -13,21 +13,87 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 
+const SHELL: React.CSSProperties = {
+  minHeight: "100vh",
+  background: "#0B0B0E",
+  color: "#fff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "48px 20px",
+  fontFamily: "Inter, system-ui, sans-serif",
+};
+
+const BTN_PRIMARY: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  background: "#CC0000",
+  color: "#fff",
+  fontWeight: 700,
+  fontSize: 15,
+  padding: "12px 22px",
+  borderRadius: 12,
+  border: "none",
+  cursor: "pointer",
+  textDecoration: "none",
+};
+
+const BTN_GHOST: React.CSSProperties = {
+  ...BTN_PRIMARY,
+  background: "transparent",
+  color: "rgba(255,255,255,.85)",
+  border: "1px solid rgba(255,255,255,.18)",
+};
+
+function BrandMark() {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        fontSize: 12,
+        letterSpacing: ".16em",
+        fontWeight: 700,
+        color: "rgba(255,255,255,.55)",
+      }}
+    >
+      <span style={{ width: 8, height: 8, borderRadius: 999, background: "#CC0000", display: "inline-block" }} />
+      MASTER CLOSER
+    </div>
+  );
+}
+
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page Not Found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <div style={SHELL}>
+      <div style={{ maxWidth: 520, textAlign: "center" }}>
+        <BrandMark />
+        <div
+          style={{
+            fontSize: 92,
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+            margin: "22px 0 6px",
+            color: "#CC0000",
+          }}
+        >
+          404
+        </div>
+        <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 10px" }}>
+          This Page Isn't On The Line
+        </h1>
+        <p style={{ color: "rgba(255,255,255,.6)", fontSize: 16, lineHeight: 1.7, margin: "0 0 26px" }}>
+          The page you're looking for doesn't exist or has moved. Head back home or jump into your workspace.
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go Home
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          <Link to="/" style={BTN_PRIMARY}>
+            Back To Home
+          </Link>
+          <Link to="/dashboard" style={BTN_GHOST}>
+            Go To Dashboard
           </Link>
         </div>
       </div>
@@ -43,31 +109,43 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <div style={SHELL}>
+      <div style={{ maxWidth: 560, textAlign: "center" }}>
+        <BrandMark />
+        <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.025em", margin: "22px 0 10px" }}>
+          Call Dropped
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p style={{ color: "rgba(255,255,255,.6)", fontSize: 16, lineHeight: 1.7, margin: "0 0 26px" }}>
+          Something went wrong loading this page. Try again — if it keeps happening, reach out and we'll dig in.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
           <button
+            type="button"
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            style={BTN_PRIMARY}
           >
             Try Again
           </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go Home
+          <a href="/" style={BTN_GHOST}>
+            Back To Home
           </a>
         </div>
+        {error?.message ? (
+          <p
+            style={{
+              marginTop: 28,
+              fontSize: 12,
+              fontFamily: "ui-monospace, monospace",
+              color: "rgba(255,255,255,.3)",
+              wordBreak: "break-word",
+            }}
+          >
+            {error.message}
+          </p>
+        ) : null}
       </div>
     </div>
   );
