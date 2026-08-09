@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@/components/back-office/ui";
 import { HelpMenu } from "@/components/back-office/HelpMenu";
 import { ActivityPanel } from "@/components/back-office/ActivityPanel";
+import { DialerQuickAccess } from "@/components/back-office/DialerQuickAccess";
 import { NotificationsMenu } from "@/components/back-office/NotificationsMenu";
 import { ProductTour, useProductTour } from "@/components/back-office/ProductTour";
 import { GlobalSearch } from "@/components/back-office/GlobalSearch";
@@ -184,6 +185,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="status-dot" />{" "}
               {callStatus === "on_call" ? "On Call" : callStatus === "dialing" ? "Dialing" : "Available"}
             </span>
+            <DialerQuickAccess />
             <ActivityPanel />
             <HelpMenu onStartTour={tour.start} />
             <NotificationsMenu />

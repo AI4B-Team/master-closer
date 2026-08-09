@@ -30,6 +30,9 @@ import { fetchObjectionLibrary } from "@/lib/objections";
 
 
 export const Route = createFileRoute("/_authenticated/dialer")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    number: typeof search.number === "string" ? search.number : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Live Dialer — Master Closer" },
@@ -67,8 +70,9 @@ async function workspaceContext() {
 }
 
 function DialerPage() {
+  const { number: prefill } = Route.useSearch();
   const [mode, setMode] = useState<Mode>("full_ai");
-  const [phone, setPhone] = useState("+1 555 0142");
+  const [phone, setPhone] = useState(prefill ?? "+1 555 0142");
   const [jurisdiction, setJurisdiction] = useState("FL");
   const [connected, setConnected] = useState(false);
   const [callId, setCallId] = useState<string | null>(null);
@@ -88,6 +92,10 @@ function DialerPage() {
   const [thinking, setThinking] = useState(false);
   const [simulate, setSimulate] = useState(true);
   const [dialing, setDialing] = useState(false);
+
+  useEffect(() => {
+    if (prefill) setPhone(prefill);
+  }, [prefill]);
 
   useEffect(() => {
     setCallStatus(connected ? "on_call" : dialing ? "dialing" : "idle");
