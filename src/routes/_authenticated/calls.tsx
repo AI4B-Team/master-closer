@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/calls")({
   validateSearch: (s: Record<string, unknown>) => ({
     campaign: typeof s.campaign === "string" ? s.campaign : undefined,
     agent: typeof s.agent === "string" ? s.agent : undefined,
+    call: typeof s.call === "string" ? s.call : undefined,
   }),
   head: () => ({
     meta: [
@@ -45,7 +46,7 @@ const RANGES: Record<string, number> = { "7": 7, "30": 30, "90": 90 };
 
 function CallsPage() {
   const sp = Route.useSearch();
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(sp.call ?? null);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState("all");
   const [outcome, setOutcome] = useState("all");
