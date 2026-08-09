@@ -242,12 +242,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                   >
                     <Languages size={18} /> Language:
                     <span className="pm-row-meta">
+                      <span className="pm-flag">{LANGUAGES.find((l) => l.code === prefs.lang)?.flag}</span>
                       {prefs.langLabel}
                       {openSub === "lang" ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     </span>
                   </button>
                   {openSub === "lang" && (
-                    <div className="pm-sub">
+                    <div className="pm-sub pm-sub-flyout">
                       {LANGUAGES.map((l) => (
                         <button
                           key={l.code}
@@ -255,6 +256,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                           className={"pm-sub-opt " + (prefs.lang === l.code ? "on" : "")}
                           onClick={() => prefs.setLang(l.code)}
                         >
+                          <span className="pm-flag">{l.flag}</span>
                           {l.label}
                           {prefs.lang === l.code && <Check size={15} />}
                         </button>
