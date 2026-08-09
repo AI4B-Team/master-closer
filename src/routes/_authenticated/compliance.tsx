@@ -346,8 +346,7 @@ function DncRegistry() {
   const add = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
-      if (!prof) throw new Error("No workspace found.");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
+      if (!prof?.active_workspace_id) throw new Error("No active workspace");
       const numbers = phone
         .split(/[\n,;]+/)
         .map((p) => p.trim())

@@ -691,11 +691,11 @@ function DialerPage() {
 
       if (wrap.task && wrap.nextStep.trim()) {
         const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
-        if (prof) {
+        if (prof?.active_workspace_id) {
           const due = new Date();
           due.setDate(due.getDate() + wrap.dueDays);
           await supabase.from("tasks").insert({
-            org_id: prof.org_id, workspace_id: prof.active_workspace_id,
+            org_id: prof.org_id, workspace_id: prof.active_workspace_id!,
             title: wrap.nextStep.trim().slice(0, 200),
             notes: wrap.summary || null,
             due_at: due.toISOString(),
