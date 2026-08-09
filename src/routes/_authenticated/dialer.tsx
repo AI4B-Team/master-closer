@@ -384,6 +384,7 @@ function DialerPage() {
           outcome: "in_progress",
           campaign_id: campaignId || null,
           list_contact_id: contact?.id ?? null,
+          agent_id: agentId || null,
         })
         .select("id")
         .single();
