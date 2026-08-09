@@ -44,6 +44,7 @@ function dur(sec: number) {
 }
 
 export function DialerQuickAccess() {
+  const { t: tr } = usePrefs();
   const navigate = useNavigate();
   const callStatus = useCallStatus();
   const onCall = callStatus === "on_call" || callStatus === "dialing";

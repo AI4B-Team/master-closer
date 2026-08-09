@@ -30,6 +30,7 @@ type WsRow = {
 };
 
 export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
+  const { t } = usePrefs();
   const qc = useQueryClient();
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);

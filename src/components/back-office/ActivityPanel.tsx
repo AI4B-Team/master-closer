@@ -209,7 +209,7 @@ export function ActivityPanel() {
                   aria-pressed={filter === f.key}
                   onClick={() => setFilter(f.key)}
                 >
-                  {f.label}
+                  {t(f.label)}
                 </button>
               ))}
             </div>
