@@ -199,6 +199,60 @@ function Dashboard() {
           <EmptyState icon={ListChecks} title="Nothing Due Today" hint="Follow-ups you schedule will surface here." />
         )}
       </Panel>
+
+      <Panel
+        title="Recent Activity"
+        action={<Link to="/activity" className="card-link">View All</Link>}
+      >
+        {activity && activity.length > 0 ? (
+          <ul className="space-y-2">
+            {activity.map((e: any) => {
+              const a = describeEvent(e);
+              return (
+                <li key={e.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+                  <a.icon className="h-4 w-4 text-[#CC0000]" />
+                  <span className="font-medium">{a.label}</span>
+                  <span className="text-[#6B6B76] truncate">{a.detail}</span>
+                  <span className="ml-auto text-[#6B6B76] shrink-0">
+                    {new Date(e.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <EmptyState icon={Activity} title="No Activity Yet" hint="Calls, sent agreements and won deals appear here." />
+        )}
+      </Panel>
     </div>
   );
 }
+
+/** Map a raw event row to a human line for the activity feed. */
+function describeEvent(e: any): { icon: typeof Activity; label: string; detail: string } {
+  const p = (e.payload ?? {}) as Record<string, any>;
+  const kind = p.kind ?? e.event_type;
+  switch (kind) {
+    case "agreement.sent":
+      return {
+        icon: FileSignature,
+        label: "Agreement Sent",
+        detail: [p.signer_email, p.amount ? `$${Number(p.amount).toLocaleString()}` : null].filter(Boolean).join(" · "),
+      };
+    case "deal.won":
+      return {
+        icon: DollarSign,
+        label: "Deal Won",
+        detail: [p.title, p.value ? `$${Number(p.value).toLocaleString()}` : null].filter(Boolean).join(" · "),
+      };
+    case "leads.new":
+      return { icon: UserPlus, label: "New Lead", detail: p.name ?? p.email ?? "" };
+    case "lead.flagged_dnc":
+      return { icon: ShieldOff, label: "Flagged Do Not Call", detail: p.phone ?? p.name ?? "" };
+    case "campaign.launched":
+      return { icon: Sparkles, label: "Campaign Launched", detail: p.name ?? "" };
+    default:
+      return { icon: Activity, label: titleCase(String(kind).replace(/[._]/g, " ")), detail: "" };
+  }
+}
+
