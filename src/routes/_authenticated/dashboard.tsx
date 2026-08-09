@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { describeEvent, eventHref } from "@/lib/activity-labels";
-import { Activity, DollarSign, Eye, ListChecks, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
+import { Activity, DollarSign, Eye, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
 import { dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
@@ -157,9 +157,8 @@ function Dashboard() {
                     <td className="font-num">${Number(d.value ?? 0).toLocaleString()}</td>
                     <td>
                       <div className="row-acts">
-                        <button type="button" aria-label="Call"><Phone size={15} /></button>
-                        <button type="button" aria-label="View"><Eye size={15} /></button>
-                        <button type="button" aria-label="More"><MoreVertical size={15} /></button>
+                        <Link to="/dialer" aria-label="Call In Dialer" title="Call In Dialer"><Phone size={15} /></Link>
+                        <Link to="/pipeline" search={{ deal: d.id }} aria-label="View Deal" title="View Deal"><Eye size={15} /></Link>
                       </div>
                     </td>
                   </tr>
