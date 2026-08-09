@@ -944,3 +944,36 @@
 .pm-sub-opt:hover { background: var(--surface); color: var(--ink); }
 .pm-sub-opt.on { color: var(--ink); font-weight: 600; }
 .pm-sub-opt svg { margin-left: auto; color: var(--signal); }
+
+/* Background agents: mode segmented control + evidence blocks */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--bo-border, #E5E5EA);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bo-surface, #fff);
+}
+.segmented .seg {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B6B76;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.segmented .seg + .seg { border-left: 1px solid var(--bo-border, #E5E5EA); }
+.segmented .seg:disabled { opacity: 0.45; cursor: not-allowed; }
+.segmented .seg-on { background: #CC0000; color: #fff; }
+.code-block {
+  background: #F6F6F8;
+  border: 1px solid #E5E5EA;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow: auto;
+}

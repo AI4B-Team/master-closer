@@ -37,6 +37,7 @@ import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
 import { Route as AuthenticatedAgreementsRouteImport } from './routes/_authenticated/agreements'
+import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiV1ListsRouteImport } from './routes/api/v1/lists'
@@ -46,6 +47,7 @@ import { Route as ApiV1DncRouteImport } from './routes/api/v1/dnc'
 import { Route as ApiV1CampaignsRouteImport } from './routes/api/v1/campaigns'
 import { Route as ApiV1CallsRouteImport } from './routes/api/v1/calls'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
+import { Route as ApiPublicAgentsTickRouteImport } from './routes/api/public/agents/tick'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -187,6 +189,11 @@ const AuthenticatedAgreementsRoute = AuthenticatedAgreementsRouteImport.update({
   path: '/agreements',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -232,12 +239,18 @@ const ApiPublicHubDispatchRoute = ApiPublicHubDispatchRouteImport.update({
   path: '/api/public/hub/dispatch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAgentsTickRoute = ApiPublicAgentsTickRouteImport.update({
+  id: '/api/public/agents/tick',
+  path: '/api/public/agents/tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
@@ -269,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
+  '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
 export interface FileRoutesByTo {
@@ -276,6 +290,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
@@ -307,6 +322,7 @@ export interface FileRoutesByTo {
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
+  '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
 export interface FileRoutesById {
@@ -316,6 +332,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/agreements': typeof AuthenticatedAgreementsRoute
   '/_authenticated/ai-closers': typeof AuthenticatedAiClosersRoute
   '/_authenticated/calls': typeof AuthenticatedCallsRoute
@@ -347,6 +364,7 @@ export interface FileRoutesById {
   '/api/v1/events': typeof ApiV1EventsRoute
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
+  '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
 }
 export interface FileRouteTypes {
@@ -356,6 +374,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/account'
     | '/activity'
+    | '/agents'
     | '/agreements'
     | '/ai-closers'
     | '/calls'
@@ -387,6 +406,7 @@ export interface FileRouteTypes {
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/v1/lists'
+    | '/api/public/agents/tick'
     | '/api/public/hub/dispatch'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -394,6 +414,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/account'
     | '/activity'
+    | '/agents'
     | '/agreements'
     | '/ai-closers'
     | '/calls'
@@ -425,6 +446,7 @@ export interface FileRouteTypes {
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/v1/lists'
+    | '/api/public/agents/tick'
     | '/api/public/hub/dispatch'
   id:
     | '__root__'
@@ -433,6 +455,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/account'
     | '/_authenticated/activity'
+    | '/_authenticated/agents'
     | '/_authenticated/agreements'
     | '/_authenticated/ai-closers'
     | '/_authenticated/calls'
@@ -464,6 +487,7 @@ export interface FileRouteTypes {
     | '/api/v1/events'
     | '/api/v1/leads'
     | '/api/v1/lists'
+    | '/api/public/agents/tick'
     | '/api/public/hub/dispatch'
   fileRoutesById: FileRoutesById
 }
@@ -482,6 +506,7 @@ export interface RootRouteChildren {
   ApiV1EventsRoute: typeof ApiV1EventsRoute
   ApiV1LeadsRoute: typeof ApiV1LeadsRoute
   ApiV1ListsRoute: typeof ApiV1ListsRoute
+  ApiPublicAgentsTickRoute: typeof ApiPublicAgentsTickRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
 }
 
@@ -683,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgreementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/agents': {
+      id: '/_authenticated/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/activity': {
       id: '/_authenticated/activity'
       path: '/activity'
@@ -746,12 +778,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHubDispatchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/agents/tick': {
+      id: '/api/public/agents/tick'
+      path: '/api/public/agents/tick'
+      fullPath: '/api/public/agents/tick'
+      preLoaderRoute: typeof ApiPublicAgentsTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAgreementsRoute: typeof AuthenticatedAgreementsRoute
   AuthenticatedAiClosersRoute: typeof AuthenticatedAiClosersRoute
   AuthenticatedCallsRoute: typeof AuthenticatedCallsRoute
@@ -777,6 +817,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAgreementsRoute: AuthenticatedAgreementsRoute,
   AuthenticatedAiClosersRoute: AuthenticatedAiClosersRoute,
   AuthenticatedCallsRoute: AuthenticatedCallsRoute,
@@ -817,6 +858,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1EventsRoute: ApiV1EventsRoute,
   ApiV1LeadsRoute: ApiV1LeadsRoute,
   ApiV1ListsRoute: ApiV1ListsRoute,
+  ApiPublicAgentsTickRoute: ApiPublicAgentsTickRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
 }
 export const routeTree = rootRouteImport

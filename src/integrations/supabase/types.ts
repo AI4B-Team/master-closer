@@ -14,6 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_proposals: {
+        Row: {
+          agent_id: string | null
+          agent_key: string | null
+          created_at: string
+          current_value: Json | null
+          evidence_refs: Json
+          expires_at: string
+          id: string
+          proposal_type: string
+          proposed_value: Json | null
+          rationale: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          target_field: string | null
+          target_id: string | null
+          target_table: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_key?: string | null
+          created_at?: string
+          current_value?: Json | null
+          evidence_refs?: Json
+          expires_at?: string
+          id?: string
+          proposal_type: string
+          proposed_value?: Json | null
+          rationale: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_field?: string | null
+          target_id?: string | null
+          target_table?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_key?: string | null
+          created_at?: string
+          current_value?: Json | null
+          evidence_refs?: Json
+          expires_at?: string
+          id?: string
+          proposal_type?: string
+          proposed_value?: Json | null
+          rationale?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_field?: string | null
+          target_id?: string | null
+          target_table?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_proposals_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "background_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_proposals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_proposals_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_runs: {
+        Row: {
+          agent_id: string | null
+          agent_key: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          items_actioned: number
+          items_examined: number
+          items_flagged: number
+          started_at: string
+          status: string
+          summary: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_key?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          items_actioned?: number
+          items_examined?: number
+          items_flagged?: number
+          started_at?: string
+          status?: string
+          summary?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_key?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          items_actioned?: number
+          items_examined?: number
+          items_flagged?: number
+          started_at?: string
+          status?: string
+          summary?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "background_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_runs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agents: {
         Row: {
           active: boolean
@@ -302,6 +447,56 @@ export type Database = {
           },
         ]
       }
+      background_agents: {
+        Row: {
+          agent_key: string
+          config: Json
+          consecutive_failures: number
+          created_at: string
+          enabled: boolean
+          id: string
+          interval_minutes: number
+          last_run_at: string | null
+          mode: string
+          next_run_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          agent_key: string
+          config?: Json
+          consecutive_failures?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          interval_minutes: number
+          last_run_at?: string | null
+          mode?: string
+          next_run_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          agent_key?: string
+          config?: Json
+          consecutive_failures?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          interval_minutes?: number
+          last_run_at?: string | null
+          mode?: string
+          next_run_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "background_agents_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_lists: {
         Row: {
           created_at: string
@@ -566,6 +761,170 @@ export type Database = {
           },
           {
             foreignKeyName: "consent_logs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          address: string | null
+          created_at: string
+          crm_id: string | null
+          email: string | null
+          id: string
+          name: string | null
+          org_id: string | null
+          phone: string | null
+          suppressed: boolean
+          suppressed_at: string | null
+          timezone: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          crm_id?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          org_id?: string | null
+          phone?: string | null
+          suppressed?: boolean
+          suppressed_at?: string | null
+          timezone?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          crm_id?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          org_id?: string | null
+          phone?: string | null
+          suppressed?: boolean
+          suppressed_at?: string | null
+          timezone?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_outcomes: {
+        Row: {
+          anchor_days_remaining: number | null
+          call_id: string | null
+          campaign_step_id: string | null
+          closer_profile_id: string | null
+          confidence: number | null
+          contact_id: string | null
+          flagged: boolean
+          id: string
+          labeled_at: string
+          labeler_version: string | null
+          lead_id: string | null
+          lead_line_id: string | null
+          mode: string | null
+          objection_category: string | null
+          outcome: string
+          sentiment: string | null
+          superseded_at: string | null
+          thread_id: string | null
+          touches_before_outcome: number | null
+          variant_hash: string | null
+          workspace_id: string
+        }
+        Insert: {
+          anchor_days_remaining?: number | null
+          call_id?: string | null
+          campaign_step_id?: string | null
+          closer_profile_id?: string | null
+          confidence?: number | null
+          contact_id?: string | null
+          flagged?: boolean
+          id?: string
+          labeled_at?: string
+          labeler_version?: string | null
+          lead_id?: string | null
+          lead_line_id?: string | null
+          mode?: string | null
+          objection_category?: string | null
+          outcome: string
+          sentiment?: string | null
+          superseded_at?: string | null
+          thread_id?: string | null
+          touches_before_outcome?: number | null
+          variant_hash?: string | null
+          workspace_id: string
+        }
+        Update: {
+          anchor_days_remaining?: number | null
+          call_id?: string | null
+          campaign_step_id?: string | null
+          closer_profile_id?: string | null
+          confidence?: number | null
+          contact_id?: string | null
+          flagged?: boolean
+          id?: string
+          labeled_at?: string
+          labeler_version?: string | null
+          lead_id?: string | null
+          lead_line_id?: string | null
+          mode?: string | null
+          objection_category?: string | null
+          outcome?: string
+          sentiment?: string | null
+          superseded_at?: string | null
+          thread_id?: string | null
+          touches_before_outcome?: number | null
+          variant_hash?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_outcomes_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_outcomes_closer_profile_id_fkey"
+            columns: ["closer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_outcomes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_outcomes_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -966,6 +1325,92 @@ export type Database = {
           },
           {
             foreignKeyName: "integrations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_lines: {
+        Row: {
+          anchor_date: string | null
+          anchor_type: string | null
+          closer_profile_id: string | null
+          contact_id: string
+          created_at: string
+          disposition: string | null
+          eligible_at: string | null
+          id: string
+          last_touch_at: string | null
+          owner_user_id: string | null
+          product_line: string
+          stage: string | null
+          status: string
+          touches: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          anchor_date?: string | null
+          anchor_type?: string | null
+          closer_profile_id?: string | null
+          contact_id: string
+          created_at?: string
+          disposition?: string | null
+          eligible_at?: string | null
+          id?: string
+          last_touch_at?: string | null
+          owner_user_id?: string | null
+          product_line: string
+          stage?: string | null
+          status?: string
+          touches?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          anchor_date?: string | null
+          anchor_type?: string | null
+          closer_profile_id?: string | null
+          contact_id?: string
+          created_at?: string
+          disposition?: string | null
+          eligible_at?: string | null
+          id?: string
+          last_touch_at?: string | null
+          owner_user_id?: string | null
+          product_line?: string
+          stage?: string | null
+          status?: string
+          touches?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_lines_closer_profile_id_fkey"
+            columns: ["closer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_lines_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_lines_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_lines_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -1424,6 +1869,47 @@ export type Database = {
           },
         ]
       }
+      scorer_weights: {
+        Row: {
+          fitted_at: string | null
+          fitted_on: number
+          id: string
+          is_default: boolean
+          product_line: string
+          updated_at: string
+          weights: Json
+          workspace_id: string
+        }
+        Insert: {
+          fitted_at?: string | null
+          fitted_on?: number
+          id?: string
+          is_default?: boolean
+          product_line?: string
+          updated_at?: string
+          weights?: Json
+          workspace_id: string
+        }
+        Update: {
+          fitted_at?: string | null
+          fitted_on?: number
+          id?: string
+          is_default?: boolean
+          product_line?: string
+          updated_at?: string
+          weights?: Json
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorer_weights_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suggestions: {
         Row: {
           call_id: string
@@ -1462,6 +1948,76 @@ export type Database = {
           },
           {
             foreignKeyName: "suggestions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      takeover_library: {
+        Row: {
+          ai_drafted: string | null
+          anchor_days: number | null
+          call_id: string | null
+          closer_profile_id: string | null
+          created_at: string
+          human_said: string | null
+          id: string
+          mode: string | null
+          objection_category: string | null
+          positive: boolean
+          sentiment: string | null
+          subsequent_outcome: string | null
+          workspace_id: string
+        }
+        Insert: {
+          ai_drafted?: string | null
+          anchor_days?: number | null
+          call_id?: string | null
+          closer_profile_id?: string | null
+          created_at?: string
+          human_said?: string | null
+          id?: string
+          mode?: string | null
+          objection_category?: string | null
+          positive?: boolean
+          sentiment?: string | null
+          subsequent_outcome?: string | null
+          workspace_id: string
+        }
+        Update: {
+          ai_drafted?: string | null
+          anchor_days?: number | null
+          call_id?: string | null
+          closer_profile_id?: string | null
+          created_at?: string
+          human_said?: string | null
+          id?: string
+          mode?: string | null
+          objection_category?: string | null
+          positive?: boolean
+          sentiment?: string | null
+          subsequent_outcome?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "takeover_library_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "takeover_library_closer_profile_id_fkey"
+            columns: ["closer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "takeover_library_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -1678,6 +2234,141 @@ export type Database = {
           },
         ]
       }
+      worklist_feedback: {
+        Row: {
+          action: string
+          contact_id: string | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          lead_line_id: string | null
+          nomination_id: string | null
+          score_at_action: number | null
+          undone: boolean
+          user_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          action: string
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          lead_line_id?: string | null
+          nomination_id?: string | null
+          score_at_action?: number | null
+          undone?: boolean
+          user_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          action?: string
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          lead_line_id?: string | null
+          nomination_id?: string | null
+          score_at_action?: number | null
+          undone?: boolean
+          user_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worklist_feedback_nomination_id_fkey"
+            columns: ["nomination_id"]
+            isOneToOne: false
+            referencedRelation: "worklist_nominations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worklist_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worklist_feedback_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worklist_nominations: {
+        Row: {
+          contact_id: string | null
+          expires_at: string
+          id: string
+          lead_id: string | null
+          lead_line_id: string | null
+          nominated_at: string
+          reason_code: string
+          reason_text: string
+          score: number
+          suggested: boolean
+          workspace_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          expires_at?: string
+          id?: string
+          lead_id?: string | null
+          lead_line_id?: string | null
+          nominated_at?: string
+          reason_code: string
+          reason_text: string
+          score?: number
+          suggested?: boolean
+          workspace_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          expires_at?: string
+          id?: string
+          lead_id?: string | null
+          lead_line_id?: string | null
+          nominated_at?: string
+          reason_code?: string
+          reason_text?: string
+          score?: number
+          suggested?: boolean
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worklist_nominations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worklist_nominations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worklist_nominations_lead_line_id_fkey"
+            columns: ["lead_line_id"]
+            isOneToOne: false
+            referencedRelation: "lead_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worklist_nominations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_invites: {
         Row: {
           accepted_at: string | null
@@ -1822,6 +2513,7 @@ export type Database = {
         Returns: boolean
       }
       is_workspace_member: { Args: { ws: string }; Returns: boolean }
+      seed_background_agents: { Args: { ws: string }; Returns: undefined }
       workspace_role: { Args: { ws: string }; Returns: string }
     }
     Enums: {
