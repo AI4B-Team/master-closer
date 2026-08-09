@@ -45,12 +45,22 @@ function CallsPage() {
   const [mode, setMode] = useState("all");
   const [outcome, setOutcome] = useState("all");
   const [range, setRange] = useState("all");
+  const [agent, setAgent] = useState("all");
 
   const { data: calls, isLoading: callsLoading } = useQuery({
     queryKey: ["calls"],
     queryFn: async () => {
       const { data, error } = await supabase.from("calls")
-        .select("*, leads(name, company)").order("started_at", { ascending: false }).limit(500);
+        .select("*, leads(name, company), agents(name)").order("started_at", { ascending: false }).limit(500);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: agents } = useQuery({
+    queryKey: ["agents-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("agents").select("id, name").order("name");
       if (error) throw error;
       return data ?? [];
     },
@@ -63,11 +73,13 @@ function CallsPage() {
     if (search && !(
       c.leads?.name?.toLowerCase().includes(q) ||
       c.leads?.company?.toLowerCase().includes(q) ||
+      c.agents?.name?.toLowerCase().includes(q) ||
       c.disposition?.toLowerCase().includes(q) ||
       c.summary?.toLowerCase().includes(q)
     )) return false;
     if (mode !== "all" && c.mode !== mode) return false;
     if (outcome !== "all" && c.outcome !== outcome) return false;
+    if (agent === "none" ? !!c.agent_id : agent !== "all" && c.agent_id !== agent) return false;
     if (range !== "all") {
       const cutoff = Date.now() - RANGES[range] * 86400000;
       if (new Date(c.started_at).getTime() < cutoff) return false;
@@ -76,12 +88,13 @@ function CallsPage() {
   });
 
   function exportCsv() {
-    const header = "date,lead,company,mode,outcome,disposition,duration_sec,close_probability";
+    const header = "date,lead,company,agent,mode,outcome,disposition,duration_sec,close_probability";
     const rows = filtered.map((c: any) =>
       [
         new Date(c.started_at).toISOString(),
         c.leads?.name ?? "",
         c.leads?.company ?? "",
+        c.agents?.name ?? "",
         MODE_LABEL[c.mode] ?? c.mode,
         c.outcome,
         c.disposition ?? "",
@@ -147,6 +160,16 @@ function CallsPage() {
               <SelectItem value="90">Last 90 Days</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={agent} onValueChange={setAgent}>
+            <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Agents</SelectItem>
+              <SelectItem value="none">No Agent</SelectItem>
+              {(agents ?? []).map((a: any) => (
+                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#6B6B76] mb-4">
@@ -173,6 +196,7 @@ function CallsPage() {
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
                 <th className="py-2">Date</th><th className="py-2">Lead</th>
+                <th className="py-2">Agent</th>
                 <th className="py-2">Mode</th><th className="py-2">Duration</th>
                 <th className="py-2">Outcome</th><th className="py-2 text-right">Close Probability</th>
               </tr>
@@ -190,6 +214,8 @@ function CallsPage() {
                   <td className="py-3 font-medium">
                     {c.leads?.name ?? "—"}{c.leads?.company ? ` · ${c.leads.company}` : ""}
                   </td>
+                  <td className="py-3 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
+
                   <td className="py-3">
                     <Badge variant="secondary">{MODE_LABEL[c.mode] ?? c.mode}</Badge>
                   </td>
