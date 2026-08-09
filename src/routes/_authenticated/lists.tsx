@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonRows, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
-import { ListOrdered, Plus, Upload } from "lucide-react";
+import { Download, ListOrdered, Pencil, Plus, Search, ShieldOff, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -43,6 +43,9 @@ function ListsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [raw, setRaw] = useState("");
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [search, setSearch] = useState("");
 
   const { data: lists, isLoading: listsLoading } = useQuery({
     queryKey: ["call_lists"],
@@ -56,7 +59,100 @@ function ListsPage() {
     },
   });
 
+  const { data: dnc } = useQuery({
+    queryKey: ["dnc-phones"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("dnc_list").select("phone");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const active = (lists ?? []).find((l: any) => l.id === selected) ?? (lists ?? [])[0];
+  const digits = (p?: string | null) => (p ?? "").replace(/\D/g, "");
+  const dncSet = new Set((dnc ?? []).map((d: any) => digits(d.phone)).filter(Boolean));
+
+  const contacts = ((active?.list_contacts ?? []) as any[]).filter((c) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return [c.name, c.phone, c.email].some((v: string | null) => (v ?? "").toLowerCase().includes(q));
+  });
+
+  const renameList = useMutation({
+    mutationFn: async () => {
+      if (!active) throw new Error("No list selected.");
+      const { error } = await supabase.from("call_lists").update({ name: renameValue }).eq("id", active.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("List Renamed.");
+      setRenameOpen(false);
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+      qc.invalidateQueries({ queryKey: ["lists-min"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteList = useMutation({
+    mutationFn: async () => {
+      if (!active) throw new Error("No list selected.");
+      await supabase.from("list_contacts").delete().eq("list_id", active.id);
+      const { error } = await supabase.from("call_lists").delete().eq("id", active.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("List Deleted.");
+      setSelected(null);
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+      qc.invalidateQueries({ queryKey: ["lists-min"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteContact = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("list_contacts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Contact Removed.");
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const addToDnc = useMutation({
+    mutationFn: async (contact: any) => {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      const { error } = await supabase
+        .from("dnc_list")
+        .insert({ org_id: prof.org_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
+      if (error) throw error;
+      await supabase.from("list_contacts").update({ consent: "opt_out" }).eq("id", contact.id);
+    },
+    onSuccess: () => {
+      toast.success("Added To Do Not Call.");
+      qc.invalidateQueries({ queryKey: ["dnc-phones"] });
+      qc.invalidateQueries({ queryKey: ["call_lists"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  function exportCsv() {
+    if (!active) return;
+    const header = ["Name", "Phone", "Email", "Attempts", "Last Outcome", "Consent"];
+    const rows = contacts.map((c) => [c.name, c.phone, c.email ?? "", c.attempts, c.last_outcome ?? "", c.consent ?? ""]);
+    const csv = [header, ...rows]
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${active.name.replace(/\s+/g, "-").toLowerCase()}-contacts.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   const createList = useMutation({
     mutationFn: async () => {
@@ -109,12 +205,54 @@ function ListsPage() {
         tabs={TAB_GROUPS.campaigns}
         action={
           <div className="flex gap-2">
+            <Button variant="outline" className="rounded-xl" disabled={!active} onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+
+            <Dialog open={renameOpen} onOpenChange={(o) => { setRenameOpen(o); if (o) setRenameValue(active?.name ?? ""); }}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="rounded-xl" disabled={!active}>
+                  <Pencil className="h-4 w-4 mr-1" /> Rename
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Rename List</DialogTitle></DialogHeader>
+                <div>
+                  <Label>List Name</Label>
+                  <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} />
+                </div>
+                <DialogFooter className="justify-between">
+                  <Button
+                    variant="outline"
+                    className="rounded-xl text-[#CC0000] border-[#CC0000]/30 hover:bg-[#CC0000]/5"
+                    disabled={deleteList.isPending}
+                    onClick={() => {
+                      if (confirm("Delete this list and all of its contacts?")) {
+                        deleteList.mutate();
+                        setRenameOpen(false);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete List
+                  </Button>
+                  <Button
+                    className="bg-[#CC0000] hover:bg-[#A30000]"
+                    disabled={!renameValue.trim() || renameList.isPending}
+                    onClick={() => renameList.mutate()}
+                  >
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="rounded-xl" disabled={!active}>
                   <Upload className="h-4 w-4 mr-1" /> Import
                 </Button>
               </DialogTrigger>
+
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Import Into {active?.name ?? "List"}</DialogTitle>
@@ -211,32 +349,78 @@ function ListsPage() {
               }
             />
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                  <th className="py-2">Name</th><th className="py-2">Phone</th>
-                  <th className="py-2">Email</th><th className="py-2">Attempts</th>
-                  <th className="py-2">Last Outcome</th><th className="py-2">Consent</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(active.list_contacts ?? []).map((c: any) => (
-                  <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
-                    <td className="py-3 font-medium">{c.name}</td>
-                    <td className="py-3 font-mono text-xs">{c.phone}</td>
-                    <td className="py-3 text-[#6B6B76]">{c.email ?? "—"}</td>
-                    <td className="py-3 font-mono">{c.attempts}</td>
-                    <td className="py-3">
-                      {c.last_outcome
-                        ? <StatusPill label={titleCase(c.last_outcome)} tone={toneForStatus(c.last_outcome)} />
-                        : <span className="text-[#6B6B76]">—</span>}
-                    </td>
-                    <td className="py-3 capitalize text-[#6B6B76]">{c.consent?.replace("_", " ")}</td>
+            <>
+              <div className="relative mb-3 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B6B76]" />
+                <Input
+                  className="pl-9 rounded-xl"
+                  placeholder="Search Contacts"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                    <th className="py-2">Name</th><th className="py-2">Phone</th>
+                    <th className="py-2">Email</th><th className="py-2">Attempts</th>
+                    <th className="py-2">Last Outcome</th><th className="py-2">Consent</th>
+                    <th className="py-2 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {contacts.length === 0 ? (
+                    <tr><td colSpan={7} className="py-6 text-center text-[#6B6B76]">No Contacts Match That Search.</td></tr>
+                  ) : contacts.map((c: any) => {
+                    const onDnc = dncSet.has(digits(c.phone));
+                    return (
+                      <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
+                        <td className="py-3 font-medium">{c.name}</td>
+                        <td className="py-3 font-mono text-xs">
+                          {c.phone}
+                          {onDnc ? <span className="ml-2 align-middle"><StatusPill label="DNC" tone="red" /></span> : null}
+                        </td>
+                        <td className="py-3 text-[#6B6B76]">{c.email ?? "—"}</td>
+                        <td className="py-3 font-mono">{c.attempts}</td>
+                        <td className="py-3">
+                          {c.last_outcome
+                            ? <StatusPill label={titleCase(c.last_outcome)} tone={toneForStatus(c.last_outcome)} />
+                            : <span className="text-[#6B6B76]">—</span>}
+                        </td>
+                        <td className="py-3 capitalize text-[#6B6B76]">{c.consent?.replace("_", " ")}</td>
+                        <td className="py-3">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-lg"
+                              title="Add To Do Not Call"
+                              disabled={onDnc || addToDnc.isPending}
+                              onClick={() => addToDnc.mutate(c)}
+                            >
+                              <ShieldOff className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="rounded-lg text-[#CC0000]"
+                              title="Remove Contact"
+                              onClick={() => { if (confirm(`Remove ${c.name} from this list?`)) deleteContact.mutate(c.id); }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
           )}
+
         </Card>
       </div>
     </div>
