@@ -219,7 +219,11 @@ function LeadsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const filtered = (leads ?? []).filter((l) => {
+  const allTags = Array.from(
+    new Set((leads ?? []).flatMap((l: any) => (Array.isArray(l.tags) ? l.tags : []))),
+  ).sort() as string[];
+
+  const filtered = (leads ?? []).filter((l: any) => {
     const q = search.toLowerCase();
     const matches =
       !search ||
@@ -227,7 +231,11 @@ function LeadsPage() {
       l.email?.toLowerCase().includes(q) ||
       l.phone?.toLowerCase().includes(q) ||
       l.company?.toLowerCase().includes(q);
-    return matches && (statusFilter === "all" || l.status === statusFilter);
+    const ownerOk =
+      ownerFilter === "all" ||
+      (ownerFilter === "unassigned" ? !l.owner_id : l.owner_id === ownerFilter);
+    const tagOk = tagFilter === "all" || (Array.isArray(l.tags) && l.tags.includes(tagFilter));
+    return matches && (statusFilter === "all" || l.status === statusFilter) && ownerOk && tagOk;
   });
 
   const allShownPicked = filtered.length > 0 && filtered.every((l: any) => picked.includes(l.id));
