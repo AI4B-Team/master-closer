@@ -1,3 +1,4 @@
+import { usePrefs } from "@/hooks/use-prefs";
 import type { CSSProperties, ReactNode } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -163,11 +164,12 @@ export function Panel({
 }
 
 export function EmptyState({ icon: Icon, title, hint }: { icon: any; title: string; hint?: string }) {
+  const { t } = usePrefs();
   return (
     <div className="mc-empty">
       <Icon size={26} />
-      <p className="font-display">{title}</p>
-      {hint && <span>{hint}</span>}
+      <p className="font-display">{t(title)}</p>
+      {hint && <span>{t(hint)}</span>}
     </div>
   );
 }
@@ -183,13 +185,14 @@ export function EmptyPanel({
   hint?: string;
   action?: ReactNode;
 }) {
+  const { t } = usePrefs();
   return (
     <div className="mc-empty-panel">
       <span className="mc-empty-ring" aria-hidden="true">
         <Icon size={22} strokeWidth={2.2} />
       </span>
-      <p className="font-display">{title}</p>
-      {hint ? <span>{hint}</span> : null}
+      <p className="font-display">{t(title)}</p>
+      {hint ? <span>{t(hint)}</span> : null}
       {action ? <div className="mc-empty-actions">{action}</div> : null}
     </div>
   );

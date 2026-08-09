@@ -327,12 +327,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 export function TabStrip({ tabs }: { tabs: { label: string; to: string }[] }) {
+  const { t } = usePrefs();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="tabs">
-      {tabs.map((t) => (
-        <Link key={t.to} to={t.to} className={"tab " + (pathname === t.to ? "tab-on" : "")}>
-          {t.label}
+      {tabs.map((tab) => (
+        <Link key={tab.to} to={tab.to} className={"tab " + (pathname === tab.to ? "tab-on" : "")}>
+          {t(tab.label)}
         </Link>
       ))}
     </div>
