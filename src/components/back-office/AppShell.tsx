@@ -3,9 +3,11 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
   CreditCard, Settings, Crosshair, ChevronsLeft, ChevronsRight,
-  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun, Menu, X,
+  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun, Moon, Menu, X,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
+import { usePrefs, LANGUAGES } from "@/hooks/use-prefs";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@/components/back-office/ui";
@@ -72,6 +74,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const [openSub, setOpenSub] = useState<"lang" | "theme" | null>(null);
+  const prefs = usePrefs();
+
   const tour = useProductTour();
 
 
@@ -205,18 +210,59 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   <div className="pm-sep" />
 
-                  <button type="button" className="pm-row">
+                  <button
+                    type="button"
+                    className="pm-row"
+                    onClick={() => setOpenSub((v) => (v === "lang" ? null : "lang"))}
+                  >
                     <Languages size={18} /> Language:
                     <span className="pm-row-meta">
-                      English <ChevronRight size={15} />
+                      {prefs.langLabel}
+                      {openSub === "lang" ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     </span>
                   </button>
-                  <button type="button" className="pm-row">
-                    <Sun size={18} /> Theme:
+                  {openSub === "lang" && (
+                    <div className="pm-sub">
+                      {LANGUAGES.map((l) => (
+                        <button
+                          key={l.code}
+                          type="button"
+                          className={"pm-sub-opt " + (prefs.lang === l.code ? "on" : "")}
+                          onClick={() => prefs.setLang(l.code)}
+                        >
+                          {l.label}
+                          {prefs.lang === l.code && <Check size={15} />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    className="pm-row"
+                    onClick={() => setOpenSub((v) => (v === "theme" ? null : "theme"))}
+                  >
+                    {prefs.theme === "dark" ? <Moon size={18} /> : <Sun size={18} />} Theme:
                     <span className="pm-row-meta">
-                      Light <ChevronRight size={15} />
+                      {prefs.theme === "dark" ? "Dark" : "Light"}
+                      {openSub === "theme" ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     </span>
                   </button>
+                  {openSub === "theme" && (
+                    <div className="pm-sub">
+                      {(["light", "dark"] as const).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          className={"pm-sub-opt " + (prefs.theme === t ? "on" : "")}
+                          onClick={() => prefs.setTheme(t)}
+                        >
+                          {t === "light" ? "Light" : "Dark"}
+                          {prefs.theme === t && <Check size={15} />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
 
                   <div style={{ height: 10 }} />
                   <button type="button" className="pm-cta pm-cta-amber">
