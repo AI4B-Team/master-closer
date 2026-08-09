@@ -146,9 +146,9 @@ function CallsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#6B6B76] mb-4">
-          <span><b className="text-[#111114]">{filtered.length}</b> calls</span>
-          <span><b className="text-[#111114]">{connected}</b> completed</span>
-          <span><b className="text-[#111114]">{Math.round(talkTime / 60)}</b> min talk time</span>
+          <span><b className="text-[#111114]">{filtered.length}</b> Calls</span>
+          <span><b className="text-[#111114]">{connected}</b> Completed</span>
+          <span><b className="text-[#111114]">{Math.round(talkTime / 60)}</b> Min Talk Time</span>
         </div>
 
         {callsLoading ? (
