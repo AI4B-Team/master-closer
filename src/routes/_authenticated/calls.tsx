@@ -384,7 +384,23 @@ function CallDetail({ call }: { call: any }) {
         <Stat label="Outcome" value={String(call.outcome).replace(/_/g, " ")} />
         <Stat label="Duration" value={fmtDur(call.duration_sec)} />
         <Stat label="Close Probability" value={`${call.close_probability ?? 0}%`} />
+        <Stat label="Agent" value={call.agents?.name ?? "No Agent"} />
+        <Stat label="Campaign" value={call.campaigns?.name ?? "No Campaign"} />
       </div>
+
+      <div className="flex flex-wrap gap-2">
+        {call.lead_id ? (
+          <Link to="/leads" search={{ open: call.lead_id } as any} className="mc-btn-link">
+            <Button type="button" variant="outline" size="sm" className="rounded-xl">Open Lead</Button>
+          </Link>
+        ) : null}
+        {call.campaign_id ? (
+          <Link to="/campaigns" className="mc-btn-link">
+            <Button type="button" variant="outline" size="sm" className="rounded-xl">Open Campaign</Button>
+          </Link>
+        ) : null}
+      </div>
+
 
       <Section icon={Sparkles} title="AI Summary">
         {summary ? (
