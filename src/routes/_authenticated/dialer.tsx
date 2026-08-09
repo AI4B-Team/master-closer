@@ -673,6 +673,25 @@ function DialerPage() {
                   />
                 </div>
                 <div className="lead-field">
+                  <span className="lead-k">AI Closer</span>
+                  <select
+                    value={agentId}
+                    onChange={(e) => pickAgent(e.target.value)}
+                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
+                  >
+                    <option value="">Default Closer</option>
+                    {(agents ?? []).map((a: any) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {agent
+                      ? `${agent.industry || "General"} · ${agent.transfer_to ? `Transfers to ${teammateLabel(agent.transfer_to)}` : "No transfer target set"}`
+                      : "Uses the generic Master Closer brief."}
+                  </span>
+                </div>
+                <div className="lead-field">
+
                   <span className="lead-k">Mode</span>
                   <div className="tabs" style={{ padding: 3 }}>
                     {(["full_ai", "hybrid", "copilot"] as Mode[]).map((m) => (
