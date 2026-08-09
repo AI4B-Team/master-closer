@@ -78,7 +78,8 @@ function SettingsPage() {
   }, [ws]);
 
   const save = async () => {
-    await supabase.from("profiles").update({ full_name: fullName }).eq("id", user!.id);
+    if (!user) return toast.error("You Must Be Signed In");
+    await supabase.from("profiles").update({ full_name: fullName }).eq("id", user.id);
     if (orgId) await supabase.from("organizations").update({ name: orgName }).eq("id", orgId);
     if (ws?.id) {
       const { error } = await supabase
