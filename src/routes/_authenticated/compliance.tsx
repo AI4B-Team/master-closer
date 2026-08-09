@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
 
 import {
+import { formatPhone } from "@/lib/phone";
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
 
@@ -485,7 +486,7 @@ function DncRegistry() {
               <tbody>
                 {filtered.map((e: any) => (
                   <tr key={e.id} className="border-b border-[#E7E7EC] last:border-0">
-                    <td className="py-2.5 font-mono text-xs">{e.phone}</td>
+                    <td className="py-2.5 font-mono text-xs">{formatPhone(e.phone)}</td>
                     <td className="py-2.5 text-[#6B6B76]">{e.reason ?? "—"}</td>
                     <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
                       {new Date(e.added_at).toLocaleDateString()}
