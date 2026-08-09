@@ -106,13 +106,23 @@ function ActivityPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             <Input
               placeholder="Search Events"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs"
             />
+            <div className="flex flex-wrap gap-1.5">
+              {RANGES.map((r) => (
+                <FilterChip key={r.key} active={range === r.key} onClick={() => setRange(r.key)}>
+                  {r.label}
+                </FilterChip>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <div className="flex flex-wrap gap-1.5">
               <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
               {types.map((t) => (
@@ -121,6 +131,9 @@ function ActivityPage() {
                 </FilterChip>
               ))}
             </div>
+            <span className="ml-auto text-xs text-[#6B6B76]">
+              {rows.length} Event{rows.length === 1 ? "" : "s"}
+            </span>
           </div>
 
           {isLoading ? (
