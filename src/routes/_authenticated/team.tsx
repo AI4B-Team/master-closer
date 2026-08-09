@@ -523,7 +523,15 @@ function ReportsPage() {
                       title={`${t.connects} connects`}
                     />
                   </div>
-                  <span className="text-[10px] text-[#9A9AA5] truncate w-full text-center">{t.label}</span>
+                  {/* A 19px column truncates every date to "J…" on phones, so
+                      only every other tick shows below the sm breakpoint. */}
+                  <span
+                    className={`text-[10px] text-[#9A9AA5] truncate w-full text-center ${
+                      i % 2 === 1 ? "max-sm:invisible" : ""
+                    }`}
+                  >
+                    {t.label}
+                  </span>
                 </div>
               ))}
             </div>
