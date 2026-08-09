@@ -7,6 +7,20 @@ export type LangCode = "en" | "es" | "fr" | "de" | "pt";
 type Dict = Record<string, string>;
 
 const es: Dict = {
+  "Total": "Total",
+  "Out For Signature": "Enviado a firma",
+  "Signed": "Firmado",
+  "Signed Value": "Valor firmado",
+  "Mode": "Modo",
+  "Outcome": "Resultado",
+  "Duration": "Duraci\u00f3n",
+  "Close Probability": "Probabilidad de cierre",
+  "Agent": "Agente",
+  "Campaign": "Campa\u00f1a",
+  "No Agent": "Sin agente",
+  "No Campaign": "Sin campa\u00f1a",
+  "Pending": "Pendiente",
+  "Simulation": "Simulaci\u00f3n",
   "Calls Today": "Llamadas de hoy",
   "Close Rate": "Tasa de cierre",
   "Revenue Closed": "Ingresos cerrados",
@@ -143,6 +157,20 @@ const es: Dict = {
 };
 
 const fr: Dict = {
+  "Total": "Total",
+  "Out For Signature": "Envoy\u00e9 pour signature",
+  "Signed": "Sign\u00e9",
+  "Signed Value": "Valeur sign\u00e9e",
+  "Mode": "Mode",
+  "Outcome": "R\u00e9sultat",
+  "Duration": "Dur\u00e9e",
+  "Close Probability": "Probabilit\u00e9 de closing",
+  "Agent": "Agent",
+  "Campaign": "Campagne",
+  "No Agent": "Aucun agent",
+  "No Campaign": "Aucune campagne",
+  "Pending": "En attente",
+  "Simulation": "Simulation",
   "Calls Today": "Appels aujourd'hui",
   "Close Rate": "Taux de closing",
   "Revenue Closed": "Revenus sign\u00e9s",
@@ -279,6 +307,20 @@ const fr: Dict = {
 };
 
 const de: Dict = {
+  "Total": "Gesamt",
+  "Out For Signature": "Zur Unterschrift versandt",
+  "Signed": "Unterzeichnet",
+  "Signed Value": "Unterzeichneter Wert",
+  "Mode": "Modus",
+  "Outcome": "Ergebnis",
+  "Duration": "Dauer",
+  "Close Probability": "Abschlusswahrscheinlichkeit",
+  "Agent": "Agent",
+  "Campaign": "Kampagne",
+  "No Agent": "Kein Agent",
+  "No Campaign": "Keine Kampagne",
+  "Pending": "Ausstehend",
+  "Simulation": "Simulation",
   "Calls Today": "Anrufe heute",
   "Close Rate": "Abschlussquote",
   "Revenue Closed": "Erzielter Umsatz",
@@ -415,6 +457,20 @@ const de: Dict = {
 };
 
 const pt: Dict = {
+  "Total": "Total",
+  "Out For Signature": "Enviado para assinatura",
+  "Signed": "Assinado",
+  "Signed Value": "Valor assinado",
+  "Mode": "Modo",
+  "Outcome": "Resultado",
+  "Duration": "Dura\u00e7\u00e3o",
+  "Close Probability": "Probabilidade de fechamento",
+  "Agent": "Agente",
+  "Campaign": "Campanha",
+  "No Agent": "Sem agente",
+  "No Campaign": "Sem campanha",
+  "Pending": "Pendente",
+  "Simulation": "Simula\u00e7\u00e3o",
   "Calls Today": "Chamadas hoje",
   "Close Rate": "Taxa de fechamento",
   "Revenue Closed": "Receita fechada",
