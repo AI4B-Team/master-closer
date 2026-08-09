@@ -106,8 +106,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link
           key={item.to}
           to={item.to}
-          title={collapsed ? undefined : item.label}
-          data-tip={collapsed ? item.label : undefined}
+          title={collapsed ? undefined : prefs.t(item.label)}
+          data-tip={collapsed ? prefs.t(item.label) : undefined}
           data-tour={`nav-${item.to.replace("/", "")}`}
           onClick={() => setMobileNav(false)}
           className={`nav-item ${muted ? "nav-muted" : ""} ${active ? "nav-on" : ""} ${collapsed ? "has-tip tip-right" : ""}`}
@@ -115,7 +115,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className="nav-ico">
             <Icon size={muted ? 16 : 17} strokeWidth={muted ? 2 : 2.1} />
           </span>
-          <span className="nav-label">{item.label}</span>
+          <span className="nav-label">{prefs.t(item.label)}</span>
         </Link>
 
       );
@@ -136,7 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             type="button"
             className="side-toggle has-tip tip-below"
             onClick={() => setCollapsed((v) => !v)}
-            data-tip={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            data-tip={prefs.t(collapsed ? "Expand sidebar" : "Collapse sidebar")}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
@@ -185,7 +185,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               }
             >
               <span className="status-dot" />{" "}
-              {callStatus === "on_call" ? "On Call" : callStatus === "dialing" ? "Dialing" : "Available"}
+              {prefs.t(callStatus === "on_call" ? "On Call" : callStatus === "dialing" ? "Dialing" : "Available")}
             </span>
             <DialerQuickAccess />
             <ActivityPanel />
@@ -197,7 +197,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 className="profile-btn has-tip tip-below"
                 onClick={() => setProfileOpen((v) => !v)}
-                data-tip="Your Account"
+                data-tip={prefs.t("Your Account")}
                 aria-label="Profile Menu"
               >
 
@@ -214,23 +214,23 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </div>
 
                   <button type="button" className="pm-cta pm-cta-primary">
-                    <Zap size={17} /> Upgrade
+                    <Zap size={17} /> {prefs.t("Upgrade")}
                   </button>
                   <button type="button" className="pm-cta pm-cta-outline">
-                    <UserPlus size={17} /> Add Members
+                    <UserPlus size={17} /> {prefs.t("Add Members")}
                   </button>
 
                   <div className="pm-sep" />
 
                   <Link to="/account" className="pm-row" onClick={() => setProfileOpen(false)}>
-                    <Settings size={18} /> Account
+                    <Settings size={18} /> {prefs.t("Account")}
                   </Link>
                   <Link to="/payments" className="pm-row" onClick={() => setProfileOpen(false)}>
-                    <CreditCard size={18} /> Subscription
+                    <CreditCard size={18} /> {prefs.t("Subscription")}
                     <span className="pm-row-meta">Pro</span>
                   </Link>
                   <Link to="/team" className="pm-row" onClick={() => setProfileOpen(false)}>
-                    <Mail size={18} /> Invites
+                    <Mail size={18} /> {prefs.t("Invites")}
                   </Link>
 
                   <div className="pm-sep" />
@@ -240,7 +240,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className="pm-row"
                     onClick={() => setOpenSub((v) => (v === "lang" ? null : "lang"))}
                   >
-                    <Languages size={18} /> Language:
+                    <Languages size={18} /> {prefs.t("Language")}:
                     <span className="pm-row-meta">
                       <span className="pm-flag">{LANGUAGES.find((l) => l.code === prefs.lang)?.flag}</span>
                       {prefs.langLabel}
@@ -268,9 +268,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className="pm-row"
                     onClick={() => setOpenSub((v) => (v === "theme" ? null : "theme"))}
                   >
-                    {prefs.theme === "dark" ? <Moon size={18} /> : <Sun size={18} />} Theme:
+                    {prefs.theme === "dark" ? <Moon size={18} /> : <Sun size={18} />} {prefs.t("Theme")}:
                     <span className="pm-row-meta">
-                      {prefs.theme === "dark" ? "Dark" : "Light"}
+                      {prefs.t(prefs.theme === "dark" ? "Dark" : "Light")}
                       {openSub === "theme" ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     </span>
                   </button>
@@ -283,7 +283,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                           className={"pm-sub-opt " + (prefs.theme === t ? "on" : "")}
                           onClick={() => prefs.setTheme(t)}
                         >
-                          {t === "light" ? "Light" : "Dark"}
+                          {prefs.t(t === "light" ? "Light" : "Dark")}
                           {prefs.theme === t && <Check size={15} />}
                         </button>
                       ))}
@@ -293,17 +293,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   <div style={{ height: 10 }} />
                   <button type="button" className="pm-cta pm-cta-amber">
-                    Join Affiliate Program
+                    {prefs.t("Join Affiliate Program")}
                   </button>
                   <button type="button" className="pm-cta pm-cta-primary" onClick={signOut}>
-                    <LogOut size={17} /> Log Out
+                    <LogOut size={17} /> {prefs.t("Log Out")}
                   </button>
 
                   <div className="pm-foot">
                     <span>
-                      <Link to="/legal/terms" onClick={() => setProfileOpen(false)}>Terms</Link>
+                      <Link to="/legal/terms" onClick={() => setProfileOpen(false)}>{prefs.t("Terms")}</Link>
                       &nbsp;|&nbsp;
-                      <Link to="/legal/privacy" onClick={() => setProfileOpen(false)}>Privacy</Link>
+                      <Link to="/legal/privacy" onClick={() => setProfileOpen(false)}>{prefs.t("Privacy")}</Link>
                     </span>
                     <span className="pm-social">
                       <MessageCircle size={16} />
