@@ -122,7 +122,6 @@ function DialerPage() {
   // the regular client call does not.
   const closeAbandonedCall = useRef(() => {
     const { id, sec } = liveCall.current;
-    console.log("[dbg] closeAbandonedCall", id, sec, !!tokenRef.current);
     if (!id) return;
     const url = import.meta.env.VITE_SUPABASE_URL;
     const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
