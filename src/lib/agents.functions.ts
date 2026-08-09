@@ -49,3 +49,48 @@ export const helpSystemPrompt = createServerFn({ method: "POST" })
 
     return { prompt: text.replace(/^```[a-z]*\n?|```$/gim, "").trim() };
   });
+
+const SuggestObjectionsInput = z.object({
+  industry: z.string().max(120).nullish(),
+  focus: z.string().max(200).nullish(),
+  existing: z.array(z.string().max(300)).max(50).default([]),
+});
+
+export const suggestObjections = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => SuggestObjectionsInput.parse(data))
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("AI is not configured on this workspace.");
+
+    const gateway = createLovableAiGatewayProvider(key);
+    const { text } = await generateText({
+      model: gateway("google/gemini-3.6-flash"),
+      prompt:
+        `You build objection libraries for elite sales teams in the ${data.industry || "general sales"} industry.\n` +
+        (data.focus ? `Focus on this theme: ${data.focus}.\n` : "") +
+        (data.existing.length
+          ? `Do NOT repeat these existing objections:\n- ${data.existing.join("\n- ")}\n`
+          : "") +
+        `Return 6 hard, realistic objections a prospect actually says out loud, each with the exact words a top closer says back.\n` +
+        `Return ONLY a JSON array, no markdown fences, no commentary, shaped:\n` +
+        `[{"trigger":"...","category":"Price|Timing|Trust|Authority|Competitor|Fit","response":"..."}]\n` +
+        `Rules: trigger under 120 chars in the prospect's voice; response 1-3 spoken sentences, no fluff, no "I understand"; category exactly one of the listed words.`,
+      maxOutputTokens: 1400,
+      temperature: 0.7,
+      providerOptions: { lovable: { reasoning: { enabled: false } } },
+    });
+
+    const cleaned = text.replace(/```[a-z]*|```/gi, "").trim();
+    const start = cleaned.indexOf("[");
+    const end = cleaned.lastIndexOf("]");
+    let parsed: unknown = [];
+    try {
+      parsed = JSON.parse(start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned);
+    } catch {
+      throw new Error("AI returned an unexpected format. Try again.");
+    }
+    const items = z
+      .array(z.object({ trigger: z.string(), category: z.string().nullish(), response: z.string() }))
+      .parse(parsed);
+    return { items: items.slice(0, 8) };
+  });
