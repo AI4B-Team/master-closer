@@ -130,12 +130,17 @@ export function ActivityPanel() {
         type="button"
         className="icon-btn has-tip tip-below"
         data-tip="Activity"
-        aria-label="Activity"
+        aria-label={unseenCount && unseenCount > 0 ? `Activity, ${unseenCount} new` : "Activity"}
         onClick={() => setOpen(true)}
       >
         <Activity size={17} />
-        {hasUnseen && <span className="act-dot" aria-hidden="true" />}
+        {hasUnseen && unseenCount && unseenCount > 0 ? (
+          <span className="bell-badge">{unseenCount > 9 ? "9+" : unseenCount}</span>
+        ) : hasUnseen ? (
+          <span className="act-dot" aria-hidden="true" />
+        ) : null}
       </button>
+
 
       {open && (
         <>
