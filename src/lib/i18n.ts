@@ -7,6 +7,10 @@ export type LangCode = "en" | "es" | "fr" | "de" | "pt";
 type Dict = Record<string, string>;
 
 const es: Dict = {
+  Search: "Buscar",
+  "Search In": "Buscar en",
+  Deals: "Negocios",
+  Notes: "Notas",
   Dashboard: "Panel",
   Leads: "Prospectos",
   Calls: "Llamadas",
@@ -50,6 +54,10 @@ const es: Dict = {
 };
 
 const fr: Dict = {
+  Search: "Rechercher",
+  "Search In": "Rechercher dans",
+  Deals: "Affaires",
+  Notes: "Notes",
   Dashboard: "Tableau de bord",
   Leads: "Prospects",
   Calls: "Appels",
@@ -93,6 +101,10 @@ const fr: Dict = {
 };
 
 const de: Dict = {
+  Search: "Suchen",
+  "Search In": "Suchen in",
+  Deals: "Deals",
+  Notes: "Notizen",
   Dashboard: "Übersicht",
   Leads: "Leads",
   Calls: "Anrufe",
@@ -136,6 +148,10 @@ const de: Dict = {
 };
 
 const pt: Dict = {
+  Search: "Pesquisar",
+  "Search In": "Pesquisar em",
+  Deals: "Negócios",
+  Notes: "Notas",
   Dashboard: "Painel",
   Leads: "Leads",
   Calls: "Chamadas",

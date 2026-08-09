@@ -251,10 +251,10 @@ export function GlobalSearch() {
 
       {scopeOpen && (
         <div className="search-menu">
-          <div className="search-menu-label">Search In</div>
+          <div className="search-menu-label">{t("Search In")}</div>
           {SEARCH_SCOPES.map((s) => (
             <button
-              key={t(s)}
+              key={s}
               type="button"
               data-on={s === scope}
               onClick={() => {
