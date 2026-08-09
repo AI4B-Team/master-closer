@@ -406,6 +406,9 @@ function CampaignsPage() {
                         <Button size="sm" variant="ghost" className="rounded-xl" asChild>
                           <Link to="/dialer">Dial</Link>
                         </Button>
+                        <Button size="sm" variant="ghost" className="rounded-xl" asChild>
+                          <Link to="/calls" search={{ campaign: c.id } as any}>Calls</Link>
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
