@@ -118,9 +118,9 @@ export function AgentDrawer({
             <Select value={form.default_mode ?? "hybrid"} onValueChange={(v) => setForm({ ...form, default_mode: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="full_ai">AI — AI runs the call</SelectItem>
-                <SelectItem value="hybrid">Hybrid — AI starts, human closes</SelectItem>
-                <SelectItem value="copilot">Copilot — human leads, AI assists</SelectItem>
+                <SelectItem value="full_ai">AI — AI Runs The Call</SelectItem>
+                <SelectItem value="hybrid">Hybrid — AI Starts, Human Closes</SelectItem>
+                <SelectItem value="copilot">Copilot — Human Leads, AI Assists</SelectItem>
               </SelectContent>
             </Select>
           </div>
