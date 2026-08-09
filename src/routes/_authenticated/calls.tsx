@@ -17,6 +17,10 @@ import { summarizeCall } from "@/lib/calls.functions";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/calls")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    campaign: typeof s.campaign === "string" ? s.campaign : undefined,
+    agent: typeof s.agent === "string" ? s.agent : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Calls & Transcripts — Master Closer" },
@@ -40,13 +44,14 @@ const OUTCOMES = ["scheduled", "in_progress", "completed", "no_answer", "voicema
 const RANGES: Record<string, number> = { "7": 7, "30": 30, "90": 90 };
 
 function CallsPage() {
+  const sp = Route.useSearch();
   const [openId, setOpenId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState("all");
   const [outcome, setOutcome] = useState("all");
   const [range, setRange] = useState("all");
-  const [agent, setAgent] = useState("all");
-  const [campaign, setCampaign] = useState("all");
+  const [agent, setAgent] = useState(sp.agent ?? "all");
+  const [campaign, setCampaign] = useState(sp.campaign ?? "all");
 
   const { data: calls, isLoading: callsLoading } = useQuery({
     queryKey: ["calls"],
