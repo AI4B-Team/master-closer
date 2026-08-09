@@ -178,11 +178,25 @@ export function ActivityPanel() {
               </div>
             </div>
 
+            <div className="act-filters">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  className={`act-chip${filter === f.key ? " is-on" : ""}`}
+                  aria-pressed={filter === f.key}
+                  onClick={() => setFilter(f.key)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
             <div className="act-body">
-              {events.length === 0 ? (
+              {shown.length === 0 ? (
                 <div className="notif-empty">
                   <Inbox size={20} />
-                  <p>No Activity Yet</p>
+                  <p>{events.length === 0 ? "No Activity Yet" : "Nothing In This Filter"}</p>
                   <span>Calls, leads, agreements and campaigns show up here as they happen.</span>
                 </div>
               ) : (
