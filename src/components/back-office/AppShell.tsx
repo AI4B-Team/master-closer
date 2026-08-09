@@ -12,6 +12,7 @@ import { Avatar } from "@/components/back-office/ui";
 import { HelpMenu } from "@/components/back-office/HelpMenu";
 import { NotificationsMenu } from "@/components/back-office/NotificationsMenu";
 import { ProductTour, useProductTour } from "@/components/back-office/ProductTour";
+import { GlobalSearch } from "@/components/back-office/GlobalSearch";
 
 
 type NavItem = { to: string; label: string; icon: any; also?: string[] };
@@ -60,15 +61,12 @@ function isActive(pathname: string, item: NavItem) {
   );
 }
 
-const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes"] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-  const [scope, setScope] = useState<(typeof SEARCH_SCOPES)[number]>("Everything");
-  const [scopeOpen, setScopeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
   const tour = useProductTour();
