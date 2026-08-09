@@ -243,17 +243,23 @@ function Objections() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("objections").insert({
+      const payload = {
         trigger: form.trigger,
         response: form.response,
         category: form.category || null,
-        org_id: await orgId(),
-      });
+      };
+      if (editId) {
+        const { error } = await supabase.from("objections").update(payload).eq("id", editId);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase.from("objections").insert({ ...payload, org_id: await orgId() });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Objection Saved.");
+      toast.success(editId ? "Objection Updated." : "Objection Saved.");
       setOpen(false);
+      setEditId(null);
       setForm({ trigger: "", response: "", category: "" });
       qc.invalidateQueries({ queryKey: ["objections"] });
     },
