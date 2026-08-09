@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone, Copy } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
@@ -42,14 +43,19 @@ export function AgentDrawer({
   const [aiLoading, setAiLoading] = useState(false);
   const aiHelp = useServerFn(helpSystemPrompt);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: members } = useQuery({
-    queryKey: ["transfer-members"],
+    queryKey: ["transfer-members", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, email")
-        .order("full_name", { ascending: true });
-      return data ?? [];
+        .from("workspace_members")
+        .select("user_id, profiles:user_id(id, full_name, email)")
+        .eq("workspace_id", wsId!)
+        .limit(200);
+      return (data ?? []).map((m: any) => m.profiles).filter(Boolean) as { id: string; full_name: string | null; email: string | null }[];
     },
   });
 

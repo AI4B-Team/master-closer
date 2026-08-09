@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { closeObjection } from "@/lib/demo.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { fetchObjectionLibrary } from "@/lib/objections";
 
@@ -44,13 +45,18 @@ export function AgentQuickDrill({
   const [prospect, setProspect] = useState(SUGGESTED[0]);
   const [result, setResult] = useState<Drill | null>(null);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: history } = useQuery({
-    queryKey: ["agent-drills", agentId],
+    queryKey: ["agent-drills", agentId, wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("practice_sessions")
         .select("id, prospect, objection, confidence, created_at")
         .eq("agent_id", agentId)
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(3);
       return data ?? [];

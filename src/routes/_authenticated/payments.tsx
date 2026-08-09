@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
 import { CreditCard, FileSignature, Link2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/payments")({
@@ -51,12 +52,17 @@ function PaymentsPage() {
   const [cfg, setCfg] = useState<PayConfig>(DEFAULTS);
   const [saving, setSaving] = useState(false);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: row, refetch } = useQuery({
-    queryKey: ["integration-payments"],
+    queryKey: ["integration-payments", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("integrations")
         .select("*")
+        .eq("workspace_id", wsId!)
         .eq("provider", "payments")
         .maybeSingle();
       return data;

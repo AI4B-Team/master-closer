@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ban, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/back-office/ui";
@@ -29,13 +30,18 @@ export function LeadLines({ leadId, phone }: { leadId: string; phone?: string | 
   const qc = useQueryClient();
   const [draft, setDraft] = useState("");
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const contactQ = useQuery({
-    queryKey: ["contact-for-lead", leadId, phone ?? ""],
+    queryKey: ["contact-for-lead", leadId, phone ?? "", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const byCrm = await supabase
         .from("contacts")
         .select("id, name, phone, suppressed, workspace_id")
         .eq("crm_id", leadId)
+        .eq("workspace_id", wsId!)
         .maybeSingle();
       if (byCrm.data) return byCrm.data;
       if (!phone) return null;
@@ -43,6 +49,7 @@ export function LeadLines({ leadId, phone }: { leadId: string; phone?: string | 
         .from("contacts")
         .select("id, name, phone, suppressed, workspace_id")
         .eq("phone", phone)
+        .eq("workspace_id", wsId!)
         .maybeSingle();
       return byPhone.data ?? null;
     },

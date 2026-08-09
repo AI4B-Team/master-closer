@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { hubStatus } from "@/lib/hub.functions";
 import { Link2, Webhook, Trash2, Radio } from "lucide-react";
 import { toast } from "sonner";
@@ -22,20 +23,29 @@ export function HubPanel() {
 
   const { data: hub } = useQuery({ queryKey: ["hub-status"], queryFn: () => status({}) });
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: hooks } = useQuery({
-    queryKey: ["org-webhooks"],
+    queryKey: ["org-webhooks", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("org_webhooks").select("id, url, enabled, created_at");
+      const { data } = await supabase
+        .from("org_webhooks")
+        .select("id, url, enabled, created_at")
+        .eq("workspace_id", wsId!);
       return data ?? [];
     },
   });
 
   const { data: events } = useQuery({
-    queryKey: ["org-events"],
+    queryKey: ["org-events", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("events")
         .select("id, event_type, created_at")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(8);
       return data ?? [];
