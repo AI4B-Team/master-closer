@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download } from "lucide-react";
+import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check } from "lucide-react";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -214,6 +215,27 @@ function CallsPage() {
 }
 
 function CallDetail({ call }: { call: any }) {
+  const [saved, setSaved] = useState<string[]>([]);
+  const promote = useMutation({
+    mutationFn: async (p: { id: string; trigger: string; response: string }) => {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof?.org_id) throw new Error("No workspace found");
+      const { error } = await supabase.from("objections").insert({
+        org_id: prof.org_id,
+        trigger: p.trigger,
+        response: p.response,
+        category: "From Call",
+      });
+      if (error) throw error;
+      return p.id;
+    },
+    onSuccess: (id: string) => {
+      setSaved((s) => [...s, id]);
+      toast.success("Added To Playbook");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Could not add to playbook"),
+  });
+
   const { data, isLoading } = useQuery({
     queryKey: ["call-detail", call.id],
     queryFn: async () => {
@@ -229,6 +251,7 @@ function CallDetail({ call }: { call: any }) {
       };
     },
   });
+
 
   return (
     <div className="mt-5 space-y-5">
@@ -276,11 +299,27 @@ function CallDetail({ call }: { call: any }) {
           <div className="space-y-3">
             {data.suggestions.map((s: any) => (
               <div key={s.id} className="rounded-xl border border-[#E7E7EC] p-3">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-1 gap-2">
                   <span className="text-xs uppercase tracking-wider text-[#6B6B76]">{s.objection}</span>
-                  <Badge variant={s.was_used ? "default" : "secondary"}>
-                    {s.was_used ? "Used" : "Offered"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={s.was_used ? "default" : "secondary"}>
+                      {s.was_used ? "Used" : "Offered"}
+                    </Badge>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs"
+                      disabled={promote.isPending || saved.includes(s.id)}
+                      onClick={() => promote.mutate({ id: s.id, trigger: s.objection, response: s.line })}
+                    >
+                      {saved.includes(s.id) ? (
+                        <><Check className="h-3.5 w-3.5 mr-1" />In Playbook</>
+                      ) : (
+                        <><BookPlus className="h-3.5 w-3.5 mr-1" />Add To Playbook</>
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-sm text-[#3A3A44]">{s.line}</p>
               </div>
@@ -290,6 +329,7 @@ function CallDetail({ call }: { call: any }) {
           <p className="text-sm text-[#6B6B76]">No AI suggestions recorded.</p>
         )}
       </Section>
+
 
       <Section icon={ShieldCheck} title="Consent & Disclosure">
         {data && data.consent.length > 0 ? (
