@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
+import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
+
 import { helpSystemPrompt } from "@/lib/agents.functions";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -208,6 +210,17 @@ export function AgentDrawer({
               This drives how the closer speaks, qualifies, and handles objections on every call.
             </p>
           </div>
+
+          {agent && (
+            <AgentQuickDrill
+              agentId={agent.id}
+              name={form.name ?? agent.name}
+              industry={form.industry}
+              systemPrompt={form.system_prompt}
+              mode={form.default_mode ?? "hybrid"}
+            />
+          )}
+
 
           <div className="flex items-center gap-2 pt-1">
             <Button
