@@ -33,9 +33,18 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const { user } = useAuth();
+  const qc = useQueryClient();
+  const { data: ws } = useWorkspace();
   const [fullName, setFullName] = useState("");
   const [orgName, setOrgName] = useState("");
   const [orgId, setOrgId] = useState<string | null>(null);
+
+  const [wsName, setWsName] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [state, setState] = useState("");
+  const [callerId, setCallerId] = useState("");
+  const [timezone, setTimezone] = useState("");
+  const [brandColor, setBrandColor] = useState("#CC0000");
 
   useEffect(() => {
     (async () => {
@@ -49,9 +58,38 @@ function SettingsPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!ws) return;
+    setWsName(ws.name ?? "");
+    setLegalName(ws.legal_business_name ?? "");
+    setState(ws.business_state ?? "");
+    setCallerId(ws.default_caller_id ?? "");
+    setTimezone(ws.timezone ?? "America/New_York");
+    setBrandColor(ws.brand_color ?? "#CC0000");
+  }, [ws]);
+
   const save = async () => {
     await supabase.from("profiles").update({ full_name: fullName }).eq("id", user!.id);
     if (orgId) await supabase.from("organizations").update({ name: orgName }).eq("id", orgId);
+    if (ws?.id) {
+      const { error } = await supabase
+        .from("workspaces")
+        .update({
+          name: wsName.trim() || ws.name,
+          legal_business_name: legalName.trim() || null,
+          business_state: state.trim() || null,
+          default_caller_id: callerId.trim() || null,
+          timezone: timezone.trim() || "America/New_York",
+          brand_color: brandColor,
+        })
+        .eq("id", ws.id);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      await qc.invalidateQueries({ queryKey: ["active-workspace"] });
+      await qc.invalidateQueries({ queryKey: ["my-workspaces"] });
+    }
     toast.success("Saved.");
   };
 
@@ -65,12 +103,32 @@ function SettingsPage() {
             <div className="space-y-3">
               <div><Label>Email</Label><Input value={user?.email ?? ""} disabled /></div>
               <div><Label>Full Name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
+              <div><Label>Organization Name</Label><Input value={orgName} onChange={(e) => setOrgName(e.target.value)} /></div>
             </div>
           </Card>
           <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
             <h3 className="font-semibold mb-4">Workspace</h3>
             <div className="space-y-3">
-              <div><Label>Organization Name</Label><Input value={orgName} onChange={(e) => setOrgName(e.target.value)} /></div>
+              <div><Label>Workspace Name</Label><Input value={wsName} onChange={(e) => setWsName(e.target.value)} /></div>
+              <div><Label>Legal Business Name</Label><Input value={legalName} onChange={(e) => setLegalName(e.target.value)} placeholder="Used in disclosures and agreements" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Business State</Label><Input value={state} onChange={(e) => setState(e.target.value)} placeholder="FL" /></div>
+                <div><Label>Time Zone</Label><Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="America/New_York" /></div>
+              </div>
+              <div><Label>Default Caller ID</Label><Input value={callerId} onChange={(e) => setCallerId(e.target.value)} placeholder="+1 305 555 0134" /></div>
+              <div>
+                <Label>Brand Color</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={brandColor}
+                    onChange={(e) => setBrandColor(e.target.value)}
+                    className="h-9 w-12 rounded-lg border border-[#E7E7EC] bg-transparent"
+                    aria-label="Brand Color"
+                  />
+                  <Input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="w-32" />
+                </div>
+              </div>
             </div>
           </Card>
         </div>
@@ -84,6 +142,7 @@ function SettingsPage() {
     </div>
   );
 }
+
 
 function WebhooksCard({ orgId }: { orgId: string | null }) {
   const qc = useQueryClient();
