@@ -47,6 +47,26 @@ function AIClosers() {
     },
   });
 
+  const { data: scores } = useQuery({
+    queryKey: ["practice-scores"],
+    queryFn: async () => {
+      const { data } = await supabase.from("practice_sessions").select("agent_id, confidence");
+      const map: Record<string, { avg: number; count: number }> = {};
+      const sums: Record<string, { total: number; count: number }> = {};
+      for (const row of data ?? []) {
+        if (!row.agent_id) continue;
+        const s = sums[row.agent_id] ?? { total: 0, count: 0 };
+        s.total += row.confidence ?? 0;
+        s.count += 1;
+        sums[row.agent_id] = s;
+      }
+      for (const [id, s] of Object.entries(sums)) {
+        map[id] = { avg: Math.round(s.total / s.count), count: s.count };
+      }
+      return map;
+    },
+  });
+
   const create = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
