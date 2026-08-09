@@ -107,6 +107,39 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
     }
   }
 
+  if (want("Agents")) {
+    const { data: ags } = await supabase
+      .from("background_agents")
+      .select("id,agent_key,mode,enabled")
+      .ilike("agent_key", like)
+      .limit(4);
+    for (const a of ags ?? []) {
+      out.push({
+        kind: "Agent",
+        id: a.id,
+        title: a.agent_key.replace(/_/g, " ").replace(/\b\w/g, (m: string) => m.toUpperCase()),
+        sub: `Background Agent · ${a.enabled ? a.mode.replace("_", " ") : "off"}`,
+        to: "/agents",
+        params: { view: "registry" },
+      });
+    }
+    const { data: props } = await supabase
+      .from("agent_proposals")
+      .select("id,agent_key,proposal_type,target_table,target_field,status,rationale")
+      .or(`rationale.ilike.${like},target_table.ilike.${like},proposal_type.ilike.${like}`)
+      .limit(5);
+    for (const p of props ?? []) {
+      out.push({
+        kind: "Agent",
+        id: p.id,
+        title: `${p.proposal_type.replace(/_/g, " ")} — ${p.target_table}${p.target_field ? `.${p.target_field}` : ""}`,
+        sub: `Proposal · ${p.status} · ${p.agent_key.replace(/_/g, " ")}`,
+        to: "/agents",
+        params: { view: "proposals" },
+      });
+    }
+  }
+
   return out;
 }
 
