@@ -2610,6 +2610,7 @@ export type Database = {
     Functions: {
       active_workspace_id: { Args: never; Returns: string }
       auth_org_id: { Args: never; Returns: string }
+      close_stale_calls: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
