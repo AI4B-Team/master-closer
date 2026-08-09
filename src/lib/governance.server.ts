@@ -247,7 +247,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
 
   const { data: outcomes } = await db()
     .from("conversation_outcomes")
-    .select("lead_id, outcome, sentiment, labeled_at")
+    .select("lead_id, outcome, sentiment, objection_category, labeled_at")
     .eq("workspace_id", ctx.workspaceId)
     .is("superseded_at", null)
     .limit(2000);
