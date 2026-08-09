@@ -477,6 +477,12 @@ function PipelinePage() {
           const items = itemsIn(s.id);
           const total = items.reduce((sum, d) => sum + Number(d.value ?? 0), 0);
           const isOver = overStage === s.id;
+          const limit = s.wip_limit ?? 0;
+          const overLimit = limit > 0 && items.length > limit;
+          const staleAfter = s.kind === "open" ? (s.stale_days ?? 14) : 0;
+          const stalledCount = staleAfter > 0
+            ? items.filter((d) => daysSince(d.updated_at) > staleAfter).length
+            : 0;
           return (
             <div
               key={s.id}
