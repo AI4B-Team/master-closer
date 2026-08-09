@@ -101,28 +101,75 @@ function DialerPage() {
     setCallStatus(connected ? "on_call" : dialing ? "dialing" : "idle");
   }, [connected, dialing]);
 
-  // Keep the live call id/elapsed in refs so the unmount cleanup can close out a
+  // Keep the live call id/elapsed in refs so both the unmount cleanup (in-app
+  // navigation) and the pagehide listener (tab close / reload) can close out a
   // call the rep walked away from instead of leaving it stuck "in progress".
   const liveCall = useRef<{ id: string | null; sec: number }>({ id: null, sec: 0 });
   liveCall.current = { id: callId, sec: elapsed };
 
+  function abandonPatch() {
+    const { id, sec } = liveCall.current;
+    if (!id) return null;
+    return {
+      id,
+      body: JSON.stringify({
+        outcome: sec > 0 ? "completed" : "failed",
+        duration_sec: sec,
+        ended_at: new Date().toISOString(),
+      }),
+    };
+  }
+
+  useEffect(() => {
+    // A tab close or reload never runs React cleanup, so send a keepalive PATCH
+    // that survives the page teardown.
+    const onHide = () => {
+      const patch = abandonPatch();
+      if (!patch) return;
+      const url = import.meta.env.VITE_SUPABASE_URL;
+      const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const token = tokenRef.current;
+      if (!url || !key || !token) return;
+      void fetch(`${url}/rest/v1/calls?id=eq.${patch.id}&outcome=eq.in_progress`, {
+        method: "PATCH",
+        keepalive: true,
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: patch.body,
+      }).catch(() => {});
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, []);
+
+  const tokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled) tokenRef.current = data.session?.access_token ?? null;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(
     () => () => {
       setCallStatus("idle");
-      const { id, sec } = liveCall.current;
-      if (!id) return;
+      const patch = abandonPatch();
+      if (!patch) return;
       void supabase
         .from("calls")
-        .update({
-          outcome: sec > 0 ? "completed" : "failed",
-          duration_sec: sec,
-          ended_at: new Date().toISOString(),
-        })
-        .eq("id", id)
+        .update(JSON.parse(patch.body))
+        .eq("id", patch.id)
         .eq("outcome", "in_progress");
     },
     [],
   );
+
 
   const [holding, setHolding] = useState(false);
   const [participants, setParticipants] = useState<string[]>([]);
