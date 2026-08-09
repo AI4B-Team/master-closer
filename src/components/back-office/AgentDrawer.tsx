@@ -34,10 +34,35 @@ export function AgentDrawer({
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Agent>>({});
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiHelp = useServerFn(helpSystemPrompt);
 
   useEffect(() => {
     if (agent) setForm({ ...agent });
   }, [agent]);
+
+  const runAiHelp = async (instruction: "generate" | "improve" | "shorten" | "tone") => {
+    if (!form.name) {
+      toast.error("Add a name first so AI knows who this closer is.");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await aiHelp({
+        name: form.name,
+        industry: form.industry ?? null,
+        mode: (form.default_mode ?? "hybrid") as "full_ai" | "hybrid" | "copilot",
+        current: form.system_prompt ?? null,
+        instruction,
+      });
+      setForm((f) => ({ ...f, system_prompt: res.prompt }));
+      toast.success("Prompt updated.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "AI help failed.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const save = useMutation({
     mutationFn: async () => {
