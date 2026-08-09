@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -269,6 +269,17 @@ function AIClosers() {
                   ? `${perf[a.id].calls} Call${perf[a.id].calls === 1 ? "" : "s"} · ${perf[a.id].connectRate}% Connected · ${perf[a.id].avgProb}% Avg Close`
                   : "No Live Calls Yet"}
               </div>
+              {perf?.[a.id] ? (
+                <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                  <Link
+                    to="/calls"
+                    search={{ agent: a.id } as any}
+                    className="text-xs font-medium text-[#CC0000] hover:underline underline-offset-2"
+                  >
+                    View Calls
+                  </Link>
+                </div>
+              ) : null}
             </Card>
           ))}
         </div>
