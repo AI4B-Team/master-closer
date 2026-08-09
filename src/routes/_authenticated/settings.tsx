@@ -204,6 +204,15 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
                     >
                       {reveal === h.id ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => copySecret(h.secret)}
+                      className="text-[#6B6B76] hover:text-[#111]"
+                      aria-label="Copy Signing Secret"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+
                   </div>
                 </div>
                 <Switch checked={h.enabled} onCheckedChange={(v) => toggle(h.id, v)} />
