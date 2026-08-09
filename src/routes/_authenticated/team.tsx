@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill } from "@/components/back-office/ui";
-import { BarChart3, PhoneCall, Trophy, Percent, DollarSign } from "lucide-react";
+import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
+import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/team")({
@@ -22,8 +23,16 @@ export const Route = createFileRoute("/_authenticated/team")({
 const MODE_LABEL: Record<string, string> = { full_ai: "AI", hybrid: "Hybrid", copilot: "Copilot" };
 const MODE_KEYS = ["full_ai", "hybrid", "copilot"] as const;
 
+const RANGES = [
+  { label: "7 Days", days: 7 },
+  { label: "30 Days", days: 30 },
+  { label: "90 Days", days: 90 },
+  { label: "All Time", days: 0 },
+];
+
 function ReportsPage() {
-  const { data: calls } = useQuery({
+  const [rangeDays, setRangeDays] = useState(30);
+  const { data: allCalls } = useQuery({
     queryKey: ["report_calls"],
     queryFn: async () => {
       const { data } = await supabase
@@ -50,6 +59,13 @@ function ReportsPage() {
       return data ?? [];
     },
   });
+
+  const calls = useMemo(() => {
+    const list = allCalls ?? [];
+    if (!rangeDays) return list;
+    const cutoff = Date.now() - rangeDays * 86400000;
+    return list.filter((c) => new Date(c.started_at).getTime() >= cutoff);
+  }, [allCalls, rangeDays]);
 
   const nameFor = (id?: string | null) => {
     const p = people?.find((x) => x.id === id);
@@ -110,6 +126,61 @@ function ReportsPage() {
     return Array.from(byRep.values()).sort((a, b) => b.revenue - a.revenue || b.connects - a.connects);
   }, [calls, deals]);
 
+  const trend = useMemo(() => {
+    const buckets = rangeDays ? Math.min(rangeDays, 14) : 14;
+    const span = rangeDays ? Math.ceil(rangeDays / buckets) : 7;
+    const now = Date.now();
+    const rows = Array.from({ length: buckets }, (_, i) => {
+      const end = now - i * span * 86400000;
+      const start = end - span * 86400000;
+      const inRange = (calls ?? []).filter((c) => {
+        const t = new Date(c.started_at).getTime();
+        return t > start && t <= end;
+      });
+      return {
+        label: new Date(end).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        calls: inRange.length,
+        connects: inRange.filter((c) => c.dial_outcome === "connected" || c.outcome === "completed").length,
+      };
+    }).reverse();
+    return rows;
+  }, [calls, rangeDays]);
+
+  const trendMax = Math.max(1, ...trend.map((t) => t.calls));
+
+  const outcomes = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of calls ?? []) {
+      const key = (c.dial_outcome ?? c.outcome ?? "unknown") as string;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    const total = (calls ?? []).length || 1;
+    return Array.from(map.entries())
+      .map(([key, count]) => ({ key, count, share: Math.round((count / total) * 100) }))
+      .sort((a, b) => b.count - a.count);
+  }, [calls]);
+
+  const exportCsv = () => {
+    const header = ["Rep", "Calls", "Connects", "Connect Rate", "Talk Minutes", "Closed Revenue"];
+    const rows = leaderboard.map((r) => [
+      nameFor(r.repId === "unassigned" ? null : r.repId),
+      r.calls,
+      r.connects,
+      r.calls ? Math.round((r.connects / r.calls) * 100) + "%" : "0%",
+      Math.round(r.talkSec / 60),
+      r.revenue,
+    ]);
+    const csv = [header, ...rows]
+      .map((line) => line.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `master-closer-reports-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const money = (n: number) =>
     "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
@@ -121,11 +192,90 @@ function ReportsPage() {
         tabs={TAB_GROUPS.reports}
       />
 
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="inline-flex rounded-xl border border-[#E7E7EC] bg-white p-1">
+          {RANGES.map((r) => (
+            <button
+              key={r.label}
+              type="button"
+              onClick={() => setRangeDays(r.days)}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                rangeDays === r.days ? "bg-[#141418] text-white font-medium" : "text-[#6B6B76] hover:text-[#141418]"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        <Button variant="outline" onClick={exportCsv} className="rounded-xl gap-2">
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
         <Kpi label="Calls Logged" value={String(totals.calls)} icon={PhoneCall} {...KPI_TINTS.blue} />
         <Kpi label="Connect Rate" value={`${totals.connectRate}%`} icon={Percent} {...KPI_TINTS.mint} />
         <Kpi label="Closed Revenue" value={money(totals.revenue)} icon={DollarSign} {...KPI_TINTS.red} />
         <Kpi label="Win Rate" value={`${totals.winRate}%`} icon={Trophy} {...KPI_TINTS.lavender} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+        <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+              <Activity className="h-5 w-5 text-[#CC0000]" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Call Activity</h3>
+              <p className="text-sm text-[#6B6B76]">Calls placed versus connects over the selected window.</p>
+            </div>
+          </div>
+          <div className="mt-6 flex items-end gap-2 h-40">
+            {trend.map((t, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+                <div className="w-full flex items-end justify-center gap-0.5 h-full">
+                  <div
+                    className="w-1/2 rounded-t bg-[#F7CFC7]"
+                    style={{ height: `${(t.calls / trendMax) * 100}%` }}
+                    title={`${t.calls} calls`}
+                  />
+                  <div
+                    className="w-1/2 rounded-t bg-[#CC0000]"
+                    style={{ height: `${(t.connects / trendMax) * 100}%` }}
+                    title={`${t.connects} connects`}
+                  />
+                </div>
+                <span className="text-[10px] text-[#9A9AA5] truncate w-full text-center">{t.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center gap-4 text-xs text-[#6B6B76]">
+            <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#F7CFC7] inline-block" /> Calls</span>
+            <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#CC0000] inline-block" /> Connects</span>
+          </div>
+        </Card>
+
+        <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
+          <h3 className="font-semibold">Outcome Breakdown</h3>
+          <p className="text-sm text-[#6B6B76]">Where every dial in this window landed.</p>
+          {outcomes.length === 0 ? (
+            <EmptyState icon={PhoneCall} title="No Calls In This Window" hint="Try a wider date range." />
+          ) : (
+            <div className="mt-4 space-y-3">
+              {outcomes.map((o) => (
+                <div key={o.key}>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{titleCase(o.key.replace(/_/g, " "))}</span>
+                    <span className="font-num text-[#6B6B76]">{o.count} · {o.share}%</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 rounded-full bg-[#F0F1F4]">
+                    <div className="h-1.5 rounded-full bg-[#141418]" style={{ width: `${o.share}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       </div>
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
