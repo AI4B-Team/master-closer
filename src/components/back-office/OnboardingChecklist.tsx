@@ -17,13 +17,13 @@ type Step = {
   done: boolean;
 };
 
-async function count(table: string, workspaceId: string) {
-  const { count: c } = await supabase
-    .from(table as never)
-    .select("id", { count: "exact", head: true })
-    .eq("workspace_id", workspaceId);
+async function count(table: string, workspaceId?: string) {
+  let q = supabase.from(table as never).select("id", { count: "exact", head: true });
+  if (workspaceId) q = q.eq("workspace_id", workspaceId);
+  const { count: c } = await q;
   return c ?? 0;
 }
+
 
 export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(true);
