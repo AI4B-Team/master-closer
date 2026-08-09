@@ -60,24 +60,33 @@ export function ActivityPanel() {
     },
   });
 
-  // Cheap "is there anything new?" probe so the icon can show a dot while closed.
+  // Cheap "how much is new?" probe so the icon can show a count while closed.
   const { data: latest } = useQuery({
-    queryKey: ["activity-latest"],
+    queryKey: ["activity-latest", seen],
     refetchInterval: 45000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const newestQ = supabase
         .from("events")
         .select("created_at")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (error) throw error;
-      return (data?.created_at as string | undefined) ?? null;
+      const unseenQ = seen
+        ? supabase.from("events").select("id", { count: "exact", head: true }).gt("created_at", seen)
+        : null;
+      const [newestRes, unseenRes] = await Promise.all([newestQ, unseenQ]);
+      if (newestRes.error) throw newestRes.error;
+      return {
+        newest: (newestRes.data?.created_at as string | undefined) ?? null,
+        unseen: unseenRes?.count ?? null,
+      };
     },
   });
 
-  const newest = events[0]?.created_at ?? latest ?? null;
+  const newest = events[0]?.created_at ?? latest?.newest ?? null;
+  const unseenCount = latest?.unseen ?? null;
   const hasUnseen = Boolean(newest && (!seen || newest > seen));
+
 
   const markSeen = (iso: string | null) => {
     if (!iso) return;
