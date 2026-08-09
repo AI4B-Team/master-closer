@@ -157,9 +157,8 @@ function Dashboard() {
                     <td className="font-num">${Number(d.value ?? 0).toLocaleString()}</td>
                     <td>
                       <div className="row-acts">
-                        <button type="button" aria-label="Call"><Phone size={15} /></button>
-                        <button type="button" aria-label="View"><Eye size={15} /></button>
-                        <button type="button" aria-label="More"><MoreVertical size={15} /></button>
+                        <Link to="/dialer" aria-label="Call In Dialer" title="Call In Dialer"><Phone size={15} /></Link>
+                        <Link to="/pipeline" search={{ deal: d.id }} aria-label="View Deal" title="View Deal"><Eye size={15} /></Link>
                       </div>
                     </td>
                   </tr>
