@@ -776,3 +776,5 @@
 .mc-empty-panel > span:not(.mc-empty-ring) { font-size: 13px; color: var(--muted, #6B6B76); max-width: 34em; }
 .mc-empty-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 @media (max-width: 640px) { .mc-empty-panel { padding: 38px 16px; } }
+
+.mc-btn-link { display: inline-flex; }
