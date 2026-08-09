@@ -292,29 +292,39 @@ function DialerPage() {
 
   const campaign = (campaigns ?? []).find((c: any) => c.id === campaignId);
 
-  /** Queue rule: lowest attempts first, never a contact already flagged DNC. */
+  /** Queue rule: lowest attempts first, skipping opt-outs and anything on the Do Not Call list. */
   const loadNext = async (id: string) => {
     const c = (campaigns ?? []).find((x: any) => x.id === id);
     if (!c?.list_id) {
       setContact(null);
       return;
     }
-    const { data } = await supabase
-      .from("list_contacts")
-      .select("id, name, phone, last_outcome")
-      .eq("list_id", c.list_id)
-      .neq("last_outcome", "dnc")
-      .order("attempts", { ascending: true })
-      .limit(1);
-    const next = data?.[0];
+    const [{ data }, { data: dncRows }] = await Promise.all([
+      supabase
+        .from("list_contacts")
+        .select("id, name, phone, last_outcome, consent")
+        .eq("list_id", c.list_id)
+        .neq("last_outcome", "dnc")
+        .neq("consent", "opt_out")
+        .order("attempts", { ascending: true })
+        .limit(50),
+      supabase.from("dnc_list").select("phone"),
+    ]);
+    const onlyDigits = (p?: string | null) => (p ?? "").replace(/\D/g, "");
+    const blocked = new Set((dncRows ?? []).map((d: any) => onlyDigits(d.phone)).filter(Boolean));
+    const eligible = (data ?? []).filter((row: any) => !blocked.has(onlyDigits(row.phone)));
+    const skipped = (data ?? []).length - eligible.length;
+    const next = eligible[0];
     if (next) {
       setContact({ id: next.id, name: next.name, phone: next.phone });
       setPhone(next.phone);
+      if (skipped > 0) toast.info(`${skipped} Contact${skipped === 1 ? "" : "s"} Skipped — Do Not Call.`);
     } else {
       setContact(null);
-      toast.info("Queue Is Empty.");
+      toast.info(skipped > 0 ? "Remaining Contacts Are On The Do Not Call List." : "Queue Is Empty.");
     }
   };
+
 
   const pickCampaign = async (id: string) => {
     setCampaignId(id);
@@ -381,6 +391,16 @@ function DialerPage() {
     try {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+
+      // Hard stop: never dial a number on the Do Not Call list.
+      const target = (phone ?? "").replace(/\D/g, "");
+      if (target) {
+        const { data: dncRows } = await supabase.from("dnc_list").select("phone");
+        const blocked = (dncRows ?? []).some((d: any) => (d.phone ?? "").replace(/\D/g, "") === target);
+        if (blocked) throw new Error("This Number Is On The Do Not Call List.");
+      }
+
+
 
       // Simulated ring cadence stands in for the carrier until credentials are live.
       if (simulate) {
