@@ -588,7 +588,15 @@ function DialerPage() {
         await emit({
           data: {
             event_type: "call.completed",
-            payload: { call_id: callId, mode, dial_outcome: dial, campaign_id: campaignId || null },
+            payload: {
+              kind: "call.completed",
+              call_id: callId,
+              mode,
+              dial_outcome: dial,
+              lead_name: contact?.name ?? null,
+              disposition: disposition ?? DISPOSITIONS.find((d) => d.value === dial)?.label ?? null,
+              campaign_id: campaignId || null,
+            },
           },
         });
       } catch {

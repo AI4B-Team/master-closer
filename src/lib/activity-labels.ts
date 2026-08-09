@@ -52,6 +52,13 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: DollarSign, label: "Deal Won", detail: join(p.title, money(p.value)) };
     case "leads.new":
       return { kind, icon: UserPlus, label: "New Lead", detail: join(p.name ?? p.email) };
+    case "leads.imported":
+      return {
+        kind,
+        icon: UserPlus,
+        label: "Leads Imported",
+        detail: p.count ? `${p.count} lead${Number(p.count) === 1 ? "" : "s"}` : "",
+      };
     case "lead.flagged_dnc":
       return { kind, icon: ShieldOff, label: "Flagged Do Not Call", detail: join(p.phone ?? p.name, p.reason) };
     case "campaign.launched":
