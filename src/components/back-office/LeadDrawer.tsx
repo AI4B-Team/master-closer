@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
+import { LeadLines } from "@/components/back-office/LeadLines";
 
 type Lead = {
   id: string;
@@ -329,6 +330,11 @@ export function LeadDrawer({
             >
               <Trash2 className="h-4 w-4 mr-1" /> Delete
             </Button>
+          </div>
+
+          <div className="pt-2 border-t border-[#E7E7EC]">
+            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Product Lines</p>
+            {lead ? <LeadLines leadId={lead.id} phone={lead.phone} /> : null}
           </div>
 
           <div className="pt-2 border-t border-[#E7E7EC]">
