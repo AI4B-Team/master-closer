@@ -378,7 +378,7 @@ function ListsPage() {
                         <td className="py-3 font-medium">{c.name}</td>
                         <td className="py-3 font-mono text-xs">
                           {c.phone}
-                          {onDnc ? <span className="ml-2 align-middle"><StatusPill label="DNC" tone="danger" /></span> : null}
+                          {onDnc ? <span className="ml-2 align-middle"><StatusPill label="DNC" tone="red" /></span> : null}
                         </td>
                         <td className="py-3 text-[#6B6B76]">{c.email ?? "—"}</td>
                         <td className="py-3 font-mono">{c.attempts}</td>
