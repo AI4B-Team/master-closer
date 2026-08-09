@@ -123,6 +123,28 @@ function ReportsPage() {
     });
   }, [calls]);
 
+  const topObjections = useMemo(() => {
+    const ids = new Set((calls ?? []).map((c) => c.id));
+    const rows = (suggestions ?? []).filter((s) => !s.call_id || ids.has(s.call_id));
+    const map = new Map<string, { trigger: string; surfaced: number; used: number }>();
+    for (const s of rows) {
+      const key = (s.objection ?? "Unlabeled").trim() || "Unlabeled";
+      const cur = map.get(key) ?? { trigger: key, surfaced: 0, used: 0 };
+      cur.surfaced += 1;
+      if (s.was_used) cur.used += 1;
+      map.set(key, cur);
+    }
+    const max = Math.max(1, ...[...map.values()].map((v) => v.surfaced));
+    return [...map.values()]
+      .sort((a, b) => b.surfaced - a.surfaced)
+      .slice(0, 8)
+      .map((v) => ({
+        ...v,
+        useRate: v.surfaced ? Math.round((v.used / v.surfaced) * 100) : 0,
+        share: Math.round((v.surfaced / max) * 100),
+      }));
+  }, [calls, suggestions]);
+
   const leaderboard = useMemo(() => {
     const byRep = new Map<
       string,
