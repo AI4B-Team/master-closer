@@ -181,6 +181,33 @@ function Objections() {
     },
   });
 
+  // Live usage: which library objections actually surfaced on calls, and how often the rep said the line.
+  const { data: usage } = useQuery({
+    queryKey: ["objection-usage"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("suggestions")
+        .select("objection, was_used")
+        .order("ts_sec", { ascending: false })
+        .limit(1000);
+      return data ?? [];
+    },
+  });
+
+  const statsFor = (trigger: string) => {
+    const key = String(trigger).toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+    if (!key || !usage) return { surfaced: 0, used: 0 };
+    const words = key.split(/\s+/).filter((w) => w.length > 3).slice(0, 4);
+    const rows = usage.filter((r: any) => {
+      const o = String(r.objection ?? "").toLowerCase();
+      if (!o) return false;
+      if (o.includes(key) || key.includes(o)) return true;
+      return words.length > 0 && words.every((w) => o.includes(w));
+    });
+    return { surfaced: rows.length, used: rows.filter((r: any) => r.was_used).length };
+  };
+
+
   const create = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("objections").insert({
