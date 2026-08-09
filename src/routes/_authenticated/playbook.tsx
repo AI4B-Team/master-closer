@@ -19,6 +19,55 @@ import { toast } from "sonner";
 
 type Suggestion = { trigger: string; category?: string | null; response: string };
 
+// ---- CSV helpers (trigger, category, response) ----
+const csvCell = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+function toCsv(rows: any[]) {
+  const head = ["Trigger", "Category", "Response"].join(",");
+  const body = rows.map((r) => [r.trigger ?? "", r.category ?? "", r.response ?? ""].map(csvCell).join(","));
+  return [head, ...body].join("\n");
+}
+function parseCsv(text: string) {
+  const rows: string[][] = [];
+  let cell = "";
+  let row: string[] = [];
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false;
+      } else cell += c;
+      continue;
+    }
+    if (c === '"') { quoted = true; continue; }
+    if (c === ",") { row.push(cell); cell = ""; continue; }
+    if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+      continue;
+    }
+    cell += c;
+  }
+  if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  const clean = rows.filter((r) => r.some((v) => v.trim()));
+  if (!clean.length) return [];
+  const first = clean[0].map((h) => h.trim().toLowerCase());
+  const hasHeader = first.includes("trigger");
+  const idx = {
+    trigger: hasHeader ? first.indexOf("trigger") : 0,
+    category: hasHeader ? first.indexOf("category") : 1,
+    response: hasHeader ? first.indexOf("response") : 2,
+  };
+  return clean
+    .slice(hasHeader ? 1 : 0)
+    .map((r) => ({
+      trigger: (r[idx.trigger] ?? "").trim(),
+      category: idx.category >= 0 ? (r[idx.category] ?? "").trim() || null : null,
+      response: (r[idx.response] ?? "").trim(),
+    }))
+    .filter((r) => r.trigger && r.response);
+}
+
 
 export const Route = createFileRoute("/_authenticated/playbook")({
   head: () => ({
