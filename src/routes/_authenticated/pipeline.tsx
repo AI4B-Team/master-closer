@@ -239,7 +239,7 @@ function PipelinePage() {
                 <Plus className="h-4 w-4 mr-1.5" /> New Deal
               </Button>
               <Button asChild type="button" variant="outline" className="rounded-xl">
-                <Link to="/leads">Go To Leads</Link>
+                <Link to="/leads" search={{ q: undefined, lead: undefined }}>Go To Leads</Link>
               </Button>
             </>
           }
