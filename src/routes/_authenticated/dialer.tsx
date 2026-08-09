@@ -834,6 +834,8 @@ function DialerPage() {
             locked={blocked}
             thinking={thinking}
             onAsk={(line) => runAssist(line)}
+            onUseLine={(line) => void useSuggestedLine(line)}
+            usedLine={lineUsed}
           />
         ) : (
 
