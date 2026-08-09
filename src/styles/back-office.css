@@ -671,3 +671,51 @@
   padding: 8px; z-index: 40;
 }
 .drop-menu .pm-row { width: 100%; }
+
+/* ---------------------------- onboarding checklist ---------------------------- */
+.onb {
+  background: #fff; border: 1px solid var(--line); border-radius: 20px;
+  padding: 20px 22px; margin-bottom: 20px;
+}
+.onb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.onb-title { display: flex; align-items: center; gap: 12px; }
+.onb-icon {
+  width: 34px; height: 34px; border-radius: 11px; background: #FBEAEA; color: #CC0000;
+  display: grid; place-items: center; flex: none;
+}
+.onb-title h2 { font-size: 16.5px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+.onb-title p { font-size: 12.8px; color: var(--muted); margin: 2px 0 0; }
+.onb-x {
+  border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 28px; height: 28px;
+  display: grid; place-items: center; cursor: pointer; color: var(--muted); flex: none;
+}
+.onb-x:hover { background: #F6F6F8; color: var(--ink); }
+.onb-bar { height: 5px; border-radius: 999px; background: #EEF0F3; margin: 16px 0 4px; overflow: hidden; }
+.onb-bar span { display: block; height: 100%; background: var(--signal); border-radius: 999px; transition: width .3s ease; }
+.onb-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.onb-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid #F1F2F5;
+}
+.onb-item:last-child { border-bottom: none; padding-bottom: 0; }
+.onb-check {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.6px solid #DCDDE4; flex: none;
+  display: grid; place-items: center; color: #fff;
+}
+.onb-item.is-done .onb-check { background: #16A34A; border-color: #16A34A; }
+.onb-copy { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.onb-copy strong { font-size: 14px; font-weight: 700; }
+.onb-item.is-done .onb-copy strong { color: var(--muted); text-decoration: line-through; }
+.onb-copy small { font-size: 12.4px; color: var(--muted); }
+.onb-cta {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12.6px; font-weight: 700;
+  color: #fff; background: var(--ink); border-radius: 999px; padding: 7px 13px; text-decoration: none; flex: none;
+}
+.onb-cta:hover { background: var(--signal); }
+.onb-done-tag { font-size: 12px; font-weight: 700; color: #16A34A; flex: none; }
+
+@media (max-width: 720px) {
+  .kpis { grid-template-columns: 1fr; }
+  .onb-item { flex-wrap: wrap; }
+  .onb-cta { margin-left: 32px; }
+}

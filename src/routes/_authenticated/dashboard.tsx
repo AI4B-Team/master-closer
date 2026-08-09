@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { DollarSign, Eye, MoreVertical, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -79,6 +80,8 @@ function Dashboard() {
           </Link>
         }
       />
+
+      <OnboardingChecklist />
 
       <div className="kpis">
         <Kpi label="Calls Today" value={String(stats?.callsToday ?? 0)} icon={PhoneCall} {...KPI_TINTS.blue} delta="Today" />
