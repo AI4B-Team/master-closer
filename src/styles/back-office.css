@@ -233,8 +233,8 @@
 .pill { font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; display: inline-block; }
 .row-acts { display: flex; gap: 10px; color: var(--muted); opacity: 0; transition: opacity 0.14s ease; }
 .tbl tr:hover .row-acts { opacity: 1; }
-.row-acts button { border: none; background: none; padding: 0; color: inherit; cursor: pointer; display: grid; place-items: center; }
-.row-acts button:hover { color: var(--signal); }
+.row-acts button, .row-acts a { border: none; background: none; padding: 0; color: inherit; cursor: pointer; display: grid; place-items: center; text-decoration: none; }
+.row-acts button:hover, .row-acts a:hover { color: var(--signal); }
 
 /* -------------------------------- donut -------------------------------- */
 .donut-wrap { display: flex; justify-content: center; padding: 6px 0 14px; }
