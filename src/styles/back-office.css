@@ -500,9 +500,15 @@
 /* --- Notifications --- */
 .notif-menu { width: 380px; padding: 0; overflow: hidden; }
 .notif-head {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 14px; border-bottom: 1px solid #ECEDF1; font-size: 14px;
 }
+.notif-foot {
+  display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+  padding: 11px 14px; background: #FAFAFB; border: 0; border-top: 1px solid #ECEDF1;
+  color: #4A505C; font-size: 12.5px; font-weight: 650; cursor: pointer;
+}
+.notif-foot:hover { color: #CC0000; background: #FDF3F2; }
 .notif-read {
   display: inline-flex; align-items: center; gap: 5px; background: none; border: 0;
   color: #6B7280; font-size: 11.5px; font-weight: 600; cursor: pointer;
