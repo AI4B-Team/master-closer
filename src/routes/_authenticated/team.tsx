@@ -61,6 +61,14 @@ function ReportsPage() {
     },
   });
 
+  const { data: agents } = useQuery({
+    queryKey: ["report_agents"],
+    queryFn: async () => {
+      const { data } = await supabase.from("agents").select("id, name, default_mode, active");
+      return data ?? [];
+    },
+  });
+
   const { data: people } = useQuery({
     queryKey: ["report_people"],
     queryFn: async () => {
