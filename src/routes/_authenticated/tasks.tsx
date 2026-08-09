@@ -350,10 +350,10 @@ function TasksPage() {
       />
 
       <div className="kpis">
-        <Kpi label="Open" value={String(counts.open)} icon={ListChecks} {...KPI_TINTS.blue} />
-        <Kpi label="Due Today" value={String(counts.today)} icon={CalendarClock} {...KPI_TINTS.mint} />
-        <Kpi label="Overdue" value={String(counts.overdue)} icon={AlarmClock} {...KPI_TINTS.red} />
-        <Kpi label="Completed" value={String(counts.done)} icon={CheckCircle2} {...KPI_TINTS.lavender} />
+        <Kpi label="Open" value={String(counts.open)} icon={ListChecks} {...KPI_TINTS.blue} onClick={() => setFilter("open")} active={filter === "open"} />
+        <Kpi label="Due Today" value={String(counts.today)} icon={CalendarClock} {...KPI_TINTS.mint} onClick={() => setFilter("today")} active={filter === "today"} />
+        <Kpi label="Overdue" value={String(counts.overdue)} icon={AlarmClock} {...KPI_TINTS.red} onClick={() => setFilter("overdue")} active={filter === "overdue"} />
+        <Kpi label="Completed" value={String(counts.done)} icon={CheckCircle2} {...KPI_TINTS.lavender} onClick={() => setFilter("done")} active={filter === "done"} />
       </div>
 
       <Panel

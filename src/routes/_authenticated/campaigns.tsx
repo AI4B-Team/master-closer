@@ -304,8 +304,8 @@ function CampaignsPage() {
 
       <div className="kpis">
         <Kpi label="Active Campaigns" value={String(active)} icon={Megaphone} {...KPI_TINTS.red} />
-        <Kpi label="Contacts Queued" value={String(contactsQueued)} icon={Users} {...KPI_TINTS.blue} />
-        <Kpi label="Calls Dialed" value={String(totalDialed)} icon={PhoneOutgoing} {...KPI_TINTS.mint} />
+        <Kpi label="Contacts Queued" value={String(contactsQueued)} icon={Users} {...KPI_TINTS.blue} to="/leads" />
+        <Kpi label="Calls Dialed" value={String(totalDialed)} icon={PhoneOutgoing} {...KPI_TINTS.mint} to="/calls" />
         <Kpi label="Total Campaigns" value={String(all.length)} icon={Target} {...KPI_TINTS.lavender} />
       </div>
 

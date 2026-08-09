@@ -70,6 +70,8 @@ export function Kpi({
   up = true,
   to,
   search,
+  onClick,
+  active = false,
 }: {
   label: string;
   value: string;
@@ -80,6 +82,8 @@ export function Kpi({
   up?: boolean;
   to?: string;
   search?: Record<string, unknown>;
+  onClick?: () => void;
+  active?: boolean;
 }) {
   const body = (
     <>
@@ -99,11 +103,21 @@ export function Kpi({
     </>
   );
 
+  const cls = "kpi kpi-link" + (active ? " kpi-active" : "");
+
   if (to) {
     return (
-      <Link to={to as any} search={search as any} className="kpi kpi-link" style={{ background: tint }}>
+      <Link to={to as any} search={search as any} className={cls} style={{ background: tint }}>
         {body}
       </Link>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={cls + " text-left"} style={{ background: tint }}>
+        {body}
+      </button>
     );
   }
 
