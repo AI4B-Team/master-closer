@@ -23,7 +23,7 @@ const SUGGESTED = [
   "Just send me some information.",
 ];
 
-type Drill = { objection: string; tone: string; confidence: number; line: string };
+type Drill = { objection: string; tone: string; confidence: number; line: string; source?: "library" | "ai" };
 
 /** Run a live objection drill against this agent's own prompt, industry, and mode. */
 export function AgentQuickDrill({
@@ -142,6 +142,11 @@ export function AgentQuickDrill({
             <Badge variant="outline" className="text-[#CC0000] border-[#CC0000]/30">
               {result.confidence}% Close Probability
             </Badge>
+            {result.source === "library" && (
+              <Badge variant="outline" className="border-[#E7E7EC] text-[#6B6B76]">
+                From Playbook
+              </Badge>
+            )}
           </div>
           <p className="text-[11px] uppercase tracking-wide text-[#6B6B76] mb-1">
             {MODE_LABEL[mode] ?? "Next Best Response"}
