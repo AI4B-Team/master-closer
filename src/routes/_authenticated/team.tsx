@@ -47,7 +47,16 @@ function ReportsPage() {
   const { data: deals } = useQuery({
     queryKey: ["report_deals"],
     queryFn: async () => {
-      const { data } = await supabase.from("deals").select("id, value, stage, owner_id");
+      const { data } = await supabase.from("deals").select("id, value, stage, stage_id, owner_id, updated_at");
+      return data ?? [];
+    },
+  });
+
+  const { data: stages } = useQuery({
+    queryKey: ["report_stages"],
+    queryFn: async () => {
+      const { data } = await supabase.from("pipeline_stages")
+        .select("id, label, kind, position, stale_days").order("position", { ascending: true });
       return data ?? [];
     },
   });
