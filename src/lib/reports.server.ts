@@ -69,15 +69,14 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
       .limit(2000),
     db()
       .from("deals")
-      .select("value, status, updated_at")
+      .select("value, stage, updated_at")
       .eq("workspace_id", workspaceId)
       .gte("updated_at", since)
       .limit(2000),
     db()
-      .from("call_suggestions")
-      .select("trigger, used")
+      .from("suggestions")
+      .select("objection, was_used")
       .eq("workspace_id", workspaceId)
-      .gte("created_at", since)
       .limit(2000),
   ]);
 
@@ -89,14 +88,15 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
     ? Math.round(probabilities.reduce((s, n) => s + n, 0) / probabilities.length)
     : 0;
 
-  const won = (deals ?? []).filter((d) => String(d.status ?? "") === "won");
+  const won = (deals ?? []).filter((d) => String(d.stage ?? "") === "won");
   const revenue = won.reduce((s, d) => s + Number(d.value ?? 0), 0);
 
   const byTrigger = new Map<string, number>();
   for (const s of suggestions ?? []) {
-    const key = String(s.trigger ?? "").trim();
+    const key = String(s.objection ?? "").trim();
     if (key) byTrigger.set(key, (byTrigger.get(key) ?? 0) + 1);
   }
+
   const topObjection = [...byTrigger.entries()].sort((a, b) => b[1] - a[1])[0];
 
   const window = cadence === "daily" ? "Last 24 Hours" : "Last 7 Days";
