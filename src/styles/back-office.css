@@ -1133,7 +1133,7 @@
 .qd-dot {
   position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; border-radius: 999px;
   background: var(--success); border: 2px solid var(--card); box-sizing: content-box;
-  animation: mc-live-pulse 1.6s ease-out infinite;
+  animation: mc-call-pulse 1.4s ease-out infinite;
 }
 .qd-menu {
   position: absolute; right: 0; top: calc(100% + 8px); width: 372px; z-index: 120;
