@@ -1,10 +1,29 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+
+/** Event types worth interrupting the user for, with the copy to show. */
+const ALERTS: Record<string, string> = {
+  "call.handoff": "Handoff Requested",
+  "call.transfer": "Call Transferred",
+  "agreement.signed": "Agreement Signed",
+  "deal.won": "Deal Won",
+  "lead.flagged_dnc": "Lead Flagged Do Not Call",
+  "consent.missing": "Consent Missing",
+};
+
+function alertFor(row: any): string | null {
+  const kind = String(row?.payload?.kind ?? row?.event_type ?? "");
+  if (ALERTS[kind]) return ALERTS[kind];
+  if (kind.includes("handoff")) return "Handoff Requested";
+  return null;
+}
 
 /**
  * Subscribes to workspace activity (events) and follow-up tasks and refreshes
  * the feeds that render them, so new rows appear without a page refresh.
+ * High-priority events also raise a toast.
  */
 export function useLiveWorkspace(extraKeys: string[] = []) {
   const qc = useQueryClient();
@@ -19,6 +38,11 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       "dashboard-activity",
       "tasks",
       "followups",
+      "calls",
+      "deals",
+      "pipeline",
+      "leads",
+      "agreements",
       ...extraKeys,
     ];
     const bump = () => {
@@ -29,7 +53,17 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
 
     const channel = supabase
       .channel("workspace-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "events" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "events" }, (payload) => {
+        bump();
+        if (payload.eventType !== "INSERT") return;
+        const label = alertFor(payload.new);
+        const detail = (payload.new as any)?.payload ?? {};
+        if (label) {
+          toast(label, {
+            description: detail.name || detail.lead_name || detail.title || detail.phone || undefined,
+          });
+        }
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, bump)
       .subscribe();
 
