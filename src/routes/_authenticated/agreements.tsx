@@ -15,7 +15,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, EmptyState, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import {
@@ -927,6 +927,7 @@ function AgreementDrawer({
       <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="font-display">{agreement.title}</SheetTitle>
+          <SheetDescription className="sr-only">Review this agreement's status, signers and activity.</SheetDescription>
         </SheetHeader>
 
         <div className="mt-4 space-y-4">

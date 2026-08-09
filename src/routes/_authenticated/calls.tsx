@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -271,6 +271,7 @@ function CallsPage() {
             <SheetTitle>
               {active?.leads?.name ?? "Call detail"}
             </SheetTitle>
+            <SheetDescription className="sr-only">Review this call's transcript, outcome and recording.</SheetDescription>
           </SheetHeader>
           {active ? <CallDetail call={active} /> : null}
         </SheetContent>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -166,6 +166,7 @@ export function AgentDrawer({
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-xl">{agent?.name ?? "AI Closer"}</SheetTitle>
+          <SheetDescription className="sr-only">Review and tune this AI closer's settings, voice and activity.</SheetDescription>
         </SheetHeader>
 
         <div className="mt-5 space-y-4">
