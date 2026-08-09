@@ -851,6 +851,15 @@
   .content { padding: 18px 14px; }
 }
 
+/* On phones the scope caret ate the whole field, leaving no room to type. */
+@media (max-width: 620px) {
+  .search { padding: 8px 10px; gap: 6px; }
+  .search input { min-width: 0; }
+  .search-caret { display: none; }
+  .search-menu, .search-results { width: min(94vw, 420px); }
+}
+
+
 /* Page headers stack on small screens so titles, tabs and actions stay reachable. */
 @media (max-width: 720px) {
   .page-head { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 18px; }
