@@ -170,7 +170,7 @@ function DialerPage() {
 
       await supabase.from("agreement_events").insert({
         agreement_id: row.id,
-        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
+        org_id: prof.org_id,
         event_type: "sent",
         meta: { from: "dialer", call_id: callId },
       });
@@ -213,9 +213,11 @@ function DialerPage() {
     setThinking(true);
     setTranscript((t) => [...t, { speaker: "Prospect", text: prospectLine }]);
     try {
+      const { workspaceId } = await workspaceContext();
       if (activeCall) {
         await supabase.from("transcript_segments").insert({
           call_id: activeCall,
+          workspace_id: workspaceId,
           speaker: "Prospect",
           text: prospectLine,
           ts_sec: elapsed,
@@ -243,6 +245,7 @@ function DialerPage() {
           .from("suggestions")
           .insert({
             call_id: activeCall,
+            workspace_id: workspaceId,
             objection: res.objection,
             line: res.line,
             ts_sec: elapsed,
@@ -254,6 +257,7 @@ function DialerPage() {
         if (mode === "full_ai") {
           await supabase.from("transcript_segments").insert({
             call_id: activeCall,
+            workspace_id: workspaceId,
             speaker: "Master Closer",
             text: res.line,
             ts_sec: elapsed,
