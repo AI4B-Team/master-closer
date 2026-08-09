@@ -65,6 +65,18 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
         }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "calls" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, bump)
+      .on("postgres_changes", { event: "*", schema: "public", table: "agreements" }, (payload) => {
+        bump();
+        if (payload.eventType !== "UPDATE") return;
+        const row = payload.new as any;
+        const prev = payload.old as any;
+        if (row?.status === "signed" && prev?.status !== "signed") {
+          toast("Agreement Signed", { description: row.title || row.signer_name || undefined });
+        }
+      })
       .subscribe();
 
     return () => {
