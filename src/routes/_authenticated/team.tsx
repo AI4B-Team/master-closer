@@ -515,7 +515,7 @@ function ReportsPage() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{a.name}</span>
                       {a.isAgent ? (
-                        <StatusPill tone={a.active ? "green" : "gray"}>{a.active ? "Active" : "Paused"}</StatusPill>
+                        <StatusPill tone={a.active ? "green" : "neutral"}>{a.active ? "Active" : "Paused"}</StatusPill>
                       ) : null}
                     </div>
                   </td>
