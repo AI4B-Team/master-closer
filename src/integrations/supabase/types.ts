@@ -1006,7 +1006,9 @@ export type Database = {
           label: string
           org_id: string
           position: number
+          stale_days: number
           updated_at: string
+          wip_limit: number | null
         }
         Insert: {
           created_at?: string
@@ -1015,7 +1017,9 @@ export type Database = {
           label: string
           org_id: string
           position?: number
+          stale_days?: number
           updated_at?: string
+          wip_limit?: number | null
         }
         Update: {
           created_at?: string
@@ -1024,7 +1028,9 @@ export type Database = {
           label?: string
           org_id?: string
           position?: number
+          stale_days?: number
           updated_at?: string
+          wip_limit?: number | null
         }
         Relationships: [
           {
