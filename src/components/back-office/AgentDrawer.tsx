@@ -9,8 +9,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
+import { helpSystemPrompt } from "@/lib/agents.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 
 type Agent = {
   id: string;
