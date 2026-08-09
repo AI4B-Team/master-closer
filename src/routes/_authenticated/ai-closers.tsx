@@ -263,6 +263,12 @@ function AIClosers() {
                   ? `${scores[a.id].avg}% Drill Score · ${scores[a.id].count} Rep${scores[a.id].count === 1 ? "" : "s"}`
                   : "No Drills Yet"}
               </div>
+              <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[#6B6B76]">
+                <PhoneCall className="h-3.5 w-3.5 text-[#CC0000]" />
+                {perf?.[a.id]
+                  ? `${perf[a.id].calls} Call${perf[a.id].calls === 1 ? "" : "s"} · ${perf[a.id].connectRate}% Connected · ${perf[a.id].avgProb}% Avg Close`
+                  : "No Live Calls Yet"}
+              </div>
             </Card>
           ))}
         </div>
