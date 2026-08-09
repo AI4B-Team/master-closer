@@ -459,7 +459,13 @@ function Objections() {
         <EmptyState icon={MessageSquareQuote} title="No Objections Yet" hint="Load the pushback your reps hear most." />
       ) : (
         <div className="space-y-2">
-          {objections.map((o: any) => (
+          {objections
+            .filter((o: any) => {
+              const needle = q.trim().toLowerCase();
+              if (!needle) return true;
+              return `${o.trigger ?? ""} ${o.response ?? ""} ${o.category ?? ""}`.toLowerCase().includes(needle);
+            })
+            .map((o: any) => (
             <div key={o.id} className="border border-[#E7E7EC] rounded-xl px-4 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
