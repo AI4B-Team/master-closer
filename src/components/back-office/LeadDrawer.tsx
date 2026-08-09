@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Phone, Trash2, Save, PhoneCall, Clock } from "lucide-react";
+import { Phone, Trash2, Save, PhoneCall, Clock, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 
@@ -24,11 +24,15 @@ type Lead = {
   status: string;
   consent: string;
   notes: string | null;
+  owner_id: string | null;
+  tags: string[] | null;
   created_at: string;
 };
 
 const STATUSES = ["new", "contacted", "qualified", "unqualified", "customer"];
 const CONSENTS = ["unknown", "implied", "express_written", "opt_out"];
+const UNASSIGNED = "__unassigned__";
+
 
 export function LeadDrawer({
   lead,
@@ -40,10 +44,24 @@ export function LeadDrawer({
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [form, setForm] = useState<Partial<Lead>>({});
+  const [tagDraft, setTagDraft] = useState("");
 
   useEffect(() => {
     if (lead) setForm({ ...lead });
+    setTagDraft("");
   }, [lead]);
+
+  /* Owners come from the org's profiles so leads can be routed to a real closer. */
+  const { data: members } = useQuery({
+    queryKey: ["org-members-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+
 
   const { data: calls } = useQuery({
     queryKey: ["lead-calls", lead?.id],
@@ -74,6 +92,8 @@ export function LeadDrawer({
           status: (form.status ?? "new") as never,
           consent: (form.consent ?? "unknown") as never,
           notes: form.notes || null,
+          owner_id: form.owner_id || null,
+          tags: form.tags && form.tags.length > 0 ? form.tags : null,
         })
         .eq("id", lead!.id);
       if (error) throw error;
@@ -155,7 +175,7 @@ export function LeadDrawer({
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2">
+            <div>
               <Label>Consent</Label>
               <Select value={form.consent ?? "unknown"} onValueChange={(v) => setForm({ ...form, consent: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -166,6 +186,57 @@ export function LeadDrawer({
                 </SelectContent>
               </Select>
             </div>
+            <div className="col-span-2">
+              <Label>Owner</Label>
+              <Select
+                value={form.owner_id ?? UNASSIGNED}
+                onValueChange={(v) => setForm({ ...form, owner_id: v === UNASSIGNED ? null : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                  {(members ?? []).map((m: any) => (
+                    <SelectItem key={m.id} value={m.id}>{m.full_name || m.email || "Teammate"}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2">
+              <Label>Tags</Label>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {(form.tags ?? []).map((t) => (
+                  <Badge key={t} variant="outline" className="gap-1">
+                    {t}
+                    <button
+                      type="button"
+                      aria-label={`Remove tag ${t}`}
+                      className="text-[#6B6B76] hover:text-[#CC0000]"
+                      onClick={() => setForm({ ...form, tags: (form.tags ?? []).filter((x) => x !== t) })}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                {(form.tags ?? []).length === 0 && (
+                  <span className="text-xs text-[#6B6B76]">No tags yet.</span>
+                )}
+              </div>
+              <Input
+                value={tagDraft}
+                onChange={(e) => setTagDraft(e.target.value)}
+                placeholder="Type a tag and press Enter"
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  const t = tagDraft.trim();
+                  if (!t) return;
+                  const next = Array.from(new Set([...(form.tags ?? []), t]));
+                  setForm({ ...form, tags: next });
+                  setTagDraft("");
+                }}
+              />
+            </div>
+
             <div className="col-span-2">
               <Label>Notes</Label>
               <Textarea
