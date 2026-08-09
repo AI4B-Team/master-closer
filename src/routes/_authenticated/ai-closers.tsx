@@ -158,6 +158,12 @@ function AIClosers() {
         description="Closers — identity, knowledge, autonomy, and where to transfer."
         tabs={TAB_GROUPS.studio}
         action={
+          <div className="flex items-center gap-2">
+          <Button asChild variant="outline" className="rounded-xl">
+            <Link to="/agents" search={{ view: "proposals" }}>
+              <ShieldCheck className="h-4 w-4 mr-1" /> Agent Governance
+            </Link>
+          </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
