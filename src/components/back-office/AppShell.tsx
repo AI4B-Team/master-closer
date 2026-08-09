@@ -161,8 +161,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GlobalSearch />
 
           <div className="topbar-right">
-            <span className="status-chip">
-              <span className="status-dot" /> On Call
+            <span
+              className={
+                "status-chip " +
+                (callStatus === "on_call"
+                  ? "status-chip-live"
+                  : callStatus === "dialing"
+                    ? "status-chip-dialing"
+                    : "status-chip-idle")
+              }
+            >
+              <span className="status-dot" />{" "}
+              {callStatus === "on_call" ? "On Call" : callStatus === "dialing" ? "Dialing" : "Available"}
             </span>
             <HelpMenu onStartTour={tour.start} />
             <NotificationsMenu />

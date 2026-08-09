@@ -9,6 +9,7 @@ import {
   AudioLines, Ban, Check, CreditCard, Megaphone, PhoneOff, PhoneOutgoing, SkipForward,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { setCallStatus } from "@/hooks/use-call-status";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { closeObjection } from "@/lib/demo.functions";
 import { summarizeCall } from "@/lib/calls.functions";
@@ -80,6 +81,11 @@ function DialerPage() {
   const [thinking, setThinking] = useState(false);
   const [simulate, setSimulate] = useState(true);
   const [dialing, setDialing] = useState(false);
+
+  useEffect(() => {
+    setCallStatus(connected ? "on_call" : dialing ? "dialing" : "idle");
+  }, [connected, dialing]);
+  useEffect(() => () => setCallStatus("idle"), []);
   const [holding, setHolding] = useState(false);
   const [participants, setParticipants] = useState<string[]>([]);
   const [mergeOpen, setMergeOpen] = useState(false);
