@@ -113,6 +113,7 @@ export async function emitEvent(orgId: string, eventType: string, payload: Recor
 type EventRow = {
   id: string;
   org_id: string;
+  workspace_id: string;
   event_type: string;
   payload: unknown;
   created_at: string;
