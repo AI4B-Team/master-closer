@@ -177,6 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="status-dot" />{" "}
               {callStatus === "on_call" ? "On Call" : callStatus === "dialing" ? "Dialing" : "Available"}
             </span>
+            <ActivityPanel />
             <HelpMenu onStartTour={tour.start} />
             <NotificationsMenu />
 
