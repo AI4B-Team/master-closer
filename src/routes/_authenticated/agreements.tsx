@@ -26,6 +26,8 @@ import {
   STATUS_TONE, type AgreementStatus,
 } from "@/lib/agreements";
 import { emailSigningLink, printSignedCopy } from "@/lib/agreement-print";
+import { logActivity } from "@/lib/activity";
+
 
 export const Route = createFileRoute("/_authenticated/agreements")({
   head: () => ({
