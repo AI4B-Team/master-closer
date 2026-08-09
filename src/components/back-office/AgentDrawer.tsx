@@ -151,9 +151,9 @@ export function AgentDrawer({
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <Label>System Prompt</Label>
-              <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex items-start justify-between gap-3 mb-1.5">
+              <Label className="mt-1.5 shrink-0">System Prompt</Label>
+              <div className="flex flex-wrap justify-end items-center gap-1.5">
                 <Button
                   type="button"
                   variant="outline"
