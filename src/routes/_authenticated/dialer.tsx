@@ -968,15 +968,16 @@ function DialerPage() {
                       className={"tab " + (simulate ? "tab-on" : "")}
                       onClick={() => setSimulate(true)}
                     >
-                      Simulated Call
+                      Simulated
                     </button>
                     <button
                       type="button"
                       className={"tab " + (!simulate ? "tab-on" : "")}
                       onClick={() => setSimulate(false)}
                     >
-                      Live Carrier
+                      Live
                     </button>
+
                   </div>
                   <span className="muted" style={{ fontSize: 12 }}>
                     {simulate
