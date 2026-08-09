@@ -1959,5 +1959,10 @@ a{text-decoration:none;color:inherit;}
   .nav-login{font-size:.86rem;white-space:nowrap;}
   .nav-cta .btn-primary{padding:9px 14px;font-size:.86rem;white-space:nowrap;}
 }
+@media(max-width:560px){
+  .demo-input{flex-direction:column;}
+  .demo-input input{width:100%;}
+  .demo-go{width:100%;justify-content:center;}
+}
 html,body{overflow-x:hidden;max-width:100vw;}
 `;
