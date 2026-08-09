@@ -23,7 +23,7 @@ export const Route = createFileRoute("/api/v1/lists")({
       POST: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase, orgId } = await apiClient(request);
+          const { supabase, orgId, workspaceId } = await apiClient(request);
           const body = z
             .object({
               list_id: z.string().uuid(),
@@ -51,6 +51,7 @@ export const Route = createFileRoute("/api/v1/lists")({
             .insert(
               contacts.map((c) => ({
                 org_id: orgId,
+                workspace_id: workspaceId,
                 name: c.name,
                 phone: c.phone,
                 email: c.email,
