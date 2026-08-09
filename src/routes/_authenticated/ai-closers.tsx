@@ -15,6 +15,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Bot } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
+import { VoicePicker } from "@/components/back-office/VoicePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/ai-closers")({
 function AIClosers() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", industry: "", default_mode: "hybrid", voice: "aria" });
+  const [form, setForm] = useState<{ name: string; industry: string; default_mode: string; voices: string[] }>({ name: "", industry: "", default_mode: "hybrid", voices: ["aria"] });
   const [selected, setSelected] = useState<any>(null);
 
   const { data: agents, isLoading: agentsLoading } = useQuery({
@@ -51,14 +52,19 @@ function AIClosers() {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { error } = await supabase.from("agents").insert({
-        ...form, default_mode: form.default_mode as any, org_id: prof.org_id,
+        name: form.name,
+        industry: form.industry,
+        default_mode: form.default_mode as any,
+        voices: form.voices,
+        voice: form.voices[0] ?? null,
+        org_id: prof.org_id,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Agent created.");
       setOpen(false);
-      setForm({ name: "", industry: "", default_mode: "hybrid", voice: "aria" });
+      setForm({ name: "", industry: "", default_mode: "hybrid", voices: ["aria"] });
       qc.invalidateQueries({ queryKey: ["agents"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -100,17 +106,7 @@ function AIClosers() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Voice</Label>
-                  <Select value={form.voice} onValueChange={(v) => setForm({ ...form, voice: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="aria">Aria</SelectItem>
-                      <SelectItem value="marcus">Marcus</SelectItem>
-                      <SelectItem value="june">June</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <VoicePicker value={form.voices} onChange={(voices) => setForm({ ...form, voices })} />
               </div>
               <DialogFooter>
                 <Button onClick={() => create.mutate()} disabled={!form.name || create.isPending} className="bg-[#CC0000] hover:bg-[#A30000]">
@@ -155,7 +151,9 @@ function AIClosers() {
               <p className="text-xs text-[#6B6B76] mt-1">{a.industry ?? "General"}</p>
               <div className="flex gap-2 mt-3">
                 <Badge variant="secondary" className="capitalize">{a.default_mode.replace("_", " ")}</Badge>
-                <Badge variant="outline" className="capitalize">{a.voice}</Badge>
+                {(a.voices?.length ? a.voices : [a.voice]).filter(Boolean).map((v: string) => (
+                  <Badge key={v} variant="outline" className="capitalize">{v.replace("custom:", "Custom ")}</Badge>
+                ))}
               </div>
             </Card>
           ))}
