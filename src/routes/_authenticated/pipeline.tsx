@@ -74,6 +74,8 @@ function PipelinePage() {
   const [selected, setSelected] = useState<DealRow | null>(null);
   const [editing, setEditing] = useState<Stage | null>(null);
   const [colForm, setColForm] = useState({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
+  const [search, setSearch] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("all");
   const [form, setForm] = useState({
     title: "",
     value: "0",
