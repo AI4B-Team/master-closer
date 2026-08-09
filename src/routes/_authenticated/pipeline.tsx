@@ -17,8 +17,9 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import {
   Plus, Trash2, GripVertical, KanbanSquare, MoreHorizontal, Pencil,
-  ArrowLeft, ArrowRight, Columns3, Clock, Search as SearchIcon,
+  ArrowLeft, ArrowRight, Columns3, Clock, Search as SearchIcon, Download,
 } from "lucide-react";
+import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { DealDrawer, type DealRow } from "@/components/back-office/DealDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
