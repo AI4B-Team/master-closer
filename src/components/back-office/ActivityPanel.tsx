@@ -108,6 +108,15 @@ export function ActivityPanel() {
     }
   };
 
+  // Frozen at open time so "New" markers stay put while the panel is up.
+  const [seenAtOpen, setSeenAtOpen] = useState<string>("");
+
+  useEffect(() => {
+    if (!open) return;
+    setSeenAtOpen(seen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   useEffect(() => {
     if (open && newest) markSeen(newest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
