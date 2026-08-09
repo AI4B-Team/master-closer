@@ -18,6 +18,8 @@ const LABELS: Record<string, string> = {
   "agreement.signed": "Agreement Signed",
   "campaign.started": "Campaign Started",
   "consent.logged": "Disclosure Logged",
+  "task.due": "Follow-Up Due",
+  "task.overdue": "Follow-Up Overdue",
 };
 
 type EventRow = { id: string; event_type: string; payload: any; created_at: string };
@@ -34,13 +36,15 @@ function detail(e: EventRow) {
 }
 
 function ago(iso: string) {
-  const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-  if (s < 60) return `${s}s ago`;
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.max(1, Math.round(Math.abs(diff) / 1000));
+  const suffix = diff < 0 ? (v: string) => `in ${v}` : (v: string) => `${v} ago`;
+  if (s < 60) return suffix(`${s}s`);
   const m = Math.round(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return suffix(`${m}m`);
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  if (h < 24) return suffix(`${h}h`);
+  return suffix(`${Math.round(h / 24)}d`);
 }
 
 /** Bell menu in the top bar: recent workspace activity with an unread dot. */
@@ -67,12 +71,32 @@ export function NotificationsMenu() {
     queryKey: ["notifications"],
     refetchInterval: 30000,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("events")
-        .select("id,event_type,payload,created_at")
-        .order("created_at", { ascending: false })
-        .limit(20);
-      return (data ?? []) as EventRow[];
+      const [evt, tasks] = await Promise.all([
+        supabase
+          .from("events")
+          .select("id,event_type,payload,created_at")
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("tasks")
+          .select("id,title,due_at,priority,status")
+          .eq("status", "open")
+          .not("due_at", "is", null)
+          .lte("due_at", new Date(Date.now() + 86400000).toISOString())
+          .order("due_at", { ascending: true })
+          .limit(10),
+      ]);
+
+      const taskRows: EventRow[] = (tasks.data ?? []).map((t: any) => ({
+        id: `task:${t.id}`,
+        event_type: new Date(t.due_at) < new Date() ? "task.overdue" : "task.due",
+        payload: { title: t.title, priority: t.priority },
+        created_at: t.due_at,
+      }));
+
+      return [...taskRows, ...((evt.data ?? []) as EventRow[])]
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
+        .slice(0, 24);
     },
   });
 
@@ -93,6 +117,7 @@ export function NotificationsMenu() {
     if (type.startsWith("lead")) return "/leads";
     if (type.startsWith("deal")) return "/pipeline";
     if (type.startsWith("campaign")) return "/campaigns";
+    if (type.startsWith("task")) return "/tasks";
     return "/dashboard";
   };
 
