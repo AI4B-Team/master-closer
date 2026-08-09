@@ -33,9 +33,19 @@ export const Route = createFileRoute("/_authenticated/ai-closers")({
   component: AIClosers,
 });
 
+const MODE_FILTERS: { value: string; label: string }[] = [
+  { value: "all", label: "All Modes" },
+  { value: "full_ai", label: "AI" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "copilot", label: "Copilot" },
+  { value: "active", label: "Active Only" },
+];
+
 function AIClosers() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [modeFilter, setModeFilter] = useState("all");
   const [form, setForm] = useState<{ name: string; industry: string; default_mode: string; voices: string[] }>({ name: "", industry: "", default_mode: "hybrid", voices: ["aria"] });
   const [selected, setSelected] = useState<any>(null);
 
