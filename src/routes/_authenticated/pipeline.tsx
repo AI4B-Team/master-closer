@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { EmptyPanel } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import { Plus, Trash2, GripVertical, KanbanSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -54,7 +54,7 @@ function PipelinePage() {
     lead_id: "",
   });
 
-  const { data: deals } = useQuery({
+  const { data: deals, isLoading: dealsLoading } = useQuery({
     queryKey: ["deals"],
     queryFn: async () => {
       const { data, error } = await supabase.from("deals")
@@ -222,7 +222,9 @@ function PipelinePage() {
         </Badge>
       </div>
 
-      {(deals ?? []).length === 0 ? (
+      {dealsLoading ? (
+        <SkeletonCards count={6} height={180} />
+      ) : (deals ?? []).length === 0 ? (
         <EmptyPanel
           icon={KanbanSquare}
           title="No Deals In The Pipeline"

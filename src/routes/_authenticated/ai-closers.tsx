@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Bot } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
-import { EmptyPanel } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -38,7 +38,7 @@ function AIClosers() {
   const [form, setForm] = useState({ name: "", industry: "", default_mode: "hybrid", voice: "aria" });
   const [selected, setSelected] = useState<any>(null);
 
-  const { data: agents } = useQuery({
+  const { data: agents, isLoading: agentsLoading } = useQuery({
     queryKey: ["agents"],
     queryFn: async () => {
       const { data } = await supabase.from("agents").select("*").order("created_at", { ascending: false });
@@ -122,7 +122,9 @@ function AIClosers() {
         }
       />
 
-      {!agents || agents.length === 0 ? (
+      {agentsLoading ? (
+        <SkeletonCards count={6} height={150} />
+      ) : !agents || agents.length === 0 ? (
         <EmptyPanel
           icon={Bot}
           title="No AI Closers Yet"

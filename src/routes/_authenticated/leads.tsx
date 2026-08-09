@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { LeadDrawer } from "@/components/back-office/LeadDrawer";
 import { Plus, Search, Users, Upload } from "lucide-react";
-import { EmptyPanel } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -69,7 +69,7 @@ function LeadsPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", status: "new" });
   const emit = useServerFn(emitOrgEvent);
 
-  const { data: leads } = useQuery({
+  const { data: leads, isLoading: leadsLoading } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
       const { data, error } = await supabase.from("leads")
@@ -237,7 +237,9 @@ function LeadsPage() {
           <span className="text-sm text-[#6B6B76] whitespace-nowrap">{filtered.length} shown</span>
         </div>
 
-        {filtered.length === 0 ? (
+        {leadsLoading ? (
+          <SkeletonRows rows={6} />
+        ) : filtered.length === 0 ? (
           <EmptyPanel
             icon={Users}
             title="No Leads Yet"

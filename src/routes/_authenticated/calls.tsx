@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download } from "lucide-react";
-import { EmptyPanel } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/calls")({
@@ -42,7 +42,7 @@ function CallsPage() {
   const [outcome, setOutcome] = useState("all");
   const [range, setRange] = useState("all");
 
-  const { data: calls } = useQuery({
+  const { data: calls, isLoading: callsLoading } = useQuery({
     queryKey: ["calls"],
     queryFn: async () => {
       const { data, error } = await supabase.from("calls")
@@ -151,7 +151,9 @@ function CallsPage() {
           <span><b className="text-[#111114]">{Math.round(talkTime / 60)}</b> min talk time</span>
         </div>
 
-        {filtered.length === 0 ? (
+        {callsLoading ? (
+          <SkeletonRows rows={6} />
+        ) : filtered.length === 0 ? (
           <EmptyPanel
             icon={PhoneCall}
             title="No Calls Found"

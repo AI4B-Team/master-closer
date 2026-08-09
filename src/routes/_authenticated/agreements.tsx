@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { EmptyPanel, EmptyState, StatusPill } from "@/components/back-office/ui";
+import { EmptyPanel, EmptyState, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import {
   Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History,
 } from "lucide-react";
@@ -72,7 +72,7 @@ function AgreementsPage() {
     },
   });
 
-  const { data: agreements } = useQuery({
+  const { data: agreements, isLoading: agreementsLoading } = useQuery({
     queryKey: ["agreements"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -154,7 +154,9 @@ function AgreementsPage() {
           </div>
 
           <Card className="rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
-            {(agreements ?? []).length === 0 ? (
+            {agreementsLoading ? (
+              <SkeletonRows rows={5} />
+            ) : (agreements ?? []).length === 0 ? (
               <EmptyPanel
                 icon={FileSignature}
                 title="No Agreements Yet"

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { EmptyPanel, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
+import { EmptyPanel, SkeletonRows, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
 import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ function CampaignsPage() {
     name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100",
   });
 
-  const { data: campaigns } = useQuery({
+  const { data: campaigns, isLoading: campaignsLoading } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -237,7 +237,9 @@ function CampaignsPage() {
       </div>
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none mt-4">
-        {all.length === 0 ? (
+        {campaignsLoading ? (
+          <SkeletonRows rows={5} />
+        ) : all.length === 0 ? (
           <EmptyPanel
             icon={Megaphone}
             title="No Campaigns Yet"

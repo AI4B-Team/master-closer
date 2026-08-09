@@ -158,3 +158,30 @@ export function EmptyPanel({
     </div>
   );
 }
+
+/** Shimmering placeholder rows shown while a list query is in flight. */
+export function SkeletonRows({ rows = 5, className = "" }: { rows?: number; className?: string }) {
+  return (
+    <div className={"mc-skel " + className} aria-hidden="true">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div className="mc-skel-row" key={i}>
+          <span className="mc-skel-bar" style={{ width: "34%" }} />
+          <span className="mc-skel-bar" style={{ width: "22%" }} />
+          <span className="mc-skel-bar" style={{ width: "16%" }} />
+          <span className="mc-skel-bar" style={{ width: "12%" }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Shimmering placeholder cards for grid/board layouts. */
+export function SkeletonCards({ count = 6, height = 120 }: { count?: number; height?: number }) {
+  return (
+    <div className="mc-skel-cards" aria-hidden="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <span className="mc-skel-card" key={i} style={{ height }} />
+      ))}
+    </div>
+  );
+}
