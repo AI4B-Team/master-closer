@@ -621,7 +621,7 @@ function PipelinePage() {
                       <div className="h-0.5 rounded-full bg-[#CC0000] mb-2" />
                     ) : null}
                   <Card
-                    draggable
+                    draggable={!filterActive}
                     onDragStart={() => setDragId(d.id)}
                     onDragEnd={() => { setDragId(null); setOverStage(null); setOverIndex(null); }}
                     onDragOver={(e) => {
