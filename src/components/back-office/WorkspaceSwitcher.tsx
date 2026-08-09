@@ -353,7 +353,8 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
                       <Building2 size={14} className="opacity-40" />
                     )}
                   </span>
-                </button>
+                </div>
+
               );
             })
           )}
