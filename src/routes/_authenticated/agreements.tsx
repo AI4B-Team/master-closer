@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { EmptyState, StatusPill } from "@/components/back-office/ui";
+import { EmptyPanel, EmptyState, StatusPill } from "@/components/back-office/ui";
 import {
   Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History,
 } from "lucide-react";
