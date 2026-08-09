@@ -542,14 +542,18 @@ function DialerPage() {
     queryKey: ["dialer-teammates", wsId],
     enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: rows } = await supabase
         .from("workspace_members")
-        .select("user_id, profiles:user_id(id, full_name, email)")
+        .select("user_id")
         .eq("workspace_id", wsId!)
         .limit(50);
-      return (data ?? [])
-        .map((m: any) => m.profiles)
-        .filter(Boolean);
+      const ids = (rows ?? []).map((r) => r.user_id).filter(Boolean);
+      if (!ids.length) return [] as { id: string; full_name: string | null; email: string | null }[];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      return (profs ?? []) as { id: string; full_name: string | null; email: string | null }[];
     },
   });
 
