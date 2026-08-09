@@ -159,7 +159,13 @@ export async function dispatchEvent(event: EventRow) {
     await supabaseAdmin
       .from("webhook_deliveries")
       .upsert(
-        { event_id: event.id, webhook_id: hook.id, status_code: status, error: errorText },
+        {
+          event_id: event.id,
+          webhook_id: hook.id,
+          workspace_id: event.workspace_id,
+          status_code: status,
+          error: errorText,
+        },
         { onConflict: "event_id,webhook_id" },
       );
   }
