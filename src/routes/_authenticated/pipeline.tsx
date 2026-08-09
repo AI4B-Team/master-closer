@@ -191,9 +191,13 @@ function PipelinePage() {
     mutationFn: async () => {
       const label = colForm.label.trim();
       if (!label) throw new Error("Give the column a name.");
+      const limitRaw = Number(colForm.wip_limit);
+      const wip_limit = colForm.wip_limit.trim() && limitRaw > 0 ? Math.round(limitRaw) : null;
+      const staleRaw = Number(colForm.stale_days);
+      const stale_days = Number.isFinite(staleRaw) && staleRaw >= 0 ? Math.round(staleRaw) : 14;
       if (editing) {
         const { error } = await supabase.from("pipeline_stages")
-          .update({ label, kind: colForm.kind }).eq("id", editing.id);
+          .update({ label, kind: colForm.kind, wip_limit, stale_days }).eq("id", editing.id);
         if (error) throw error;
         return;
       }
@@ -201,14 +205,14 @@ function PipelinePage() {
       if (!prof) throw new Error("No workspace found.");
       const nextPos = (columns.at(-1)?.position ?? 0) + 1;
       const { error } = await supabase.from("pipeline_stages")
-        .insert({ org_id: prof.org_id, label, kind: colForm.kind, position: nextPos });
+        .insert({ org_id: prof.org_id, label, kind: colForm.kind, position: nextPos, wip_limit, stale_days });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(editing ? "Column updated." : "Column added.");
       setColOpen(false);
       setEditing(null);
-      setColForm({ label: "", kind: "open" });
+      setColForm({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
       qc.invalidateQueries({ queryKey: ["pipeline-stages"] });
       qc.invalidateQueries({ queryKey: ["deals"] });
     },
