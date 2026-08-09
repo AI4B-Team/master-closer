@@ -72,7 +72,7 @@ function TasksPage() {
   const [q, setQ] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
   const [assignee, setAssignee] = useState("all");
-  const [priority, setPriority] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [selected, setSelected] = useState<string[]>([]);
   const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
 
@@ -248,7 +248,7 @@ function TasksPage() {
     if (assignee !== "all") {
       if (assignee === "unassigned" ? !!t.assignee_id : t.assignee_id !== assignee) return false;
     }
-    if (priority !== "all" && t.priority !== priority) return false;
+    if (priorityFilter !== "all" && t.priority !== priorityFilter) return false;
     if (term) {
       const hay = [t.title, t.notes ?? "", t.leads?.name ?? "", t.leads?.company ?? ""].join(" ").toLowerCase();
       if (!hay.includes(term)) return false;
