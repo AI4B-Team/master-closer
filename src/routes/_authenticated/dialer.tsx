@@ -87,6 +87,20 @@ function DialerPage() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferTo, setTransferTo] = useState("");
   const [agentId, setAgentId] = useState<string>("");
+  const [wrap, setWrap] = useState<{
+    callId: string;
+    prospect: string;
+    disposition: string;
+    summary: string;
+    nextStep: string;
+    sentiment: string | null;
+    lines: AssistLine[];
+    loading: boolean;
+    task: boolean;
+    dueDays: number;
+  } | null>(null);
+  const summarize = useServerFn(summarizeCall);
+
   const holdRef = useRef(false);
   holdRef.current = holding;
 
