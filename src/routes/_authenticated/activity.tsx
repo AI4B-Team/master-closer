@@ -108,8 +108,8 @@ function ActivityPage() {
             <div className="flex flex-wrap gap-1.5">
               <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
               {types.map((t) => (
-                <FilterChip key={t} active={type === t} onClick={() => setType(t)}>
-                  {t}
+                <FilterChip key={t.kind} active={type === t.kind} onClick={() => setType(t.kind)}>
+                  {t.label}
                 </FilterChip>
               ))}
             </div>
