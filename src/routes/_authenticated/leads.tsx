@@ -68,6 +68,8 @@ function LeadsPage() {
   const { q: qParam, lead: leadParam } = Route.useSearch();
   const [search, setSearch] = useState(qParam ?? "");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [ownerFilter, setOwnerFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [csv, setCsv] = useState("");
@@ -82,6 +84,15 @@ function LeadsPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("leads")
         .select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: members } = useQuery({
+    queryKey: ["org-members"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email");
       if (error) throw error;
       return data ?? [];
     },
@@ -208,7 +219,11 @@ function LeadsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const filtered = (leads ?? []).filter((l) => {
+  const allTags = Array.from(
+    new Set((leads ?? []).flatMap((l: any) => (Array.isArray(l.tags) ? l.tags : []))),
+  ).sort() as string[];
+
+  const filtered = (leads ?? []).filter((l: any) => {
     const q = search.toLowerCase();
     const matches =
       !search ||
@@ -216,7 +231,11 @@ function LeadsPage() {
       l.email?.toLowerCase().includes(q) ||
       l.phone?.toLowerCase().includes(q) ||
       l.company?.toLowerCase().includes(q);
-    return matches && (statusFilter === "all" || l.status === statusFilter);
+    const ownerOk =
+      ownerFilter === "all" ||
+      (ownerFilter === "unassigned" ? !l.owner_id : l.owner_id === ownerFilter);
+    const tagOk = tagFilter === "all" || (Array.isArray(l.tags) && l.tags.includes(tagFilter));
+    return matches && (statusFilter === "all" || l.status === statusFilter) && ownerOk && tagOk;
   });
 
   const allShownPicked = filtered.length > 0 && filtered.every((l: any) => picked.includes(l.id));
@@ -327,13 +346,13 @@ function LeadsPage() {
       />
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="relative flex-1 min-w-[240px]">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B76]" />
             <Input placeholder="Search by name, email, phone, or company" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
               {STATUSES.map((s) => (
@@ -341,6 +360,34 @@ function LeadsPage() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Owners</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {(members ?? []).map((m: any) => (
+                <SelectItem key={m.id} value={m.id}>{m.full_name || m.email || "Teammate"}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={tagFilter} onValueChange={setTagFilter}>
+            <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tags</SelectItem>
+              {allTags.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(statusFilter !== "all" || ownerFilter !== "all" || tagFilter !== "all") && (
+            <Button
+              variant="ghost"
+              className="h-9"
+              onClick={() => { setStatusFilter("all"); setOwnerFilter("all"); setTagFilter("all"); }}
+            >
+              Clear Filters
+            </Button>
+          )}
           <span className="text-sm text-[#6B6B76] whitespace-nowrap">{filtered.length} Shown</span>
         </div>
         {picked.length > 0 && (
