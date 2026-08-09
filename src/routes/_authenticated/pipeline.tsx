@@ -45,6 +45,7 @@ function PipelinePage() {
   const [open, setOpen] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
   const [form, setForm] = useState({
     title: "",
     value: "0",
@@ -58,7 +59,7 @@ function PipelinePage() {
     queryKey: ["deals"],
     queryFn: async () => {
       const { data, error } = await supabase.from("deals")
-        .select("*").order("updated_at", { ascending: false });
+        .select("*").order("sort_order", { ascending: true }).order("updated_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
@@ -104,10 +105,19 @@ function PipelinePage() {
   });
 
   const move = useMutation({
-    mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
-      const { error } = await supabase.from("deals")
-        .update({ stage: stage as any, updated_at: new Date().toISOString() }).eq("id", id);
-      if (error) throw error;
+    mutationFn: async ({ id, stage, index }: { id: string; stage: string; index: number }) => {
+      const column = (deals ?? []).filter((d) => d.stage === stage && d.id !== id);
+      const at = Math.max(0, Math.min(column.length, index));
+      const ordered = [...column.slice(0, at).map((d) => d.id), id, ...column.slice(at).map((d) => d.id)];
+      const now = new Date().toISOString();
+      for (let i = 0; i < ordered.length; i++) {
+        const payload =
+          ordered[i] === id
+            ? { sort_order: i + 1, stage: stage as any, updated_at: now }
+            : { sort_order: i + 1 };
+        const { error } = await supabase.from("deals").update(payload).eq("id", ordered[i]);
+        if (error) throw error;
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["deals"] }),
     onError: (e: any) => toast.error(e.message),
@@ -132,20 +142,28 @@ function PipelinePage() {
     .filter((d) => d.stage !== "won" && d.stage !== "lost")
     .reduce((s, d) => s + (Number(d.value ?? 0) * Number(d.close_probability ?? 0)) / 100, 0);
 
-  function drop(stage: string) {
+  function drop(stage: string, index?: number) {
+    const id = dragId;
+    const target = index ?? overIndex;
     setOverStage(null);
-    if (dragId) {
-      const current = (deals ?? []).find((d) => d.id === dragId);
-      if (current && current.stage !== stage) move.mutate({ id: dragId, stage });
-    }
+    setOverIndex(null);
     setDragId(null);
+    if (!id) return;
+    const current = (deals ?? []).find((d) => d.id === id);
+    if (!current) return;
+    const column = (deals ?? []).filter((d) => d.stage === stage);
+    const withoutDragged = column.filter((d) => d.id !== id);
+    const at = target ?? withoutDragged.length;
+    const currentIndex = column.findIndex((d) => d.id === id);
+    if (current.stage === stage && (currentIndex === at || currentIndex === at - 1)) return;
+    move.mutate({ id, stage, index: current.stage === stage && currentIndex < at ? at - 1 : at });
   }
 
   return (
     <div>
       <PageHeader
         title="Leads"
-        description="Pipeline — deals from first touch to signed. Drag a card to change stage."
+        description="Pipeline — deals from first touch to signed. Drag a card to change stage or reorder it."
         tabs={TAB_GROUPS.leads}
         action={
           <Dialog open={open} onOpenChange={setOpen}>
@@ -255,7 +273,10 @@ function PipelinePage() {
               key={s.key}
               className="min-w-[200px]"
               onDragOver={(e) => { e.preventDefault(); setOverStage(s.key); }}
-              onDragLeave={() => setOverStage((c) => (c === s.key ? null : c))}
+              onDragLeave={() => {
+                setOverStage((c) => (c === s.key ? null : c));
+                setOverIndex(null);
+              }}
               onDrop={(e) => { e.preventDefault(); drop(s.key); }}
             >
               <div className="flex items-center justify-between mb-1 px-1">
@@ -270,12 +291,30 @@ function PipelinePage() {
                   isOver ? "bg-[#CC0000]/5 ring-1 ring-[#CC0000]/30" : ""
                 }`}
               >
-                {items.map((d) => (
+                {items.map((d, idx) => (
+                  <div key={d.id}>
+                    {isOver && overIndex === idx && dragId && dragId !== d.id ? (
+                      <div className="h-0.5 rounded-full bg-[#CC0000] mb-2" />
+                    ) : null}
                   <Card
-                    key={d.id}
                     draggable
                     onDragStart={() => setDragId(d.id)}
-                    onDragEnd={() => { setDragId(null); setOverStage(null); }}
+                    onDragEnd={() => { setDragId(null); setOverStage(null); setOverIndex(null); }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const after = e.clientY > rect.top + rect.height / 2;
+                      setOverStage(s.key);
+                      setOverIndex(after ? idx + 1 : idx);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const after = e.clientY > rect.top + rect.height / 2;
+                      drop(s.key, after ? idx + 1 : idx);
+                    }}
                     className={`group p-3 rounded-xl border-[#E7E7EC] shadow-none hover:border-[#CC0000] transition cursor-grab active:cursor-grabbing ${
                       dragId === d.id ? "opacity-50" : ""
                     }`}
@@ -319,6 +358,10 @@ function PipelinePage() {
                       </div>
                     ) : null}
                   </Card>
+                    {isOver && overIndex === idx + 1 && idx === items.length - 1 && dragId && dragId !== d.id ? (
+                      <div className="h-0.5 rounded-full bg-[#CC0000] mt-2" />
+                    ) : null}
+                  </div>
                 ))}
                 {items.length === 0 ? (
                   <p className="text-[11px] text-[#A0A0AA] text-center py-6">Drop Here</p>
