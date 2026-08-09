@@ -178,7 +178,7 @@ function CampaignsPage() {
       if (error) throw error;
       if (status === "active") {
         try {
-          await emit({ data: { event_type: "campaign.launched", payload: { campaign_id: id, name, mode } } });
+          await emit({ data: { event_type: "campaign.launched", payload: { kind: "campaign.launched", campaign_id: id, name, mode } } });
         } catch {
           // Never block the launch on hub availability.
         }
