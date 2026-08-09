@@ -111,11 +111,10 @@ function PipelinePage() {
       const ordered = [...column.slice(0, at).map((d) => d.id), id, ...column.slice(at).map((d) => d.id)];
       const now = new Date().toISOString();
       for (let i = 0; i < ordered.length; i++) {
-        const payload: Record<string, unknown> = { sort_order: i + 1 };
-        if (ordered[i] === id) {
-          payload.stage = stage as any;
-          payload.updated_at = now;
-        }
+        const payload =
+          ordered[i] === id
+            ? { sort_order: i + 1, stage: stage as any, updated_at: now }
+            : { sort_order: i + 1 };
         const { error } = await supabase.from("deals").update(payload).eq("id", ordered[i]);
         if (error) throw error;
       }
