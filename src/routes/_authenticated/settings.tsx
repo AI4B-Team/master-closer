@@ -139,12 +139,40 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
     qc.invalidateQueries({ queryKey: ["org-webhooks"] });
   };
 
+  const copySecret = async (secret: string) => {
+    await navigator.clipboard.writeText(secret);
+    toast.success("Signing Secret Copied.");
+  };
+
+  const sendTest = async () => {
+    setTesting(true);
+    try {
+      await emit({ data: { event_type: "job.completed", payload: { test: true, source: "settings" } } });
+      toast.success("Test Event Sent.");
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["webhook-deliveries"] }), 1200);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not send test event.");
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mt-6 max-w-3xl">
       <div className="flex items-center gap-2 mb-1">
         <Webhook className="h-4 w-4 text-[#CC0000]" />
         <h3 className="font-semibold">Webhooks</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={sendTest}
+          disabled={testing || (hooks ?? []).length === 0}
+          className="ml-auto rounded-xl"
+        >
+          <Send className="h-3.5 w-3.5 mr-1" /> {testing ? "Sending…" : "Send Test Event"}
+        </Button>
       </div>
+
       <p className="text-sm text-[#6B6B76] mb-4">
         We POST every event (call.completed, lead.flagged_dnc, deal.updated) with an
         <code className="mx-1 text-xs">X-Signature</code> HMAC-SHA256 header of the raw body.
