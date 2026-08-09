@@ -216,14 +216,20 @@ function CampaignsPage() {
         description="Outbound campaigns tied to lists, closers, and autonomy modes."
         tabs={TAB_GROUPS.campaigns}
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(v) => {
+              setOpen(v);
+              if (!v) { setEditId(null); setForm(emptyForm); }
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
                 <Plus className="h-4 w-4 mr-1" /> New Campaign
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>New Campaign</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? "Edit Campaign" : "New Campaign"}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
                   <Label>Name</Label>
