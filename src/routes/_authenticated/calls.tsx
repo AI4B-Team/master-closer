@@ -46,12 +46,13 @@ function CallsPage() {
   const [outcome, setOutcome] = useState("all");
   const [range, setRange] = useState("all");
   const [agent, setAgent] = useState("all");
+  const [campaign, setCampaign] = useState("all");
 
   const { data: calls, isLoading: callsLoading } = useQuery({
     queryKey: ["calls"],
     queryFn: async () => {
       const { data, error } = await supabase.from("calls")
-        .select("*, leads(name, company), agents(name)").order("started_at", { ascending: false }).limit(500);
+        .select("*, leads(name, company), agents(name), campaigns(name)").order("started_at", { ascending: false }).limit(500);
       if (error) throw error;
       return data ?? [];
     },
@@ -61,6 +62,15 @@ function CallsPage() {
     queryKey: ["agents-min"],
     queryFn: async () => {
       const { data, error } = await supabase.from("agents").select("id, name").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: campaignOptions } = useQuery({
+    queryKey: ["campaigns-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("campaigns").select("id, name").order("name");
       if (error) throw error;
       return data ?? [];
     },
