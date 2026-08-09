@@ -146,6 +146,11 @@ function LeadsPage() {
         .from("leads")
         .insert(rows.map((r) => ({ ...r, status: "new" as never, org_id: prof.org_id })));
       if (error) throw error;
+      try {
+        await emit({ data: { event_type: "leads.imported", payload: { kind: "leads.imported", count: rows.length } } });
+      } catch {
+        // Never block the import on hub availability.
+      }
       return rows.length;
     },
     onSuccess: (n) => {
