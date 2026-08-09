@@ -170,7 +170,14 @@ function DialerPage() {
         });
       }
       const res = await askCloser({
-        data: { prospect: prospectLine, mode: MODE_KEY[mode], library: await fetchObjectionLibrary() },
+        data: {
+          prospect: prospectLine,
+          mode: MODE_KEY[mode],
+          agentName: agent?.name ?? null,
+          industry: agent?.industry ?? null,
+          systemPrompt: agent?.system_prompt ?? null,
+          library: await fetchObjectionLibrary(),
+        },
       });
       setAiConfidence(res.confidence);
       setSuggestions([res.line]);
