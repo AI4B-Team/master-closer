@@ -118,14 +118,14 @@ export function NotificationsMenu() {
           <div className="notif-head">
             <span className="font-display">Notifications</span>
             <button type="button" className="notif-read" onClick={markAllRead}>
-              <CheckCheck size={13} /> Mark all read
+              <CheckCheck size={13} /> Mark All Read
             </button>
           </div>
 
           {events.length === 0 ? (
             <div className="notif-empty">
               <Inbox size={20} />
-              <p>Nothing yet</p>
+              <p>Nothing Yet</p>
               <span>Calls, agreements and campaign activity land here.</span>
             </div>
           ) : (

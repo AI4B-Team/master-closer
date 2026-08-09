@@ -205,7 +205,7 @@ export function ProductTour({ open, onClose }: { open: boolean; onClose: () => v
           <span className="tour-step-label">
             Step {i + 1}/{TOUR_STEPS.length}
           </span>
-          <button type="button" aria-label="Close tour" className="tour-x" onClick={() => finish("skipped")}>
+          <button type="button" aria-label="Close Tour" className="tour-x" onClick={() => finish("skipped")}>
             <X size={15} />
           </button>
         </div>

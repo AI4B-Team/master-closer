@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="mc-shell">
       {mobileNav && (
-        <button type="button" className="side-scrim" aria-label="Close menu" onClick={() => setMobileNav(false)} />
+        <button type="button" className="side-scrim" aria-label="Close Menu" onClick={() => setMobileNav(false)} />
       )}
       <aside className={"side " + (collapsed ? "side-collapsed " : "") + (mobileNav ? "side-open" : "")}>
         <div className="side-brand">
@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             type="button"
             className="side-close"
             onClick={() => setMobileNav(false)}
-            aria-label="Close menu"
+            aria-label="Close Menu"
           >
             <X size={16} />
           </button>
@@ -148,7 +148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             type="button"
             className="nav-burger"
             onClick={() => setMobileNav(true)}
-            aria-label="Open menu"
+            aria-label="Open Menu"
           >
             <Menu size={18} />
           </button>
@@ -160,8 +160,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 className="search-caret has-tip tip-below"
                 onClick={() => setScopeOpen((v) => !v)}
-                data-tip="Choose what to search"
-                aria-label="Search options"
+                data-tip="Choose What To Search"
+                aria-label="Search Options"
               >
                 {scope} <ChevronDown size={14} />
               </button>
@@ -169,7 +169,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             {scopeOpen && (
               <div className="search-menu">
-                <div className="search-menu-label">Search in</div>
+                <div className="search-menu-label">Search In</div>
                 {SEARCH_SCOPES.map((s) => (
                   <button
                     key={s}
@@ -198,8 +198,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 className="profile-btn has-tip tip-below"
                 onClick={() => setProfileOpen((v) => !v)}
-                data-tip="Your account"
-                aria-label="Profile menu"
+                data-tip="Your Account"
+                aria-label="Profile Menu"
               >
 
                 <Avatar name={name} size={36} />

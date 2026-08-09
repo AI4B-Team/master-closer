@@ -166,14 +166,14 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
                       type="button"
                       onClick={() => setReveal(reveal === h.id ? null : h.id)}
                       className="text-[#6B6B76] hover:text-[#111]"
-                      aria-label="Toggle secret visibility"
+                      aria-label="Toggle Secret Visibility"
                     >
                       {reveal === h.id ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                 </div>
                 <Switch checked={h.enabled} onCheckedChange={(v) => toggle(h.id, v)} />
-                <Button variant="ghost" size="icon" onClick={() => remove(h.id)} aria-label="Delete webhook">
+                <Button variant="ghost" size="icon" onClick={() => remove(h.id)} aria-label="Delete Webhook">
                   <Trash2 className="h-4 w-4 text-[#6B6B76]" />
                 </Button>
               </div>
@@ -184,7 +184,7 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
 
       {(deliveries ?? []).length > 0 ? (
         <div className="mt-6">
-          <h4 className="font-semibold text-sm mb-2">Recent deliveries</h4>
+          <h4 className="font-semibold text-sm mb-2">Recent Deliveries</h4>
           <div className="space-y-1">
             {(deliveries ?? []).map((d: any) => (
               <div key={d.id} className="flex items-center justify-between text-xs border-b border-[#E7E7EC] last:border-0 py-1.5">

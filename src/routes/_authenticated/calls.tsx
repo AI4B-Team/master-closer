@@ -119,7 +119,7 @@ function CallsPage() {
           <Select value={mode} onValueChange={setMode}>
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All modes</SelectItem>
+              <SelectItem value="all">All Modes</SelectItem>
               <SelectItem value="full_ai">AI</SelectItem>
               <SelectItem value="hybrid">Hybrid</SelectItem>
               <SelectItem value="copilot">Copilot</SelectItem>
@@ -128,7 +128,7 @@ function CallsPage() {
           <Select value={outcome} onValueChange={setOutcome}>
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All outcomes</SelectItem>
+              <SelectItem value="all">All Outcomes</SelectItem>
               {OUTCOMES.map((o) => (
                 <SelectItem key={o} value={o} className="capitalize">{o.replace(/_/g, " ")}</SelectItem>
               ))}
@@ -137,10 +137,10 @@ function CallsPage() {
           <Select value={range} onValueChange={setRange}>
             <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All time</SelectItem>
-              <SelectItem value="7">Last 7 days</SelectItem>
-              <SelectItem value="30">Last 30 days</SelectItem>
-              <SelectItem value="90">Last 90 days</SelectItem>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="7">Last 7 Days</SelectItem>
+              <SelectItem value="30">Last 30 Days</SelectItem>
+              <SelectItem value="90">Last 90 Days</SelectItem>
             </SelectContent>
           </Select>
         </div>

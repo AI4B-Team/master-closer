@@ -114,19 +114,19 @@ export function AgentDrawer({
           </div>
 
           <div>
-            <Label>Default mode</Label>
+            <Label>Default Mode</Label>
             <Select value={form.default_mode ?? "hybrid"} onValueChange={(v) => setForm({ ...form, default_mode: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="full_ai">AI — AI runs the call</SelectItem>
-                <SelectItem value="hybrid">Hybrid — AI starts, human closes</SelectItem>
-                <SelectItem value="copilot">Copilot — human leads, AI assists</SelectItem>
+                <SelectItem value="full_ai">AI — AI Runs The Call</SelectItem>
+                <SelectItem value="hybrid">Hybrid — AI Starts, Human Closes</SelectItem>
+                <SelectItem value="copilot">Copilot — Human Leads, AI Assists</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label>System prompt</Label>
+            <Label>System Prompt</Label>
             <Textarea
               rows={10}
               value={form.system_prompt ?? ""}
@@ -146,7 +146,7 @@ export function AgentDrawer({
               disabled={!form.name || save.isPending}
               className="bg-[#111114] hover:bg-[#111114]/90 rounded-xl"
             >
-              <Save className="h-4 w-4 mr-1" /> Save changes
+              <Save className="h-4 w-4 mr-1" /> Save Changes
             </Button>
             <Button
               type="button"

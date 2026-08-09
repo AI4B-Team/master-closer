@@ -157,9 +157,9 @@ function MembersPage() {
 
       <Card className="p-0 rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
         {isLoading ? (
-          <div className="p-6 text-sm text-[#6B6B76]">Loading members…</div>
+          <div className="p-6 text-sm text-[#6B6B76]">Loading Members…</div>
         ) : members.length === 0 ? (
-          <EmptyState icon={Users} title="No members yet" hint="Invite your first closer to this workspace." />
+          <EmptyState icon={Users} title="No Members Yet" hint="Invite your first closer to this workspace." />
         ) : (
           <div className="divide-y divide-[#E7E7EC]">
             {members.map((m) => (

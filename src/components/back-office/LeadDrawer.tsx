@@ -113,7 +113,7 @@ export function LeadDrawer({
               onClick={() => navigate({ to: "/dialer" })}
               disabled={!form.phone}
             >
-              <Phone className="h-4 w-4 mr-1" /> Call in Dialer
+              <Phone className="h-4 w-4 mr-1" /> Call In Dialer
             </Button>
             <Badge variant="outline" className="capitalize">
               {(form.consent ?? "unknown").replace("_", " ")}
@@ -183,7 +183,7 @@ export function LeadDrawer({
               disabled={!form.name || save.isPending}
               className="bg-[#111114] hover:bg-[#111114]/90 rounded-xl"
             >
-              <Save className="h-4 w-4 mr-1" /> Save changes
+              <Save className="h-4 w-4 mr-1" /> Save Changes
             </Button>
             <Button
               type="button"
@@ -197,7 +197,7 @@ export function LeadDrawer({
           </div>
 
           <div className="pt-2 border-t border-[#E7E7EC]">
-            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Call history</p>
+            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Call History</p>
             {!calls || calls.length === 0 ? (
               <p className="text-sm text-[#6B6B76]">No calls logged for this lead yet.</p>
             ) : (

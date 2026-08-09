@@ -153,7 +153,7 @@ function LeadsPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Import leads</DialogTitle>
+                  <DialogTitle>Import Leads</DialogTitle>
                   <DialogDescription>
                     One lead per line: <code>name, phone, email, company</code>. A header row is skipped automatically.
                   </DialogDescription>
@@ -228,7 +228,7 @@ function LeadsPage() {
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               {STATUSES.map((s) => (
                 <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
               ))}

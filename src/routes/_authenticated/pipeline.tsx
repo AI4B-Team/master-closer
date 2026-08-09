@@ -215,10 +215,10 @@ function PipelinePage() {
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Badge variant="secondary" className="rounded-lg font-normal">
-          Open pipeline <span className="font-mono ml-1.5">{money(openValue)}</span>
+          Open Pipeline <span className="font-mono ml-1.5">{money(openValue)}</span>
         </Badge>
         <Badge variant="secondary" className="rounded-lg font-normal">
-          Weighted forecast <span className="font-mono ml-1.5">{money(Math.round(weighted))}</span>
+          Weighted Forecast <span className="font-mono ml-1.5">{money(Math.round(weighted))}</span>
         </Badge>
       </div>
 
@@ -321,7 +321,7 @@ function PipelinePage() {
                   </Card>
                 ))}
                 {items.length === 0 ? (
-                  <p className="text-[11px] text-[#A0A0AA] text-center py-6">Drop here</p>
+                  <p className="text-[11px] text-[#A0A0AA] text-center py-6">Drop Here</p>
                 ) : null}
               </div>
             </div>
