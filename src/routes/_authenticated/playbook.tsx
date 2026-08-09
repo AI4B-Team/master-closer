@@ -12,9 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState } from "@/components/back-office/ui";
-import { Plus, BookOpen, MessageSquareQuote, Trash2 } from "lucide-react";
+import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles } from "lucide-react";
+import { suggestObjections } from "@/lib/agents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type Suggestion = { trigger: string; category?: string | null; response: string };
+
 
 export const Route = createFileRoute("/_authenticated/playbook")({
   head: () => ({
