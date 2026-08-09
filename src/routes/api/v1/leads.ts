@@ -7,11 +7,12 @@ export const Route = createFileRoute("/api/v1/leads")({
       GET: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase } = await apiClient(request);
+          const { supabase, workspaceId } = await apiClient(request);
           const limit = Math.min(Number(new URL(request.url).searchParams.get("limit") ?? 100), 500);
           const { data, error } = await supabase
             .from("leads")
             .select("*")
+            .eq("workspace_id", workspaceId)
             .order("created_at", { ascending: false })
             .limit(limit);
           if (error) throw new Error(error.message);
