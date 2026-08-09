@@ -73,6 +73,8 @@ function LeadsPage() {
   const [csv, setCsv] = useState("");
   const [selected, setSelected] = useState<any>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", status: "new" });
+  const [picked, setPicked] = useState<string[]>([]);
+  const [listTarget, setListTarget] = useState("");
   const emit = useServerFn(emitOrgEvent);
 
   const { data: leads, isLoading: leadsLoading } = useQuery({
