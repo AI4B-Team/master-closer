@@ -13,7 +13,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { LeadDrawer } from "@/components/back-office/LeadDrawer";
-import { Plus, Search, Users, Upload } from "lucide-react";
+import { Plus, Search, Users, Upload, Download, Trash2, ListPlus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -72,6 +73,8 @@ function LeadsPage() {
   const [csv, setCsv] = useState("");
   const [selected, setSelected] = useState<any>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", status: "new" });
+  const [picked, setPicked] = useState<string[]>([]);
+  const [listTarget, setListTarget] = useState("");
   const emit = useServerFn(emitOrgEvent);
 
   const { data: leads, isLoading: leadsLoading } = useQuery({
@@ -143,6 +146,68 @@ function LeadsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  /* Call lists are the dialer's queue source — bulk-push leads straight into one. */
+  const { data: lists } = useQuery({
+    queryKey: ["call-lists-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("call_lists").select("id, name").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const bulkStatus = useMutation({
+    mutationFn: async (status: string) => {
+      const { error } = await supabase.from("leads").update({ status: status as never }).in("id", picked);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`Updated ${picked.length} lead${picked.length === 1 ? "" : "s"}.`);
+      setPicked([]);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("leads").delete().in("id", picked);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Leads deleted.");
+      setPicked([]);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const bulkToList = useMutation({
+    mutationFn: async () => {
+      if (!listTarget) throw new Error("Pick a call list first.");
+      const rows = (leads ?? [])
+        .filter((l: any) => picked.includes(l.id) && l.phone)
+        .map((l: any) => ({
+          list_id: listTarget,
+          name: l.name,
+          phone: l.phone as string,
+          email: l.email,
+          consent: (l.consent ?? "unknown") as never,
+        }));
+      if (rows.length === 0) throw new Error("None of the selected leads have a phone number.");
+      const { error } = await supabase.from("list_contacts").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`Added ${n} contact${n === 1 ? "" : "s"} to the call list.`);
+      setPicked([]);
+      setListTarget("");
+      qc.invalidateQueries({ queryKey: ["list-contacts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const filtered = (leads ?? []).filter((l) => {
     const q = search.toLowerCase();
     const matches =
@@ -154,6 +219,28 @@ function LeadsPage() {
     return matches && (statusFilter === "all" || l.status === statusFilter);
   });
 
+  const allShownPicked = filtered.length > 0 && filtered.every((l: any) => picked.includes(l.id));
+
+  function exportCsv() {
+    const rows = picked.length > 0 ? filtered.filter((l: any) => picked.includes(l.id)) : filtered;
+    if (rows.length === 0) return toast.error("Nothing to export.");
+    const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csvOut = [
+      ["Name", "Company", "Email", "Phone", "Status", "Consent", "Created"].join(","),
+      ...rows.map((l: any) =>
+        [l.name, l.company, l.email, l.phone, l.status, l.consent, l.created_at].map(cell).join(","),
+      ),
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([csvOut], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} lead${rows.length === 1 ? "" : "s"}.`);
+  }
+
+
   return (
     <div>
       <PageHeader
@@ -162,6 +249,9 @@ function LeadsPage() {
         tabs={TAB_GROUPS.leads}
         action={
           <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export
+            </Button>
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="rounded-xl">
@@ -253,6 +343,53 @@ function LeadsPage() {
           </Select>
           <span className="text-sm text-[#6B6B76] whitespace-nowrap">{filtered.length} Shown</span>
         </div>
+        {picked.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 rounded-xl border border-[#E7E7EC] bg-[#F4F4F6]/70 px-3 py-2">
+            <span className="text-sm font-medium">{picked.length} Selected</span>
+            <Select onValueChange={(v) => bulkStatus.mutate(v)}>
+              <SelectTrigger className="w-[170px] h-9 bg-white"><SelectValue placeholder="Set Status" /></SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={listTarget} onValueChange={setListTarget}>
+              <SelectTrigger className="w-[190px] h-9 bg-white"><SelectValue placeholder="Add To Call List" /></SelectTrigger>
+              <SelectContent>
+                {(lists ?? []).length === 0 ? (
+                  <SelectItem value="none" disabled>No Call Lists Yet</SelectItem>
+                ) : (
+                  (lists ?? []).map((l: any) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)
+                )}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl h-9"
+              disabled={!listTarget || bulkToList.isPending}
+              onClick={() => bulkToList.mutate()}
+            >
+              <ListPlus className="h-4 w-4 mr-1" /> Add
+            </Button>
+            <Button type="button" variant="outline" className="rounded-xl h-9" onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export Selected
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl h-9 text-[#CC0000] border-[#CC0000]/30 hover:bg-[#CC0000]/5"
+              disabled={bulkDelete.isPending}
+              onClick={() => bulkDelete.mutate()}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+            <Button type="button" variant="ghost" className="rounded-xl h-9" onClick={() => setPicked([])}>
+              Clear
+            </Button>
+          </div>
+        )}
 
         {leadsLoading ? (
           <SkeletonRows rows={6} />
@@ -276,6 +413,15 @@ function LeadsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                <th className="py-2 w-8">
+                  <Checkbox
+                    checked={allShownPicked}
+                    onCheckedChange={(v) =>
+                      setPicked(v ? filtered.map((l: any) => l.id) : [])
+                    }
+                    aria-label="Select all shown leads"
+                  />
+                </th>
                 <th className="py-2">Name</th><th className="py-2">Company</th>
                 <th className="py-2">Email</th><th className="py-2">Phone</th>
                 <th className="py-2">Consent</th><th className="py-2">Status</th>
@@ -288,6 +434,15 @@ function LeadsPage() {
                   onClick={() => setSelected(l)}
                   className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/70 cursor-pointer"
                 >
+                  <td className="py-3" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={picked.includes(l.id)}
+                      onCheckedChange={(v) =>
+                        setPicked((p) => (v ? [...p, l.id] : p.filter((x) => x !== l.id)))
+                      }
+                      aria-label={`Select ${l.name}`}
+                    />
+                  </td>
                   <td className="py-3 font-medium">{l.name}</td>
                   <td className="py-3 text-[#6B6B76]">{l.company ?? "—"}</td>
                   <td className="py-3 text-[#6B6B76]">{l.email ?? "—"}</td>
@@ -301,6 +456,7 @@ function LeadsPage() {
             </tbody>
           </table>
         )}
+
       </Card>
 
       <LeadDrawer lead={selected} onOpenChange={(o) => !o && setSelected(null)} />
