@@ -84,12 +84,14 @@ function CallsPage() {
       c.leads?.name?.toLowerCase().includes(q) ||
       c.leads?.company?.toLowerCase().includes(q) ||
       c.agents?.name?.toLowerCase().includes(q) ||
+      c.campaigns?.name?.toLowerCase().includes(q) ||
       c.disposition?.toLowerCase().includes(q) ||
       c.summary?.toLowerCase().includes(q)
     )) return false;
     if (mode !== "all" && c.mode !== mode) return false;
     if (outcome !== "all" && c.outcome !== outcome) return false;
     if (agent === "none" ? !!c.agent_id : agent !== "all" && c.agent_id !== agent) return false;
+    if (campaign === "none" ? !!c.campaign_id : campaign !== "all" && c.campaign_id !== campaign) return false;
     if (range !== "all") {
       const cutoff = Date.now() - RANGES[range] * 86400000;
       if (new Date(c.started_at).getTime() < cutoff) return false;
@@ -98,13 +100,14 @@ function CallsPage() {
   });
 
   function exportCsv() {
-    const header = "date,lead,company,agent,mode,outcome,disposition,duration_sec,close_probability";
+    const header = "date,lead,company,agent,campaign,mode,outcome,disposition,duration_sec,close_probability";
     const rows = filtered.map((c: any) =>
       [
         new Date(c.started_at).toISOString(),
         c.leads?.name ?? "",
         c.leads?.company ?? "",
         c.agents?.name ?? "",
+        c.campaigns?.name ?? "",
         MODE_LABEL[c.mode] ?? c.mode,
         c.outcome,
         c.disposition ?? "",
@@ -141,7 +144,7 @@ function CallsPage() {
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B76]" />
-            <Input placeholder="Search lead, company, disposition, or summary" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder="Search Lead, Company, Agent, Campaign, Or Summary" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={mode} onValueChange={setMode}>
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
@@ -180,6 +183,16 @@ function CallsPage() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={campaign} onValueChange={setCampaign}>
+            <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Campaigns</SelectItem>
+              <SelectItem value="none">No Campaign</SelectItem>
+              {(campaignOptions ?? []).map((c: any) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#6B6B76] mb-4">
@@ -207,6 +220,7 @@ function CallsPage() {
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
                 <th className="py-2">Date</th><th className="py-2">Lead</th>
                 <th className="py-2">Agent</th>
+                <th className="py-2">Campaign</th>
                 <th className="py-2">Mode</th><th className="py-2">Duration</th>
                 <th className="py-2">Outcome</th><th className="py-2 text-right">Close Probability</th>
               </tr>
@@ -225,6 +239,7 @@ function CallsPage() {
                     {c.leads?.name ?? "—"}{c.leads?.company ? ` · ${c.leads.company}` : ""}
                   </td>
                   <td className="py-3 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
+                  <td className="py-3 text-[#6B6B76]">{c.campaigns?.name ?? "—"}</td>
 
                   <td className="py-3">
                     <Badge variant="secondary">{MODE_LABEL[c.mode] ?? c.mode}</Badge>
