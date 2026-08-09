@@ -100,7 +100,7 @@ export const signAgreement = createServerFn({ method: "POST" })
     const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, status, deal_id, title, amount")
+      .select("id, org_id, workspace_id, status, deal_id, title, amount")
       .eq("token", data.token)
       .maybeSingle();
 
