@@ -109,10 +109,15 @@ function AccountPage() {
   }, [avatarPath]);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       const { data } = await supabase.auth.mfa.listFactors();
+      if (cancelled) return;
       setMfaFactors((data?.totp ?? []).map((f) => ({ id: f.id, status: f.status })));
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const verifiedFactor = mfaFactors.find((f) => f.status === "verified");

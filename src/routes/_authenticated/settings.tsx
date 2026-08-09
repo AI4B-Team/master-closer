@@ -50,15 +50,21 @@ function SettingsPage() {
   const [brandColor, setBrandColor] = useState("#CC0000");
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       const { data: prof } = await supabase.from("profiles").select("full_name, org_id, active_workspace_id").maybeSingle();
+      if (cancelled) return;
       setFullName(prof?.full_name ?? "");
       setOrgId(prof?.org_id ?? null);
       if (prof?.org_id) {
         const { data: org } = await supabase.from("organizations").select("name").eq("id", prof.org_id).maybeSingle();
+        if (cancelled) return;
         setOrgName(org?.name ?? "");
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -72,7 +78,8 @@ function SettingsPage() {
   }, [ws]);
 
   const save = async () => {
-    await supabase.from("profiles").update({ full_name: fullName }).eq("id", user!.id);
+    if (!user) return toast.error("You Must Be Signed In");
+    await supabase.from("profiles").update({ full_name: fullName }).eq("id", user.id);
     if (orgId) await supabase.from("organizations").update({ name: orgName }).eq("id", orgId);
     if (ws?.id) {
       const { error } = await supabase
