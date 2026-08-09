@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 /* Shared Hooked-style primitives for the back office. */
 
