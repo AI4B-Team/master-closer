@@ -72,7 +72,7 @@ function TasksPage() {
   const [q, setQ] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-  const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "" });
+  const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
 
   const { data: me } = useQuery({
     queryKey: ["tasks-me"],
