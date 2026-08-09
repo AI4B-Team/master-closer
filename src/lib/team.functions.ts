@@ -139,6 +139,14 @@ export const inviteMember = createServerFn({ method: "POST" })
       await supabaseAdmin.from("organizations").delete().eq("id", prof.org_id);
     }
 
+    await supabaseAdmin.from("workspace_invites").insert({
+      workspace_id: wsId,
+      email,
+      role: data.role === "admin" ? "admin" : "member",
+      token: crypto.randomUUID(),
+      invited_by: context.userId,
+    });
+
     return { userId, email, role: data.role, added: false };
   });
 
@@ -226,4 +234,100 @@ export const setWorkspaceRole = createServerFn({ method: "POST" })
     }
 
     return { userId: data.userId, role: data.role };
+  });
+
+
+/** Invites that were emailed but whose accounts have never signed in yet. */
+export const listInvites = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { resolveWorkspace } = await import("./team.server");
+    const { wsId } = await resolveWorkspace(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: invites } = await supabaseAdmin
+      .from("workspace_invites")
+      .select("id, email, role, created_at, accepted_at")
+      .eq("workspace_id", wsId)
+      .is("accepted_at", null)
+      .order("created_at", { ascending: false });
+
+    if (!invites?.length) return { invites: [] };
+
+    const emails = invites.map((i) => i.email);
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, email")
+      .in("email", emails);
+
+    const pending: Array<{ id: string; email: string; role: string; createdAt: string }> = [];
+    for (const invite of invites) {
+      const profile = profiles?.find((p) => p.email === invite.email);
+      let accepted = false;
+      if (profile) {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+        accepted = Boolean(authUser?.user?.last_sign_in_at);
+      }
+      if (accepted) {
+        await supabaseAdmin
+          .from("workspace_invites")
+          .update({ accepted_at: new Date().toISOString() })
+          .eq("id", invite.id);
+        continue;
+      }
+      pending.push({
+        id: invite.id,
+        email: invite.email,
+        role: invite.role as string,
+        createdAt: invite.created_at as string,
+      });
+    }
+
+    return { invites: pending };
+  });
+
+/** Cancels a pending invite and tears down the not-yet-used account. */
+export const revokeInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ inviteId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { assertWorkspaceAdmin } = await import("./team.server");
+    const { wsId } = await assertWorkspaceAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: invite } = await supabaseAdmin
+      .from("workspace_invites")
+      .select("id, email, workspace_id, accepted_at")
+      .eq("id", data.inviteId)
+      .maybeSingle();
+    if (!invite || invite.workspace_id !== wsId) throw new Error("That invite is no longer available.");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("email", invite.email)
+      .maybeSingle();
+
+    if (profile) {
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+      if (authUser?.user?.last_sign_in_at) {
+        throw new Error("That person already signed in — remove them from Members instead.");
+      }
+      await supabaseAdmin
+        .from("workspace_members")
+        .delete()
+        .eq("workspace_id", wsId)
+        .eq("user_id", profile.id);
+      const { data: remaining } = await supabaseAdmin
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", profile.id);
+      if (!remaining || remaining.length === 0) {
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", profile.id);
+        await supabaseAdmin.auth.admin.deleteUser(profile.id);
+      }
+    }
+
+    await supabaseAdmin.from("workspace_invites").delete().eq("id", invite.id);
+    return { inviteId: invite.id };
   });

@@ -14,8 +14,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState } from "@/components/back-office/ui";
-import { UserPlus, Trash2, ShieldCheck, Users } from "lucide-react";
-import { inviteMember, listMembers, removeMember, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
+import { UserPlus, Trash2, ShieldCheck, Users, MailQuestion, X } from "lucide-react";
+import { inviteMember, listInvites, listMembers, removeMember, revokeInvite, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({
@@ -60,6 +60,8 @@ function MembersPage() {
   const changeRole = useServerFn(setMemberRole);
   const kick = useServerFn(removeMember);
   const changeAccess = useServerFn(setWorkspaceRole);
+  const fetchInvites = useServerFn(listInvites);
+  const cancelInvite = useServerFn(revokeInvite);
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -71,7 +73,25 @@ function MembersPage() {
     queryFn: () => fetchMembers({}),
   });
 
-  const refresh = () => qc.invalidateQueries({ queryKey: ["members"] });
+  const { data: inviteData } = useQuery({
+    queryKey: ["workspace-invites"],
+    queryFn: () => fetchInvites({}),
+  });
+  const pendingInvites = inviteData?.invites ?? [];
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["members"] });
+    qc.invalidateQueries({ queryKey: ["workspace-invites"] });
+  };
+
+  const revokeMut = useMutation({
+    mutationFn: (inviteId: string) => cancelInvite({ data: { inviteId } }),
+    onSuccess: () => {
+      toast.success("Invite Canceled.");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not cancel that invite."),
+  });
 
   const inviteMut = useMutation({
     mutationFn: () => invite({ data: { email, role, fullName: fullName || undefined } }),
@@ -245,6 +265,41 @@ function MembersPage() {
           </div>
         )}
       </Card>
+
+      {pendingInvites.length > 0 ? (
+        <Card className="mt-6 p-0 rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-[#E7E7EC] text-sm font-medium">
+            <MailQuestion className="h-4 w-4 text-[#6B6B76]" />
+            Pending Invites
+            <Badge className="bg-gray-100 text-gray-600">{pendingInvites.length}</Badge>
+          </div>
+          <div className="divide-y divide-[#E7E7EC]">
+            {pendingInvites.map((inv) => (
+              <div key={inv.id} className="flex items-center gap-4 px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm truncate">{inv.email}</div>
+                  <div className="text-xs text-[#6B6B76]">
+                    Invited {new Date(inv.createdAt).toLocaleDateString()} · Awaiting First Sign In
+                  </div>
+                </div>
+                <Badge className={WS_ROLE_STYLE[inv.role] ?? WS_ROLE_STYLE.member}>
+                  {inv.role === "admin" ? "Workspace Admin" : "Workspace Member"}
+                </Badge>
+                {isAdmin ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Cancel invite for ${inv.email}`}
+                    onClick={() => revokeMut.mutate(inv.id)}
+                  >
+                    <X className="h-4 w-4 text-[#6B6B76]" />
+                  </Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       {!isAdmin ? (
         <p className="mt-4 text-sm text-[#6B6B76] flex items-center gap-2">
