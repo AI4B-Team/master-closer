@@ -383,11 +383,11 @@
 /* ---------------------------- profile menu ---------------------------- */
 .profile-wrap { position: relative; }
 .profile-btn {
-  border: none; background: none; padding: 0; cursor: pointer; border-radius: 50%;
+  border: none; background: var(--card); padding: 2px; cursor: pointer; border-radius: 50%;
   display: grid; place-items: center; line-height: 0;
-  box-shadow: 0 0 0 2px var(--brand, #cc0000);
+  box-shadow: 0 0 0 2px #cc0000;
 }
-.profile-btn:hover { opacity: 0.88; box-shadow: 0 0 0 3px var(--brand, #cc0000); }
+.profile-btn:hover { opacity: 0.88; box-shadow: 0 0 0 3px #cc0000; }
 .profile-menu {
   position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: var(--card);
   border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 24px 60px rgba(17, 19, 24, 0.18);
