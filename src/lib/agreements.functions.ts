@@ -140,6 +140,7 @@ export const signAgreement = createServerFn({ method: "POST" })
     // Workspace-wide feed: the closer sees signatures land in the Activity Log.
     await supabaseAdmin.from("events").insert({
       org_id: row.org_id,
+      workspace_id: row.workspace_id,
       event_type: "job.completed",
       payload: {
         kind: "agreement.signed",
