@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 /** Event types worth interrupting the user for, with the copy to show. */
 const ALERTS: Record<string, string> = {
@@ -27,8 +28,15 @@ function alertFor(row: any): string | null {
  */
 export function useLiveWorkspace(extraKeys: string[] = []) {
   const qc = useQueryClient();
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
 
   useEffect(() => {
+    if (!wsId) return;
+    // Only listen to rows in the active workspace so toasts and refetches never
+    // fire for a sibling workspace in the same org.
+    const scope = (table: string, event: "*" | "INSERT" = "*") =>
+      ({ event, schema: "public", table, filter: `workspace_id=eq.${wsId}` }) as const;
     const prefixes = [
       "notifications",
       "org-events",
@@ -59,8 +67,8 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
     };
 
     const channel = supabase
-      .channel("workspace-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "events" }, (payload) => {
+      .channel(`workspace-live-${wsId}`)
+      .on("postgres_changes", scope("events"), (payload) => {
         bump();
         if (payload.eventType !== "INSERT") return;
         const label = alertFor(payload.new);
@@ -71,20 +79,20 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
           });
         }
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, bump)
-      .on("postgres_changes", { event: "*", schema: "public", table: "calls" }, bump)
-      .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, bump)
-      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, bump)
-      .on("postgres_changes", { event: "*", schema: "public", table: "agent_runs" }, bump)
-      .on("postgres_changes", { event: "*", schema: "public", table: "worklist_nominations" }, bump)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "agent_proposals" }, (payload) => {
+      .on("postgres_changes", scope("tasks"), bump)
+      .on("postgres_changes", scope("calls"), bump)
+      .on("postgres_changes", scope("deals"), bump)
+      .on("postgres_changes", scope("leads"), bump)
+      .on("postgres_changes", scope("agent_runs"), bump)
+      .on("postgres_changes", scope("worklist_nominations"), bump)
+      .on("postgres_changes", scope("agent_proposals", "INSERT"), (payload) => {
         bump();
         const row = payload.new as any;
         toast("Agent Proposal Waiting", {
           description: row?.title || row?.target_field || "A background agent drafted a change for review.",
         });
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "agreements" }, (payload) => {
+      .on("postgres_changes", scope("agreements"), (payload) => {
         bump();
         if (payload.eventType !== "UPDATE") return;
         const row = payload.new as any;
@@ -99,5 +107,5 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qc, extraKeys.join("|")]);
+  }, [qc, wsId, extraKeys.join("|")]);
 }
