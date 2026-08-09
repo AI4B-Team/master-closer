@@ -831,7 +831,13 @@ function AgreementDrawer({
       event_type: "sent",
       meta: { to: agreement.signer_email },
     });
+    void logActivity("agreement.sent", {
+      agreement_id: agreement.id,
+      signer_email: agreement.signer_email,
+      amount: Number(agreement.amount ?? 0),
+    });
     await navigator.clipboard.writeText(link).catch(() => {});
+
     toast.success("Sent. Signing link copied.");
     onChange();
     onClose();
