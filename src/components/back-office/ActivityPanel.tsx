@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowRight, Inbox, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { describeEvent, eventHref, type EventRow } from "@/lib/activity-labels";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 function ago(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
