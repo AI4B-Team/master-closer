@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, ChevronDown, Check, Users, PhoneCall, Megaphone, KanbanSquare, StickyNote, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { formatPhone } from "@/lib/phone";
 
 export const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes", "Agents"] as const;
 export type SearchScope = (typeof SEARCH_SCOPES)[number];
@@ -54,7 +55,7 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
         sub:
           scope === "Notes" && noteHit
             ? (l.notes ?? "").slice(0, 90)
-            : [l.company, l.phone ?? l.email].filter(Boolean).join(" · ") || "Lead",
+            : [l.company, l.phone ? formatPhone(l.phone) : l.email].filter(Boolean).join(" · ") || "Lead",
         to: "/leads",
         params: { q: l.name, lead: l.id },
       });

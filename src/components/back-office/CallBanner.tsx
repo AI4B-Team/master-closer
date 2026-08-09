@@ -1,4 +1,5 @@
 import { Mic, MicOff, Pause, PhoneForwarded, PhoneOff, Play, Radio, UserPlus } from "lucide-react";
+import { formatPhone } from "@/lib/phone";
 
 export type CallMode = "full_ai" | "hybrid" | "copilot";
 
@@ -52,7 +53,7 @@ export function CallBanner({
           <span className="font-display">{name}</span>
         </div>
         <div className="banner-status font-num">
-          <span className="banner-num font-num">{phone}</span>
+          <span className="banner-num font-num">{formatPhone(phone)}</span>
           <span className="banner-live-dot" />
           {campaign && <span className="banner-camp">{campaign}</span>}
           {(participants ?? []).map((p) => (

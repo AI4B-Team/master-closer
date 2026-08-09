@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+import { formatPhone } from "@/lib/phone";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -502,7 +503,7 @@ function LeadsPage() {
                   <td className="py-3 font-medium">{l.name}</td>
                   <td className="py-3 text-[#6B6B76]">{l.company ?? "—"}</td>
                   <td className="py-3 text-[#6B6B76]">{l.email ?? "—"}</td>
-                  <td className="py-3 text-[#6B6B76]">{l.phone ?? "—"}</td>
+                  <td className="py-3 text-[#6B6B76]">{formatPhone(l.phone)}</td>
                   <td className="py-3 text-[#6B6B76] capitalize">{(l.consent ?? "unknown").replace("_", " ")}</td>
                   <td className="py-3">
                     <Badge className={`${STATUS_COLORS[l.status] ?? ""} capitalize border-0`}>{l.status}</Badge>

@@ -15,6 +15,7 @@ import { EmptyPanel, SkeletonRows, StatusPill, titleCase, toneForStatus } from "
 import { Download, ListOrdered, Pencil, Plus, Search, ShieldOff, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatPhone } from "@/lib/phone";
 
 export const Route = createFileRoute("/_authenticated/lists")({
   head: () => ({
@@ -389,7 +390,7 @@ function ListsPage() {
                       <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
                         <td className="py-3 font-medium">{c.name}</td>
                         <td className="py-3 font-mono text-xs">
-                          {c.phone}
+                          {formatPhone(c.phone)}
                           {onDnc ? <span className="ml-2 align-middle"><StatusPill label="DNC" tone="red" /></span> : null}
                         </td>
                         <td className="py-3 text-[#6B6B76]">{c.email ?? "—"}</td>
