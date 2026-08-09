@@ -198,7 +198,7 @@
 
 /* -------------------------------- kpis -------------------------------- */
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
-.kpi { border-radius: 16px; padding: 18px; border: 1px solid rgba(0, 0, 0, 0.04); }
+.kpi { border-radius: 16px; padding: 18px; border: 1px solid rgba(0, 0, 0, 0.04); background: var(--kpi-tint, var(--card)); }
 .kpi-link { display: block; text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .kpi-link:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(17, 19, 24, 0.08); }
 .kpi-active { border-color: var(--signal); box-shadow: 0 0 0 2px rgba(204, 0, 0, 0.18); }
