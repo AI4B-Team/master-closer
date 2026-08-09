@@ -16,6 +16,8 @@ import { ActivityPanel } from "@/components/back-office/ActivityPanel";
 import { NotificationsMenu } from "@/components/back-office/NotificationsMenu";
 import { ProductTour, useProductTour } from "@/components/back-office/ProductTour";
 import { GlobalSearch } from "@/components/back-office/GlobalSearch";
+import { WorkspaceSwitcher } from "@/components/back-office/WorkspaceSwitcher";
+
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCallStatus } from "@/hooks/use-call-status";
 
@@ -165,6 +167,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GlobalSearch />
 
           <div className="topbar-right">
+            <WorkspaceSwitcher />
+
             <span
               className={
                 "status-chip " +
