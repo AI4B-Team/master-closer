@@ -137,9 +137,24 @@ export const signAgreement = createServerFn({ method: "POST" })
       meta: { signer: data.signerName, email: data.signerEmail, method: data.signatureType, ip },
     });
 
+    // Workspace-wide feed: the closer sees signatures land in the Activity Log.
+    await supabaseAdmin.from("events").insert({
+      org_id: row.org_id,
+      event_type: "job.completed",
+      payload: {
+        kind: "agreement.signed",
+        agreement_id: row.id,
+        title: row.title,
+        amount: row.amount,
+        signer_name: data.signerName,
+        signer_email: data.signerEmail,
+      },
+    });
+
     if (row.deal_id) {
       await supabaseAdmin.from("deals").update({ stage: "won", close_probability: 100 }).eq("id", row.deal_id);
     }
+
 
     return { ok: true, alreadySigned: false };
   });
