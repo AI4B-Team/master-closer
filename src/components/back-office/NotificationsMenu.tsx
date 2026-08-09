@@ -169,8 +169,9 @@ export function NotificationsMenu() {
         data-tip={unread ? `${unread} new notification${unread > 1 ? "s" : ""}` : "Notifications"}
         aria-label="Notifications"
         onClick={() => {
+          // Keep the unread dots visible while the panel is open; mark seen on close.
+          if (open) markAllRead();
           setOpen((v) => !v);
-          if (!open) markAllRead();
         }}
       >
         <Bell size={17} />
