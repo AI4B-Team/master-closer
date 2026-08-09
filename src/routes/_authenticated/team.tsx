@@ -69,6 +69,18 @@ function ReportsPage() {
     },
   });
 
+  const { data: suggestions } = useQuery({
+    queryKey: ["report_suggestions"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("suggestions")
+        .select("id, objection, was_used, call_id")
+        .limit(1000);
+      return data ?? [];
+    },
+  });
+
+
   const calls = useMemo(() => {
     const list = allCalls ?? [];
     if (!rangeDays) return list;
