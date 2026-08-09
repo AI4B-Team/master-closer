@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,61 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState } from "@/components/back-office/ui";
-import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles, Pencil, Search } from "lucide-react";
+import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles, Pencil, Search, Download, Upload } from "lucide-react";
 import { suggestObjections } from "@/lib/agents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type Suggestion = { trigger: string; category?: string | null; response: string };
+
+// ---- CSV helpers (trigger, category, response) ----
+const csvCell = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+function toCsv(rows: any[]) {
+  const head = ["Trigger", "Category", "Response"].join(",");
+  const body = rows.map((r) => [r.trigger ?? "", r.category ?? "", r.response ?? ""].map(csvCell).join(","));
+  return [head, ...body].join("\n");
+}
+function parseCsv(text: string) {
+  const rows: string[][] = [];
+  let cell = "";
+  let row: string[] = [];
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false;
+      } else cell += c;
+      continue;
+    }
+    if (c === '"') { quoted = true; continue; }
+    if (c === ",") { row.push(cell); cell = ""; continue; }
+    if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+      continue;
+    }
+    cell += c;
+  }
+  if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  const clean = rows.filter((r) => r.some((v) => v.trim()));
+  if (!clean.length) return [];
+  const first = clean[0].map((h) => h.trim().toLowerCase());
+  const hasHeader = first.includes("trigger");
+  const idx = {
+    trigger: hasHeader ? first.indexOf("trigger") : 0,
+    category: hasHeader ? first.indexOf("category") : 1,
+    response: hasHeader ? first.indexOf("response") : 2,
+  };
+  return clean
+    .slice(hasHeader ? 1 : 0)
+    .map((r) => ({
+      trigger: (r[idx.trigger] ?? "").trim(),
+      category: idx.category >= 0 ? (r[idx.category] ?? "").trim() || null : null,
+      response: (r[idx.response] ?? "").trim(),
+    }))
+    .filter((r) => r.trigger && r.response);
+}
 
 
 export const Route = createFileRoute("/_authenticated/playbook")({
@@ -198,6 +247,8 @@ function Objections() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [cat, setCat] = useState<string>("All");
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState({ trigger: "", response: "", category: "" });
   const [genOpen, setGenOpen] = useState(false);
   const [gen, setGen] = useState({ industry: "", focus: "" });
@@ -321,6 +372,47 @@ function Objections() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["objections"] }),
   });
 
+  const bulkImport = useMutation({
+    mutationFn: async (rows: { trigger: string; category: string | null; response: string }[]) => {
+      const org = await orgId();
+      const { error } = await supabase.from("objections").insert(
+        rows.map((r) => ({ trigger: r.trigger, response: r.response, category: r.category, org_id: org })),
+      );
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`Imported ${n} ${n === 1 ? "Objection" : "Objections"}`);
+      qc.invalidateQueries({ queryKey: ["objections"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    (objections ?? []).forEach((o: any) => { if (o.category) set.add(o.category); });
+    return ["All", ...Array.from(set).sort()];
+  }, [objections]);
+
+  const exportCsv = () => {
+    const rows = objections ?? [];
+    if (!rows.length) return;
+    const url = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `objections-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const onFile = async (file: File | null) => {
+    if (!file) return;
+    const rows = parseCsv(await file.text());
+    if (!rows.length) { toast.error("No Rows Found. Use Columns: Trigger, Category, Response."); return; }
+    bulkImport.mutate(rows);
+  };
+
+
   return (
     <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
       <div className="flex items-start justify-between gap-4 mb-4">
@@ -333,7 +425,32 @@ function Objections() {
             <p className="text-sm text-[#6B6B76]">Trigger phrase in, exact response out.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-xl"
+          onClick={() => fileRef.current?.click()}
+          disabled={bulkImport.isPending}
+        >
+          <Upload className="h-4 w-4 mr-1" /> {bulkImport.isPending ? "Importing…" : "Import CSV"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-xl"
+          onClick={exportCsv}
+          disabled={!objections || objections.length === 0}
+        >
+          <Download className="h-4 w-4 mr-1" /> Export CSV
+        </Button>
         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
           <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
         </Button>
@@ -393,6 +510,27 @@ function Objections() {
           />
         </div>
       )}
+
+      {categories.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {categories.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCat(c)}
+              className={
+                "text-xs font-medium rounded-full px-3 py-1.5 border transition-colors " +
+                (cat === c
+                  ? "bg-[#CC0000] border-[#CC0000] text-white"
+                  : "bg-white border-[#E7E7EC] text-[#4A505C] hover:bg-[#F6F6F8]")
+              }
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+
 
 
       <Dialog open={genOpen} onOpenChange={setGenOpen}>
@@ -460,6 +598,7 @@ function Objections() {
       ) : (
         <div className="space-y-2">
           {objections
+            .filter((o: any) => (cat === "All" ? true : (o.category ?? "") === cat))
             .filter((o: any) => {
               const needle = q.trim().toLowerCase();
               if (!needle) return true;
