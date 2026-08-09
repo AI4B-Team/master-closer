@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -283,6 +283,7 @@ function TasksPage() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>New Follow-Up</DialogTitle></DialogHeader>
+              <DialogDescription className="sr-only">Create a follow-up task with a due date and owner.</DialogDescription>
               <div className="space-y-3">
                 <div>
                   <Label>Task</Label>

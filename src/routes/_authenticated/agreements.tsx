@@ -10,12 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, EmptyState, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import {
@@ -593,6 +593,7 @@ function TemplatesTab({
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{draft.id ? "Edit Template" : "New Template"}</DialogTitle>
+            <DialogDescription className="sr-only">Edit the template body, fields and signing settings.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -745,6 +746,7 @@ function ComposeDialog({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{step === "setup" ? "New Agreement" : "Review & Send"}</DialogTitle>
+          <DialogDescription className="sr-only">Set up the agreement, then review it before sending.</DialogDescription>
         </DialogHeader>
 
         {step === "setup" ? (
@@ -925,6 +927,7 @@ function AgreementDrawer({
       <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="font-display">{agreement.title}</SheetTitle>
+          <SheetDescription className="sr-only">Review this agreement's status, signers and activity.</SheetDescription>
         </SheetHeader>
 
         <div className="mt-4 space-y-4">

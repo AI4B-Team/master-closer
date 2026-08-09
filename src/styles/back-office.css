@@ -434,8 +434,11 @@
   pointer-events: none;
   transition: opacity 0.14s ease, transform 0.14s ease;
 }
+/* Hidden tooltips must not contribute to layout/scroll width. */
+.has-tip::after,
+.has-tip::before { content: none; }
 .has-tip::after {
-  content: attr(data-tip);
+  content: none;
   position: absolute;
   bottom: calc(100% + 10px);
   left: 50%;
@@ -469,6 +472,10 @@
   rotate: 45deg;
   z-index: 61;
 }
+.has-tip:hover::after,
+.has-tip:focus-visible::after { content: attr(data-tip); }
+.has-tip:hover::before,
+.has-tip:focus-visible::before { content: ""; }
 .has-tip:hover::after,
 .has-tip:focus-visible::after,
 .has-tip:hover::before,
@@ -1287,3 +1294,10 @@
 .qd-list-foot { padding: 10px 4px 4px; border-top: 1px solid #ECEDF1; margin-top: 6px; display: flex; justify-content: center; }
 .qd-empty { padding: 28px 12px; text-align: center; color: var(--muted); display: grid; gap: 6px; justify-items: center; font-size: 12.5px; }
 @media (max-width: 640px) { .qd-menu { width: min(92vw, 372px); } }
+
+/* --------------------- grid/flex shrink safeguards --------------------- */
+.mc-shell .cockpit > *,
+.mc-shell .grid-2 > *,
+.mc-shell .kpis > * { min-width: 0; }
+.mc-shell .mc-card { min-width: 0; }
+.mc-shell .mc-empty span { max-width: 100%; }

@@ -21,7 +21,7 @@ import { DEFAULT_DISCLOSURE, disclosureStatus, isDisclosureRequired } from "@/li
 import { logDisclosure, shouldBlockLiveSurface } from "@/lib/disclosure";
 import { SIM_RING_MS, SIM_SCRIPT } from "@/lib/simulation";
 import { applyMerge, DEFAULT_AGREEMENT_BODY, signingUrl } from "@/lib/agreements";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -1085,6 +1085,7 @@ function DialerPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Call Wrap-Up</DialogTitle>
+            <DialogDescription className="sr-only">Log the outcome, disposition and notes for this call.</DialogDescription>
           </DialogHeader>
           {wrap && (
             <div className="space-y-3">
@@ -1156,6 +1157,7 @@ function DialerPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Merge Another Line</DialogTitle>
+            <DialogDescription className="sr-only">Dial another number and merge it into this call.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Select value={mergeValue} onValueChange={setMergeValue}>
@@ -1182,6 +1184,7 @@ function DialerPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Transfer This Call</DialogTitle>
+            <DialogDescription className="sr-only">Choose who should take over this call.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Select value={transferTo} onValueChange={setTransferTo}>

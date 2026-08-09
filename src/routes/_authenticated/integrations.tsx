@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
@@ -165,7 +165,7 @@ function IntegrationsPage() {
                     ? "Settings Saved — Not Connected"
                     : "No Settings Yet"}
               </p>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Badge variant={connected ? "default" : "secondary"} className={connected ? "bg-[#0E9F6E]" : ""}>
                   {connected ? "Connected" : "Not Connected"}
                 </Badge>
@@ -193,6 +193,7 @@ function IntegrationsPage() {
       <Dialog open={!!configKey} onOpenChange={(o) => !o && setConfigKey(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Configure {connector?.name ?? "Integration"}</DialogTitle></DialogHeader>
+          <DialogDescription className="sr-only">Enter the credentials this integration needs to connect.</DialogDescription>
           <div className="space-y-3">
             {(connector?.fields ?? []).map((f) => (
               <div key={f.key}>
