@@ -100,15 +100,16 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
   const topObjection = [...byTrigger.entries()].sort((a, b) => b[1] - a[1])[0];
 
   const window = cadence === "daily" ? "Last 24 Hours" : "Last 7 Days";
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
   const lines = [
-    `${rows.length} calls · ${connects} connects (${rows.length ? Math.round((connects / rows.length) * 100) : 0}%)`,
+    `${plural(rows.length, "call")} · ${connects} connects (${rows.length ? Math.round((connects / rows.length) * 100) : 0}%)`,
     `${talkMinutes} talk minutes · ${avgProbability}% avg close probability`,
-    `${won.length} deals won · ${money(revenue)} closed`,
+    `${plural(won.length, "deal")} won · ${money(revenue)} closed`,
   ];
   if (topObjection) lines.push(`Top objection: ${topObjection[0]} (${topObjection[1]}x)`);
 
   return {
-    headline: `${window}: ${rows.length} calls, ${won.length} won, ${money(revenue)}`,
+    headline: `${window}: ${plural(rows.length, "call")}, ${won.length} won, ${money(revenue)}`,
     lines,
     metrics: {
       calls: rows.length,

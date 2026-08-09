@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { describeEvent, eventHref } from "@/lib/activity-labels";
-import { Activity, Bot, DollarSign, Eye, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
+import { Activity, Bot, DollarSign, Eye, FileBarChart, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -109,6 +109,25 @@ function Dashboard() {
       return data ?? [];
     },
   });
+
+  /* Latest scheduled digest, so the trailing numbers are on the first screen. */
+  const { data: digest } = useQuery({
+    queryKey: ["dashboard-digest", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id,payload,created_at")
+        .eq("workspace_id", wsId!)
+        .eq("event_type", "report.digest")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data ?? null;
+    },
+  });
+
+
 
 
   const split = stats?.modeSplit ?? [];
@@ -240,7 +259,35 @@ function Dashboard() {
         )}
       </Panel>
 
+      {digest ? (
+        <Panel
+          title="Latest Digest"
+          action={<Link to="/team" className="card-link">Manage Schedules</Link>}
+        >
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", columnGap: 12, rowGap: 4 }}>
+            <FileBarChart className="h-4 w-4 shrink-0 text-[#CC0000]" style={{ marginRight: 10 }} />
+            <span className="text-base font-semibold" style={{ marginRight: 12 }}>{(digest as any).payload?.message}</span>
+            <span className="text-sm text-[#6B6B76]">
+              {(digest as any).payload?.name} · {new Date(digest.created_at as string).toLocaleString([], {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+          <ul className="mt-3 space-y-2">
+            {((digest as any).payload?.lines ?? []).map((line: string) => (
+              <li key={line} className="rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm text-[#3A3A44]">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+
       <Panel
+
         title="Suggested Today"
         action={<Link to="/agents" className="card-link">View Worklist</Link>}
       >
