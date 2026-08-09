@@ -16,6 +16,7 @@ import { Route as SignTokenRouteImport } from './routes/sign.$token'
 import { Route as AuthHubRouteImport } from './routes/auth_.hub'
 import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedPlaybookRouteImport } from './routes/_authenticated/playbook'
@@ -74,6 +75,11 @@ const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/playbook': typeof AuthenticatedPlaybookRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth/hub': typeof AuthHubRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/playbook': typeof AuthenticatedPlaybookRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth/hub': typeof AuthHubRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/_authenticated/playbook': typeof AuthenticatedPlaybookRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth_/hub': typeof AuthHubRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/playbook'
     | '/practice'
     | '/settings'
+    | '/tasks'
     | '/team'
     | '/tutorials'
     | '/auth/hub'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/playbook'
     | '/practice'
     | '/settings'
+    | '/tasks'
     | '/team'
     | '/tutorials'
     | '/auth/hub'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/_authenticated/playbook'
     | '/_authenticated/practice'
     | '/_authenticated/settings'
+    | '/_authenticated/tasks'
     | '/_authenticated/team'
     | '/_authenticated/tutorials'
     | '/auth_/hub'
@@ -471,6 +483,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tasks': {
+      id: '/_authenticated/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AuthenticatedTasksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -670,6 +689,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlaybookRoute: typeof AuthenticatedPlaybookRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTutorialsRoute: typeof AuthenticatedTutorialsRoute
 }
@@ -693,6 +713,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlaybookRoute: AuthenticatedPlaybookRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTutorialsRoute: AuthenticatedTutorialsRoute,
 }

@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Phone, Trash2, Save, PhoneCall, Clock } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { TaskPanel } from "@/components/back-office/TaskPanel";
 
 type Lead = {
   id: string;
@@ -194,6 +195,11 @@ export function LeadDrawer({
             >
               <Trash2 className="h-4 w-4 mr-1" /> Delete
             </Button>
+          </div>
+
+          <div className="pt-2 border-t border-[#E7E7EC]">
+            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Follow-Ups</p>
+            {lead ? <TaskPanel leadId={lead.id} /> : null}
           </div>
 
           <div className="pt-2 border-t border-[#E7E7EC]">

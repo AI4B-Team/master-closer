@@ -19,7 +19,7 @@ type NavItem = { to: string; label: string; icon: any; also?: string[] };
 
 const NAV_PRIMARY: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/leads", label: "Leads", icon: Users, also: ["/pipeline"] },
+  { to: "/leads", label: "Leads", icon: Users, also: ["/pipeline", "/tasks"] },
   { to: "/calls", label: "Calls", icon: PhoneCall, also: ["/dialer", "/agreements"] },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone, also: ["/lists"] },
   { to: "/ai-closers", label: "AI Studio", icon: Bot, also: ["/playbook", "/practice"] },
@@ -34,6 +34,7 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
   leads: [
     { label: "List", to: "/leads" },
     { label: "Pipeline", to: "/pipeline" },
+    { label: "Follow-Ups", to: "/tasks" },
   ],
   calls: [
     { label: "Live Dialer", to: "/dialer" },

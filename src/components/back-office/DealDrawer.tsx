@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TaskPanel } from "@/components/back-office/TaskPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Save, Trash2, Phone, Clock, FileSignature, User } from "lucide-react";
@@ -232,6 +233,11 @@ export function DealDrawer({
             >
               <Trash2 className="h-4 w-4 mr-1" /> Delete
             </Button>
+          </div>
+
+          <div className="pt-2 border-t border-[#E7E7EC]">
+            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Follow-Ups</p>
+            {deal ? <TaskPanel dealId={deal.id} /> : null}
           </div>
 
           <div className="pt-2 border-t border-[#E7E7EC]">
