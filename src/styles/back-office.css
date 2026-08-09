@@ -897,7 +897,7 @@
 [data-mc-theme="dark"] .mc-shell .onb-x:hover { background: var(--surface); }
 [data-mc-theme="dark"] .mc-shell .onb-cta { background: var(--signal); color: #fff; }
 [data-mc-theme="dark"] .mc-shell .onb-cta:hover { background: var(--signal-deep); }
-[data-mc-theme="dark"] .mc-shell .nav-item.is-active { background: rgba(204, 0, 0, 0.16); }
+[data-mc-theme="dark"] .mc-shell .nav-item.nav-on { background: rgba(204, 0, 0, 0.18); color: #FF6B5E; }
 [data-mc-theme="dark"] .mc-shell .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
 
 
