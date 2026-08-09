@@ -492,11 +492,13 @@
 
 .icon-btn { position: relative; }
 .bell-badge {
-  position: absolute; top: 1px; right: 1px; min-width: 15px; height: 15px;
+  position: absolute; top: 0; right: 0; transform: translate(38%, -38%);
+  min-width: 15px; height: 15px;
   padding: 0 4px; border-radius: 999px; background: #CC0000; color: #fff;
   font-size: 9px; font-weight: 800; line-height: 15px; text-align: center;
-  border: 2px solid #fff; box-sizing: content-box;
+  border: 2px solid var(--card); box-sizing: content-box;
 }
+
 .spin { animation: mc-spin 1s linear infinite; }
 @keyframes mc-spin { to { transform: rotate(360deg); } }
 
