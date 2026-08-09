@@ -290,15 +290,24 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
               }
 
               return (
-                <button
+                <div
                   key={w.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
+                  aria-current={isActive ? "true" : undefined}
                   className={"ws-item " + (isActive ? "ws-item-active" : "")}
-                  onClick={() =>
-                    isActive ? setOpen(false) : switchTo.mutate(w.id)
-                  }
-                  disabled={switchTo.isPending}
+                  onClick={() => {
+                    if (switchTo.isPending) return;
+                    isActive ? setOpen(false) : switchTo.mutate(w.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" && e.key !== " ") return;
+                    e.preventDefault();
+                    if (switchTo.isPending) return;
+                    isActive ? setOpen(false) : switchTo.mutate(w.id);
+                  }}
                 >
+
                   <span
                     className="ws-dot"
                     style={{ background: w.brand_color || "#CC0000" }}
@@ -344,7 +353,8 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
                       <Building2 size={14} className="opacity-40" />
                     )}
                   </span>
-                </button>
+                </div>
+
               );
             })
           )}
