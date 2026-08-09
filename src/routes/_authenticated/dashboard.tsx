@@ -75,6 +75,19 @@ function Dashboard() {
     },
   });
 
+  const { data: activity } = useQuery({
+    queryKey: ["dashboard-activity"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id,event_type,payload,created_at")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      return data ?? [];
+    },
+  });
+
+
   const split = stats?.modeSplit ?? [];
   const total = split.reduce((s, m) => s + m.value, 0);
   const pct = split.map((m) => (total ? (m.value / total) * 100 : 0));
