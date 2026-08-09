@@ -170,6 +170,38 @@ function ReportsPage() {
       .sort((a, b) => b.calls - a.calls);
   }, [calls, agents]);
 
+  const campaignPerf = useMemo(() => {
+    const map = new Map<string, { id: string; calls: number; connects: number; prob: number; probN: number }>();
+    for (const c of calls ?? []) {
+      const key = c.campaign_id ?? "none";
+      const row = map.get(key) ?? { id: key, calls: 0, connects: 0, prob: 0, probN: 0 };
+      row.calls += 1;
+      if (c.dial_outcome === "connected" || c.outcome === "completed") row.connects += 1;
+      if (c.close_probability != null) {
+        row.prob += c.close_probability;
+        row.probN += 1;
+      }
+      map.set(key, row);
+    }
+    const max = Math.max(1, ...[...map.values()].map((r) => r.calls));
+    return Array.from(map.values())
+      .map((r) => {
+        const campaign = campaigns?.find((c) => c.id === r.id);
+        return {
+          ...r,
+          name: campaign?.name ?? "No Campaign",
+          mode: campaign ? MODE_LABEL[campaign.mode] ?? titleCase(campaign.mode) : "—",
+          status: campaign ? titleCase(campaign.status) : null,
+          connectRate: r.calls ? Math.round((r.connects / r.calls) * 100) : 0,
+          avgProbability: r.probN ? Math.round(r.prob / r.probN) : 0,
+          share: Math.round((r.calls / max) * 100),
+        };
+      })
+      .sort((a, b) => b.calls - a.calls);
+  }, [calls, campaigns]);
+
+
+
 
 
   const topObjections = useMemo(() => {
