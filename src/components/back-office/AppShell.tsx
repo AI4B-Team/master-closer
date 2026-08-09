@@ -16,6 +16,7 @@ import { NotificationsMenu } from "@/components/back-office/NotificationsMenu";
 import { ProductTour, useProductTour } from "@/components/back-office/ProductTour";
 import { GlobalSearch } from "@/components/back-office/GlobalSearch";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
+import { useCallStatus } from "@/hooks/use-call-status";
 
 
 type NavItem = { to: string; label: string; icon: any; also?: string[] };
@@ -78,6 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const prefs = usePrefs();
 
   const tour = useProductTour();
+  const callStatus = useCallStatus();
 
 
   const signOut = async () => {
