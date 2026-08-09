@@ -115,6 +115,23 @@ function AgreementsPage() {
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [detail, setDetail] = useState<any | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  /* Filter the sent list by free text (title, signer, lead) and status. */
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (agreements ?? []).filter((a: any) => {
+      const hit =
+        !q ||
+        [a.title, a.signer_name, a.signer_email, a.leads?.name, a.leads?.company]
+          .filter(Boolean)
+          .some((v: string) => String(v).toLowerCase().includes(q));
+      return hit && (statusFilter === "all" || a.status === statusFilter);
+    });
+  }, [agreements, search, statusFilter]);
+
+
 
   return (
     <div>
@@ -154,6 +171,43 @@ function AgreementsPage() {
             <MiniStat label="Signed Value" value={money(stats.value)} />
           </div>
 
+          <Card className="rounded-2xl border-[#E7E7EC] shadow-none p-3 mb-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by agreement, signer or lead"
+                className="rounded-xl md:max-w-sm"
+              />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="rounded-xl w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="viewed">Viewed</SelectItem>
+                  <SelectItem value="signed">Signed</SelectItem>
+                  <SelectItem value="declined">Declined</SelectItem>
+                </SelectContent>
+              </Select>
+              {search || statusFilter !== "all" ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="rounded-xl"
+                  onClick={() => { setSearch(""); setStatusFilter("all"); }}
+                >
+                  Clear Filters
+                </Button>
+              ) : null}
+              <span className="ml-auto text-sm text-[#6B6B76]">
+                <b className="text-[#111114]">{visible.length}</b> Agreements
+              </span>
+            </div>
+          </Card>
+
           <Card className="rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
             {agreementsLoading ? (
               <SkeletonRows rows={5} />
@@ -172,6 +226,10 @@ function AgreementsPage() {
                   </Button>
                 }
               />
+            ) : visible.length === 0 ? (
+              <div className="px-4 py-10 text-center text-sm text-[#6B6B76]">
+                No agreements match these filters.
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -185,7 +243,7 @@ function AgreementsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(agreements ?? []).map((a: any) => (
+                  {visible.map((a: any) => (
                     <tr key={a.id} className="border-b border-[#F3F3F6] last:border-0">
                       <td className="px-4 py-3">
                         <button type="button" className="font-medium hover:underline" onClick={() => setDetail(a)}>
