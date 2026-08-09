@@ -251,7 +251,7 @@ function LeadsPage() {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-sm text-[#6B6B76] whitespace-nowrap">{filtered.length} shown</span>
+          <span className="text-sm text-[#6B6B76] whitespace-nowrap">{filtered.length} Shown</span>
         </div>
 
         {leadsLoading ? (

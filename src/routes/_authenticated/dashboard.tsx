@@ -144,7 +144,7 @@ function Dashboard() {
             <div className="donut" style={{ background: donut }}>
               <div className="donut-hole">
                 <span className="font-num">{stats?.totalCalls ?? 0}</span>
-                <small>calls</small>
+                <small>Calls</small>
               </div>
             </div>
           </div>
