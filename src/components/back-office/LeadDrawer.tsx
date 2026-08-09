@@ -107,6 +107,39 @@ export function LeadDrawer({
     },
   });
 
+  /* One-click deal creation drops the lead into the first pipeline stage. */
+  const createDeal = useMutation({
+    mutationFn: async () => {
+      if (!lead) throw new Error("No lead selected.");
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      const { data: stage } = await supabase
+        .from("pipeline_stages")
+        .select("id")
+        .order("position", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      const { error } = await supabase.from("deals").insert({
+        title: `${lead.company || lead.name} — New Deal`,
+        value: 0,
+        stage: "new" as any,
+        stage_id: stage?.id ?? null,
+        close_probability: 50,
+        lead_id: lead.id,
+        owner_id: lead.owner_id ?? null,
+        org_id: prof.org_id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Deal created.");
+      qc.invalidateQueries({ queryKey: ["lead-deals", lead?.id] });
+      qc.invalidateQueries({ queryKey: ["deals"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
