@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { EmptyPanel } from "@/components/back-office/ui";
+import { Plus, Trash2, GripVertical, KanbanSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -221,6 +222,27 @@ function PipelinePage() {
         </Badge>
       </div>
 
+      {(deals ?? []).length === 0 ? (
+        <EmptyPanel
+          icon={KanbanSquare}
+          title="No Deals In The Pipeline"
+          hint="Create your first deal, or work a lead until it's worth forecasting."
+          action={
+            <>
+              <Button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]"
+              >
+                <Plus className="h-4 w-4 mr-1.5" /> New Deal
+              </Button>
+              <Button asChild type="button" variant="outline" className="rounded-xl">
+                <Link to="/leads">Go To Leads</Link>
+              </Button>
+            </>
+          }
+        />
+      ) : (
       <div className="grid grid-cols-6 gap-3 overflow-x-auto">
         {STAGES.map((s) => {
           const items = (deals ?? []).filter((d) => d.stage === s.key);
@@ -304,6 +326,7 @@ function PipelinePage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
