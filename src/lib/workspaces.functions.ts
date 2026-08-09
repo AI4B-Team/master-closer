@@ -69,3 +69,86 @@ export const renameWorkspace = createServerFn({ method: "POST" })
 
     return { id: wsId, name: data.name };
   });
+
+/** Leaves the active workspace. Owners must hand over ownership first. */
+export const leaveWorkspace = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { resolveWorkspace } = await import("./team.server");
+    const { wsId, wsRole } = await resolveWorkspace(context.supabase, context.userId);
+    if (wsRole === "owner") {
+      throw new Error("Transfer ownership from Members before leaving this workspace.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: mine } = await supabaseAdmin
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("user_id", context.userId);
+    const others = (mine ?? []).filter((m) => m.workspace_id !== wsId);
+    if (others.length === 0) throw new Error("You cannot leave your only workspace.");
+
+    await supabaseAdmin
+      .from("workspace_members")
+      .delete()
+      .eq("workspace_id", wsId)
+      .eq("user_id", context.userId);
+    await supabaseAdmin
+      .from("profiles")
+      .update({ active_workspace_id: others[0].workspace_id })
+      .eq("id", context.userId);
+
+    return { leftWorkspaceId: wsId, activeWorkspaceId: others[0].workspace_id };
+  });
+
+/** Permanently deletes the active workspace. Owner only, and never the last one. */
+export const deleteWorkspace = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ confirmName: z.string() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { resolveWorkspace } = await import("./team.server");
+    const { wsId, wsRole } = await resolveWorkspace(context.supabase, context.userId);
+    if (wsRole !== "owner") throw new Error("Only the workspace owner can delete a workspace.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: ws } = await supabaseAdmin
+      .from("workspaces")
+      .select("id, name")
+      .eq("id", wsId)
+      .maybeSingle();
+    if (!ws) throw new Error("That workspace no longer exists.");
+    if (data.confirmName.trim() !== ws.name) {
+      throw new Error("Type the workspace name exactly to confirm deletion.");
+    }
+
+    const { data: mine } = await supabaseAdmin
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("user_id", context.userId);
+    const others = (mine ?? []).filter((m) => m.workspace_id !== wsId);
+    if (others.length === 0) throw new Error("You cannot delete your only workspace.");
+
+    // Move everyone who was pointed at this workspace off it first.
+    const { data: members } = await supabaseAdmin
+      .from("workspace_members")
+      .select("user_id")
+      .eq("workspace_id", wsId);
+    for (const m of members ?? []) {
+      const { data: rest } = await supabaseAdmin
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", m.user_id)
+        .neq("workspace_id", wsId);
+      await supabaseAdmin
+        .from("profiles")
+        .update({ active_workspace_id: rest?.[0]?.workspace_id ?? null })
+        .eq("id", m.user_id)
+        .eq("active_workspace_id", wsId);
+    }
+
+    const { error } = await supabaseAdmin.from("workspaces").delete().eq("id", wsId);
+    if (error) throw new Error(error.message);
+
+    return { deletedWorkspaceId: wsId, activeWorkspaceId: others[0].workspace_id };
+  });
