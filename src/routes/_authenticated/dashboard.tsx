@@ -182,11 +182,16 @@ function Dashboard() {
           </div>
           <div className="legend">
             {split.map((m, i) => (
-              <div key={m.name} className="legend-row">
+              <Link
+                key={m.name}
+                to="/calls"
+                search={{ mode: m.mode }}
+                className="legend-row legend-link"
+              >
                 <span className="legend-dot" style={{ background: MODE_COLORS[i] }} />
                 <span>{m.name}</span>
                 <span className="font-num legend-v">{pct[i].toFixed(0)}%</span>
-              </div>
+              </Link>
             ))}
           </div>
         </Panel>
