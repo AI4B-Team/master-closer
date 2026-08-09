@@ -69,6 +69,18 @@ function ReportsPage() {
     },
   });
 
+  const { data: suggestions } = useQuery({
+    queryKey: ["report_suggestions"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("suggestions")
+        .select("id, objection, was_used, call_id")
+        .limit(1000);
+      return data ?? [];
+    },
+  });
+
+
   const calls = useMemo(() => {
     const list = allCalls ?? [];
     if (!rangeDays) return list;
@@ -110,6 +122,28 @@ function ReportsPage() {
       };
     });
   }, [calls]);
+
+  const topObjections = useMemo(() => {
+    const ids = new Set((calls ?? []).map((c) => c.id));
+    const rows = (suggestions ?? []).filter((s) => !s.call_id || ids.has(s.call_id));
+    const map = new Map<string, { trigger: string; surfaced: number; used: number }>();
+    for (const s of rows) {
+      const key = (s.objection ?? "Unlabeled").trim() || "Unlabeled";
+      const cur = map.get(key) ?? { trigger: key, surfaced: 0, used: 0 };
+      cur.surfaced += 1;
+      if (s.was_used) cur.used += 1;
+      map.set(key, cur);
+    }
+    const max = Math.max(1, ...[...map.values()].map((v) => v.surfaced));
+    return [...map.values()]
+      .sort((a, b) => b.surfaced - a.surfaced)
+      .slice(0, 8)
+      .map((v) => ({
+        ...v,
+        useRate: v.surfaced ? Math.round((v.used / v.surfaced) * 100) : 0,
+        share: Math.round((v.surfaced / max) * 100),
+      }));
+  }, [calls, suggestions]);
 
   const leaderboard = useMemo(() => {
     const byRep = new Map<
@@ -354,6 +388,37 @@ function ReportsPage() {
         )}
       </Card>
 
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <h3 className="font-semibold">Top Objections</h3>
+        <p className="text-sm text-[#6B6B76]">
+          What prospects push back on most, and how often reps actually deliver the suggested line.
+        </p>
+        {topObjections.length === 0 ? (
+          <EmptyState
+            icon={Activity}
+            title="No Objections Logged Yet"
+            hint="AI suggestions from live calls show up here."
+          />
+        ) : (
+          <div className="mt-4 space-y-3">
+            {topObjections.map((o) => (
+              <div key={o.trigger}>
+                <div className="flex items-center justify-between text-sm gap-3">
+                  <span className="font-medium truncate">{o.trigger}</span>
+                  <span className="font-num text-[#6B6B76] shrink-0">
+                    {o.surfaced} Surfaced · {o.used} Used · {o.useRate}% Use Rate
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 rounded-full bg-[#F0F1F4] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#141418]" style={{ width: `${Math.max(2, o.share)}%` }}>
+                    <div className="h-2 rounded-full bg-[#CC0000]" style={{ width: `${o.useRate}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
