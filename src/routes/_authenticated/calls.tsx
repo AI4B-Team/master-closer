@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check, CalendarClock, Plus } from "lucide-react";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
+import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { summarizeCall } from "@/lib/calls.functions";
@@ -554,9 +555,10 @@ function CallDetail({ call }: { call: any }) {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const { t } = usePrefs();
   return (
     <div className="rounded-xl bg-[#F4F4F6] px-3 py-2">
-      <div className="text-[11px] uppercase tracking-wider text-[#6B6B76]">{label}</div>
+      <div className="text-[11px] uppercase tracking-wider text-[#6B6B76]">{t(label)}</div>
       <div className="font-semibold capitalize">{value}</div>
     </div>
   );

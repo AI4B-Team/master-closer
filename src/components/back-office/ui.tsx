@@ -44,9 +44,10 @@ const PILL_TONES = {
 export type PillTone = keyof typeof PILL_TONES;
 
 export function StatusPill({ label, tone = "neutral" }: { label: string; tone?: PillTone }) {
+  const { t } = usePrefs();
   return (
     <span className="pill" style={PILL_TONES[tone]}>
-      {label}
+      {t(label)}
     </span>
   );
 }
