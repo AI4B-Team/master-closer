@@ -171,6 +171,43 @@ function AgreementsPage() {
             <MiniStat label="Signed Value" value={money(stats.value)} />
           </div>
 
+          <Card className="rounded-2xl border-[#E7E7EC] shadow-none p-3 mb-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by agreement, signer or lead"
+                className="rounded-xl md:max-w-sm"
+              />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="rounded-xl w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="viewed">Viewed</SelectItem>
+                  <SelectItem value="signed">Signed</SelectItem>
+                  <SelectItem value="declined">Declined</SelectItem>
+                </SelectContent>
+              </Select>
+              {search || statusFilter !== "all" ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="rounded-xl"
+                  onClick={() => { setSearch(""); setStatusFilter("all"); }}
+                >
+                  Clear Filters
+                </Button>
+              ) : null}
+              <span className="ml-auto text-sm text-[#6B6B76]">
+                <b className="text-[#111114]">{visible.length}</b> Agreements
+              </span>
+            </div>
+          </Card>
+
           <Card className="rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
             {agreementsLoading ? (
               <SkeletonRows rows={5} />
