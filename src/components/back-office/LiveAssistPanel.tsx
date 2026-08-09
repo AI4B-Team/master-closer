@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, AudioLines, Lock, Sparkles } from "lucide-react";
+import { ArrowUp, AudioLines, Check, Copy, Lock, Sparkles } from "lucide-react";
 import type { CallMode } from "./CallBanner";
 
 export type AssistLine = { speaker: string; text: string; tone?: "disclosure" | "normal" };
@@ -19,6 +19,8 @@ export function LiveAssistPanel({
   locked,
   thinking,
   onAsk,
+  onUseLine,
+  usedLine,
 }: {
   mode: CallMode;
   lines: AssistLine[];
@@ -28,6 +30,8 @@ export function LiveAssistPanel({
   locked?: boolean;
   thinking?: boolean;
   onAsk?: (q: string) => void;
+  onUseLine?: (line: string) => void;
+  usedLine?: boolean;
 }) {
   const [live, setLive] = useState(true);
   const [q, setQ] = useState("");
