@@ -195,6 +195,7 @@ function AIClosers() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
