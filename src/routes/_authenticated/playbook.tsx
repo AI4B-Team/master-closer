@@ -248,7 +248,68 @@ function Objections() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      <Dialog open={genOpen} onOpenChange={setGenOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Generate Objections With AI</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label>Industry</Label>
+                <Input value={gen.industry} onChange={(e) => setGen({ ...gen, industry: e.target.value })} placeholder="Home Services" />
+              </div>
+              <div>
+                <Label>Focus (Optional)</Label>
+                <Input value={gen.focus} onChange={(e) => setGen({ ...gen, focus: e.target.value })} placeholder="Price And Competitors" />
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl"
+              disabled={generating}
+              onClick={runGenerate}
+            >
+              <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" />
+              {generating ? "Writing Objections…" : suggestions.length ? "Regenerate" : "Generate"}
+            </Button>
+
+            {suggestions.length > 0 && (
+              <div className="space-y-2 max-h-[46vh] overflow-y-auto pr-1">
+                {suggestions.map((s, i) => (
+                  <button
+                    type="button"
+                    key={i}
+                    onClick={() => setPicked((p) => ({ ...p, [i]: !(p[i] ?? true) }))}
+                    className={`w-full text-left border rounded-xl px-4 py-3 transition-colors ${
+                      (picked[i] ?? true) ? "border-[#CC0000] bg-[#CC0000]/5" : "border-[#E7E7EC]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-medium text-sm">“{s.trigger}”</p>
+                      {s.category && <Badge variant="secondary" className="shrink-0">{s.category}</Badge>}
+                    </div>
+                    <p className="text-sm text-[#4A505C] mt-1">{s.response}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
+              disabled={!suggestions.some((_, i) => picked[i] ?? true) || saveMany.isPending}
+              onClick={() => saveMany.mutate()}
+            >
+              Add Selected
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {!objections || objections.length === 0 ? (
         <EmptyState icon={MessageSquareQuote} title="No Objections Yet" hint="Load the pushback your reps hear most." />
