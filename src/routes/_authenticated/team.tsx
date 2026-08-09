@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
-import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter } from "lucide-react";
+import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,7 +37,7 @@ function ReportsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("calls")
-        .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, started_at")
+        .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, agent_id, started_at")
         .order("started_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -57,6 +57,14 @@ function ReportsPage() {
     queryFn: async () => {
       const { data } = await supabase.from("pipeline_stages")
         .select("id, label, kind, position, stale_days").order("position", { ascending: true });
+      return data ?? [];
+    },
+  });
+
+  const { data: agents } = useQuery({
+    queryKey: ["report_agents"],
+    queryFn: async () => {
+      const { data } = await supabase.from("agents").select("id, name, default_mode, active");
       return data ?? [];
     },
   });
@@ -122,6 +130,39 @@ function ReportsPage() {
       };
     });
   }, [calls]);
+
+  const agentPerf = useMemo(() => {
+    const map = new Map<string, { id: string; calls: number; connects: number; talkSec: number; prob: number; probN: number }>();
+    for (const c of calls ?? []) {
+      const key = c.agent_id ?? "none";
+      const row = map.get(key) ?? { id: key, calls: 0, connects: 0, talkSec: 0, prob: 0, probN: 0 };
+      row.calls += 1;
+      if (c.dial_outcome === "connected" || c.outcome === "completed") row.connects += 1;
+      row.talkSec += c.duration_sec ?? 0;
+      if (c.close_probability != null) {
+        row.prob += c.close_probability;
+        row.probN += 1;
+      }
+      map.set(key, row);
+    }
+    return Array.from(map.values())
+      .map((r) => {
+        const agent = agents?.find((a) => a.id === r.id);
+        return {
+          ...r,
+          name: agent?.name ?? "No Agent",
+          mode: agent ? MODE_LABEL[agent.default_mode] ?? titleCase(agent.default_mode) : "—",
+          active: agent?.active ?? false,
+          isAgent: Boolean(agent),
+          connectRate: r.calls ? Math.round((r.connects / r.calls) * 100) : 0,
+          avgProbability: r.probN ? Math.round(r.prob / r.probN) : 0,
+          avgTalk: r.calls ? Math.round(r.talkSec / r.calls) : 0,
+        };
+      })
+      .sort((a, b) => b.calls - a.calls);
+  }, [calls, agents]);
+
+
 
   const topObjections = useMemo(() => {
     const ids = new Set((calls ?? []).map((c) => c.id));
@@ -441,6 +482,58 @@ function ReportsPage() {
           ))}
         </div>
       </Card>
+
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+            <Bot className="h-5 w-5 text-[#CC0000]" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Agent Performance</h3>
+            <p className="text-sm text-[#6B6B76]">Which AI agents ran the calls, and how they converted.</p>
+          </div>
+        </div>
+
+        {agentPerf.length === 0 ? (
+          <EmptyState icon={Bot} title="No Agent Calls Yet" hint="Assign an agent to a campaign to see results here." />
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-[#6B6B76] border-b border-[#E7E7EC]">
+                <th className="py-2 font-medium">Agent</th>
+                <th className="py-2 font-medium">Mode</th>
+                <th className="py-2 font-medium text-right">Calls</th>
+                <th className="py-2 font-medium text-right">Connect Rate</th>
+                <th className="py-2 font-medium text-right">Avg Talk</th>
+                <th className="py-2 font-medium text-right">Avg Close Probability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agentPerf.map((a) => (
+                <tr key={a.id} className="border-b border-[#F0F1F4] last:border-0">
+                  <td className="py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{a.name}</span>
+                      {a.isAgent ? (
+                        <StatusPill tone={a.active ? "green" : "neutral"} label={a.active ? "Active" : "Paused"} />
+                      ) : null}
+                    </div>
+                  </td>
+                  <td className="py-3 text-[#6B6B76]">{a.mode}</td>
+                  <td className="py-3 text-right font-num">{a.calls}</td>
+                  <td className="py-3 text-right font-num">{a.connectRate}%</td>
+                  <td className="py-3 text-right font-num">
+                    {Math.floor(a.avgTalk / 60)}:{String(a.avgTalk % 60).padStart(2, "0")}
+                  </td>
+                  <td className="py-3 text-right font-num font-semibold">{a.avgProbability}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
         <div className="flex items-start gap-3 mb-4">
