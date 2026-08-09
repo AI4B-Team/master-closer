@@ -151,7 +151,7 @@ function AIClosers() {
               <p className="text-xs text-[#6B6B76] mt-1">{a.industry ?? "General"}</p>
               <div className="flex gap-2 mt-3">
                 <Badge variant="secondary" className="capitalize">{a.default_mode.replace("_", " ")}</Badge>
-                {(a.voices?.length ? a.voices : [a.voice]).filter(Boolean).map((v: string) => (
+                {((a.voices?.length ? a.voices : [a.voice]).filter(Boolean) as string[]).map((v) => (
                   <Badge key={v} variant="outline" className="capitalize">{v.replace("custom:", "Custom ")}</Badge>
                 ))}
               </div>
