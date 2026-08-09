@@ -85,6 +85,7 @@ function DialerPage() {
   const [mergeValue, setMergeValue] = useState("");
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferTo, setTransferTo] = useState("");
+  const [agentId, setAgentId] = useState<string>("");
   const holdRef = useRef(false);
   holdRef.current = holding;
 
