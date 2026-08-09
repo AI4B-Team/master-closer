@@ -791,6 +791,11 @@ function ReportsPage() {
           </table>
         )}
       </Card>
+
+      <div className="mt-4">
+        <DigestSchedules />
+      </div>
     </div>
+
   );
 }
