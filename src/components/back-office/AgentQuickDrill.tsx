@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { closeObjection } from "@/lib/demo.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fetchObjectionLibrary } from "@/lib/objections";
 
 const MODE_LABEL: Record<string, string> = {
   full_ai: "AI Says To Prospect",
@@ -65,6 +66,7 @@ export function AgentQuickDrill({
           agentName: name,
           industry: industry ?? null,
           systemPrompt: systemPrompt ?? null,
+          library: await fetchObjectionLibrary(),
         },
       });
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
