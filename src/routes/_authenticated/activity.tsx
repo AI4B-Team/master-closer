@@ -158,6 +158,11 @@ function ActivityPage() {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <div className="flex flex-wrap gap-1.5">
               <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
+              {type !== "all" && !types.some((t) => t.kind === type) && (
+                <FilterChip active onClick={() => setType("all")}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </FilterChip>
+              )}
               {types.map((t) => (
                 <FilterChip key={t.kind} active={type === t.kind} onClick={() => setType(t.kind)}>
                   {t.label}
