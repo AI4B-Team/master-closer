@@ -174,8 +174,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GlobalSearch />
 
           <div className="topbar-right">
-            <WorkspaceSwitcher />
-
             <span
               className={
                 "status-chip " +
