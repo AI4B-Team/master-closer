@@ -524,9 +524,10 @@ function ReportsPage() {
                     />
                   </div>
                   {/* A 19px column truncates every date to "J…" on phones, so
-                      only every other tick shows below the sm breakpoint. */}
+                      below sm only every other tick renders and it is allowed
+                      to overflow into the gap left by its hidden neighbour. */}
                   <span
-                    className={`text-[10px] text-[#9A9AA5] truncate w-full text-center ${
+                    className={`text-[10px] text-[#9A9AA5] w-full text-center whitespace-nowrap sm:truncate ${
                       i % 2 === 1 ? "max-sm:invisible" : ""
                     }`}
                   >
