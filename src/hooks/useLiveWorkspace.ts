@@ -43,12 +43,11 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       "pipeline",
       "leads",
       "agreements",
-      "agents",
-      "agent-runs",
-      "proposals",
-      "worklist",
+      "bg-agents",
+      "bg-proposals",
+      "bg-worklist",
+      "bg-report",
       "dashboard-worklist",
-      "agent-report",
       ...extraKeys,
     ];
     const bump = () => {
