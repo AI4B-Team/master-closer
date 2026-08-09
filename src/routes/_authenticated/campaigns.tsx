@@ -114,11 +114,63 @@ function CampaignsPage() {
     onSuccess: () => {
       toast.success("Campaign Created.");
       setOpen(false);
-      setForm({ name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100" });
+      setForm(emptyForm);
       qc.invalidateQueries({ queryKey: ["campaigns"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      const { error } = await supabase
+        .from("campaigns")
+        .update({
+          name: form.name,
+          mode: form.mode as any,
+          agent_id: form.agent_id || null,
+          list_id: form.list_id || null,
+          goal: form.goal || null,
+          daily_cap: Number(form.daily_cap) || 100,
+        })
+        .eq("id", editId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Campaign Updated.");
+      setEditId(null);
+      setOpen(false);
+      setForm(emptyForm);
+      qc.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("campaigns").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Campaign Deleted.");
+      qc.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  function startEdit(c: any) {
+    setEditId(c.id);
+    setForm({
+      name: c.name ?? "",
+      mode: c.mode ?? "copilot",
+      agent_id: c.agent_id ?? "",
+      list_id: c.list_id ?? "",
+      goal: c.goal ?? "",
+      daily_cap: String(c.daily_cap ?? 100),
+    });
+    setOpen(true);
+  }
+
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status, name, mode }: { id: string; status: string; name: string; mode: string }) => {
