@@ -241,42 +241,6 @@ function Dashboard() {
   );
 }
 
-/** Map a raw event row to a human line for the activity feed. */
-function describeEvent(e: any): { icon: typeof Activity; label: string; detail: string } {
-  const p = (e.payload ?? {}) as Record<string, any>;
-  const kind = p.kind ?? e.event_type;
-  switch (kind) {
-    case "agreement.sent":
-      return {
-        icon: FileSignature,
-        label: "Agreement Sent",
-        detail: [p.signer_email, p.amount ? `$${Number(p.amount).toLocaleString()}` : null].filter(Boolean).join(" · "),
-      };
-    case "agreement.signed":
-      return {
-        icon: FileSignature,
-        label: "Agreement Signed",
-        detail: [p.signer_name ?? p.signer_email, p.amount ? `$${Number(p.amount).toLocaleString()}` : null]
-          .filter(Boolean)
-          .join(" · "),
-      };
-    case "agreement.declined":
-      return { icon: ShieldOff, label: "Agreement Declined", detail: [p.title, p.reason].filter(Boolean).join(" · ") };
-
-    case "deal.won":
-      return {
-        icon: DollarSign,
-        label: "Deal Won",
-        detail: [p.title, p.value ? `$${Number(p.value).toLocaleString()}` : null].filter(Boolean).join(" · "),
-      };
-    case "leads.new":
-      return { icon: UserPlus, label: "New Lead", detail: p.name ?? p.email ?? "" };
-    case "lead.flagged_dnc":
-      return { icon: ShieldOff, label: "Flagged Do Not Call", detail: p.phone ?? p.name ?? "" };
-    case "campaign.launched":
-      return { icon: Sparkles, label: "Campaign Launched", detail: p.name ?? "" };
-    default:
-      return { icon: Activity, label: titleCase(String(kind).replace(/[._]/g, " ")), detail: "" };
-  }
 }
+
 
