@@ -14,7 +14,7 @@ import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { Activity, Download, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/activity")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { type?: string; q?: string; range?: string } => ({
     type: typeof search.type === "string" && search.type ? search.type : undefined,
     q: typeof search.q === "string" && search.q ? search.q : undefined,
     range: typeof search.range === "string" && search.range ? search.range : undefined,
