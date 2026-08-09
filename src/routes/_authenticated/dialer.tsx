@@ -85,6 +85,7 @@ function DialerPage() {
   const [mergeValue, setMergeValue] = useState("");
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferTo, setTransferTo] = useState("");
+  const [agentId, setAgentId] = useState<string>("");
   const holdRef = useRef(false);
   holdRef.current = holding;
 
@@ -154,6 +155,30 @@ function DialerPage() {
     }
   };
 
+  /** Active AI closers available to run this call. */
+  const { data: agents } = useQuery({
+    queryKey: ["dialer-agents"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("agents")
+        .select("id, name, industry, default_mode, system_prompt, transfer_to, active")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const agent = (agents ?? []).find((a: any) => a.id === agentId);
+
+  /** Selecting an agent adopts its default mode and its human transfer target. */
+  const pickAgent = (id: string) => {
+    setAgentId(id);
+    const a = (agents ?? []).find((x: any) => x.id === id);
+    if (a?.default_mode) setMode(a.default_mode as Mode);
+    if (a?.transfer_to) setTransferTo(a.transfer_to);
+  };
+
+
   /** Persist a transcript line and get the next best response from the AI gateway. */
   const runAssist = async (prospectLine: string, id?: string | null) => {
     const activeCall = id ?? callId;
@@ -169,7 +194,14 @@ function DialerPage() {
         });
       }
       const res = await askCloser({
-        data: { prospect: prospectLine, mode: MODE_KEY[mode], library: await fetchObjectionLibrary() },
+        data: {
+          prospect: prospectLine,
+          mode: MODE_KEY[mode],
+          agentName: agent?.name ?? null,
+          industry: agent?.industry ?? null,
+          systemPrompt: agent?.system_prompt ?? null,
+          library: await fetchObjectionLibrary(),
+        },
       });
       setAiConfidence(res.confidence);
       setSuggestions([res.line]);
@@ -236,7 +268,7 @@ function DialerPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("campaigns")
-        .select("id, name, mode, status, list_id")
+        .select("id, name, mode, status, list_id, agent_id")
         .eq("status", "active")
         .order("created_at", { ascending: false });
       return data ?? [];
@@ -272,6 +304,7 @@ function DialerPage() {
   const pickCampaign = async (id: string) => {
     setCampaignId(id);
     const c = (campaigns ?? []).find((x: any) => x.id === id);
+    if (c?.agent_id) pickAgent(c.agent_id);
     if (c?.mode) setMode(c.mode as Mode);
     await loadNext(id);
   };
@@ -351,6 +384,7 @@ function DialerPage() {
           outcome: "in_progress",
           campaign_id: campaignId || null,
           list_contact_id: contact?.id ?? null,
+          agent_id: agentId || null,
         })
         .select("id")
         .single();
@@ -639,6 +673,25 @@ function DialerPage() {
                   />
                 </div>
                 <div className="lead-field">
+                  <span className="lead-k">AI Closer</span>
+                  <select
+                    value={agentId}
+                    onChange={(e) => pickAgent(e.target.value)}
+                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
+                  >
+                    <option value="">Default Closer</option>
+                    {(agents ?? []).map((a: any) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {agent
+                      ? `${agent.industry || "General"} · ${agent.transfer_to ? `Transfers to ${teammateLabel(agent.transfer_to)}` : "No transfer target set"}`
+                      : "Uses the generic Master Closer brief."}
+                  </span>
+                </div>
+                <div className="lead-field">
+
                   <span className="lead-k">Mode</span>
                   <div className="tabs" style={{ padding: 3 }}>
                     {(["full_ai", "hybrid", "copilot"] as Mode[]).map((m) => (
