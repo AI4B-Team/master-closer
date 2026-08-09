@@ -13,6 +13,8 @@ import { AccountShell } from "@/components/back-office/AccountShell";
 import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText, Ban, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
+
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
@@ -357,7 +359,10 @@ function DncRegistry() {
         })),
       );
       if (error) throw error;
+      // Surface suppression additions in the Activity Log / webhook fan-out.
+      for (const p of numbers) void logActivity("lead.flagged_dnc", { phone: p, reason: reason.trim() || "Added manually" });
       return numbers.length;
+
     },
     onSuccess: (n) => {
       toast.success(`${n} number${n === 1 ? "" : "s"} added to Do Not Call.`);
