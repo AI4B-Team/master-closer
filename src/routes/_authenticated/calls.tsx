@@ -302,12 +302,13 @@ function CallDetail({ call }: { call: any }) {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["call-detail", call.id],
+    queryKey: ["call-detail", call.id, wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const [segs, sugg, consent] = await Promise.all([
-        supabase.from("transcript_segments").select("*").eq("call_id", call.id).order("ts_sec"),
-        supabase.from("suggestions").select("*").eq("call_id", call.id).order("ts_sec"),
-        supabase.from("consent_logs").select("*").eq("call_id", call.id).order("disclosed_at"),
+        supabase.from("transcript_segments").select("*").eq("call_id", call.id).eq("workspace_id", wsId!).order("ts_sec"),
+        supabase.from("suggestions").select("*").eq("call_id", call.id).eq("workspace_id", wsId!).order("ts_sec"),
+        supabase.from("consent_logs").select("*").eq("call_id", call.id).eq("workspace_id", wsId!).order("disclosed_at"),
       ]);
       return {
         segments: segs.data ?? [],
