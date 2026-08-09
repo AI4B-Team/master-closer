@@ -310,6 +310,36 @@ function CampaignsPage() {
       </div>
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none mt-4">
+        {all.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Input
+              placeholder="Search Campaigns, Goals, Closers, Or Lists"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 max-w-sm rounded-xl"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-9 w-[150px] rounded-xl"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+              </SelectContent>
+            </Select>
+            {(search || statusFilter !== "all") && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-9 rounded-xl text-xs"
+                onClick={() => { setSearch(""); setStatusFilter("all"); }}
+              >
+                Clear Filters
+              </Button>
+            )}
+            <span className="ml-auto text-xs text-[#6B6B76]">{visible.length} Of {all.length}</span>
+          </div>
+        )}
         {campaignsLoading ? (
           <SkeletonRows rows={5} />
         ) : all.length === 0 ? (
@@ -323,6 +353,8 @@ function CampaignsPage() {
               </Button>
             }
           />
+        ) : visible.length === 0 ? (
+          <EmptyPanel icon={Megaphone} title="No Matches" hint="Adjust your search or status filter." />
         ) : (
           <table className="w-full text-sm">
             <thead>
