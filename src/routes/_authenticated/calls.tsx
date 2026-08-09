@@ -9,9 +9,12 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check } from "lucide-react";
+import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check, CalendarClock, Plus } from "lucide-react";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { summarizeCall } from "@/lib/calls.functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/calls")({
   head: () => ({
