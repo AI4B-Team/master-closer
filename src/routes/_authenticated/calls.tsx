@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -56,29 +57,35 @@ function CallsPage() {
   const [agent, setAgent] = useState(sp.agent ?? "all");
   const [campaign, setCampaign] = useState(sp.campaign ?? "all");
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: calls, isLoading: callsLoading } = useQuery({
-    queryKey: ["calls"],
+    queryKey: ["calls", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase.from("calls")
-        .select("*, leads(name, company), agents(name), campaigns(name)").order("started_at", { ascending: false }).limit(500);
+        .select("*, leads(name, company), agents(name), campaigns(name)").eq("workspace_id", wsId!).order("started_at", { ascending: false }).limit(500);
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const { data: agents } = useQuery({
-    queryKey: ["agents-min"],
+    queryKey: ["agents-min", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("agents").select("id, name").order("name");
+      const { data, error } = await supabase.from("agents").select("id, name").eq("workspace_id", wsId!).order("name");
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const { data: campaignOptions } = useQuery({
-    queryKey: ["campaigns-min"],
+    queryKey: ["campaigns-min", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("campaigns").select("id, name").order("name");
+      const { data, error } = await supabase.from("campaigns").select("id, name").eq("workspace_id", wsId!).order("name");
       if (error) throw error;
       return data ?? [];
     },

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -66,8 +67,11 @@ function AgreementsPage() {
     },
   });
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: templates } = useQuery({
-    queryKey: ["agreement_templates"],
+    queryKey: ["agreement_templates", wsId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreement_templates")
@@ -80,11 +84,13 @@ function AgreementsPage() {
   });
 
   const { data: agreements, isLoading: agreementsLoading } = useQuery({
-    queryKey: ["agreements"],
+    queryKey: ["agreements", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreements")
         .select("*, leads(name, company)")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -92,11 +98,13 @@ function AgreementsPage() {
   });
 
   const { data: leads } = useQuery({
-    queryKey: ["leads-min"],
+    queryKey: ["leads-min", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("leads")
         .select("id, name, company, email, phone")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(200);
       return data ?? [];

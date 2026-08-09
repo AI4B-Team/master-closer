@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -82,12 +83,17 @@ function TasksPage() {
   });
 
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: tasks, isLoading } = useQuery({
-    queryKey: ["tasks", "all"],
+    queryKey: ["tasks", "all", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tasks")
         .select("*, leads(id, name, company)")
+        .eq("workspace_id", wsId!)
         .order("due_at", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return (data ?? []) as (TaskRow & { leads: { id: string; name: string; company: string | null } | null })[];
@@ -95,9 +101,10 @@ function TasksPage() {
   });
 
   const { data: leads } = useQuery({
-    queryKey: ["tasks-lead-options"],
+    queryKey: ["tasks-lead-options", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("leads").select("id, name").order("name").limit(200);
+      const { data, error } = await supabase.from("leads").select("id, name").eq("workspace_id", wsId!).order("name").limit(200);
       if (error) throw error;
       return data ?? [];
     },

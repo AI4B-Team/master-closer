@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -49,18 +50,23 @@ function AIClosers() {
   const [form, setForm] = useState<{ name: string; industry: string; default_mode: string; voices: string[] }>({ name: "", industry: "", default_mode: "hybrid", voices: ["aria"] });
   const [selected, setSelected] = useState<any>(null);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: agents, isLoading: agentsLoading } = useQuery({
-    queryKey: ["agents"],
+    queryKey: ["agents", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("agents").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase.from("agents").select("*").eq("workspace_id", wsId!).order("created_at", { ascending: false });
       return data ?? [];
     },
   });
 
   const { data: scores } = useQuery({
-    queryKey: ["practice-scores"],
+    queryKey: ["practice-scores", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("practice_sessions").select("agent_id, confidence");
+      const { data } = await supabase.from("practice_sessions").select("agent_id, confidence").eq("workspace_id", wsId!);
       const map: Record<string, { avg: number; count: number }> = {};
       const sums: Record<string, { total: number; count: number }> = {};
       for (const row of data ?? []) {
@@ -79,11 +85,13 @@ function AIClosers() {
 
   /** Real call performance per agent: volume, connect rate and average close probability. */
   const { data: perf } = useQuery({
-    queryKey: ["agent-call-perf"],
+    queryKey: ["agent-call-perf", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("calls")
-        .select("agent_id, dial_outcome, close_probability");
+        .select("agent_id, dial_outcome, close_probability")
+        .eq("workspace_id", wsId!);
       const map: Record<string, { calls: number; connects: number; prob: number }> = {};
       for (const row of data ?? []) {
         if (!row.agent_id) continue;
