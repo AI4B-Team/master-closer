@@ -307,6 +307,18 @@ function TasksPage() {
                   </Select>
                 </div>
                 <div>
+                  <Label>Assigned To</Label>
+                  <Select value={form.assignee_id} onValueChange={(v) => setForm({ ...form, assignee_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Me" /></SelectTrigger>
+                    <SelectContent>
+                      {(team ?? []).map((p: any) => (
+                        <SelectItem key={p.id} value={p.id}>{p.full_name || p.email}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label>Notes</Label>
                   <Textarea
                     rows={3}
