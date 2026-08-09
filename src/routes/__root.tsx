@@ -101,12 +101,24 @@ function NotFoundComponent() {
   );
 }
 
+const STALE_CHUNK_RE = /dynamically imported module|Importing a module script failed|ChunkLoadError/i;
+
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    // A deploy changed the bundle hashes under this open tab — reload once to pick up the new build.
+    if (STALE_CHUNK_RE.test(error?.message ?? "") && typeof window !== "undefined") {
+      const key = "mc_stale_chunk_reloaded";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+        return;
+      }
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+
 
   return (
     <div style={SHELL}>
