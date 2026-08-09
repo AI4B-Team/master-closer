@@ -844,3 +844,8 @@
 @media (prefers-reduced-motion: reduce) {
   .mc-skel-bar, .mc-skel-card { animation: none; }
 }
+
+/* collapse toggle must stay pinned to the sidebar border (beats .has-tip) */
+.side-brand .side-toggle.has-tip {
+  position: absolute; right: -12px; top: 30px; transform: translateY(-50%);
+}
