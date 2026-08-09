@@ -44,9 +44,14 @@ function CampaignsPage() {
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({
     name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100",
   });
+
+  const emptyForm = { name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100" };
 
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
     queryKey: ["campaigns"],
