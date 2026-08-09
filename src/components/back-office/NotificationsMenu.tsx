@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, CheckCheck, Inbox } from "lucide-react";
+import { ArrowRight, Bell, CheckCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { eventHref } from "@/lib/activity-labels";
 import { useAuth } from "@/hooks/use-auth";
