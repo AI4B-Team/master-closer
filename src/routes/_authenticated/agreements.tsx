@@ -274,7 +274,7 @@ function AgreementsPage() {
                 No agreements match these filters.
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <div className="mc-tablewrap"><table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[#6B6B76] border-b border-[#EDEDF1]">
                     <th className="px-4 py-3 font-medium">Agreement</th>
@@ -319,7 +319,7 @@ function AgreementsPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </Card>
         </>

@@ -455,7 +455,7 @@ function LeadsPage() {
             }
           />
         ) : (
-          <table className="w-full text-sm">
+          <div className="mc-tablewrap"><table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
                 <th className="py-2 w-8">
@@ -499,7 +499,7 @@ function LeadsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
 
       </Card>

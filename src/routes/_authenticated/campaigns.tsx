@@ -391,7 +391,7 @@ function CampaignsPage() {
         ) : visible.length === 0 ? (
           <EmptyPanel icon={Megaphone} title="No Matches" hint="Adjust your search or status filter." />
         ) : (
-          <table className="w-full text-sm">
+          <div className="mc-tablewrap"><table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
                 <th className="py-2">Campaign</th><th className="py-2">Mode</th>
@@ -460,7 +460,7 @@ function CampaignsPage() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         )}
       </Card>
     </div>
