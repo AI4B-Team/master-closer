@@ -456,8 +456,10 @@ function TasksPage() {
                     <p className={"text-sm " + (done ? "line-through text-[#9A9AA5]" : "font-medium")}>{t.title}</p>
                     <p className="text-xs text-[#6B6B76]">
                       {t.leads ? t.leads.name + (t.leads.company ? " · " + t.leads.company : "") : "Unlinked"}
+                      {" · " + teamName(t.assignee_id)}
                       {t.notes ? " — " + t.notes : ""}
                     </p>
+
                   </div>
                   <span className={"ml-auto shrink-0 text-sm " + (done ? "text-[#9A9AA5]" : TONE_STYLE[d.tone])}>
                     {done ? "Done" : d.text}
