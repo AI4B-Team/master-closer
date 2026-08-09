@@ -1,5 +1,7 @@
 import {
   Activity,
+  BarChart3,
+
   DollarSign,
   FileSignature,
   Megaphone,
