@@ -274,6 +274,7 @@ export type Database = {
           name: string
           org_id: string
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           body?: string
@@ -287,6 +288,7 @@ export type Database = {
           name: string
           org_id: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           body?: string
@@ -300,6 +302,7 @@ export type Database = {
           name?: string
           org_id?: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -307,6 +310,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agreement_templates_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
