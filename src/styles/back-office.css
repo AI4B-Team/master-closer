@@ -1044,3 +1044,11 @@
 .act-chip.is-on {
   background: var(--mc-crimson, #c8102e); border-color: var(--mc-crimson, #c8102e); color: #fff;
 }
+.act-row.is-new { background: color-mix(in srgb, var(--mc-crimson, #c8102e) 5%, transparent); }
+.act-label { display: flex; align-items: center; gap: 6px; }
+.act-new {
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--mc-crimson, #c8102e);
+  background: color-mix(in srgb, var(--mc-crimson, #c8102e) 12%, transparent);
+  border-radius: 999px; padding: 1px 6px;
+}

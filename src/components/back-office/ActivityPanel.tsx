@@ -108,6 +108,15 @@ export function ActivityPanel() {
     }
   };
 
+  // Frozen at open time so "New" markers stay put while the panel is up.
+  const [seenAtOpen, setSeenAtOpen] = useState<string>("");
+
+  useEffect(() => {
+    if (!open) return;
+    setSeenAtOpen(seen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   useEffect(() => {
     if (open && newest) markSeen(newest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,11 +216,12 @@ export function ActivityPanel() {
                       const d = describeEvent(e);
                       const Icon = d.icon;
                       const href = eventHref(e);
+                      const isNew = Boolean(seenAtOpen && e.created_at > seenAtOpen);
                       return (
                         <button
                           key={e.id}
                           type="button"
-                          className="act-row"
+                          className={`act-row${isNew ? " is-new" : ""}`}
                           onClick={() => {
                             setOpen(false);
                             if (href) navigate({ to: href });
@@ -221,7 +231,10 @@ export function ActivityPanel() {
                             <Icon size={15} />
                           </span>
                           <span className="act-text">
-                            <span className="act-label">{d.label}</span>
+                            <span className="act-label">
+                              {d.label}
+                              {isNew && <span className="act-new">New</span>}
+                            </span>
                             {d.detail && <span className="act-detail">{d.detail}</span>}
                           </span>
                           <span className="act-time">{ago(e.created_at)}</span>
