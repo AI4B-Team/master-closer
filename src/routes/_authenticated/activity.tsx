@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
-import { describeEvent } from "@/lib/activity-labels";
+import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { Activity, Download, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/activity")({
