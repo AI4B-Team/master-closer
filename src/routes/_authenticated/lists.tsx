@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
+import { EmptyPanel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { ListOrdered, Plus, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -192,11 +192,22 @@ function ListsPage() {
 
         <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none">
           {!active || (active.list_contacts ?? []).length === 0 ? (
-            <div className="text-center py-16">
-              <ListOrdered className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-              <p className="font-medium">No contacts in this list</p>
-              <p className="text-sm text-[#6B6B76] mt-1">Paste them in with Import.</p>
-            </div>
+            <EmptyPanel
+              icon={ListOrdered}
+              title={active ? "No Contacts In This List" : "Pick Or Create A List"}
+              hint="Paste rows as name, phone, email — one contact per line."
+              action={
+                active ? (
+                  <Button type="button" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]" onClick={() => setImportOpen(true)}>
+                    Import Contacts
+                  </Button>
+                ) : (
+                  <Button type="button" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]" onClick={() => setListOpen(true)}>
+                    New List
+                  </Button>
+                )
+              }
+            />
           ) : (
             <table className="w-full text-sm">
               <thead>

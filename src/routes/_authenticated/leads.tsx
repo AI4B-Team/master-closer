@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { LeadDrawer } from "@/components/back-office/LeadDrawer";
 import { Plus, Search, Users, Upload } from "lucide-react";
+import { EmptyPanel } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -237,11 +238,21 @@ function LeadsPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <Users className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-            <p className="font-medium">No leads found</p>
-            <p className="text-sm text-[#6B6B76] mt-1">Add a lead or import a list to get started.</p>
-          </div>
+          <EmptyPanel
+            icon={Users}
+            title="No Leads Yet"
+            hint="Add a lead by hand or import a CSV to start filling your pipeline."
+            action={
+              <>
+                <Button type="button" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]" onClick={() => setOpen(true)}>
+                  Add Lead
+                </Button>
+                <Button type="button" variant="outline" className="rounded-xl" onClick={() => setImportOpen(true)}>
+                  Import CSV
+                </Button>
+              </>
+            }
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>
