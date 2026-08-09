@@ -342,7 +342,19 @@ export function LeadDrawer({
             ) : (
               <ul className="space-y-2">
                 {calls.map((c) => (
-                  <li key={c.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+                  <li
+                    key={c.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate({ to: "/calls", search: { call: c.id } as any })}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        navigate({ to: "/calls", search: { call: c.id } as any });
+                      }
+                    }}
+                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm transition-colors hover:border-[#CC0000]/40"
+                  >
                     <PhoneCall className="h-4 w-4 text-[#CC0000]" />
                     <span className="capitalize font-medium">{c.mode}</span>
                     <span className="text-[#6B6B76] capitalize">{c.disposition ?? c.outcome}</span>
