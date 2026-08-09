@@ -101,28 +101,63 @@ function DialerPage() {
     setCallStatus(connected ? "on_call" : dialing ? "dialing" : "idle");
   }, [connected, dialing]);
 
-  // Keep the live call id/elapsed in refs so the unmount cleanup can close out a
+  // Keep the live call id/elapsed in refs so both the unmount cleanup (in-app
+  // navigation) and the pagehide listener (tab close / reload) can close out a
   // call the rep walked away from instead of leaving it stuck "in progress".
   const liveCall = useRef<{ id: string | null; sec: number }>({ id: null, sec: 0 });
   liveCall.current = { id: callId, sec: elapsed };
+  const tokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled) tokenRef.current = data.session?.access_token ?? null;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // A keepalive PATCH survives both React teardown and a full page unload, which
+  // the regular client call does not.
+  const closeAbandonedCall = useRef(() => {
+    const { id, sec } = liveCall.current;
+    if (!id) return;
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const token = tokenRef.current;
+    if (!url || !key || !token) return;
+    void fetch(`${url}/rest/v1/calls?id=eq.${id}&outcome=eq.in_progress`, {
+      method: "PATCH",
+      keepalive: true,
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        outcome: sec > 0 ? "completed" : "failed",
+        duration_sec: sec,
+        ended_at: new Date().toISOString(),
+      }),
+    }).catch(() => {});
+  });
+
+  useEffect(() => {
+    const onHide = () => closeAbandonedCall.current();
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, []);
 
   useEffect(
     () => () => {
       setCallStatus("idle");
-      const { id, sec } = liveCall.current;
-      if (!id) return;
-      void supabase
-        .from("calls")
-        .update({
-          outcome: sec > 0 ? "completed" : "failed",
-          duration_sec: sec,
-          ended_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .eq("outcome", "in_progress");
+      closeAbandonedCall.current();
     },
     [],
+
   );
+
 
   const [holding, setHolding] = useState(false);
   const [participants, setParticipants] = useState<string[]>([]);
