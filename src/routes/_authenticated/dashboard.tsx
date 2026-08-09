@@ -110,6 +110,25 @@ function Dashboard() {
     },
   });
 
+  /* Latest scheduled digest, so the trailing numbers are on the first screen. */
+  const { data: digest } = useQuery({
+    queryKey: ["dashboard-digest", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id,payload,created_at")
+        .eq("workspace_id", wsId!)
+        .eq("event_type", "report.digest")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data ?? null;
+    },
+  });
+
+
+
 
   const split = stats?.modeSplit ?? [];
   const total = split.reduce((s, m) => s + m.value, 0);
