@@ -105,6 +105,30 @@ export function AgentDrawer({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const duplicate = useMutation({
+    mutationFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No profile");
+      const { error } = await supabase.from("agents").insert({
+        org_id: prof.org_id,
+        name: `${form.name ?? agent!.name} (Copy)`,
+        industry: form.industry || null,
+        voice: form.voices?.[0] || form.voice || null,
+        voices: form.voices ?? [],
+        default_mode: (form.default_mode ?? "hybrid") as never,
+        active: false,
+        system_prompt: form.system_prompt || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Closer duplicated — the copy starts inactive.");
+      qc.invalidateQueries({ queryKey: ["agents"] });
+      onOpenChange(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Sheet open={!!agent} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
