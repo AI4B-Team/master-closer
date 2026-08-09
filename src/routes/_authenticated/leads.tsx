@@ -173,9 +173,14 @@ function LeadsPage() {
 
   /* Call lists are the dialer's queue source — bulk-push leads straight into one. */
   const { data: lists } = useQuery({
-    queryKey: ["call-lists-min"],
+    queryKey: ["call-lists-min", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("call_lists").select("id, name").order("name");
+      const { data, error } = await supabase
+        .from("call_lists")
+        .select("id, name")
+        .eq("workspace_id", wsId!)
+        .order("name");
       if (error) throw error;
       return data ?? [];
     },
