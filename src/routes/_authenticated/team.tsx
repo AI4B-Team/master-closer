@@ -6,6 +6,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
 import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 
@@ -32,6 +33,7 @@ const RANGES = [
 ];
 
 function ReportsPage() {
+  const { t } = usePrefs();
   const [rangeDays, setRangeDays] = useState(30);
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
@@ -556,12 +558,12 @@ function ReportsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-[#6B6B76] border-b border-[#E7E7EC]">
-                <th className="py-2 font-medium">Agent</th>
-                <th className="py-2 font-medium">Mode</th>
-                <th className="py-2 font-medium text-right">Calls</th>
-                <th className="py-2 font-medium text-right">Connect Rate</th>
-                <th className="py-2 font-medium text-right">Avg Talk</th>
-                <th className="py-2 font-medium text-right">Avg Close Probability</th>
+                <th className="py-2 font-medium">{t("Agent")}</th>
+                <th className="py-2 font-medium">{t("Mode")}</th>
+                <th className="py-2 font-medium text-right">{t("Calls")}</th>
+                <th className="py-2 font-medium text-right">{t("Connect Rate")}</th>
+                <th className="py-2 font-medium text-right">{t("Avg Talk")}</th>
+                <th className="py-2 font-medium text-right">{t("Avg Close Probability")}</th>
               </tr>
             </thead>
             <tbody>
@@ -656,12 +658,12 @@ function ReportsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                <th className="py-2">Rep</th>
-                <th className="py-2">Calls</th>
-                <th className="py-2">Connect Rate</th>
-                <th className="py-2">Talk Time</th>
-                <th className="py-2">Mode Usage</th>
-                <th className="py-2 text-right">Closed Revenue</th>
+                <th className="py-2">{t("Rep")}</th>
+                <th className="py-2">{t("Calls")}</th>
+                <th className="py-2">{t("Connect Rate")}</th>
+                <th className="py-2">{t("Talk Time")}</th>
+                <th className="py-2">{t("Mode Usage")}</th>
+                <th className="py-2 text-right">{t("Closed Revenue")}</th>
               </tr>
             </thead>
             <tbody>

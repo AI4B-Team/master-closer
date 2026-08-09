@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneForStatus } from "@/components/back-office/ui";
 import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { Activity, Bot, DollarSign, Eye, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
+import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 const MODE_COLORS = ["#CC0000", "#EE7A66", "#F7CFC7"];
 
 function Dashboard() {
+  const { t } = usePrefs();
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
 
@@ -151,10 +153,10 @@ function Dashboard() {
             <table className="tbl">
               <thead>
                 <tr>
-                  <th>Deal</th>
-                  <th>Updated</th>
-                  <th>Stage</th>
-                  <th>Value</th>
+                  <th>{t("Deal")}</th>
+                  <th>{t("Updated")}</th>
+                  <th>{t("Stage")}</th>
+                  <th>{t("Value")}</th>
                   <th />
                 </tr>
               </thead>
