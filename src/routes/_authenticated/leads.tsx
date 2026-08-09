@@ -84,6 +84,18 @@ function LeadsPage() {
     },
   });
 
+  /* Deep link from global search: prefill the filter and open the matching lead. */
+  useEffect(() => {
+    if (qParam !== undefined) setSearch(qParam);
+  }, [qParam]);
+  useEffect(() => {
+    if (!leadParam || !leads) return;
+    const hit = leads.find((l: any) => l.id === leadParam);
+    if (hit) setSelected(hit);
+  }, [leadParam, leads]);
+
+
+
   const create = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
