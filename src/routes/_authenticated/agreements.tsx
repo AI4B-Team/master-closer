@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, EmptyState, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import {
-  Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History,
+  Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History, Mail, Printer,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import {
   applyMerge, DEFAULT_AGREEMENT_BODY, MERGE_TOKENS, money, remainingTokens, signingUrl,
   STATUS_TONE, type AgreementStatus,
 } from "@/lib/agreements";
+import { emailSigningLink, printSignedCopy } from "@/lib/agreement-print";
 
 export const Route = createFileRoute("/_authenticated/agreements")({
   head: () => ({
