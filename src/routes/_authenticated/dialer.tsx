@@ -304,6 +304,7 @@ function DialerPage() {
   const pickCampaign = async (id: string) => {
     setCampaignId(id);
     const c = (campaigns ?? []).find((x: any) => x.id === id);
+    if (c?.agent_id) pickAgent(c.agent_id);
     if (c?.mode) setMode(c.mode as Mode);
     await loadNext(id);
   };
