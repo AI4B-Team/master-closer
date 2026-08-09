@@ -92,6 +92,8 @@ export function LeadDrawer({
           status: (form.status ?? "new") as never,
           consent: (form.consent ?? "unknown") as never,
           notes: form.notes || null,
+          owner_id: form.owner_id || null,
+          tags: form.tags && form.tags.length > 0 ? form.tags : null,
         })
         .eq("id", lead!.id);
       if (error) throw error;
