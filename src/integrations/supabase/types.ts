@@ -1911,6 +1911,69 @@ export type Database = {
           },
         ]
       }
+      report_schedules: {
+        Row: {
+          cadence: string
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          org_id: string
+          recipients: string[]
+          send_hour_utc: number
+          weekday: number
+          workspace_id: string
+        }
+        Insert: {
+          cadence?: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          org_id: string
+          recipients?: string[]
+          send_hour_utc?: number
+          weekday?: number
+          workspace_id: string
+        }
+        Update: {
+          cadence?: string
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          org_id?: string
+          recipients?: string[]
+          send_hour_utc?: number
+          weekday?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_schedules_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_schedules_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorer_weights: {
         Row: {
           fitted_at: string | null
