@@ -109,14 +109,23 @@ function Scripts() {
             <p className="text-sm text-[#6B6B76]">Openers, discovery frames, and closing sequences.</p>
           </div>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) {
+              setEditId(null);
+              setForm({ name: "", description: "", content: "" });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button size="sm" className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
               <Plus className="h-4 w-4 mr-1" /> New Script
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New Script</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? "Edit Script" : "New Script"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>Name</Label>
