@@ -371,8 +371,9 @@
 .profile-btn {
   border: none; background: none; padding: 0; cursor: pointer; border-radius: 50%;
   display: grid; place-items: center; line-height: 0;
+  box-shadow: 0 0 0 2px var(--brand, #cc0000);
 }
-.profile-btn:hover { opacity: 0.88; }
+.profile-btn:hover { opacity: 0.88; box-shadow: 0 0 0 3px var(--brand, #cc0000); }
 .profile-menu {
   position: absolute; top: calc(100% + 10px); right: 0; width: 320px; background: #fff;
   border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 24px 60px rgba(17, 19, 24, 0.18);
