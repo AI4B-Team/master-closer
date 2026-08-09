@@ -6,14 +6,9 @@ export const Route = createFileRoute("/api/public/hub/dispatch")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = process.env.HUB_SIGNING_SECRET;
-        if (!secret) return new Response("Not configured", { status: 503 });
-
-        const provided = request.headers.get("x-hub-secret") ?? "";
-        if (provided.length !== secret.length) return new Response("Unauthorized", { status: 401 });
-        let same = 0;
-        for (let i = 0; i < secret.length; i++) same |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
-        if (same !== 0) return new Response("Unauthorized", { status: 401 });
+        const { checkCronAuth } = await import("@/lib/cron-auth.server");
+        const denied = checkCronAuth(request, ["HUB_SIGNING_SECRET"], "x-hub-secret");
+        if (denied) return denied;
 
         const { dispatchPending } = await import("@/lib/hub.server");
         const result = await dispatchPending();
