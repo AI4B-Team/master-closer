@@ -104,7 +104,7 @@ export function Kpi({
   );
 
   const cls = "kpi kpi-link" + (active ? " kpi-active" : "");
-  const tintStyle = { "--kpi-tint": tint } as React.CSSProperties;
+  const tintStyle = { "--kpi-tint": tint } as CSSProperties;
 
   if (to) {
     return (
