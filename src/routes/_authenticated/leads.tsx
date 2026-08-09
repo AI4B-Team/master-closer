@@ -146,6 +146,68 @@ function LeadsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  /* Call lists are the dialer's queue source — bulk-push leads straight into one. */
+  const { data: lists } = useQuery({
+    queryKey: ["call-lists-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("call_lists").select("id, name").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const bulkStatus = useMutation({
+    mutationFn: async (status: string) => {
+      const { error } = await supabase.from("leads").update({ status: status as never }).in("id", picked);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`Updated ${picked.length} lead${picked.length === 1 ? "" : "s"}.`);
+      setPicked([]);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("leads").delete().in("id", picked);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Leads deleted.");
+      setPicked([]);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const bulkToList = useMutation({
+    mutationFn: async () => {
+      if (!listTarget) throw new Error("Pick a call list first.");
+      const rows = (leads ?? [])
+        .filter((l: any) => picked.includes(l.id) && l.phone)
+        .map((l: any) => ({
+          list_id: listTarget,
+          name: l.name,
+          phone: l.phone as string,
+          email: l.email,
+          consent: (l.consent ?? "unknown") as never,
+        }));
+      if (rows.length === 0) throw new Error("None of the selected leads have a phone number.");
+      const { error } = await supabase.from("list_contacts").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`Added ${n} contact${n === 1 ? "" : "s"} to the call list.`);
+      setPicked([]);
+      setListTarget("");
+      qc.invalidateQueries({ queryKey: ["list-contacts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const filtered = (leads ?? []).filter((l) => {
     const q = search.toLowerCase();
     const matches =
@@ -156,6 +218,28 @@ function LeadsPage() {
       l.company?.toLowerCase().includes(q);
     return matches && (statusFilter === "all" || l.status === statusFilter);
   });
+
+  const allShownPicked = filtered.length > 0 && filtered.every((l: any) => picked.includes(l.id));
+
+  function exportCsv() {
+    const rows = picked.length > 0 ? filtered.filter((l: any) => picked.includes(l.id)) : filtered;
+    if (rows.length === 0) return toast.error("Nothing to export.");
+    const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csvOut = [
+      ["Name", "Company", "Email", "Phone", "Status", "Consent", "Created"].join(","),
+      ...rows.map((l: any) =>
+        [l.name, l.company, l.email, l.phone, l.status, l.consent, l.created_at].map(cell).join(","),
+      ),
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([csvOut], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} lead${rows.length === 1 ? "" : "s"}.`);
+  }
+
 
   return (
     <div>
