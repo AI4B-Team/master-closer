@@ -277,12 +277,14 @@ function DialerPage() {
     setLineUsed(true);
     setTranscript((t) => [...t, { speaker: "You", text: line }]);
     try {
+      const { workspaceId } = await workspaceContext();
       if (suggestionRowId) {
         await supabase.from("suggestions").update({ was_used: true }).eq("id", suggestionRowId);
       }
       if (callId) {
         await supabase.from("transcript_segments").insert({
           call_id: callId,
+          workspace_id: workspaceId,
           speaker: "You",
           text: line,
           ts_sec: elapsed,
@@ -473,6 +475,7 @@ function DialerPage() {
         });
         await supabase.from("transcript_segments").insert({
           call_id: call.id,
+          workspace_id: prof.active_workspace_id,
           speaker: "Master Closer",
           text: script,
           ts_sec: 0,
@@ -504,9 +507,10 @@ function DialerPage() {
   const logSystem = async (text: string) => {
     setTranscript((t) => [...t, { speaker: "System", text }]);
     if (callId) {
+      const { workspaceId } = await workspaceContext();
       await supabase
         .from("transcript_segments")
-        .insert({ call_id: callId, speaker: "System", text, ts_sec: elapsed });
+        .insert({ call_id: callId, workspace_id: workspaceId, speaker: "System", text, ts_sec: elapsed });
     }
   };
 
