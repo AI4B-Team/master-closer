@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download } from "lucide-react";
+import { EmptyPanel } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/calls")({
@@ -151,11 +152,16 @@ function CallsPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <PhoneCall className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-            <p className="font-medium">No calls found</p>
-            <p className="text-sm text-[#6B6B76] mt-1">Calls appear here once the dialer runs.</p>
-          </div>
+          <EmptyPanel
+            icon={PhoneCall}
+            title="No Calls Found"
+            hint="Calls land here once the dialer runs. Try simulation mode to see a full call end to end."
+            action={
+              <Link to="/dialer" className="mc-btn-link">
+                <Button type="button" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]">Open Dialer</Button>
+              </Link>
+            }
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>

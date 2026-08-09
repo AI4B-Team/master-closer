@@ -135,3 +135,26 @@ export function EmptyState({ icon: Icon, title, hint }: { icon: any; title: stri
     </div>
   );
 }
+
+export function EmptyPanel({
+  icon: Icon,
+  title,
+  hint,
+  action,
+}: {
+  icon: any;
+  title: string;
+  hint?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mc-empty-panel">
+      <span className="mc-empty-ring" aria-hidden="true">
+        <Icon size={22} strokeWidth={2.2} />
+      </span>
+      <p className="font-display">{title}</p>
+      {hint ? <span>{hint}</span> : null}
+      {action ? <div className="mc-empty-actions">{action}</div> : null}
+    </div>
+  );
+}

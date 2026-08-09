@@ -760,3 +760,21 @@
   .side-collapsed .nav-label, .side-collapsed .side-word { display: inline; }
   .side-collapsed .nav-item { justify-content: flex-start; padding: 9px 12px; }
 }
+
+/* -------------------------- illustrated empty panel -------------------------- */
+.mc-empty-panel {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 6px; padding: 54px 24px; border-radius: 18px;
+  border: 1px dashed #DFDFE7; background: #FCFCFD;
+}
+.mc-empty-ring {
+  width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--brand, #CC0000); background: rgba(204, 0, 0, 0.07);
+  box-shadow: 0 0 0 8px rgba(204, 0, 0, 0.04); margin-bottom: 8px;
+}
+.mc-empty-panel p { margin: 0; font-size: 1.02rem; font-weight: 700; color: var(--ink, #16161B); }
+.mc-empty-panel > span:not(.mc-empty-ring) { font-size: 13px; color: var(--muted, #6B6B76); max-width: 34em; }
+.mc-empty-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+@media (max-width: 640px) { .mc-empty-panel { padding: 38px 16px; } }
+
+.mc-btn-link { display: inline-flex; }

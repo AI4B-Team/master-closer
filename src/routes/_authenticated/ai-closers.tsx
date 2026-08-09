@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Plus, Bot } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
+import { EmptyPanel } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -122,11 +123,16 @@ function AIClosers() {
       />
 
       {!agents || agents.length === 0 ? (
-        <Card className="p-16 rounded-2xl border-[#E7E7EC] shadow-none text-center">
-          <Bot className="h-10 w-10 mx-auto text-[#CC0000] mb-3" />
-          <p className="font-semibold">No AI Closers yet</p>
-          <p className="text-sm text-[#6B6B76] mt-1">Create your first agent to start closing calls.</p>
-        </Card>
+        <EmptyPanel
+          icon={Bot}
+          title="No AI Closers Yet"
+          hint="Pick a voice, an industry, and an autonomy mode — your closer is live in under a minute."
+          action={
+            <Button type="button" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]" onClick={() => setOpen(true)}>
+              Build Closer
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {agents.map((a) => (

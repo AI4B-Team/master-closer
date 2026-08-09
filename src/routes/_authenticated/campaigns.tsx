@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
+import { EmptyPanel, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
 import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -238,13 +238,16 @@ function CampaignsPage() {
 
       <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none mt-4">
         {all.length === 0 ? (
-          <div className="text-center py-16">
-            <Megaphone className="h-8 w-8 mx-auto text-[#6B6B76] mb-3" />
-            <p className="font-medium">No campaigns yet</p>
-            <p className="text-sm text-[#6B6B76] mt-1">
-              Build a calling list, then launch your first campaign.
-            </p>
-          </div>
+          <EmptyPanel
+            icon={Megaphone}
+            title="No Campaigns Yet"
+            hint="Build a calling list, then launch your first campaign with a dialing window."
+            action={
+              <Button type="button" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]" onClick={() => setOpen(true)}>
+                New Campaign
+              </Button>
+            }
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>
