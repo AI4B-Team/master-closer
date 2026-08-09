@@ -70,7 +70,7 @@ function PracticePage() {
   return (
     <div>
       <PageHeader
-        title="AI Studio"
+        title="AI Agents"
         description="Practice — scored AI roleplay so reps drill objections before a live call."
         tabs={TAB_GROUPS.studio}
       />

@@ -38,7 +38,7 @@ function PlaybookPage() {
   return (
     <div>
       <PageHeader
-        title="AI Studio"
+        title="AI Agents"
         description="Playbook — the library your AI Closers draw from: scripts, objections, exact lines."
         tabs={TAB_GROUPS.studio}
       />
