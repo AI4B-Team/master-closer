@@ -135,6 +135,7 @@ export function AgentDrawer({
         default_mode: (form.default_mode ?? "hybrid") as never,
         active: false,
         system_prompt: form.system_prompt || null,
+        transfer_to: form.transfer_to || null,
       });
       if (error) throw error;
     },
