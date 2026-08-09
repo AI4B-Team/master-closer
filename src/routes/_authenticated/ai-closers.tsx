@@ -138,6 +138,34 @@ function AIClosers() {
         }
       />
 
+      {agents && agents.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B6B76]" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search Closers"
+              className="pl-9 rounded-xl"
+            />
+          </div>
+          {MODE_FILTERS.map((m) => (
+            <button
+              key={m.value}
+              type="button"
+              onClick={() => setModeFilter(m.value)}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                modeFilter === m.value
+                  ? "border-[#CC0000] text-[#CC0000] bg-[#CC0000]/5"
+                  : "border-[#E7E7EC] text-[#6B6B76] hover:border-[#CC0000]/40"
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {agentsLoading ? (
         <SkeletonCards count={6} height={150} />
       ) : !agents || agents.length === 0 ? (
@@ -151,9 +179,11 @@ function AIClosers() {
             </Button>
           }
         />
+      ) : filtered.length === 0 ? (
+        <EmptyPanel icon={Bot} title="No Closers Match" hint="Try a different search or mode filter." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents.map((a) => (
+          {filtered.map((a) => (
             <Card
               key={a.id}
               onClick={() => setSelected(a)}
