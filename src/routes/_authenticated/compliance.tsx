@@ -63,7 +63,7 @@ function CompliancePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const payload = {
         org_id: prof.org_id, workspace_id: prof.active_workspace_id,
@@ -344,7 +344,7 @@ function DncRegistry() {
 
   const add = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const numbers = phone
         .split(/[\n,;]+/)

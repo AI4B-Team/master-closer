@@ -82,7 +82,7 @@ export const Route = createFileRoute("/_authenticated/playbook")({
 });
 
 async function orgId() {
-  const { data } = await supabase.from("profiles").select("org_id").maybeSingle();
+  const { data } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
   if (!data) throw new Error("No workspace found.");
   return data.org_id;
 }

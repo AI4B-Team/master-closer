@@ -44,7 +44,7 @@ export function HubPanel() {
 
   const addHook = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace");
       const { error } = await supabase
         .from("org_webhooks")

@@ -61,7 +61,7 @@ function AgreementsPage() {
   const { data: me } = useQuery({
     queryKey: ["me-org"],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("org_id, full_name, email").maybeSingle();
+      const { data } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       return data;
     },
   });
