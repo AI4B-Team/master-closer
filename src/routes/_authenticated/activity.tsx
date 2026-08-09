@@ -10,6 +10,7 @@ import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
 import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 import { Activity, Download, RefreshCw } from "lucide-react";
 
