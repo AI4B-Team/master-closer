@@ -366,6 +366,25 @@ function TasksPage() {
               placeholder="Search Follow-Ups"
               className="h-8 w-48 rounded-xl text-xs"
             />
+            <Select value={assignee} onValueChange={setAssignee}>
+              <SelectTrigger className="h-8 w-[150px] rounded-xl text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Assignees</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {(team ?? []).map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>{p.full_name || p.email || "Teammate"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="h-8 w-[130px] rounded-xl text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
             <button
               type="button"
               onClick={() => setMineOnly((v) => !v)}
@@ -376,6 +395,7 @@ function TasksPage() {
             >
               Mine Only
             </button>
+
             <span className="h-4 w-px bg-[#E7E7EC]" />
             {FILTERS.map((f) => (
               <button
