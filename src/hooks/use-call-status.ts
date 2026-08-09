@@ -1,24 +1,27 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 export type CallStatus = "idle" | "dialing" | "on_call";
 
 let current: CallStatus = "idle";
-const listeners = new Set<(s: CallStatus) => void>();
+const listeners = new Set<() => void>();
 
 export function setCallStatus(status: CallStatus) {
   if (current === status) return;
   current = status;
-  listeners.forEach((l) => l(status));
+  // Notify on a microtask so a status change triggered during a render or an
+  // unmount cleanup never updates a subscriber mid-commit.
+  queueMicrotask(() => listeners.forEach((l) => l()));
 }
 
+function subscribe(onChange: () => void) {
+  listeners.add(onChange);
+  return () => {
+    listeners.delete(onChange);
+  };
+}
+
+const getSnapshot = () => current;
+
 export function useCallStatus(): CallStatus {
-  const [status, setStatus] = useState<CallStatus>(current);
-  useEffect(() => {
-    setStatus(current);
-    listeners.add(setStatus);
-    return () => {
-      listeners.delete(setStatus);
-    };
-  }, []);
-  return status;
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
