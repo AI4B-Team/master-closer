@@ -22,6 +22,7 @@ import {
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { DealDrawer, type DealRow } from "@/components/back-office/DealDrawer";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
 
@@ -102,21 +103,26 @@ function PipelinePage() {
     },
   });
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: deals, isLoading: dealsLoading } = useQuery({
-    queryKey: ["deals"],
+    queryKey: ["deals", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase.from("deals")
-        .select("*").order("sort_order", { ascending: true }).order("updated_at", { ascending: false });
+        .select("*").eq("workspace_id", wsId!).order("sort_order", { ascending: true }).order("updated_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const { data: leads } = useQuery({
-    queryKey: ["deal-leads"],
+    queryKey: ["deal-leads", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase.from("leads")
-        .select("id,name,company").order("created_at", { ascending: false }).limit(200);
+        .select("id,name,company").eq("workspace_id", wsId!).order("created_at", { ascending: false }).limit(200);
       return data ?? [];
     },
   });

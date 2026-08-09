@@ -17,6 +17,7 @@ import { Plus, Search, Users, Upload, Download, Trash2, ListPlus } from "lucide-
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
@@ -80,11 +81,15 @@ function LeadsPage() {
   const [listTarget, setListTarget] = useState("");
   const emit = useServerFn(emitOrgEvent);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: leads, isLoading: leadsLoading } = useQuery({
-    queryKey: ["leads"],
+    queryKey: ["leads", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase.from("leads")
-        .select("*").order("created_at", { ascending: false });
+        .select("*").eq("workspace_id", wsId!).order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },

@@ -7,6 +7,7 @@ import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/com
 import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({
@@ -32,12 +33,16 @@ const RANGES = [
 
 function ReportsPage() {
   const [rangeDays, setRangeDays] = useState(30);
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
   const { data: allCalls } = useQuery({
-    queryKey: ["report_calls"],
+    queryKey: ["report_calls", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("calls")
         .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, agent_id, campaign_id, started_at")
+        .eq("workspace_id", wsId!)
         .order("started_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -45,34 +50,38 @@ function ReportsPage() {
   });
 
   const { data: deals } = useQuery({
-    queryKey: ["report_deals"],
+    queryKey: ["report_deals", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("deals").select("id, value, stage, stage_id, owner_id, updated_at");
+      const { data } = await supabase.from("deals").select("id, value, stage, stage_id, owner_id, updated_at").eq("workspace_id", wsId!);
       return data ?? [];
     },
   });
 
   const { data: stages } = useQuery({
-    queryKey: ["report_stages"],
+    queryKey: ["report_stages", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase.from("pipeline_stages")
-        .select("id, label, kind, position, stale_days").order("position", { ascending: true });
+        .select("id, label, kind, position, stale_days").eq("workspace_id", wsId!).order("position", { ascending: true });
       return data ?? [];
     },
   });
 
   const { data: agents } = useQuery({
-    queryKey: ["report_agents"],
+    queryKey: ["report_agents", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("agents").select("id, name, default_mode, active");
+      const { data } = await supabase.from("agents").select("id, name, default_mode, active").eq("workspace_id", wsId!);
       return data ?? [];
     },
   });
 
   const { data: campaigns } = useQuery({
-    queryKey: ["report_campaigns"],
+    queryKey: ["report_campaigns", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("campaigns").select("id, name, mode, status, goal, daily_cap");
+      const { data } = await supabase.from("campaigns").select("id, name, mode, status, goal, daily_cap").eq("workspace_id", wsId!);
       return data ?? [];
     },
   });
