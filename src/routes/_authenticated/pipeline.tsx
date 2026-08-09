@@ -551,7 +551,7 @@ function PipelinePage() {
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 shrink-0"
-                        onClick={() => remove.mutate(d.id)}
+                        onClick={(e) => { e.stopPropagation(); remove.mutate(d.id); }}
                       >
                         <Trash2 className="h-3 w-3 text-[#6B6B76]" />
                       </Button>
