@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Plus, Bot, GraduationCap, Search } from "lucide-react";
+import { Plus, Bot, GraduationCap, Search, PhoneCall } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
@@ -76,6 +76,37 @@ function AIClosers() {
       return map;
     },
   });
+
+  /** Real call performance per agent: volume, connect rate and average close probability. */
+  const { data: perf } = useQuery({
+    queryKey: ["agent-call-perf"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("calls")
+        .select("agent_id, dial_outcome, close_probability");
+      const map: Record<string, { calls: number; connects: number; prob: number }> = {};
+      for (const row of data ?? []) {
+        if (!row.agent_id) continue;
+        const m = map[row.agent_id] ?? { calls: 0, connects: 0, prob: 0 };
+        m.calls += 1;
+        if (row.dial_outcome === "connected") m.connects += 1;
+        m.prob += row.close_probability ?? 0;
+        map[row.agent_id] = m;
+      }
+      return Object.fromEntries(
+        Object.entries(map).map(([id, m]) => [
+          id,
+          {
+            calls: m.calls,
+            connectRate: Math.round((m.connects / m.calls) * 100),
+            avgProb: Math.round(m.prob / m.calls),
+          },
+        ]),
+      );
+    },
+  });
+
+
 
   const create = useMutation({
     mutationFn: async () => {
@@ -231,6 +262,12 @@ function AIClosers() {
                 {scores?.[a.id]
                   ? `${scores[a.id].avg}% Drill Score · ${scores[a.id].count} Rep${scores[a.id].count === 1 ? "" : "s"}`
                   : "No Drills Yet"}
+              </div>
+              <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[#6B6B76]">
+                <PhoneCall className="h-3.5 w-3.5 text-[#CC0000]" />
+                {perf?.[a.id]
+                  ? `${perf[a.id].calls} Call${perf[a.id].calls === 1 ? "" : "s"} · ${perf[a.id].connectRate}% Connected · ${perf[a.id].avgProb}% Avg Close`
+                  : "No Live Calls Yet"}
               </div>
             </Card>
           ))}
