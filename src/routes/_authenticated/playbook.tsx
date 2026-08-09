@@ -12,9 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState } from "@/components/back-office/ui";
-import { Plus, BookOpen, MessageSquareQuote, Trash2 } from "lucide-react";
+import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles } from "lucide-react";
+import { suggestObjections } from "@/lib/agents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type Suggestion = { trigger: string; category?: string | null; response: string };
+
 
 export const Route = createFileRoute("/_authenticated/playbook")({
   head: () => ({
@@ -162,6 +166,12 @@ function Objections() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ trigger: "", response: "", category: "" });
+  const [genOpen, setGenOpen] = useState(false);
+  const [gen, setGen] = useState({ industry: "", focus: "" });
+  const [generating, setGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [picked, setPicked] = useState<Record<number, boolean>>({});
+
 
   const { data: objections } = useQuery({
     queryKey: ["objections"],
@@ -190,6 +200,53 @@ function Objections() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const runGenerate = async () => {
+    setGenerating(true);
+    try {
+      const res = await suggestObjections({
+        data: {
+          industry: gen.industry || null,
+          focus: gen.focus || null,
+          existing: (objections ?? []).map((o: any) => String(o.trigger)).slice(0, 50),
+        },
+      });
+      setSuggestions(res.items);
+      setPicked({});
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not generate objections.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const saveMany = useMutation({
+    mutationFn: async () => {
+      const chosen = suggestions.filter((_, i) => picked[i] ?? true);
+      if (chosen.length === 0) return 0;
+      const org = await orgId();
+      const { error } = await supabase.from("objections").insert(
+        chosen.map((s) => ({
+          trigger: s.trigger,
+          response: s.response,
+          category: s.category || null,
+          org_id: org,
+        })),
+      );
+      if (error) throw error;
+      return chosen.length;
+    },
+    onSuccess: (count) => {
+      toast.success(`${count} Objection${count === 1 ? "" : "s"} Added.`);
+      setGenOpen(false);
+      setSuggestions([]);
+      setPicked({});
+      qc.invalidateQueries({ queryKey: ["objections"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+
+
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("objections").delete().eq("id", id);
@@ -210,7 +267,12 @@ function Objections() {
             <p className="text-sm text-[#6B6B76]">Trigger phrase in, exact response out.</p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
+          <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
+
           <DialogTrigger asChild>
             <Button size="sm" variant="outline" className="rounded-xl">
               <Plus className="h-4 w-4 mr-1" /> New Objection
@@ -243,7 +305,68 @@ function Objections() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      <Dialog open={genOpen} onOpenChange={setGenOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Generate Objections With AI</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label>Industry</Label>
+                <Input value={gen.industry} onChange={(e) => setGen({ ...gen, industry: e.target.value })} placeholder="Home Services" />
+              </div>
+              <div>
+                <Label>Focus (Optional)</Label>
+                <Input value={gen.focus} onChange={(e) => setGen({ ...gen, focus: e.target.value })} placeholder="Price And Competitors" />
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl"
+              disabled={generating}
+              onClick={runGenerate}
+            >
+              <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" />
+              {generating ? "Writing Objections…" : suggestions.length ? "Regenerate" : "Generate"}
+            </Button>
+
+            {suggestions.length > 0 && (
+              <div className="space-y-2 max-h-[46vh] overflow-y-auto pr-1">
+                {suggestions.map((s, i) => (
+                  <button
+                    type="button"
+                    key={i}
+                    onClick={() => setPicked((p) => ({ ...p, [i]: !(p[i] ?? true) }))}
+                    className={`w-full text-left border rounded-xl px-4 py-3 transition-colors ${
+                      (picked[i] ?? true) ? "border-[#CC0000] bg-[#CC0000]/5" : "border-[#E7E7EC]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-medium text-sm">“{s.trigger}”</p>
+                      {s.category && <Badge variant="secondary" className="shrink-0">{s.category}</Badge>}
+                    </div>
+                    <p className="text-sm text-[#4A505C] mt-1">{s.response}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
+              disabled={!suggestions.some((_, i) => picked[i] ?? true) || saveMany.isPending}
+              onClick={() => saveMany.mutate()}
+            >
+              Add Selected
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {!objections || objections.length === 0 ? (
         <EmptyState icon={MessageSquareQuote} title="No Objections Yet" hint="Load the pushback your reps hear most." />
