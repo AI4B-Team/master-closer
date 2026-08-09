@@ -1,0 +1,157 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/back-office/AppShell";
+import { AccountShell } from "@/components/back-office/AccountShell";
+import { supabase } from "@/integrations/supabase/client";
+import { Activity, Download, RefreshCw } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/activity")({
+  head: () => ({
+    meta: [
+      { title: "Activity Log — Master Closer" },
+      { name: "description", content: "Audit every workspace event: calls, leads, campaigns and webhook fan-out from Master Closer." },
+      { property: "og:title", content: "Activity Log — Master Closer" },
+      { property: "og:description", content: "A searchable audit trail of every workspace event." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: ActivityPage,
+});
+
+function ActivityPage() {
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState<string>("all");
+
+  const { data: events, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["org-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(300);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const types = useMemo(
+    () => Array.from(new Set((events ?? []).map((e: any) => e.event_type))).sort(),
+    [events],
+  );
+
+  const rows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (events ?? []).filter((e: any) => {
+      if (type !== "all" && e.event_type !== type) return false;
+      if (!q) return true;
+      return (
+        e.event_type.toLowerCase().includes(q) ||
+        JSON.stringify(e.payload ?? {}).toLowerCase().includes(q)
+      );
+    });
+  }, [events, search, type]);
+
+  const exportCsv = () => {
+    const header = "created_at,event_type,payload\n";
+    const body = rows
+      .map((e: any) => `"${e.created_at}","${e.event_type}","${JSON.stringify(e.payload ?? {}).replace(/"/g, "'")}"`)
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([header + body], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "activity-log.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div>
+      <PageHeader title="Activity Log" description="Every event emitted by this workspace." />
+      <AccountShell current="activity">
+        <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none max-w-4xl">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="h-4 w-4 text-[#CC0000]" />
+            <h3 className="font-semibold">Workspace Events</h3>
+            <div className="ml-auto flex items-center gap-2">
+              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => refetch()} disabled={isFetching}>
+                <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-xl" onClick={exportCsv} disabled={rows.length === 0}>
+                <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Input
+              placeholder="Search Events"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-xs"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
+              {types.map((t) => (
+                <FilterChip key={t} active={type === t} onClick={() => setType(t)}>
+                  {t}
+                </FilterChip>
+              ))}
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-12 rounded-xl bg-[#F4F4F7] animate-pulse" />
+              ))}
+            </div>
+          ) : rows.length === 0 ? (
+            <p className="text-sm text-[#6B6B76]">No events yet. Activity appears here as calls, leads and campaigns run.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {rows.map((e: any) => (
+                <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="font-mono text-[11px]">{e.event_type}</Badge>
+                    <span className="text-xs text-[#6B6B76] ml-auto shrink-0">
+                      {new Date(e.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  {e.payload && Object.keys(e.payload).length > 0 ? (
+                    <pre className="mt-1.5 text-[11px] text-[#6B6B76] font-mono whitespace-pre-wrap break-all">
+                      {JSON.stringify(e.payload)}
+                    </pre>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </AccountShell>
+    </div>
+  );
+}
+
+function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "px-2.5 py-1 rounded-full text-xs border transition-colors " +
+        (active
+          ? "bg-[#CC0000] border-[#CC0000] text-white"
+          : "bg-white border-[#E7E7EC] text-[#6B6B76] hover:text-[#111]")
+      }
+    >
+      {children}
+    </button>
+  );
+}

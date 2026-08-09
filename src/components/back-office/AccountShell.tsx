@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  User, Lock, Bell, CreditCard, ShieldCheck, Plug, Settings,
+  User, Lock, Bell, CreditCard, ShieldCheck, Plug, Settings, Activity,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ type NavDef = {
   key: string;
   label: string;
   icon: LucideIcon;
-  to: "/account" | "/payments" | "/compliance" | "/integrations" | "/settings";
+  to: "/account" | "/payments" | "/compliance" | "/integrations" | "/settings" | "/activity";
   search?: { tab: "profile" | "security" | "notifications" };
 };
 
@@ -32,8 +32,12 @@ const GROUPS: { label: string; items: NavDef[] }[] = [
   },
   {
     label: "Automation",
-    items: [{ key: "integrations", label: "Integrations", icon: Plug, to: "/integrations" }],
+    items: [
+      { key: "integrations", label: "Integrations", icon: Plug, to: "/integrations" },
+      { key: "activity", label: "Activity Log", icon: Activity, to: "/activity" },
+    ],
   },
+
   {
     label: "Compliance",
     items: [{ key: "compliance", label: "Compliance", icon: ShieldCheck, to: "/compliance" }],
