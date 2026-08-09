@@ -139,6 +139,19 @@ function PipelinePage() {
   const columnOf = (d: any) => (d.stage_id && stageById.has(d.stage_id) ? d.stage_id : firstStage?.id ?? null);
   const itemsIn = (stageId: string) => (deals ?? []).filter((d) => columnOf(d) === stageId);
 
+  const filterActive = search.trim().length > 0 || ownerFilter !== "all";
+  const matches = (d: any) => {
+    const q = search.trim().toLowerCase();
+    const hit =
+      !q ||
+      d.title?.toLowerCase().includes(q) ||
+      (d.lead_id ? (leadName.get(d.lead_id) ?? "").toLowerCase().includes(q) : false);
+    const ownerOk =
+      ownerFilter === "all" ||
+      (ownerFilter === "unassigned" ? !d.owner_id : d.owner_id === ownerFilter);
+    return hit && ownerOk;
+  };
+
   const create = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
