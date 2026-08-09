@@ -126,7 +126,7 @@ function Dashboard() {
       <div className="grid-2">
         <Panel
           title="Recent Deals"
-          action={<Link to="/pipeline" className="card-link">View All</Link>}
+          action={<Link to="/pipeline" search={{ deal: undefined }} className="card-link">View All</Link>}
         >
           {recentDeals && recentDeals.length > 0 ? (
             <table className="tbl">
