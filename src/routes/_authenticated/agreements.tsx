@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePrefs } from "@/hooks/use-prefs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -357,9 +358,10 @@ function AgreementsPage() {
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {
+  const { t } = usePrefs();
   return (
     <Card className="p-4 rounded-2xl border-[#E7E7EC] shadow-none">
-      <div className="text-xs uppercase tracking-wide text-[#6B6B76]">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-[#6B6B76]">{t(label)}</div>
       <div className="text-2xl font-display font-semibold font-num mt-1">{value}</div>
     </Card>
   );
