@@ -799,10 +799,11 @@
 }
 
 @media (max-width: 860px) {
+  .mc-shell { overflow-x: hidden; }
   .nav-burger { display: grid; }
   .side-scrim { display: block; }
   .side, .side-collapsed {
-    width: 250px; transform: translateX(-102%); box-shadow: 0 24px 60px rgba(17, 19, 24, .2);
+    width: 250px; transform: translateX(-100%); box-shadow: 0 24px 60px rgba(17, 19, 24, .2);
     transition: transform .22s ease;
   }
   .side.side-open { transform: translateX(0); }
