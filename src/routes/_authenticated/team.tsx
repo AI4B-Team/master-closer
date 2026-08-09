@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
-import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot } from "lucide-react";
+import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,7 +37,7 @@ function ReportsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("calls")
-        .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, agent_id, started_at")
+        .select("id, mode, outcome, dial_outcome, duration_sec, close_probability, rep_id, agent_id, campaign_id, started_at")
         .order("started_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -65,6 +65,14 @@ function ReportsPage() {
     queryKey: ["report_agents"],
     queryFn: async () => {
       const { data } = await supabase.from("agents").select("id, name, default_mode, active");
+      return data ?? [];
+    },
+  });
+
+  const { data: campaigns } = useQuery({
+    queryKey: ["report_campaigns"],
+    queryFn: async () => {
+      const { data } = await supabase.from("campaigns").select("id, name, mode, status, goal, daily_cap");
       return data ?? [];
     },
   });
@@ -161,6 +169,38 @@ function ReportsPage() {
       })
       .sort((a, b) => b.calls - a.calls);
   }, [calls, agents]);
+
+  const campaignPerf = useMemo(() => {
+    const map = new Map<string, { id: string; calls: number; connects: number; prob: number; probN: number }>();
+    for (const c of calls ?? []) {
+      const key = c.campaign_id ?? "none";
+      const row = map.get(key) ?? { id: key, calls: 0, connects: 0, prob: 0, probN: 0 };
+      row.calls += 1;
+      if (c.dial_outcome === "connected" || c.outcome === "completed") row.connects += 1;
+      if (c.close_probability != null) {
+        row.prob += c.close_probability;
+        row.probN += 1;
+      }
+      map.set(key, row);
+    }
+    const max = Math.max(1, ...[...map.values()].map((r) => r.calls));
+    return Array.from(map.values())
+      .map((r) => {
+        const campaign = campaigns?.find((c) => c.id === r.id);
+        return {
+          ...r,
+          name: campaign?.name ?? "No Campaign",
+          mode: campaign ? MODE_LABEL[campaign.mode] ?? titleCase(campaign.mode) : "—",
+          status: campaign ? titleCase(campaign.status) : null,
+          connectRate: r.calls ? Math.round((r.connects / r.calls) * 100) : 0,
+          avgProbability: r.probN ? Math.round(r.prob / r.probN) : 0,
+          share: Math.round((r.calls / max) * 100),
+        };
+      })
+      .sort((a, b) => b.calls - a.calls);
+  }, [calls, campaigns]);
+
+
 
 
 
@@ -532,6 +572,46 @@ function ReportsPage() {
           </table>
         )}
       </Card>
+
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+            <Megaphone className="h-5 w-5 text-[#CC0000]" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Campaign Performance</h3>
+            <p className="text-sm text-[#6B6B76]">Dial volume, connect rate and close probability by campaign.</p>
+          </div>
+        </div>
+
+        {campaignPerf.length === 0 ? (
+          <EmptyState icon={Megaphone} title="No Campaign Calls Yet" hint="Launch a campaign to see results here." />
+        ) : (
+          <div className="space-y-3">
+            {campaignPerf.map((c) => (
+              <div key={c.id}>
+                <div className="flex items-center justify-between text-sm gap-3">
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium truncate">{c.name}</span>
+                    <span className="text-xs text-[#6B6B76] shrink-0">{c.mode}</span>
+                    {c.status ? <StatusPill tone={c.status === "Active" ? "green" : "neutral"} label={c.status} /> : null}
+                  </span>
+                  <span className="font-num text-[#6B6B76] shrink-0">
+                    {c.calls} Dialed · {c.connects} Connected ({c.connectRate}%) · {c.avgProbability}% Avg Close
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 rounded-full bg-[#F0F1F4] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#141418]" style={{ width: `${Math.max(2, c.share)}%` }}>
+                    <div className="h-2 rounded-full bg-[#CC0000]" style={{ width: `${c.connectRate}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+
 
 
 
