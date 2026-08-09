@@ -17,7 +17,8 @@ const LANG_KEY = "mc.lang";
 
 /* ---- module-level store so every component reacts to pref changes ---- */
 type State = { theme: Theme; lang: LangCode };
-let state: State = { theme: "light", lang: "en" };
+const DEFAULT_STATE: State = { theme: "light", lang: "en" };
+let state: State = DEFAULT_STATE;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -28,7 +29,8 @@ function subscribe(fn: () => void) {
   return () => listeners.delete(fn);
 }
 const getSnapshot = () => state;
-const getServerSnapshot = () => state;
+const getServerSnapshot = () => DEFAULT_STATE;
+
 
 function applyTheme(theme: Theme) {
   document.documentElement.dataset["mcTheme"] = theme;
