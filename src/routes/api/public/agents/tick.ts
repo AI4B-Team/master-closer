@@ -11,9 +11,10 @@ export const Route = createFileRoute("/api/public/agents/tick")({
       POST: async ({ request }) => {
         const secret = process.env.AGENTS_CRON_SECRET;
         if (!secret) return new Response("Scheduler not configured", { status: 503 });
-        if (request.headers.get("x-cron-key") !== secret) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+        const provided = request.headers.get("x-cron-key") ?? "";
+        let diff = provided.length ^ secret.length;
+        for (let i = 0; i < secret.length; i++) diff |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
+        if (diff !== 0) return new Response("Unauthorized", { status: 401 });
         try {
           const { tickAgents } = await import("@/lib/governance.server");
           const result = await tickAgents();

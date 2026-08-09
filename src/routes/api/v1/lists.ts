@@ -8,10 +8,11 @@ export const Route = createFileRoute("/api/v1/lists")({
       GET: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase } = await apiClient(request);
+          const { supabase, workspaceId } = await apiClient(request);
           const { data, error } = await supabase
             .from("call_lists")
             .select("*, list_contacts(id, name, phone, email, attempts, last_outcome, consent)")
+            .eq("workspace_id", workspaceId)
             .order("created_at", { ascending: false })
             .limit(100);
           if (error) throw new Error(error.message);

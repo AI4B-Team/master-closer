@@ -7,7 +7,7 @@ export const Route = createFileRoute("/api/v1/calls")({
       GET: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase } = await apiClient(request);
+          const { supabase, workspaceId } = await apiClient(request);
           const params = new URL(request.url).searchParams;
           const id = params.get("id");
           const limit = Math.min(Number(params.get("limit") ?? 100), 500);
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/api/v1/calls")({
           let query = supabase
             .from("calls")
             .select("*")
+            .eq("workspace_id", workspaceId)
             .order("started_at", { ascending: false })
             .limit(limit);
           if (id) query = query.eq("id", id);

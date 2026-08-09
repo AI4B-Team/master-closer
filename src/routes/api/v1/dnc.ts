@@ -8,10 +8,11 @@ export const Route = createFileRoute("/api/v1/dnc")({
       GET: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase } = await apiClient(request);
+          const { supabase, workspaceId } = await apiClient(request);
           const { data, error } = await supabase
             .from("dnc_list")
             .select("*")
+            .eq("workspace_id", workspaceId)
             .order("added_at", { ascending: false })
             .limit(500);
           if (error) throw new Error(error.message);
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
             .from("leads")
             .update({ consent: "opt_out" })
             .eq("phone", body.phone)
+            .eq("workspace_id", workspaceId)
             .select("id")
             .maybeSingle();
 

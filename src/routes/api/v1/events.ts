@@ -18,13 +18,14 @@ export const Route = createFileRoute("/api/v1/events")({
       GET: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase } = await apiClient(request);
+          const { supabase, workspaceId } = await apiClient(request);
           const params = new URL(request.url).searchParams;
           const limit = Math.min(Number(params.get("limit") ?? 100), 500);
           const type = params.get("event_type");
           let query = supabase
             .from("events")
             .select("*")
+            .eq("workspace_id", workspaceId)
             .order("created_at", { ascending: false })
             .limit(limit);
           if (type) query = query.eq("event_type", type);
