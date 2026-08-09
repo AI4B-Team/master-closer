@@ -117,6 +117,7 @@ export function NotificationsMenu() {
     if (type.startsWith("lead")) return "/leads";
     if (type.startsWith("deal")) return "/pipeline";
     if (type.startsWith("campaign")) return "/campaigns";
+    if (type.startsWith("task")) return "/tasks";
     return "/dashboard";
   };
 
