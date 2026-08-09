@@ -15,33 +15,38 @@ type Step = {
   done: boolean;
 };
 
-async function count(table: string) {
+async function count(table: string, workspaceId: string) {
   const { count: c } = await supabase
     .from(table as never)
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("workspace_id", workspaceId);
   return c ?? 0;
 }
 
 export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(true);
+  const { data: workspace } = useWorkspace();
 
   useEffect(() => {
     setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
   }, []);
 
   const { data } = useQuery({
-    queryKey: ["onboarding-progress"],
+    queryKey: ["onboarding-progress", workspace?.id],
+    enabled: !!workspace?.id,
     queryFn: async () => {
+      const wsId = workspace!.id;
       const [agents, leads, campaigns, templates, calls] = await Promise.all([
-        count("ai_agents"),
-        count("leads"),
-        count("campaigns"),
-        count("agreement_templates"),
-        count("calls"),
+        count("agents", wsId),
+        count("leads", wsId),
+        count("campaigns", wsId),
+        count("agreement_templates", wsId),
+        count("calls", wsId),
       ]);
       return { agents, leads, campaigns, templates, calls };
     },
   });
+
 
   if (dismissed || !data) return null;
 
