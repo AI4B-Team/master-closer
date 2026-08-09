@@ -69,7 +69,16 @@ function TasksPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("open");
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [mineOnly, setMineOnly] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
   const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "" });
+
+  const { data: me } = useQuery({
+    queryKey: ["tasks-me"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
+  });
+
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: ["tasks", "all"],
