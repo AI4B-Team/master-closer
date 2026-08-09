@@ -1952,6 +1952,12 @@ a{text-decoration:none;color:inherit;}
   .hero-glow{width:360px;height:360px;right:-100px;top:-120px;}
   .sec-h2{font-size:1.72rem!important;}
   .hero-h1{font-size:2.5rem!important;}
+  .nav-in{padding:0 16px!important;height:60px;}
+  .brand-word{font-size:16px;white-space:nowrap;}
+  .brand-mark{width:26px;height:26px;}
+  .nav-cta{gap:10px;}
+  .nav-login{font-size:.86rem;white-space:nowrap;}
+  .nav-cta .btn-primary{padding:9px 14px;font-size:.86rem;white-space:nowrap;}
 }
 html,body{overflow-x:hidden;max-width:100vw;}
 `;
