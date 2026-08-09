@@ -3,7 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
   CreditCard, Settings, Crosshair, ChevronsLeft, ChevronsRight,
-  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun,
+  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun, Menu, X,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [scope, setScope] = useState<(typeof SEARCH_SCOPES)[number]>("Everything");
   const [scopeOpen, setScopeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
   const tour = useProductTour();
 
 
@@ -94,6 +95,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           to={item.to}
           title={item.label}
           data-tour={`nav-${item.to.replace("/", "")}`}
+          onClick={() => setMobileNav(false)}
           className={`nav-item ${muted ? "nav-muted" : ""} ${active ? "nav-on" : ""}`}
         >
           <span className="nav-ico">
@@ -106,7 +108,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="mc-shell">
-      <aside className={"side " + (collapsed ? "side-collapsed" : "")}>
+      {mobileNav && (
+        <button type="button" className="side-scrim" aria-label="Close menu" onClick={() => setMobileNav(false)} />
+      )}
+      <aside className={"side " + (collapsed ? "side-collapsed " : "") + (mobileNav ? "side-open" : "")}>
         <div className="side-brand">
           <span className="side-mark">
             <Crosshair size={17} strokeWidth={2.6} />
@@ -121,6 +126,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
           </button>
+          <button
+            type="button"
+            className="side-close"
+            onClick={() => setMobileNav(false)}
+            aria-label="Close menu"
+          >
+            <X size={16} />
+          </button>
 
         </div>
 
@@ -131,6 +144,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className={"main " + (collapsed ? "main-collapsed" : "")}>
         <header className="topbar">
+          <button
+            type="button"
+            className="nav-burger"
+            onClick={() => setMobileNav(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={18} />
+          </button>
           <div className="search-wrap">
             <div className="search">
               <Search size={15} />
