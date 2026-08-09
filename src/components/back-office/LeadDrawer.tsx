@@ -325,7 +325,19 @@ export function LeadDrawer({
           </div>
 
           <div className="pt-2 border-t border-[#E7E7EC]">
-            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Deals</p>
+            <div className="flex items-center justify-between mt-4 mb-2">
+              <p className="text-xs uppercase tracking-wider text-[#6B6B76]">Deals</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={() => createDeal.mutate()}
+                disabled={createDeal.isPending}
+              >
+                <Plus className="h-4 w-4 mr-1" /> New Deal
+              </Button>
+            </div>
             {!deals || deals.length === 0 ? (
               <p className="text-sm text-[#6B6B76]">No deals linked to this lead yet.</p>
             ) : (
