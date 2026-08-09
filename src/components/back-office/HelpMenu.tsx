@@ -5,6 +5,7 @@ import {
   CircleHelp, LifeBuoy, PlayCircle, BookOpen, MessageSquarePlus,
   Sparkles, Loader2, CircleCheckBig, X,
 } from "lucide-react";
+import { usePrefs } from "@/hooks/use-prefs";
 import { toast } from "sonner";
 import { submitFeedback, polishFeedback, FEEDBACK_CATEGORIES } from "@/lib/help.functions";
 

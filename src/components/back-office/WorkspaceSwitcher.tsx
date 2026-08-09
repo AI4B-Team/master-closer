@@ -195,9 +195,9 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
 
       {open && (
         <div className={`ws-menu ${collapsed ? "ws-menu-right" : ""}`}>
-          <div className="ws-menu-h">Your Workspaces</div>
+          <div className="ws-menu-h">{t("Your Workspaces")}</div>
           {list.length === 0 ? (
-            <div className="ws-empty">No Workspaces Yet</div>
+            <div className="ws-empty">{t("No Workspaces Yet")}</div>
           ) : (
             list.map((w) => {
               const isActive = w.id === active?.id;
@@ -259,7 +259,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
                   >
                     <input
                       className="ws-input"
-                      placeholder="Workspace Name"
+                      placeholder={t("Workspace Name")}
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       autoFocus
@@ -369,7 +369,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
             >
               <input
                 className="ws-input"
-                placeholder="Workspace Name"
+                placeholder={t("Workspace Name")}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 autoFocus
@@ -389,7 +389,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
               onClick={() => setCreating(true)}
             >
               <Plus size={14} className="text-[#CC0000]" />
-              <span className="ws-item-name">New Workspace</span>
+              <span className="ws-item-name">{t("New Workspace")}</span>
             </button>
           )}
         </div>
