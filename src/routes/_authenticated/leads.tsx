@@ -89,6 +89,15 @@ function LeadsPage() {
     },
   });
 
+  const { data: members } = useQuery({
+    queryKey: ["org-members"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   /* Deep link from global search: prefill the filter and open the matching lead. */
   useEffect(() => {
     if (qParam !== undefined) setSearch(qParam);
