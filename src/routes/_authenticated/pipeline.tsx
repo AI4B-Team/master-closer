@@ -41,7 +41,14 @@ type Stage = {
   label: string;
   position: number;
   kind: string;
+  wip_limit: number | null;
+  stale_days: number | null;
 };
+
+function daysSince(iso?: string | null) {
+  if (!iso) return 0;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
 
 const LEGACY_STAGES = ["new", "qualifying", "proposal", "negotiation", "won", "lost"] as const;
 
