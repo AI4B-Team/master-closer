@@ -4,8 +4,36 @@ import { useQuery } from "@tanstack/react-query";
 import { Bell, CheckCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { eventHref } from "@/lib/activity-labels";
+import { useAuth } from "@/hooks/use-auth";
 
 const SEEN_KEY = "mc.notifications.seenAt";
+
+type NotifyPrefs = {
+  callSummaries: boolean;
+  handoffAlerts: boolean;
+  dealUpdates: boolean;
+  complianceFlags: boolean;
+  followUps: boolean;
+};
+
+const DEFAULT_PREFS: NotifyPrefs = {
+  callSummaries: true,
+  handoffAlerts: true,
+  dealUpdates: true,
+  complianceFlags: true,
+  followUps: true,
+};
+
+/** Which account notification toggle governs a given event type. */
+function prefKeyFor(type: string): keyof NotifyPrefs | null {
+  if (type.startsWith("task.")) return "followUps";
+  if (type.startsWith("deal.")) return "dealUpdates";
+  if (type.startsWith("consent.") || type.startsWith("disclosure.") || type === "lead.flagged_dnc")
+    return "complianceFlags";
+  if (type.includes("handoff") || type.includes("transfer")) return "handoffAlerts";
+  if (type.startsWith("call.")) return "callSummaries";
+  return null;
+}
 
 const LABELS: Record<string, string> = {
   "call.completed": "Call Completed",
@@ -51,6 +79,11 @@ function ago(iso: string) {
 /** Bell menu in the top bar: recent workspace activity with an unread dot. */
 export function NotificationsMenu() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const prefs: NotifyPrefs = {
+    ...DEFAULT_PREFS,
+    ...(((user?.user_metadata as any)?.notify ?? {}) as Partial<NotifyPrefs>),
+  };
   const wrap = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [seenAt, setSeenAt] = useState<string | null>(null);
@@ -101,9 +134,18 @@ export function NotificationsMenu() {
     },
   });
 
+  const visible = useMemo(
+    () =>
+      events.filter((e) => {
+        const key = prefKeyFor(String((e.payload as any)?.kind ?? e.event_type));
+        return key ? prefs[key] !== false : true;
+      }),
+    [events, prefs.callSummaries, prefs.handoffAlerts, prefs.dealUpdates, prefs.complianceFlags, prefs.followUps],
+  );
+
   const unread = useMemo(
-    () => events.filter((e) => !seenAt || new Date(e.created_at) > new Date(seenAt)).length,
-    [events, seenAt],
+    () => visible.filter((e) => !seenAt || new Date(e.created_at) > new Date(seenAt)).length,
+    [visible, seenAt],
   );
 
   const markAllRead = () => {
@@ -144,7 +186,7 @@ export function NotificationsMenu() {
             </button>
           </div>
 
-          {events.length === 0 ? (
+          {visible.length === 0 ? (
             <div className="notif-empty">
               <Inbox size={20} />
               <p>Nothing Yet</p>
@@ -152,7 +194,7 @@ export function NotificationsMenu() {
             </div>
           ) : (
             <div className="notif-list">
-              {events.map((e) => (
+              {visible.map((e) => (
                 <button
                   key={e.id}
                   type="button"
