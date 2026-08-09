@@ -23,14 +23,14 @@ export const Route = createFileRoute("/api/v1/dnc")({
       POST: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase, orgId } = await apiClient(request);
+          const { supabase, orgId, workspaceId } = await apiClient(request);
           const body = z
             .object({ phone: z.string().min(5).max(32), reason: z.string().max(500).nullish() })
             .parse(await request.json());
 
           const { data, error } = await supabase
             .from("dnc_list")
-            .insert({ org_id: orgId, phone: body.phone, reason: body.reason ?? null })
+            .insert({ org_id: orgId, workspace_id: workspaceId, phone: body.phone, reason: body.reason ?? null })
             .select("*")
             .single();
           if (error) throw new Error(error.message);

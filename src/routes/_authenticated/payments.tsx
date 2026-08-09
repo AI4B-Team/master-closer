@@ -70,8 +70,9 @@ function PaymentsPage() {
   const save = async () => {
     setSaving(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       if (row) {
         const { error } = await supabase
           .from("integrations")
@@ -80,7 +81,7 @@ function PaymentsPage() {
         if (error) throw error;
       } else {
         const { error } = await supabase.from("integrations").insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           provider: "payments",
           status: "configured",
           config: cfg as any,

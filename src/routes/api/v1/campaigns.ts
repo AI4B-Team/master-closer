@@ -23,7 +23,7 @@ export const Route = createFileRoute("/api/v1/campaigns")({
       POST: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase, orgId } = await apiClient(request);
+          const { supabase, orgId, workspaceId } = await apiClient(request);
           const body = z
             .object({
               name: z.string().min(1).max(200),
@@ -37,6 +37,7 @@ export const Route = createFileRoute("/api/v1/campaigns")({
             .from("campaigns")
             .insert({
               org_id: orgId,
+              workspace_id: workspaceId,
               name: body.name,
               mode: body.mode,
               agent_id: body.agent_id ?? null,

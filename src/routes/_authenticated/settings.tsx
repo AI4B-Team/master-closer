@@ -38,7 +38,7 @@ function SettingsPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("full_name, org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("full_name, org_id, active_workspace_id").maybeSingle();
       setFullName(prof?.full_name ?? "");
       setOrgId(prof?.org_id ?? null);
       if (prof?.org_id) {
@@ -115,13 +115,16 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
 
   const add = async () => {
     if (!orgId) return;
+    const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+    const workspaceId = prof?.active_workspace_id;
+    if (!workspaceId) { toast.error("No active workspace"); return; }
     const clean = url.trim();
     if (!/^https:\/\//i.test(clean)) {
       toast.error("Webhook URL must start with https://");
       return;
     }
     const secret = `whsec_${crypto.randomUUID().replace(/-/g, "")}`;
-    const { error } = await supabase.from("org_webhooks").insert({ org_id: orgId, url: clean, secret, enabled: true });
+    const { error } = await supabase.from("org_webhooks").insert({ org_id: orgId, workspace_id: workspaceId, url: clean, secret, enabled: true });
     if (error) { toast.error(error.message); return; }
     setUrl("");
     toast.success("Webhook added. Copy the signing secret now.");

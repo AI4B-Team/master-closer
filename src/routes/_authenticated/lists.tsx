@@ -123,11 +123,12 @@ function ListsPage() {
 
   const addToDnc = useMutation({
     mutationFn: async (contact: any) => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase
         .from("dnc_list")
-        .insert({ org_id: prof.org_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
+        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
       if (error) throw error;
       await supabase.from("list_contacts").update({ consent: "opt_out" }).eq("id", contact.id);
     },
@@ -156,11 +157,12 @@ function ListsPage() {
 
   const createList = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data, error } = await supabase
         .from("call_lists")
-        .insert({ org_id: prof.org_id, name: listName })
+        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, name: listName })
         .select("id")
         .single();
       if (error) throw error;
@@ -182,9 +184,12 @@ function ListsPage() {
       if (!active) throw new Error("Create a list first.");
       const rows = parseContacts(raw);
       if (!rows.length) throw new Error("No valid rows. Use: Name, Phone, Email");
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      const workspaceId = prof?.active_workspace_id;
+      if (!workspaceId) throw new Error("No active workspace");
       const { error } = await supabase
         .from("list_contacts")
-        .insert(rows.map((r) => ({ ...r, list_id: active.id })));
+        .insert(rows.map((r) => ({ ...r, workspace_id: workspaceId, list_id: active.id })));
       if (error) throw error;
       return rows.length;
     },

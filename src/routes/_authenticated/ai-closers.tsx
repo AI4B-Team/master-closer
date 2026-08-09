@@ -110,15 +110,17 @@ function AIClosers() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase.from("agents").insert({
         name: form.name,
         industry: form.industry,
         default_mode: form.default_mode as any,
         voices: form.voices,
         voice: form.voices[0] ?? null,
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
       });
       if (error) throw error;
     },

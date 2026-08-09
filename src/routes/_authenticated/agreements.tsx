@@ -61,7 +61,7 @@ function AgreementsPage() {
   const { data: me } = useQuery({
     queryKey: ["me-org"],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("org_id, full_name, email").maybeSingle();
+      const { data } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       return data;
     },
   });
@@ -665,12 +665,15 @@ function ComposeDialog({
   const create = useMutation({
     mutationFn: async (send: boolean) => {
       if (!orgId) throw new Error("No workspace found.");
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      if (!prof?.active_workspace_id) throw new Error("No active workspace");
       if (!signerName.trim() || !signerEmail.trim()) throw new Error("Signer name and email are required.");
       const { data: auth } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("agreements")
         .insert({
           org_id: orgId,
+          workspace_id: prof.active_workspace_id,
           template_id: template?.id ?? null,
           lead_id: leadId || null,
           title: title.trim() || `${signerName} — Agreement`,

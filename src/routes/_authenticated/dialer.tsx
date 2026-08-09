@@ -59,6 +59,12 @@ function fmt(sec: number) {
   return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 }
 
+async function workspaceContext() {
+  const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+  if (!prof?.active_workspace_id) throw new Error("No active workspace");
+  return { orgId: prof.org_id, workspaceId: prof.active_workspace_id };
+}
+
 function DialerPage() {
   const [mode, setMode] = useState<Mode>("full_ai");
   const [phone, setPhone] = useState("+1 555 0142");
@@ -121,8 +127,9 @@ function DialerPage() {
   const sendAgreement = async () => {
     setSendingAgreement(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id, full_name, email").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data: tpl } = await supabase
         .from("agreement_templates")
         .select("id, body, file_path, file_name")
@@ -145,7 +152,7 @@ function DialerPage() {
       const { data: row, error } = await supabase
         .from("agreements")
         .insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           template_id: tpl?.id ?? null,
           call_id: callId,
           title: `${signer} — Agreement`,
@@ -206,9 +213,11 @@ function DialerPage() {
     setThinking(true);
     setTranscript((t) => [...t, { speaker: "Prospect", text: prospectLine }]);
     try {
+      const { workspaceId } = await workspaceContext();
       if (activeCall) {
         await supabase.from("transcript_segments").insert({
           call_id: activeCall,
+          workspace_id: workspaceId,
           speaker: "Prospect",
           text: prospectLine,
           ts_sec: elapsed,
@@ -236,6 +245,7 @@ function DialerPage() {
           .from("suggestions")
           .insert({
             call_id: activeCall,
+            workspace_id: workspaceId,
             objection: res.objection,
             line: res.line,
             ts_sec: elapsed,
@@ -247,6 +257,7 @@ function DialerPage() {
         if (mode === "full_ai") {
           await supabase.from("transcript_segments").insert({
             call_id: activeCall,
+            workspace_id: workspaceId,
             speaker: "Master Closer",
             text: res.line,
             ts_sec: elapsed,
@@ -266,12 +277,14 @@ function DialerPage() {
     setLineUsed(true);
     setTranscript((t) => [...t, { speaker: "You", text: line }]);
     try {
+      const { workspaceId } = await workspaceContext();
       if (suggestionRowId) {
         await supabase.from("suggestions").update({ was_used: true }).eq("id", suggestionRowId);
       }
       if (callId) {
         await supabase.from("transcript_segments").insert({
           call_id: callId,
+          workspace_id: workspaceId,
           speaker: "You",
           text: line,
           ts_sec: elapsed,
@@ -395,8 +408,9 @@ function DialerPage() {
   const startCall = async () => {
     setBusy(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
 
       // Hard stop: never dial a number on the Do Not Call list.
       const target = (phone ?? "").replace(/\D/g, "");
@@ -420,7 +434,7 @@ function DialerPage() {
       const { data: call, error } = await supabase
         .from("calls")
         .insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           mode,
           outcome: "in_progress",
           campaign_id: campaignId || null,
@@ -461,6 +475,7 @@ function DialerPage() {
         });
         await supabase.from("transcript_segments").insert({
           call_id: call.id,
+          workspace_id: prof.active_workspace_id,
           speaker: "Master Closer",
           text: script,
           ts_sec: 0,
@@ -492,9 +507,10 @@ function DialerPage() {
   const logSystem = async (text: string) => {
     setTranscript((t) => [...t, { speaker: "System", text }]);
     if (callId) {
+      const { workspaceId } = await workspaceContext();
       await supabase
         .from("transcript_segments")
-        .insert({ call_id: callId, speaker: "System", text, ts_sec: elapsed });
+        .insert({ call_id: callId, workspace_id: workspaceId, speaker: "System", text, ts_sec: elapsed });
     }
   };
 
@@ -674,12 +690,12 @@ function DialerPage() {
       await supabase.from("calls").update({ summary: wrap.summary || null }).eq("id", wrap.callId);
 
       if (wrap.task && wrap.nextStep.trim()) {
-        const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
-        if (prof) {
+        const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
+        if (prof?.active_workspace_id) {
           const due = new Date();
           due.setDate(due.getDate() + wrap.dueDays);
           await supabase.from("tasks").insert({
-            org_id: prof.org_id,
+            org_id: prof.org_id, workspace_id: prof.active_workspace_id!,
             title: wrap.nextStep.trim().slice(0, 200),
             notes: wrap.summary || null,
             due_at: due.toISOString(),
@@ -707,9 +723,10 @@ function DialerPage() {
   const flagDnc = async () => {
     setBusy(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
-      await supabase.from("dnc_list").insert({ org_id: prof.org_id, phone, reason: "Requested on call" });
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
+      await supabase.from("dnc_list").insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone, reason: "Requested on call" });
       try {
         await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, call_id: callId } } });
       } catch {

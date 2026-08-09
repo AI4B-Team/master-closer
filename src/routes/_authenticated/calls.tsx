@@ -275,10 +275,11 @@ function CallDetail({ call }: { call: any }) {
   const [saved, setSaved] = useState<string[]>([]);
   const promote = useMutation({
     mutationFn: async (p: { id: string; trigger: string; response: string }) => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof?.org_id) throw new Error("No workspace found");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase.from("objections").insert({
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         trigger: p.trigger,
         response: p.response,
         category: "From Call",
@@ -353,12 +354,13 @@ function CallDetail({ call }: { call: any }) {
 
   const addFollowUp = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
       if (!prof?.org_id) throw new Error("No workspace found");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const due = new Date();
       due.setDate(due.getDate() + 2);
       const { error } = await supabase.from("tasks").insert({
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         title: taskTitle.trim().slice(0, 200),
         notes: summary ?? null,
         due_at: due.toISOString(),

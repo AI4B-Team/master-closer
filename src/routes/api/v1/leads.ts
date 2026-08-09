@@ -23,7 +23,7 @@ export const Route = createFileRoute("/api/v1/leads")({
       POST: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { supabase, orgId } = await apiClient(request);
+          const { supabase, orgId, workspaceId } = await apiClient(request);
           const body = z
             .object({
               name: z.string().min(1),
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/v1/leads")({
 
           const { data, error } = await supabase
             .from("leads")
-            .insert({ ...body, org_id: orgId })
+            .insert({ ...body, org_id: orgId, workspace_id: workspaceId })
             .select("*")
             .single();
           if (error) throw new Error(error.message);
