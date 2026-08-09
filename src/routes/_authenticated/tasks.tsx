@@ -391,8 +391,21 @@ function TasksPage() {
               const d = dueLabel(t.due_at);
               const done = t.status === "done";
               return (
-                <li key={t.id} className="flex items-start gap-3 rounded-xl border border-[#E7E7EC] px-3 py-3">
-                  <Checkbox checked={done} onCheckedChange={() => toggle.mutate(t)} className="mt-1" />
+                <li
+                  key={t.id}
+                  className={
+                    "flex items-start gap-3 rounded-xl border px-3 py-3 " +
+                    (selected.includes(t.id) ? "border-[#CC0000] bg-[#FFF7F6]" : "border-[#E7E7EC]")
+                  }
+                >
+                  <Checkbox
+                    checked={selected.includes(t.id)}
+                    onCheckedChange={() => toggleSelect(t.id)}
+                    aria-label="Select Follow-Up"
+                    className="mt-1"
+                  />
+                  <Checkbox checked={done} onCheckedChange={() => toggle.mutate(t)} aria-label="Complete Follow-Up" className="mt-1" />
+
                   <span
                     aria-hidden="true"
                     className="mt-2 h-2 w-2 shrink-0 rounded-full"
