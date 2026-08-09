@@ -146,7 +146,7 @@ function Scripts() {
                 disabled={!form.name.trim() || create.isPending}
                 className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
               >
-                Save Script
+                {editId ? "Save Changes" : "Save Script"}
               </Button>
             </DialogFooter>
           </DialogContent>
