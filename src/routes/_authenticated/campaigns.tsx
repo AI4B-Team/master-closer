@@ -290,11 +290,11 @@ function CampaignsPage() {
               </div>
               <DialogFooter>
                 <Button
-                  onClick={() => create.mutate()}
-                  disabled={!form.name || create.isPending}
+                  onClick={() => (editId ? save.mutate() : create.mutate())}
+                  disabled={!form.name || create.isPending || save.isPending}
                   className="bg-[#CC0000] hover:bg-[#A30000]"
                 >
-                  Create
+                  {editId ? "Save Changes" : "Create"}
                 </Button>
               </DialogFooter>
             </DialogContent>
