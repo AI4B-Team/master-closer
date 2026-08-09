@@ -149,11 +149,17 @@ function AIClosers() {
               </div>
               <h3 className="font-semibold">{a.name}</h3>
               <p className="text-xs text-[#6B6B76] mt-1">{a.industry ?? "General"}</p>
-              <div className="flex gap-2 mt-3">
+              <div className="flex flex-wrap gap-2 mt-3">
                 <Badge variant="secondary" className="capitalize">{a.default_mode.replace("_", " ")}</Badge>
                 {((a.voices?.length ? a.voices : [a.voice]).filter(Boolean) as string[]).map((v) => (
                   <Badge key={v} variant="outline" className="capitalize">{v.replace("custom:", "Custom ")}</Badge>
                 ))}
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-[#6B6B76]">
+                <GraduationCap className="h-3.5 w-3.5 text-[#CC0000]" />
+                {scores?.[a.id]
+                  ? `${scores[a.id].avg}% Drill Score · ${scores[a.id].count} Rep${scores[a.id].count === 1 ? "" : "s"}`
+                  : "No Drills Yet"}
               </div>
             </Card>
           ))}
