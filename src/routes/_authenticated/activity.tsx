@@ -175,6 +175,20 @@ function ActivityPage() {
               })}
             </div>
           )}
+
+          {(events?.length ?? 0) >= limit ? (
+            <div className="mt-4 text-center">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setLimit((l) => l + 200)}
+                disabled={isFetching}
+              >
+                Load More
+              </Button>
+            </div>
+          ) : null}
         </Card>
       </AccountShell>
     </div>
