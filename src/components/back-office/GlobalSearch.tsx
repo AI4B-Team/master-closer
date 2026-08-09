@@ -40,8 +40,8 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
   if (want("Leads") || want("Notes")) {
     const { data } = await supabase
       .from("leads")
-      .eq("workspace_id", wsId)
       .select("id,name,company,phone,email,notes,status")
+      .eq("workspace_id", wsId)
       .or(`name.ilike.${like},company.ilike.${like},phone.ilike.${like},email.ilike.${like},notes.ilike.${like}`)
       .limit(6);
     for (const l of data ?? []) {
@@ -64,8 +64,8 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
   if (want("Calls")) {
     const { data } = await supabase
       .from("calls")
-      .eq("workspace_id", wsId)
       .select("id,summary,disposition,outcome,mode,started_at")
+      .eq("workspace_id", wsId)
       .or(`summary.ilike.${like},disposition.ilike.${like}`)
       .order("started_at", { ascending: false })
       .limit(5);
@@ -84,8 +84,8 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
   if (want("Campaigns")) {
     const { data } = await supabase
       .from("campaigns")
-      .eq("workspace_id", wsId)
       .select("id,name,status,goal")
+      .eq("workspace_id", wsId)
       .or(`name.ilike.${like},goal.ilike.${like}`)
       .limit(5);
     for (const c of data ?? []) {
@@ -96,8 +96,8 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
   if (want("Deals")) {
     const { data } = await supabase
       .from("deals")
-      .eq("workspace_id", wsId)
       .select("id,title,stage,value")
+      .eq("workspace_id", wsId)
       .ilike("title", like)
       .limit(5);
     for (const d of data ?? []) {
@@ -115,8 +115,8 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
   if (want("Agents")) {
     const { data: ags } = await supabase
       .from("background_agents")
-      .eq("workspace_id", wsId)
       .select("id,agent_key,mode,enabled")
+      .eq("workspace_id", wsId)
       .ilike("agent_key", like)
       .limit(4);
     for (const a of ags ?? []) {
@@ -131,8 +131,8 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
     }
     const { data: props } = await supabase
       .from("agent_proposals")
-      .eq("workspace_id", wsId)
       .select("id,agent_key,proposal_type,target_table,target_field,status,rationale")
+      .eq("workspace_id", wsId)
       .or(`rationale.ilike.${like},target_table.ilike.${like},proposal_type.ilike.${like}`)
       .limit(5);
     for (const p of props ?? []) {
