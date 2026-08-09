@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Bell, CheckCheck, Inbox } from "lucide-react";
@@ -101,19 +102,25 @@ export function NotificationsMenu() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: events = [] } = useQuery({
-    queryKey: ["notifications"],
+    queryKey: ["notifications", wsId],
+    enabled: !!wsId,
     refetchInterval: 30000,
     queryFn: async () => {
       const [evt, tasks] = await Promise.all([
         supabase
           .from("events")
           .select("id,event_type,payload,created_at")
+          .eq("workspace_id", wsId!)
           .order("created_at", { ascending: false })
           .limit(20),
         supabase
           .from("tasks")
           .select("id,title,due_at,priority,status")
+          .eq("workspace_id", wsId!)
           .eq("status", "open")
           .not("due_at", "is", null)
           .lte("due_at", new Date(Date.now() + 86400000).toISOString())
