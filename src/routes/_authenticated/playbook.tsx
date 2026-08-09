@@ -81,10 +81,10 @@ export const Route = createFileRoute("/_authenticated/playbook")({
   component: PlaybookPage,
 });
 
-async function orgId() {
+async function orgContext() {
   const { data } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
-  if (!data) throw new Error("No workspace found.");
-  return data.org_id;
+  if (!data?.active_workspace_id) throw new Error("No active workspace");
+  return { orgId: data.org_id, workspaceId: data.active_workspace_id };
 }
 
 function PlaybookPage() {
@@ -124,7 +124,8 @@ function Scripts() {
         if (error) throw error;
         return;
       }
-      const { error } = await supabase.from("playbooks").insert({ ...form, org_id: await orgId() });
+      const { orgId, workspaceId } = await orgContext();
+      const { error } = await supabase.from("playbooks").insert({ ...form, org_id: orgId, workspace_id: workspaceId });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -299,12 +300,13 @@ function Objections() {
         response: form.response,
         category: form.category || null,
       };
+      const { orgId, workspaceId } = await orgContext();
       if (editId) {
         const { error } = await supabase.from("objections").update(payload).eq("id", editId);
         if (error) throw error;
         return;
       }
-      const { error } = await supabase.from("objections").insert({ ...payload, org_id: await orgId() });
+      const { error } = await supabase.from("objections").insert({ ...payload, org_id: orgId, workspace_id: workspaceId });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -340,13 +342,14 @@ function Objections() {
     mutationFn: async () => {
       const chosen = suggestions.filter((_, i) => picked[i] ?? true);
       if (chosen.length === 0) return 0;
-      const org = await orgId();
+      const { orgId, workspaceId } = await orgContext();
       const { error } = await supabase.from("objections").insert(
         chosen.map((s) => ({
           trigger: s.trigger,
           response: s.response,
           category: s.category || null,
-          org_id: org,
+          org_id: orgId,
+          workspace_id: workspaceId,
         })),
       );
       if (error) throw error;
@@ -374,9 +377,9 @@ function Objections() {
 
   const bulkImport = useMutation({
     mutationFn: async (rows: { trigger: string; category: string | null; response: string }[]) => {
-      const org = await orgId();
+      const { orgId, workspaceId } = await orgContext();
       const { error } = await supabase.from("objections").insert(
-        rows.map((r) => ({ trigger: r.trigger, response: r.response, category: r.category, org_id: org })),
+        rows.map((r) => ({ trigger: r.trigger, response: r.response, category: r.category, org_id: orgId, workspace_id: workspaceId })),
       );
       if (error) throw error;
       return rows.length;

@@ -98,9 +98,9 @@ function PracticePage() {
         },
       });
       const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
-      if (prof?.org_id) {
+      if (prof?.active_workspace_id) {
         await supabase.from("practice_sessions").insert({
-          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id!,
           user_id: prof.id,
           agent_id: agentId === "none" ? null : agentId,
           mode,
