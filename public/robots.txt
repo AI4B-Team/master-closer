@@ -12,4 +12,3 @@ Disallow: /campaigns
 Disallow: /agreements
 Disallow: /api/
 
-Sitemap: /sitemap.xml
