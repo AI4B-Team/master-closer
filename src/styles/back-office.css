@@ -883,6 +883,23 @@
 [data-mc-theme="dark"] .mc-shell .pm-cta-amber { background: var(--card); }
 [data-mc-theme="dark"] .mc-shell .t-disclosure p,
 [data-mc-theme="dark"] .mc-shell .sugg { background: rgba(204, 0, 0, 0.12); border-color: rgba(204, 0, 0, 0.35); }
+/* pastel surfaces need dark equivalents so text stays readable */
+[data-mc-theme="dark"] .mc-shell .kpi {
+  background: color-mix(in srgb, var(--kpi-tint, var(--card)) 12%, var(--card));
+  border-color: var(--line);
+}
+[data-mc-theme="dark"] .mc-shell .kpi-label { color: var(--muted); }
+[data-mc-theme="dark"] .mc-shell .kpi-ico { background: rgba(255, 255, 255, 0.06); }
+[data-mc-theme="dark"] .mc-shell .onb-icon { background: rgba(204, 0, 0, 0.16); color: #FF6B5E; }
+[data-mc-theme="dark"] .mc-shell .onb-bar { background: rgba(255, 255, 255, 0.08); }
+[data-mc-theme="dark"] .mc-shell .onb-item { border-bottom-color: var(--line); }
+[data-mc-theme="dark"] .mc-shell .onb-check { border-color: #3a3f49; }
+[data-mc-theme="dark"] .mc-shell .onb-x:hover { background: var(--surface); }
+[data-mc-theme="dark"] .mc-shell .onb-cta { background: var(--signal); color: #fff; }
+[data-mc-theme="dark"] .mc-shell .onb-cta:hover { background: var(--signal-deep); }
+[data-mc-theme="dark"] .mc-shell .nav-item.is-active { background: rgba(204, 0, 0, 0.16); }
+[data-mc-theme="dark"] .mc-shell .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+
 
 /* --------------------- profile menu sub-selects ------------------------- */
 .pm-sub { display: grid; gap: 2px; padding: 4px 0 6px 34px; }
