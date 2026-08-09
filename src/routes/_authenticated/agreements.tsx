@@ -72,16 +72,19 @@ function AgreementsPage() {
 
   const { data: templates } = useQuery({
     queryKey: ["agreement_templates", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreement_templates")
         .select("*")
+        .eq("workspace_id", wsId!)
         .order("is_default", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const { data: agreements, isLoading: agreementsLoading } = useQuery({
     queryKey: ["agreements", wsId],
@@ -332,7 +335,7 @@ function AgreementsPage() {
           </Card>
         </>
       ) : (
-        <TemplatesTab templates={templates ?? []} orgId={me?.org_id ?? null} onChange={invalidate} />
+        <TemplatesTab templates={templates ?? []} orgId={me?.org_id ?? null} wsId={wsId} onChange={invalidate} />
       )}
 
       <ComposeDialog
@@ -365,12 +368,14 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 /* ---------------------------------- Templates ---------------------------------- */
 
 function TemplatesTab({
-  templates, orgId, onChange,
+  templates, orgId, wsId, onChange,
 }: {
   templates: any[];
   orgId: string | null;
+  wsId: string | null;
   onChange: () => void;
 }) {
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const active = templates.find((t) => t.id === selectedId) ?? templates[0];
   const [draft, setDraft] = useState<{ id: string | null; name: string; body: string }>({
@@ -383,7 +388,7 @@ function TemplatesTab({
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!orgId) throw new Error("No workspace found.");
+      if (!orgId || !wsId) throw new Error("No workspace found.");
       if (!draft.name.trim()) throw new Error("Give the template a name.");
       if (draft.id) {
         const { error } = await supabase
@@ -394,6 +399,7 @@ function TemplatesTab({
       } else {
         const { error } = await supabase.from("agreement_templates").insert({
           org_id: orgId,
+          workspace_id: wsId,
           name: draft.name,
           body: draft.body,
           is_default: templates.length === 0,
@@ -401,6 +407,7 @@ function TemplatesTab({
         if (error) throw error;
       }
     },
+
     onSuccess: () => {
       toast.success("Template Saved.");
       setEditorOpen(false);
@@ -410,7 +417,7 @@ function TemplatesTab({
   });
 
   const upload = async (file: File) => {
-    if (!orgId) return toast.error("No workspace found.");
+    if (!orgId || !wsId) return toast.error("No workspace found.");
     setUploading(true);
     try {
       const path = `${orgId}/templates/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
@@ -425,6 +432,7 @@ function TemplatesTab({
 
       const { error } = await supabase.from("agreement_templates").insert({
         org_id: orgId,
+        workspace_id: wsId,
         name: file.name.replace(/\.[^.]+$/, ""),
         body,
         file_path: path,
@@ -444,9 +452,10 @@ function TemplatesTab({
   };
 
   const makeDefault = async (id: string) => {
-    if (!orgId) return;
-    await supabase.from("agreement_templates").update({ is_default: false }).eq("org_id", orgId);
+    if (!wsId) return;
+    await supabase.from("agreement_templates").update({ is_default: false }).eq("workspace_id", wsId);
     const { error } = await supabase.from("agreement_templates").update({ is_default: true }).eq("id", id);
+
     if (error) return toast.error(error.message);
     toast.success("Default Template Set.");
     onChange();

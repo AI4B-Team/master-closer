@@ -1,0 +1,2 @@
+UPDATE public.profiles SET active_workspace_id = '811faed5-f7c5-4c2a-bef9-7c2f1b8c1dfe' WHERE active_workspace_id = '1d5f7d08-25e3-4e92-90aa-8e5a15f24d63';
+DELETE FROM public.workspaces WHERE id = '1d5f7d08-25e3-4e92-90aa-8e5a15f24d63';
