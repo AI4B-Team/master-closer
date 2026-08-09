@@ -374,11 +374,9 @@ function Objections() {
 
   const bulkImport = useMutation({
     mutationFn: async (rows: { trigger: string; category: string | null; response: string }[]) => {
-      const { data: u } = await supabase.auth.getUser();
-      const { data: prof } = await supabase
-        .from("profiles").select("workspace_id").eq("id", u.user!.id).maybeSingle();
+      const org = await orgId();
       const { error } = await supabase.from("objections").insert(
-        rows.map((r) => ({ ...r, workspace_id: prof?.workspace_id ?? null })),
+        rows.map((r) => ({ trigger: r.trigger, response: r.response, category: r.category, org_id: org })),
       );
       if (error) throw error;
       return rows.length;
