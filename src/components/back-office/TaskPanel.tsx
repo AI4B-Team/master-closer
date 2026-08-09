@@ -17,6 +17,8 @@ export type TaskRow = {
   priority: string;
   status: string;
   lead_id: string | null;
+  assignee_id: string | null;
+
   deal_id: string | null;
   completed_at: string | null;
   created_at: string;

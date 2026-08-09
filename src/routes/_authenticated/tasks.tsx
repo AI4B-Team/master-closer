@@ -69,7 +69,16 @@ function TasksPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("open");
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [mineOnly, setMineOnly] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
   const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "" });
+
+  const { data: me } = useQuery({
+    queryKey: ["tasks-me"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user?.id ?? null,
+  });
+
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: ["tasks", "all"],
@@ -158,14 +167,33 @@ function TasksPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bulk = useMutation({
+    mutationFn: async (action: "done" | "delete") => {
+      if (action === "delete") {
+        const { error } = await supabase.from("tasks").delete().in("id", selected);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "done", completed_at: new Date().toISOString() })
+        .in("id", selected);
+      if (error) throw error;
+    },
+    onSuccess: (_d, action) => {
+      toast.success(action === "delete" ? "Follow-ups deleted." : "Follow-ups completed.");
+      setSelected([]);
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const inDays = (days: number) => {
     const d = new Date();
     d.setDate(d.getDate() + days);
     d.setHours(17, 0, 0, 0);
     return d.toISOString();
   };
-
-
 
   const all = tasks ?? [];
   const openTasks = all.filter((t) => t.status !== "done");
@@ -176,13 +204,26 @@ function TasksPage() {
     done: all.filter((t) => t.status === "done").length,
   };
 
+  const term = q.trim().toLowerCase();
   const visible = all.filter((t) => {
-    if (filter === "done") return t.status === "done";
-    if (t.status === "done") return false;
-    if (filter === "today") return isToday(t.due_at);
-    if (filter === "overdue") return isOverdue(t.due_at);
+    if (filter === "done") {
+      if (t.status !== "done") return false;
+    } else {
+      if (t.status === "done") return false;
+      if (filter === "today" && !isToday(t.due_at)) return false;
+      if (filter === "overdue" && !isOverdue(t.due_at)) return false;
+    }
+    if (mineOnly && t.assignee_id !== me) return false;
+    if (term) {
+      const hay = [t.title, t.notes ?? "", t.leads?.name ?? "", t.leads?.company ?? ""].join(" ").toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
     return true;
   });
+
+  const toggleSelect = (id: string) =>
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
 
   return (
     <>
@@ -271,7 +312,24 @@ function TasksPage() {
       <Panel
         title="Follow-Up Queue"
         action={
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search Follow-Ups"
+              className="h-8 w-48 rounded-xl text-xs"
+            />
+            <button
+              type="button"
+              onClick={() => setMineOnly((v) => !v)}
+              className={
+                "rounded-full px-3 py-1 text-xs font-medium " +
+                (mineOnly ? "bg-[#CC0000] text-white" : "text-[#6B6B76] hover:bg-[#F4F4F6]")
+              }
+            >
+              Mine Only
+            </button>
+            <span className="h-4 w-px bg-[#E7E7EC]" />
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -288,6 +346,37 @@ function TasksPage() {
           </div>
         }
       >
+        {selected.length > 0 && (
+          <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F4F4F6] px-3 py-2 text-xs">
+            <span className="font-medium">{selected.length} Selected</span>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 rounded-lg text-xs"
+                onClick={() => bulk.mutate("done")}
+                disabled={bulk.isPending}
+              >
+                Mark Complete
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 rounded-lg text-xs text-[#CC0000]"
+                onClick={() => bulk.mutate("delete")}
+                disabled={bulk.isPending}
+              >
+                Delete
+              </Button>
+              <Button type="button" size="sm" variant="ghost" className="h-7 rounded-lg text-xs" onClick={() => setSelected([])}>
+                Clear
+              </Button>
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <SkeletonRows rows={6} />
         ) : visible.length === 0 ? (
@@ -302,8 +391,21 @@ function TasksPage() {
               const d = dueLabel(t.due_at);
               const done = t.status === "done";
               return (
-                <li key={t.id} className="flex items-start gap-3 rounded-xl border border-[#E7E7EC] px-3 py-3">
-                  <Checkbox checked={done} onCheckedChange={() => toggle.mutate(t)} className="mt-1" />
+                <li
+                  key={t.id}
+                  className={
+                    "flex items-start gap-3 rounded-xl border px-3 py-3 " +
+                    (selected.includes(t.id) ? "border-[#CC0000] bg-[#FFF7F6]" : "border-[#E7E7EC]")
+                  }
+                >
+                  <Checkbox
+                    checked={selected.includes(t.id)}
+                    onCheckedChange={() => toggleSelect(t.id)}
+                    aria-label="Select Follow-Up"
+                    className="mt-1"
+                  />
+                  <Checkbox checked={done} onCheckedChange={() => toggle.mutate(t)} aria-label="Complete Follow-Up" className="mt-1" />
+
                   <span
                     aria-hidden="true"
                     className="mt-2 h-2 w-2 shrink-0 rounded-full"
