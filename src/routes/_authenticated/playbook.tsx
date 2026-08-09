@@ -57,6 +57,7 @@ function PlaybookPage() {
 function Scripts() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", description: "", content: "" });
 
   const { data: scripts } = useQuery({
