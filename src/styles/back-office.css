@@ -434,8 +434,11 @@
   pointer-events: none;
   transition: opacity 0.14s ease, transform 0.14s ease;
 }
+/* Hidden tooltips must not contribute to layout/scroll width. */
+.has-tip::after,
+.has-tip::before { content: none; }
 .has-tip::after {
-  content: attr(data-tip);
+  content: none;
   position: absolute;
   bottom: calc(100% + 10px);
   left: 50%;
@@ -469,6 +472,10 @@
   rotate: 45deg;
   z-index: 61;
 }
+.has-tip:hover::after,
+.has-tip:focus-visible::after { content: attr(data-tip); }
+.has-tip:hover::before,
+.has-tip:focus-visible::before { content: ""; }
 .has-tip:hover::after,
 .has-tip:focus-visible::after,
 .has-tip:hover::before,
