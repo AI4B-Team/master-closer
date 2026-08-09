@@ -113,9 +113,14 @@ export function ActivityPanel() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const shown = useMemo(
+    () => (filter === "all" ? events : events.filter((e) => describeEvent(e).kind.startsWith(filter))),
+    [events, filter],
+  );
+
   const groups = useMemo(() => {
     const map = new Map<string, EventRow[]>();
-    for (const e of events) {
+    for (const e of shown) {
       const key = dayLabel(e.created_at);
       const list = map.get(key);
       if (list) list.push(e);
