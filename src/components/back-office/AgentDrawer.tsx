@@ -10,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Save, Trash2 } from "lucide-react";
+import { VoicePicker } from "@/components/back-office/VoicePicker";
 
 type Agent = {
   id: string;
   name: string;
   industry: string | null;
   voice: string | null;
+  voices: string[] | null;
   default_mode: string;
   active: boolean;
   system_prompt: string | null;
@@ -42,7 +44,8 @@ export function AgentDrawer({
         .update({
           name: form.name ?? "",
           industry: form.industry || null,
-          voice: form.voice || null,
+          voice: form.voices?.[0] || form.voice || null,
+          voices: form.voices ?? [],
           default_mode: (form.default_mode ?? "hybrid") as never,
           active: form.active ?? true,
           system_prompt: form.system_prompt || null,
@@ -95,23 +98,16 @@ export function AgentDrawer({
             <Input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Industry</Label>
-              <Input value={form.industry ?? ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
-            </div>
-            <div>
-              <Label>Voice</Label>
-              <Select value={form.voice ?? "aria"} onValueChange={(v) => setForm({ ...form, voice: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="aria">Aria</SelectItem>
-                  <SelectItem value="marcus">Marcus</SelectItem>
-                  <SelectItem value="june">June</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>Industry</Label>
+            <Input value={form.industry ?? ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
           </div>
+
+          <VoicePicker
+            value={form.voices ?? []}
+            onChange={(voices) => setForm({ ...form, voices })}
+          />
+
 
           <div>
             <Label>Default Mode</Label>
