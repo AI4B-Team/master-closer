@@ -72,7 +72,7 @@ export function AgentQuickDrill({
           agentName: name,
           industry: industry ?? null,
           systemPrompt: systemPrompt ?? null,
-          library: await fetchObjectionLibrary(),
+          library: await fetchObjectionLibrary(wsId),
         },
       });
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();

@@ -93,18 +93,22 @@ function PipelinePage() {
     lead_id: "",
   });
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: stages, isLoading: stagesLoading } = useQuery({
-    queryKey: ["pipeline-stages"],
+    queryKey: ["pipeline-stages", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase.from("pipeline_stages")
-        .select("*").order("position", { ascending: true }).order("created_at", { ascending: true });
+        .select("*")
+        .eq("workspace_id", wsId!)
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Stage[];
     },
   });
-
-  const { data: workspace } = useWorkspace();
-  const wsId = workspace?.id ?? null;
 
   const { data: deals, isLoading: dealsLoading } = useQuery({
     queryKey: ["deals", wsId],
