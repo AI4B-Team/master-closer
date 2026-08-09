@@ -114,10 +114,22 @@ export function OnboardingChecklist() {
             <p>{doneCount} of {steps.length} done — finish these to start closing.</p>
           </div>
         </div>
-        <button type="button" className="onb-x" onClick={dismiss} aria-label="Dismiss Checklist">
-          <X size={15} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="onb-cta"
+            disabled={seed.isPending}
+            onClick={() => seed.mutate()}
+          >
+            {seed.isPending ? "Loading…" : "Load Starter Data"}
+            <Sparkles size={13} strokeWidth={2.6} />
+          </button>
+          <button type="button" className="onb-x" onClick={dismiss} aria-label="Dismiss Checklist">
+            <X size={15} />
+          </button>
+        </div>
       </div>
+
 
       <div className="onb-bar"><span style={{ width: `${pct}%` }} /></div>
 
