@@ -16,6 +16,7 @@ import { LeadDrawer } from "@/components/back-office/LeadDrawer";
 import { Plus, Search, Users, Upload, Download, Trash2, ListPlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
+import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
@@ -67,6 +68,7 @@ function parseCsv(raw: string) {
 }
 
 function LeadsPage() {
+  const { t } = usePrefs();
   const qc = useQueryClient();
   const { q: qParam, lead: leadParam } = Route.useSearch();
   const [search, setSearch] = useState(qParam ?? "");
@@ -484,9 +486,9 @@ function LeadsPage() {
                     aria-label="Select all shown leads"
                   />
                 </th>
-                <th className="py-2">Name</th><th className="py-2">Company</th>
-                <th className="py-2">Email</th><th className="py-2">Phone</th>
-                <th className="py-2">Consent</th><th className="py-2">Status</th>
+                <th className="py-2">{t("Name")}</th><th className="py-2">{t("Company")}</th>
+                <th className="py-2">{t("Email")}</th><th className="py-2">{t("Phone")}</th>
+                <th className="py-2">{t("Consent")}</th><th className="py-2">{t("Status")}</th>
               </tr>
             </thead>
             <tbody>
