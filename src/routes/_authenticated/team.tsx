@@ -69,6 +69,14 @@ function ReportsPage() {
     },
   });
 
+  const { data: campaigns } = useQuery({
+    queryKey: ["report_campaigns"],
+    queryFn: async () => {
+      const { data } = await supabase.from("campaigns").select("id, name, mode, status, goal, daily_cap");
+      return data ?? [];
+    },
+  });
+
   const { data: people } = useQuery({
     queryKey: ["report_people"],
     queryFn: async () => {
