@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, CheckCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { eventHref } from "@/lib/activity-labels";
 
 const SEEN_KEY = "mc.notifications.seenAt";
 
@@ -111,14 +112,10 @@ export function NotificationsMenu() {
     setSeenAt(now);
   };
 
-  const routeFor = (type: string) => {
-    if (type.startsWith("agreement")) return "/agreements";
-    if (type.startsWith("call") || type.startsWith("consent")) return "/calls";
-    if (type.startsWith("lead")) return "/leads";
-    if (type.startsWith("deal")) return "/pipeline";
-    if (type.startsWith("campaign")) return "/campaigns";
+  const routeFor = (e: EventRow) => {
+    const type = e.event_type;
     if (type.startsWith("task")) return "/tasks";
-    return "/dashboard";
+    return eventHref(e) ?? "/dashboard";
   };
 
   return (
@@ -162,7 +159,7 @@ export function NotificationsMenu() {
                   className="notif-item"
                   onClick={() => {
                     setOpen(false);
-                    navigate({ to: routeFor(e.event_type) });
+                    navigate({ to: routeFor(e) });
                   }}
                 >
                   <span className="notif-dot" data-new={!seenAt || new Date(e.created_at) > new Date(seenAt)} />
