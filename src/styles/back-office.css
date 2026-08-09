@@ -1083,22 +1083,30 @@
 }
 
 /* ---- Workspace switcher ---- */
-.ws-wrap { position: relative; }
+.side-ws { padding: 12px 12px 0; }
+.side-collapsed .side-ws { padding: 12px 0 0; display: flex; justify-content: center; }
+
+.ws-wrap { position: relative; width: 100%; }
+.side-collapsed .ws-wrap { width: auto; }
+
 .ws-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  height: 34px; padding: 0 10px; border-radius: 10px;
+  width: 100%; height: 38px; padding: 0 10px; border-radius: 10px;
   background: #fff; border: 1px solid var(--bo-border, #e8e8ea);
   font-size: 13px; font-weight: 600; color: #1a1a1a; cursor: pointer;
-  max-width: 220px;
 }
 .ws-btn:hover { background: #fafafa; }
+.ws-btn-collapsed {
+  width: 38px; justify-content: center; padding: 0;
+}
 .ws-dot { width: 8px; height: 8px; border-radius: 999px; flex: 0 0 auto; }
-.ws-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left; }
 .ws-menu {
   position: absolute; top: calc(100% + 8px); left: 0; z-index: 60;
-  min-width: 260px; background: #fff; border: 1px solid var(--bo-border, #e8e8ea);
+  min-width: 280px; background: #fff; border: 1px solid var(--bo-border, #e8e8ea);
   border-radius: 14px; box-shadow: 0 18px 40px rgba(0,0,0,.12); padding: 6px;
 }
+.ws-menu-right { top: 0; left: calc(100% + 8px); }
 .ws-menu-h { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #8a8a8f; padding: 8px 10px 6px; }
 .ws-empty { padding: 10px; font-size: 13px; color: #8a8a8f; }
 .ws-item {
@@ -1111,14 +1119,50 @@
 .ws-item-t { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .ws-item-name { font-size: 13px; font-weight: 600; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ws-item-slug { font-size: 11px; color: #8a8a8f; }
-:root.dark .ws-btn, :root.dark .ws-menu { background: #141416; border-color: #2a2a2e; color: #f2f2f3; }
+
+.ws-item-actions {
+  display: flex; align-items: center; gap: 2px;
+  opacity: 0; transition: opacity 0.12s ease;
+}
+.ws-item:hover .ws-item-actions { opacity: 1; }
+.ws-item-active .ws-item-actions { opacity: 1; }
+.ws-action {
+  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px;
+  border: 0; background: transparent; color: #8a8a8f; cursor: pointer;
+}
+.ws-action:hover { background: #e8e8ea; color: #1a1a1a; }
+.ws-action.edit:hover { color: #2563eb; }
+.ws-action.delete:hover { color: #cc0000; }
+
+.ws-edit, .ws-danger {
+  padding: 8px 10px; border-radius: 10px; background: #fff;
+  border: 1px solid var(--bo-border, #e8e8ea); margin: 2px 0;
+}
+.ws-edit { display: flex; flex-direction: column; gap: 6px; }
+.ws-edit-actions, .ws-danger-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.ws-edit-cancel, .ws-edit-save,
+.ws-danger-cancel, .ws-danger-confirm {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  height: 28px; padding: 0 10px; border-radius: 7px; border: 0; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+}
+.ws-edit-cancel, .ws-danger-cancel { background: #f4f4f7; color: #3a3f4a; }
+.ws-edit-save { background: #cc0000; color: #fff; }
+.ws-edit-save:disabled, .ws-danger-confirm:disabled { opacity: .5; cursor: not-allowed; }
+.ws-danger { background: rgba(204,0,0,.04); border-color: rgba(204,0,0,.2); }
+.ws-danger-h { font-size: 12px; font-weight: 600; color: #cc0000; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.ws-danger-confirm { background: #cc0000; color: #fff; }
+
+:root.dark .ws-btn, :root.dark .ws-menu, :root.dark .ws-edit, :root.dark .ws-danger { background: #141416; border-color: #2a2a2e; color: #f2f2f3; }
 :root.dark .ws-item:hover { background: #1e1e21; }
 :root.dark .ws-item-name { color: #f2f2f3; }
+:root.dark .ws-action:hover { background: #2a2a2e; }
+:root.dark .ws-edit-cancel, :root.dark .ws-danger-cancel { background: #2a2a2e; color: #f2f2f3; }
 
 .ws-sep { height: 1px; background: var(--bo-border, #e8e8ea); margin: 6px 4px; }
 .ws-create { display: flex; gap: 6px; padding: 4px; }
 .ws-input {
-  flex: 1; min-width: 0; height: 32px; padding: 0 10px; font-size: 13px;
+  width: 100%; min-width: 0; height: 32px; padding: 0 10px; font-size: 13px;
   border: 1px solid var(--bo-border, #e8e8ea); border-radius: 9px; background: #fff; color: #1a1a1a;
 }
 .ws-create-btn {

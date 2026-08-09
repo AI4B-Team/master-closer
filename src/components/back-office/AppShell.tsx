@@ -152,6 +152,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         </div>
 
+        <div className="side-ws">
+          <WorkspaceSwitcher collapsed={collapsed} />
+        </div>
+
         <nav className="side-nav">{renderNav(NAV_PRIMARY)}</nav>
 
       </aside>
@@ -170,8 +174,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <GlobalSearch />
 
           <div className="topbar-right">
-            <WorkspaceSwitcher />
-
             <span
               className={
                 "status-chip " +
