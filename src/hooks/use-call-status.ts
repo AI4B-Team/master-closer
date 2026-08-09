@@ -8,9 +8,12 @@ const listeners = new Set<() => void>();
 export function setCallStatus(status: CallStatus) {
   if (current === status) return;
   current = status;
-  // Notify on a microtask so a status change triggered during a render or an
-  // unmount cleanup never updates a subscriber mid-commit.
-  queueMicrotask(() => listeners.forEach((l) => l()));
+  // Notify synchronously: useSyncExternalStore expects the store to be
+  // consistent with its subscribers. Deferring the notification to a
+  // microtask made React re-render subscribers that were no longer (or not
+  // yet) mounted, which logged a false "state update on an unmounted
+  // component" warning. Every caller lives in an effect, never in render.
+  listeners.forEach((l) => l());
 }
 
 function subscribe(onChange: () => void) {

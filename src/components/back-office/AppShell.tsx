@@ -360,7 +360,9 @@ export function PageHeader({
         <h1 className="font-display page-title">{t(title)}</h1>
         {description && <p className="page-sub">{t(description)}</p>}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* Wrap so header actions (Export / Add / New …) never run off the right
+          edge of a narrow viewport. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", maxWidth: "100%", minWidth: 0 }}>
         {tabs && <TabStrip tabs={tabs} />}
         {action}
       </div>

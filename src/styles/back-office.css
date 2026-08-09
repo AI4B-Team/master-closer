@@ -882,6 +882,9 @@
 @media (max-width: 720px) {
   .page-head { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 18px; }
   .page-head > div:last-child { flex-wrap: wrap; width: 100%; }
+  /* Action clusters (Export / Add Column / New …) wrap too, otherwise the last
+     button is clipped by the viewport edge on phones. */
+  .page-head > div:last-child > div:not(.tabs) { flex-wrap: wrap; }
   .page-title { font-size: 1.45rem; }
   .tabs { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }

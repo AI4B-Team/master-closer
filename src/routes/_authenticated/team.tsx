@@ -502,24 +502,40 @@ function ReportsPage() {
               <p className="text-sm text-[#6B6B76]">Calls placed versus connects over the selected window.</p>
             </div>
           </div>
-          <div className="mt-6 flex items-end gap-2 h-40">
-            {trend.map((t, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
-                <div className="w-full flex items-end justify-center gap-0.5 h-full">
-                  <div
-                    className="w-1/2 rounded-t bg-[#F7CFC7]"
-                    style={{ height: `${(t.calls / trendMax) * 100}%` }}
-                    title={`${t.calls} calls`}
-                  />
-                  <div
-                    className="w-1/2 rounded-t bg-[#CC0000]"
-                    style={{ height: `${(t.connects / trendMax) * 100}%` }}
-                    title={`${t.connects} connects`}
-                  />
+          {/* 30 bars cannot share a 390px card: give each bar a floor width and
+              let the row scroll instead of collapsing past the card edge. */}
+          <div className="mt-6 overflow-x-auto">
+            <div className="flex items-end gap-1 sm:gap-2 h-40 min-w-full">
+              {trend.map((t, i) => (
+                <div
+                  key={i}
+                  className="flex-1 min-w-[14px] flex flex-col items-center justify-end gap-1 h-full"
+                >
+                  <div className="w-full flex items-end justify-center gap-0.5 h-full">
+                    <div
+                      className="w-1/2 rounded-t bg-[#F7CFC7]"
+                      style={{ height: `${(t.calls / trendMax) * 100}%` }}
+                      title={`${t.calls} calls`}
+                    />
+                    <div
+                      className="w-1/2 rounded-t bg-[#CC0000]"
+                      style={{ height: `${(t.connects / trendMax) * 100}%` }}
+                      title={`${t.connects} connects`}
+                    />
+                  </div>
+                  {/* A 19px column truncates every date to "J…" on phones, so
+                      below sm only every other tick renders and it is allowed
+                      to overflow into the gap left by its hidden neighbour. */}
+                  <span
+                    className={`text-[10px] text-[#9A9AA5] w-full text-center whitespace-nowrap sm:truncate ${
+                      i % 2 === 1 ? "max-sm:invisible" : ""
+                    }`}
+                  >
+                    {t.label}
+                  </span>
                 </div>
-                <span className="text-[10px] text-[#9A9AA5] truncate w-full text-center">{t.label}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <div className="mt-3 flex items-center gap-4 text-xs text-[#6B6B76]">
             <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#F7CFC7] inline-block" /> Calls</span>
