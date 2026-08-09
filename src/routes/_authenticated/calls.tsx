@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/calls")({
     campaign: typeof s.campaign === "string" ? s.campaign : undefined,
     agent: typeof s.agent === "string" ? s.agent : undefined,
     call: typeof s.call === "string" ? s.call : undefined,
+    mode: typeof s.mode === "string" ? s.mode : undefined,
   }),
   head: () => ({
     meta: [
