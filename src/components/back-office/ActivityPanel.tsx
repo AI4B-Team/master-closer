@@ -32,9 +32,19 @@ function dayLabel(iso: string) {
  */
 const SEEN_KEY = "mc:activity:seen";
 
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "call", label: "Calls" },
+  { key: "lead", label: "Leads" },
+  { key: "agreement", label: "Agreements" },
+  { key: "deal", label: "Deals" },
+  { key: "campaign", label: "Campaigns" },
+] as const;
+
 export function ActivityPanel() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState<string>("all");
   const [seen, setSeen] = useState<string>("");
 
   useEffect(() => {
