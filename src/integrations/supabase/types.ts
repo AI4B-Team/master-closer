@@ -26,6 +26,7 @@ export type Database = {
           system_prompt: string | null
           transfer_to: string | null
           voice: string | null
+          voices: string[]
         }
         Insert: {
           active?: boolean
@@ -38,6 +39,7 @@ export type Database = {
           system_prompt?: string | null
           transfer_to?: string | null
           voice?: string | null
+          voices?: string[]
         }
         Update: {
           active?: boolean
@@ -50,6 +52,7 @@ export type Database = {
           system_prompt?: string | null
           transfer_to?: string | null
           voice?: string | null
+          voices?: string[]
         }
         Relationships: [
           {
@@ -503,6 +506,41 @@ export type Database = {
           },
           {
             foreignKeyName: "consent_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_voices: {
+        Row: {
+          base_voice: string
+          created_at: string
+          id: string
+          name: string
+          org_id: string
+          style: string | null
+        }
+        Insert: {
+          base_voice?: string
+          created_at?: string
+          id?: string
+          name: string
+          org_id: string
+          style?: string | null
+        }
+        Update: {
+          base_voice?: string
+          created_at?: string
+          id?: string
+          name?: string
+          org_id?: string
+          style?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_voices_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
