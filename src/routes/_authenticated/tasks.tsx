@@ -72,7 +72,7 @@ function TasksPage() {
   const [q, setQ] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-  const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "" });
+  const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
 
   const { data: me } = useQuery({
     queryKey: ["tasks-me"],
@@ -101,6 +101,21 @@ function TasksPage() {
     },
   });
 
+  const { data: team } = useQuery({
+    queryKey: ["tasks-team-options"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email").order("full_name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const teamName = (id: string | null) => {
+    if (!id) return "Unassigned";
+    const m = (team ?? []).find((p: any) => p.id === id);
+    return m?.full_name || m?.email || "Teammate";
+  };
+
   const create = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
@@ -112,17 +127,31 @@ function TasksPage() {
         due_at: form.due ? new Date(form.due).toISOString() : null,
         priority: form.priority,
         lead_id: form.lead_id || null,
+        assignee_id: form.assignee_id || me || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Follow-up added.");
       setOpen(false);
-      setForm({ title: "", notes: "", due: "", priority: "normal", lead_id: "" });
+      setForm({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
       qc.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const assign = useMutation({
+    mutationFn: async ({ id, assignee }: { id: string; assignee: string | null }) => {
+      const { error } = await supabase.from("tasks").update({ assignee_id: assignee }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Follow-up reassigned.");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const toggle = useMutation({
     mutationFn: async (t: TaskRow) => {
@@ -278,6 +307,18 @@ function TasksPage() {
                   </Select>
                 </div>
                 <div>
+                  <Label>Assigned To</Label>
+                  <Select value={form.assignee_id} onValueChange={(v) => setForm({ ...form, assignee_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Me" /></SelectTrigger>
+                    <SelectContent>
+                      {(team ?? []).map((p: any) => (
+                        <SelectItem key={p.id} value={p.id}>{p.full_name || p.email}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label>Notes</Label>
                   <Textarea
                     rows={3}
@@ -415,8 +456,10 @@ function TasksPage() {
                     <p className={"text-sm " + (done ? "line-through text-[#9A9AA5]" : "font-medium")}>{t.title}</p>
                     <p className="text-xs text-[#6B6B76]">
                       {t.leads ? t.leads.name + (t.leads.company ? " · " + t.leads.company : "") : "Unlinked"}
+                      {" · " + teamName(t.assignee_id)}
                       {t.notes ? " — " + t.notes : ""}
                     </p>
+
                   </div>
                   <span className={"ml-auto shrink-0 text-sm " + (done ? "text-[#9A9AA5]" : TONE_STYLE[d.tone])}>
                     {done ? "Done" : d.text}
@@ -446,8 +489,20 @@ function TasksPage() {
                         Clear Due Date
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Assign</DropdownMenuLabel>
+                      {(team ?? []).map((p: any) => (
+                        <DropdownMenuItem key={p.id} onClick={() => assign.mutate({ id: t.id, assignee: p.id })}>
+                          {p.full_name || p.email}
+                          {t.assignee_id === p.id ? " ·" : ""}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuItem onClick={() => assign.mutate({ id: t.id, assignee: null })}>
+                        Unassign
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuLabel>Priority</DropdownMenuLabel>
                       {PRIORITIES.map((p) => (
+
                         <DropdownMenuItem
                           key={p}
                           className="capitalize"
