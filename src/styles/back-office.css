@@ -778,3 +778,29 @@
 @media (max-width: 640px) { .mc-empty-panel { padding: 38px 16px; } }
 
 .mc-btn-link { display: inline-flex; }
+
+/* ---------- Loading skeletons ---------- */
+.mc-skel { padding: 14px 16px; display: grid; gap: 14px; }
+.mc-skel-row { display: flex; gap: 16px; align-items: center; }
+.mc-skel-bar,
+.mc-skel-card {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #F1F1F4 0%, #E7E7EC 40%, #F1F1F4 80%);
+  background-size: 240% 100%;
+  animation: mc-shimmer 1.4s ease-in-out infinite;
+}
+.mc-skel-cards {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.mc-skel-card { border-radius: 16px; }
+@keyframes mc-shimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mc-skel-bar, .mc-skel-card { animation: none; }
+}
