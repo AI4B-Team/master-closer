@@ -14,6 +14,11 @@ import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { Activity, Download, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/activity")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    type: typeof search.type === "string" && search.type ? search.type : undefined,
+    q: typeof search.q === "string" && search.q ? search.q : undefined,
+    range: typeof search.range === "string" && search.range ? search.range : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Activity Log — Master Closer" },
@@ -35,10 +40,12 @@ const RANGES = [
 ];
 
 function ActivityPage() {
-  const [search, setSearch] = useState("");
-  const [type, setType] = useState<string>("all");
-  const [range, setRange] = useState<string>("30");
+  const sp = Route.useSearch();
+  const [search, setSearch] = useState(sp.q ?? "");
+  const [type, setType] = useState<string>(sp.type ?? "all");
+  const [range, setRange] = useState<string>(sp.range ?? "30");
   const [limit, setLimit] = useState(200);
+
 
   const { data: events, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["org-events", range, limit],
