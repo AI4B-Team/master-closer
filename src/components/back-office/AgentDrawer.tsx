@@ -257,6 +257,15 @@ export function AgentDrawer({
             </Button>
             <Button
               type="button"
+              variant="outline"
+              className="rounded-xl border-[#E7E7EC]"
+              onClick={() => duplicate.mutate()}
+              disabled={duplicate.isPending || !form.name}
+            >
+              <Copy className="h-4 w-4 mr-1" /> Duplicate
+            </Button>
+            <Button
+              type="button"
               variant="ghost"
               className="text-[#CC0000] hover:text-[#A30000]"
               onClick={() => remove.mutate()}
