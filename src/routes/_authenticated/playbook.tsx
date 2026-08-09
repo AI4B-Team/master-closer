@@ -210,7 +210,12 @@ function Objections() {
             <p className="text-sm text-[#6B6B76]">Trigger phrase in, exact response out.</p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
+          <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
+
           <DialogTrigger asChild>
             <Button size="sm" variant="outline" className="rounded-xl">
               <Plus className="h-4 w-4 mr-1" /> New Objection
