@@ -78,7 +78,10 @@ function SignPage() {
     ctx.strokeStyle = "#111318";
   }, [mode]);
 
+  const signedRef = useRef<{ data: string; at: string } | null>(null);
+
   if (!agreement) return <Shell><Missing /></Shell>;
+
 
   const point = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
