@@ -10,10 +10,13 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Kpi, KPI_TINTS, Panel, SkeletonRows } from "@/components/back-office/ui";
 import { PRIORITIES, dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
-import { ListChecks, Plus, Trash2, CalendarClock, CheckCircle2, AlarmClock } from "lucide-react";
+import { ListChecks, Plus, Trash2, CalendarClock, CheckCircle2, AlarmClock, MoreVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
