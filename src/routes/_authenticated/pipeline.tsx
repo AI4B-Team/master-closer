@@ -17,7 +17,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import {
   Plus, Trash2, GripVertical, KanbanSquare, MoreHorizontal, Pencil,
-  ArrowLeft, ArrowRight, Columns3,
+  ArrowLeft, ArrowRight, Columns3, Clock,
 } from "lucide-react";
 import { DealDrawer, type DealRow } from "@/components/back-office/DealDrawer";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,14 @@ type Stage = {
   label: string;
   position: number;
   kind: string;
+  wip_limit: number | null;
+  stale_days: number | null;
 };
+
+function daysSince(iso?: string | null) {
+  if (!iso) return 0;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
 
 const LEGACY_STAGES = ["new", "qualifying", "proposal", "negotiation", "won", "lost"] as const;
 
@@ -66,7 +73,7 @@ function PipelinePage() {
   const [colOpen, setColOpen] = useState(false);
   const [selected, setSelected] = useState<DealRow | null>(null);
   const [editing, setEditing] = useState<Stage | null>(null);
-  const [colForm, setColForm] = useState({ label: "", kind: "open" });
+  const [colForm, setColForm] = useState({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
   const [form, setForm] = useState({
     title: "",
     value: "0",
@@ -184,9 +191,13 @@ function PipelinePage() {
     mutationFn: async () => {
       const label = colForm.label.trim();
       if (!label) throw new Error("Give the column a name.");
+      const limitRaw = Number(colForm.wip_limit);
+      const wip_limit = colForm.wip_limit.trim() && limitRaw > 0 ? Math.round(limitRaw) : null;
+      const staleRaw = Number(colForm.stale_days);
+      const stale_days = Number.isFinite(staleRaw) && staleRaw >= 0 ? Math.round(staleRaw) : 14;
       if (editing) {
         const { error } = await supabase.from("pipeline_stages")
-          .update({ label, kind: colForm.kind }).eq("id", editing.id);
+          .update({ label, kind: colForm.kind, wip_limit, stale_days }).eq("id", editing.id);
         if (error) throw error;
         return;
       }
@@ -194,14 +205,14 @@ function PipelinePage() {
       if (!prof) throw new Error("No workspace found.");
       const nextPos = (columns.at(-1)?.position ?? 0) + 1;
       const { error } = await supabase.from("pipeline_stages")
-        .insert({ org_id: prof.org_id, label, kind: colForm.kind, position: nextPos });
+        .insert({ org_id: prof.org_id, label, kind: colForm.kind, position: nextPos, wip_limit, stale_days });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(editing ? "Column updated." : "Column added.");
       setColOpen(false);
       setEditing(null);
-      setColForm({ label: "", kind: "open" });
+      setColForm({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
       qc.invalidateQueries({ queryKey: ["pipeline-stages"] });
       qc.invalidateQueries({ queryKey: ["deals"] });
     },
@@ -278,13 +289,18 @@ function PipelinePage() {
 
   function openNewColumn() {
     setEditing(null);
-    setColForm({ label: "", kind: "open" });
+    setColForm({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
     setColOpen(true);
   }
 
   function openEditColumn(s: Stage) {
     setEditing(s);
-    setColForm({ label: s.label, kind: s.kind });
+    setColForm({
+      label: s.label,
+      kind: s.kind,
+      wip_limit: s.wip_limit ? String(s.wip_limit) : "",
+      stale_days: String(s.stale_days ?? 14),
+    });
     setColOpen(true);
   }
 
@@ -388,6 +404,20 @@ function PipelinePage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Card Limit</Label>
+                <Input type="number" min={0} placeholder="No Limit" value={colForm.wip_limit}
+                  onChange={(e) => setColForm({ ...colForm, wip_limit: e.target.value })} />
+                <p className="text-[11px] text-[#6B6B76] mt-1">Warn when this column holds more cards than this.</p>
+              </div>
+              <div>
+                <Label>Stalled After (Days)</Label>
+                <Input type="number" min={0} value={colForm.stale_days}
+                  onChange={(e) => setColForm({ ...colForm, stale_days: e.target.value })} />
+                <p className="text-[11px] text-[#6B6B76] mt-1">Flag a deal that sits here without an update. 0 turns it off.</p>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" onClick={() => saveColumn.mutate()}
@@ -447,6 +477,12 @@ function PipelinePage() {
           const items = itemsIn(s.id);
           const total = items.reduce((sum, d) => sum + Number(d.value ?? 0), 0);
           const isOver = overStage === s.id;
+          const limit = s.wip_limit ?? 0;
+          const overLimit = limit > 0 && items.length > limit;
+          const staleAfter = s.kind === "open" ? (s.stale_days ?? 14) : 0;
+          const stalledCount = staleAfter > 0
+            ? items.filter((d) => daysSince(d.updated_at) > staleAfter).length
+            : 0;
           return (
             <div
               key={s.id}
@@ -461,7 +497,9 @@ function PipelinePage() {
               <div className="flex items-center justify-between mb-1 px-1">
                 <span className="text-xs font-semibold uppercase tracking-wider truncate">{s.label}</span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-xs text-[#6B6B76]">{items.length}</span>
+                  <span className={`text-xs font-mono ${overLimit ? "text-[#CC0000] font-semibold" : "text-[#6B6B76]"}`}>
+                    {limit > 0 ? `${items.length}/${limit}` : items.length}
+                  </span>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -499,8 +537,18 @@ function PipelinePage() {
                   </DropdownMenu>
                 </div>
               </div>
-              <div className="text-[10px] text-[#6B6B76] px-1 mb-2 font-mono">
-                {money(total)}
+              <div className="flex items-center gap-1.5 px-1 mb-2">
+                <span className="text-[10px] text-[#6B6B76] font-mono">{money(total)}</span>
+                {overLimit ? (
+                  <span className="text-[10px] font-medium text-[#CC0000] bg-[#CC0000]/8 rounded px-1.5 py-0.5">
+                    Over Limit
+                  </span>
+                ) : null}
+                {stalledCount ? (
+                  <span className="text-[10px] font-medium text-[#B4690E] bg-[#B4690E]/10 rounded px-1.5 py-0.5">
+                    {stalledCount} Stalled
+                  </span>
+                ) : null}
               </div>
               <div
                 className={`space-y-2 min-h-[140px] rounded-xl p-1 transition ${
@@ -569,11 +617,18 @@ function PipelinePage() {
                         style={{ width: `${Math.max(0, Math.min(100, Number(d.close_probability ?? 0)))}%` }}
                       />
                     </div>
-                    {d.expected_close_at ? (
-                      <div className="text-[10px] text-[#6B6B76] font-mono mt-1.5">
-                        Close {new Date(d.expected_close_at).toLocaleDateString()}
-                      </div>
-                    ) : null}
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      {d.expected_close_at ? (
+                        <span className="text-[10px] text-[#6B6B76] font-mono">
+                          Close {new Date(d.expected_close_at).toLocaleDateString()}
+                        </span>
+                      ) : null}
+                      {staleAfter > 0 && daysSince(d.updated_at) > staleAfter ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#B4690E] bg-[#B4690E]/10 rounded px-1.5 py-0.5">
+                          <Clock className="h-2.5 w-2.5" /> Stalled {daysSince(d.updated_at)}d
+                        </span>
+                      ) : null}
+                    </div>
                   </Card>
                     {isOver && overIndex === idx + 1 && idx === items.length - 1 && dragId && dragId !== d.id ? (
                       <div className="h-0.5 rounded-full bg-[#CC0000] mt-2" />

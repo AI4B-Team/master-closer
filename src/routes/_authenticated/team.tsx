@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
-import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity } from "lucide-react";
+import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,7 +47,16 @@ function ReportsPage() {
   const { data: deals } = useQuery({
     queryKey: ["report_deals"],
     queryFn: async () => {
-      const { data } = await supabase.from("deals").select("id, value, stage, owner_id");
+      const { data } = await supabase.from("deals").select("id, value, stage, stage_id, owner_id, updated_at");
+      return data ?? [];
+    },
+  });
+
+  const { data: stages } = useQuery({
+    queryKey: ["report_stages"],
+    queryFn: async () => {
+      const { data } = await supabase.from("pipeline_stages")
+        .select("id, label, kind, position, stale_days").order("position", { ascending: true });
       return data ?? [];
     },
   });
@@ -159,6 +168,39 @@ function ReportsPage() {
       .map(([key, count]) => ({ key, count, share: Math.round((count / total) * 100) }))
       .sort((a, b) => b.count - a.count);
   }, [calls]);
+
+  const funnel = useMemo(() => {
+    const cols = (stages ?? []).filter((s) => s.kind !== "lost");
+    const list = deals ?? [];
+    const indexOf = new Map(cols.map((s, i) => [s.id, i]));
+    const rows = cols.map((s, i) => {
+      const here = list.filter((d) => d.stage_id === s.id);
+      const reached = list.filter((d) => {
+        const idx = indexOf.get(d.stage_id ?? "");
+        return idx !== undefined && idx >= i;
+      }).length;
+      const stale = (s.stale_days ?? 0) > 0 && s.kind === "open"
+        ? here.filter((d) => (Date.now() - new Date(d.updated_at).getTime()) / 86400000 > (s.stale_days ?? 0)).length
+        : 0;
+      return {
+        id: s.id,
+        label: s.label,
+        kind: s.kind,
+        here: here.length,
+        value: here.reduce((sum, d) => sum + Number(d.value ?? 0), 0),
+        reached,
+        stale,
+      };
+    });
+    const top = rows[0]?.reached || 1;
+    return rows.map((r, i) => ({
+      ...r,
+      share: Math.round((r.reached / top) * 100),
+      conversion: i === 0 ? 100 : rows[i - 1].reached ? Math.round((r.reached / rows[i - 1].reached) * 100) : 0,
+    }));
+  }, [stages, deals]);
+
+
 
   const exportCsv = () => {
     const header = ["Rep", "Calls", "Connects", "Connect Rate", "Talk Minutes", "Closed Revenue"];
@@ -277,6 +319,42 @@ function ReportsPage() {
           )}
         </Card>
       </div>
+
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <h3 className="font-semibold">Stage Conversion</h3>
+        <p className="text-sm text-[#6B6B76]">How deals move through the pipeline, and where they stall.</p>
+        {funnel.length === 0 ? (
+          <EmptyState icon={Filter} title="No Pipeline Stages Yet" hint="Add pipeline columns to see conversion rates." />
+        ) : (
+          <div className="mt-4 space-y-3">
+            {funnel.map((f) => (
+              <div key={f.id}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium flex items-center gap-2">
+                    {titleCase(f.label)}
+                    {f.stale ? (
+                      <span className="text-[10px] font-medium text-[#B4690E] bg-[#B4690E]/10 rounded px-1.5 py-0.5">
+                        {f.stale} Stalled
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="font-num text-[#6B6B76]">
+                    {f.here} Here · {money(f.value)} · {f.conversion}% Conversion
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 rounded-full bg-[#F0F1F4]">
+                  <div
+                    className={`h-2 rounded-full ${f.kind === "won" ? "bg-[#1F9D55]" : "bg-[#CC0000]"}`}
+                    style={{ width: `${Math.max(2, f.share)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
         <h3 className="font-semibold">Mode Split</h3>
