@@ -3,9 +3,11 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, PhoneCall, Megaphone, Bot, BarChart3,
   CreditCard, Settings, Crosshair, ChevronsLeft, ChevronsRight,
-  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun, Menu, X,
+  ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun, Moon, Menu, X,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
+import { usePrefs, LANGUAGES } from "@/hooks/use-prefs";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@/components/back-office/ui";
