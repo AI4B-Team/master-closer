@@ -34,10 +34,8 @@ function applyTheme(theme: Theme) {
   document.documentElement.dataset["mcTheme"] = theme;
 }
 
-let hydrated = false;
-function hydrate() {
-  if (hydrated) return;
-  hydrated = true;
+function readStored(): State {
+  if (typeof window === "undefined") return { theme: "light", lang: "en" };
   const storedTheme = localStorage.getItem(THEME_KEY);
   const theme: Theme =
     storedTheme === "dark" || storedTheme === "light"
@@ -48,19 +46,29 @@ function hydrate() {
   const storedLang = localStorage.getItem(LANG_KEY) as LangCode | null;
   const lang: LangCode =
     storedLang && LANGUAGES.some((l) => l.code === storedLang) ? storedLang : "en";
+  return { theme, lang };
+}
 
-  state = { theme, lang };
-  applyTheme(theme);
-  document.documentElement.lang = lang;
-  emit();
+/*
+ * Stored prefs are read once at module load on the client, before any component
+ * renders. Notifying subscribers from an effect instead would fire mid-commit,
+ * while sibling components are rendered but not yet mounted, which React
+ * reports as "state update on a component that hasn't mounted yet".
+ * getServerSnapshot keeps SSR/hydration on the defaults, so React reconciles
+ * to the stored values right after mount without a mismatch.
+ */
+if (typeof window !== "undefined") {
+  state = readStored();
 }
 
 export function usePrefs() {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    hydrate();
-  }, []);
+    applyTheme(snap.theme);
+    document.documentElement.lang = snap.lang;
+  }, [snap.theme, snap.lang]);
+
 
   const setTheme = useCallback((next: Theme) => {
     state = { ...state, theme: next };
