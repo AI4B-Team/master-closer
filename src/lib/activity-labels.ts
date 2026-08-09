@@ -1,5 +1,7 @@
 import {
   Activity,
+  BarChart3,
+
   DollarSign,
   FileSignature,
   Megaphone,
@@ -63,8 +65,11 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: ShieldOff, label: "Flagged Do Not Call", detail: join(p.phone ?? p.name, p.reason) };
     case "campaign.launched":
       return { kind, icon: Megaphone, label: "Campaign Launched", detail: join(p.name, p.mode) };
+    case "report.digest":
+      return { kind, icon: BarChart3, label: p.name ? `Digest · ${p.name}` : "Report Digest", detail: String(p.message ?? "") };
     case "call.completed":
       return { kind, icon: PhoneCall, label: "Call Completed", detail: join(p.lead_name, p.disposition) };
+
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
   }
@@ -83,7 +88,9 @@ export function eventHref(e: EventRow): string | null {
   if (kind.startsWith("leads.")) return "/leads";
   if (kind === "lead.flagged_dnc") return "/lists";
   if (kind.startsWith("lead.")) return p.lead_id ? `/leads?lead=${p.lead_id}` : "/leads";
+  if (kind === "report.digest") return "/team";
   if (kind.startsWith("campaign.")) return "/campaigns";
+
   if (kind.startsWith("agent.")) return "/ai-closers";
   if (kind.startsWith("consent.") || kind.startsWith("disclosure.")) return p.call_id ? `/calls?call=${p.call_id}` : "/calls";
   if (kind.startsWith("task.")) return "/tasks";

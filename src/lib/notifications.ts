@@ -81,10 +81,13 @@ export type NotifyItem = {
 
 function detailOf(payload: unknown) {
   const p = (payload ?? {}) as Record<string, any>;
+  // Digests carry the numbers in `message`; a bare schedule name says nothing.
+  if (p.kind === "report.digest" && p.message) return p.message;
   return (
     p.name || p.lead_name || p.title || p.signer_name || p.phone || p.outcome || p.message || "Workspace activity"
   );
 }
+
 
 /** Relative time, e.g. "4m ago" or "in 2h" for things that are not due yet. */
 export function ago(iso: string) {
