@@ -822,6 +822,18 @@
   .content { padding: 18px 14px; }
 }
 
+/* Page headers stack on small screens so titles, tabs and actions stay reachable. */
+@media (max-width: 720px) {
+  .page-head { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 18px; }
+  .page-head > div:last-child { flex-wrap: wrap; width: 100%; }
+  .page-title { font-size: 1.45rem; }
+  .tabs { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; flex: none; }
+}
+
+
+
 .side-collapsed .nav-label, .side-collapsed .side-word { display: none; }
 @media (max-width: 860px) {
   .side-collapsed .nav-label, .side-collapsed .side-word { display: inline; }
