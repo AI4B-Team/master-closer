@@ -211,6 +211,29 @@ function CampaignsPage() {
     return true;
   });
 
+  const exportCsv = () => {
+    const csv = toCsv(
+      ["Campaign", "Goal", "Mode", "Closer", "List", "Contacts", "Dialed", "Connects", "Status", "Created"],
+      visible.map((c: any) => {
+        const s = statsFor(c.id);
+        return [
+          c.name,
+          c.goal ?? "",
+          MODE_LABEL[c.mode] ?? c.mode,
+          c.agents?.name ?? "",
+          c.call_lists?.name ?? "",
+          c.call_lists?.list_contacts?.length ?? 0,
+          s.dialed,
+          s.connects,
+          c.status,
+          c.created_at ? new Date(c.created_at).toLocaleDateString() : "",
+        ];
+      }),
+    );
+    downloadCsv(stampedName("campaigns"), csv);
+  };
+
+
   return (
     <div>
       <PageHeader
