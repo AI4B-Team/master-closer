@@ -104,10 +104,11 @@ export function Kpi({
   );
 
   const cls = "kpi kpi-link" + (active ? " kpi-active" : "");
+  const tintStyle = { "--kpi-tint": tint } as React.CSSProperties;
 
   if (to) {
     return (
-      <Link to={to as any} search={search as any} className={cls} style={{ background: tint }}>
+      <Link to={to as any} search={search as any} className={cls} style={tintStyle}>
         {body}
       </Link>
     );
@@ -115,17 +116,18 @@ export function Kpi({
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={cls + " text-left"} style={{ background: tint }}>
+      <button type="button" onClick={onClick} className={cls + " text-left"} style={tintStyle}>
         {body}
       </button>
     );
   }
 
   return (
-    <div className="kpi" style={{ background: tint }}>
+    <div className="kpi" style={tintStyle}>
       {body}
     </div>
   );
+
 }
 
 
