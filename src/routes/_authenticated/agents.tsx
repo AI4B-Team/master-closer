@@ -133,7 +133,7 @@ function AgentsPage() {
         }
       />
 
-      <div className="kpi-row">
+      <div className="kpis">
         <Kpi icon={Bot} label="Agents Enabled" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} {...KPI_TINTS.blue} />
         <Kpi icon={Inbox} label="Proposals Waiting" value={String(pendingCount)} {...KPI_TINTS.lavender} />
         <Kpi icon={Activity} label="Labeled Conversations" value={String(reportQ.data?.total ?? 0)} {...KPI_TINTS.mint} />
