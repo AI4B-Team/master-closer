@@ -228,7 +228,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                   <div className="pm-foot">
                     <span>
-                      <a href="#">Terms</a> &nbsp;|&nbsp; <a href="#">Privacy</a>
+                      <Link to="/legal/terms" onClick={() => setProfileOpen(false)}>Terms</Link>
+                      &nbsp;|&nbsp;
+                      <Link to="/legal/privacy" onClick={() => setProfileOpen(false)}>Privacy</Link>
                     </span>
                     <span className="pm-social">
                       <MessageCircle size={16} />
