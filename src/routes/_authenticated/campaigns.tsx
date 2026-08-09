@@ -13,7 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonRows, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
-import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users } from "lucide-react";
+import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
