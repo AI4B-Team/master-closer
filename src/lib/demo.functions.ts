@@ -7,7 +7,15 @@ import { MODE_META } from "./demo.server";
 
 export const closeObjection = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
-    z.object({ prospect: z.string(), mode: z.string() }).parse(data),
+    z
+      .object({
+        prospect: z.string(),
+        mode: z.string(),
+        agentName: z.string().max(120).nullish(),
+        industry: z.string().max(120).nullish(),
+        systemPrompt: z.string().max(4000).nullish(),
+      })
+      .parse(data),
   )
 
   .handler(async ({ data }) => {
@@ -16,7 +24,9 @@ export const closeObjection = createServerFn({ method: "POST" })
 
     const m = MODE_META[data.mode] ?? MODE_META.copilot;
     const prompt =
-      `You are Master Closer, a real-time sales AI. ${m.persona}\n\n` +
+      `You are ${data.agentName || "Master Closer"}, a real-time sales AI. ${m.persona}\n\n` +
+      (data.industry ? `You sell in the ${data.industry} industry.\n` : "") +
+      (data.systemPrompt ? `Follow this operating brief:\n"""\n${data.systemPrompt}\n"""\n\n` : "") +
       `The prospect just said: "${data.prospect}"\n\n` +
       `Respond with ONLY a JSON object (no markdown, no backticks, no commentary) with exactly these keys:\n` +
       `"objection": a 2-4 word label for what's really going on,\n` +
