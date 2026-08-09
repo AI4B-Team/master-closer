@@ -400,8 +400,21 @@ function CampaignsPage() {
                             <Play className="h-3.5 w-3.5 mr-1" /> Launch
                           </Button>
                         )}
+                        <Button size="sm" variant="ghost" className="rounded-xl" onClick={() => startEdit(c)}>
+                          <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                        </Button>
                         <Button size="sm" variant="ghost" className="rounded-xl" asChild>
                           <Link to="/dialer">Dial</Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-xl text-[#CC0000]"
+                          onClick={() => {
+                            if (confirm(`Delete campaign "${c.name}"?`)) remove.mutate(c.id);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </td>
