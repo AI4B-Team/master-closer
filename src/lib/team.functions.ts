@@ -181,3 +181,49 @@ export const removeMember = createServerFn({ method: "POST" })
 
     return { userId: data.userId };
   });
+
+const WsRoleSchema = z.enum(["owner", "admin", "member"]);
+
+/** Changes a teammate's access level inside the caller's active workspace. */
+export const setWorkspaceRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ userId: z.string().uuid(), role: WsRoleSchema }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { assertWorkspaceAdmin } = await import("./team.server");
+    const { wsId, wsRole } = await assertWorkspaceAdmin(context.supabase, context.userId);
+    if (data.role === "owner" && wsRole !== "owner") {
+      throw new Error("Only the workspace owner can hand over ownership.");
+    }
+    if (data.userId === context.userId) throw new Error("You cannot change your own access.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: membership } = await supabaseAdmin
+      .from("workspace_members")
+      .select("id, role")
+      .eq("workspace_id", wsId)
+      .eq("user_id", data.userId)
+      .maybeSingle();
+    if (!membership) throw new Error("That member is not in this workspace.");
+    if (membership.role === "owner") throw new Error("The workspace owner's access cannot be changed.");
+
+    const { error } = await supabaseAdmin
+      .from("workspace_members")
+      .update({ role: data.role })
+      .eq("id", membership.id);
+    if (error) throw new Error(error.message);
+
+    // Ownership transfer moves the workspace owner_id too.
+    if (data.role === "owner") {
+      await supabaseAdmin.from("workspaces").update({ owner_id: data.userId }).eq("id", wsId);
+      await supabaseAdmin
+        .from("workspace_members")
+        .update({ role: "admin" })
+        .eq("workspace_id", wsId)
+        .eq("user_id", context.userId);
+    }
+
+    return { userId: data.userId, role: data.role };
+  });
