@@ -26,6 +26,8 @@ import {
   STATUS_TONE, type AgreementStatus,
 } from "@/lib/agreements";
 import { emailSigningLink, printSignedCopy } from "@/lib/agreement-print";
+import { logActivity } from "@/lib/activity";
+
 
 export const Route = createFileRoute("/_authenticated/agreements")({
   head: () => ({
@@ -652,8 +654,16 @@ function ComposeDialog({
         event_type: send ? "sent" : "created",
         meta: { to: signerEmail },
       });
+      if (send) {
+        void logActivity("agreement.sent", {
+          agreement_id: data.id,
+          signer_email: signerEmail,
+          amount: Number(amount || 0),
+        });
+      }
       return data;
     },
+
     onSuccess: async (data, send) => {
       if (send) {
         await navigator.clipboard.writeText(signingUrl(data.token)).catch(() => {});
@@ -821,7 +831,13 @@ function AgreementDrawer({
       event_type: "sent",
       meta: { to: agreement.signer_email },
     });
+    void logActivity("agreement.sent", {
+      agreement_id: agreement.id,
+      signer_email: agreement.signer_email,
+      amount: Number(agreement.amount ?? 0),
+    });
     await navigator.clipboard.writeText(link).catch(() => {});
+
     toast.success("Sent. Signing link copied.");
     onChange();
     onClose();

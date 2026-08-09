@@ -22,6 +22,8 @@ import {
 import { DealDrawer, type DealRow } from "@/components/back-office/DealDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
+
 
 export const Route = createFileRoute("/_authenticated/pipeline")({
   head: () => ({
@@ -193,7 +195,17 @@ function PipelinePage() {
         const { error } = await supabase.from("deals").update(payload).eq("id", ordered[i]);
         if (error) throw error;
       }
+      const moved = deals?.find((d: any) => d.id === id);
+      if (stage && legacyStage(stage) === "won") {
+        void logActivity("deal.won", {
+          deal_id: id,
+          title: moved?.title ?? null,
+          value: Number(moved?.value ?? 0),
+          stage: stage.label,
+        });
+      }
     },
+
     onSuccess: () => qc.invalidateQueries({ queryKey: ["deals"] }),
     onError: (e: any) => toast.error(e.message),
   });
