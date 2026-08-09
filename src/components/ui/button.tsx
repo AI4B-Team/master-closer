@@ -41,23 +41,8 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    const { t } = usePrefs();
     // Plain-string labels flow through the translation layer automatically.
-    const localize = (value: string) => {
-      const label = value.trim();
-      if (!label) return value;
-      const lead = value.slice(0, value.indexOf(label[0]!));
-      const tail = value.slice(lead.length + label.length);
-      return `${lead}${t(label)}${tail}`;
-    };
-    const content =
-      typeof children === "string"
-        ? localize(children)
-        : Array.isArray(children)
-          ? children.map((c, i) =>
-              typeof c === "string" ? <React.Fragment key={i}>{localize(c)}</React.Fragment> : c,
-            )
-          : children;
+    const content = useLocalizedChildren(children);
 
     return (
       <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>
