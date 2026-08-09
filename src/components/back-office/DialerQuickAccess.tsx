@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePrefs } from "@/hooks/use-prefs";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -43,6 +44,7 @@ function dur(sec: number) {
 }
 
 export function DialerQuickAccess() {
+  const { t: tr } = usePrefs();
   const navigate = useNavigate();
   const callStatus = useCallStatus();
   const onCall = callStatus === "on_call" || callStatus === "dialing";
@@ -152,14 +154,14 @@ export function DialerQuickAccess() {
                 className={"qd-tab" + (tab === t.key ? " is-on" : "")}
                 onClick={() => setTab(t.key)}
               >
-                <t.icon size={14} /> {t.label}
+                <t.icon size={14} /> {tr(t.label)}
               </button>
             ))}
           </div>
 
           {tab === "keypad" && (
             <div className="qd-body">
-              <label className="qd-label">Call From</label>
+              <label className="qd-label">{tr("Call From")}</label>
               <select
                 className="qd-select"
                 value={callerId}
@@ -176,7 +178,7 @@ export function DialerQuickAccess() {
                 <input
                   value={number}
                   onChange={(e) => setNumber(e.target.value.replace(/[^\d+*#]/g, ""))}
-                  placeholder="Enter Phone Number"
+                  placeholder={tr("Enter Phone Number")}
                   aria-label="Phone Number"
                 />
                 {number && (
@@ -216,7 +218,7 @@ export function DialerQuickAccess() {
           {tab === "recents" && (
             <div className="qd-list">
               {(recents.data ?? []).length === 0 ? (
-                <div className="qd-empty"><Clock size={18} /><p>No Recent Calls</p></div>
+                <div className="qd-empty"><Clock size={18} /><p>{tr("No Recent Calls")}</p></div>
               ) : (
                 (recents.data ?? []).map((r) => (
                   <button key={r.id} type="button" className="qd-row" onClick={() => (r.phone ? goDial(r.phone) : navigate({ to: "/calls" }))}>
@@ -252,11 +254,11 @@ export function DialerQuickAccess() {
             <div className="qd-list">
               <div className="qd-search">
                 <Search size={14} />
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search Contacts" aria-label="Search Contacts" />
+                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Search Contacts")} aria-label="Search Contacts" />
                 {q && <button type="button" className="qd-back qd-back-inline" aria-label="Clear" onClick={() => setQ("")}><X size={14} /></button>}
               </div>
               {(contacts.data ?? []).length === 0 ? (
-                <div className="qd-empty"><Users size={18} /><p>No Contacts Found</p></div>
+                <div className="qd-empty"><Users size={18} /><p>{tr("No Contacts Found")}</p></div>
               ) : (
                 (contacts.data ?? []).map((c: any) => (
                   <button

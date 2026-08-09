@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { usePrefs } from "@/hooks/use-prefs";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowRight, Inbox, RefreshCw, X } from "lucide-react";
@@ -44,6 +45,7 @@ const FILTERS = [
 
 export function ActivityPanel() {
   const navigate = useNavigate();
+  const { t } = usePrefs();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [seen, setSeen] = useState<string>("");
@@ -164,7 +166,7 @@ export function ActivityPanel() {
       <button
         type="button"
         className="icon-btn has-tip tip-below"
-        data-tip="Activity"
+        data-tip={t("Activity")}
         aria-label={unseenCount && unseenCount > 0 ? `Activity, ${unseenCount} new` : "Activity"}
         onClick={() => setOpen(true)}
       >
@@ -182,7 +184,7 @@ export function ActivityPanel() {
           <button type="button" className="act-scrim" aria-label="Close Activity" onClick={() => setOpen(false)} />
           <aside className="act-panel" role="dialog" aria-label="Activity">
             <div className="act-head">
-              <span className="act-title font-display">Activity</span>
+              <span className="act-title font-display">{t("Activity")}</span>
               <div className="act-head-tools">
                 <button
                   type="button"
@@ -207,7 +209,7 @@ export function ActivityPanel() {
                   aria-pressed={filter === f.key}
                   onClick={() => setFilter(f.key)}
                 >
-                  {f.label}
+                  {t(f.label)}
                 </button>
               ))}
             </div>
@@ -244,7 +246,7 @@ export function ActivityPanel() {
                           <span className="act-text">
                             <span className="act-label">
                               {d.label}
-                              {isNew && <span className="act-new">New</span>}
+                              {isNew && <span className="act-new">{t("New")}</span>}
                             </span>
                             {d.detail && <span className="act-detail">{d.detail}</span>}
                           </span>

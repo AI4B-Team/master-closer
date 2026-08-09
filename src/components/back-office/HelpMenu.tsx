@@ -5,11 +5,13 @@ import {
   CircleHelp, LifeBuoy, PlayCircle, BookOpen, MessageSquarePlus,
   Sparkles, Loader2, CircleCheckBig, X,
 } from "lucide-react";
+import { usePrefs } from "@/hooks/use-prefs";
 import { toast } from "sonner";
 import { submitFeedback, polishFeedback, FEEDBACK_CATEGORIES } from "@/lib/help.functions";
 
 /** Question-mark menu in the top bar: Help · Tour · Tutorials · Feedback. */
 export function HelpMenu({ onStartTour }: { onStartTour: () => void }) {
+  const { t } = usePrefs();
   const navigate = useNavigate();
   const wrap = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -91,19 +93,19 @@ export function HelpMenu({ onStartTour }: { onStartTour: () => void }) {
 
         {open && (
           <div className="drop-menu">
-            <Item icon={<LifeBuoy size={15} />} label="Help" onClick={() => go("/help")} />
+            <Item icon={<LifeBuoy size={15} />} label={t("Help")} onClick={() => go("/help")} />
             <Item
               icon={<PlayCircle size={15} />}
-              label="Tour"
+              label={t("Tour")}
               onClick={() => {
                 setOpen(false);
                 onStartTour();
               }}
             />
-            <Item icon={<BookOpen size={15} />} label="Tutorials" onClick={() => go("/tutorials")} />
+            <Item icon={<BookOpen size={15} />} label={t("Tutorials")} onClick={() => go("/tutorials")} />
             <Item
               icon={<MessageSquarePlus size={15} />}
-              label="Feedback"
+              label={t("Feedback")}
               onClick={() => {
                 setOpen(false);
                 reset();
