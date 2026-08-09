@@ -159,6 +159,16 @@ function CallsPage() {
               <SelectItem value="90">Last 90 Days</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={agent} onValueChange={setAgent}>
+            <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Agents</SelectItem>
+              <SelectItem value="none">No Agent</SelectItem>
+              {(agents ?? []).map((a: any) => (
+                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#6B6B76] mb-4">
