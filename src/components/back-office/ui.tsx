@@ -67,6 +67,8 @@ export function Kpi({
   iconColor,
   delta,
   up = true,
+  to,
+  search,
 }: {
   label: string;
   value: string;
@@ -75,9 +77,11 @@ export function Kpi({
   iconColor: string;
   delta?: string;
   up?: boolean;
+  to?: string;
+  search?: Record<string, unknown>;
 }) {
-  return (
-    <div className="kpi" style={{ background: tint }}>
+  const body = (
+    <>
       <div className="kpi-top">
         <span className="kpi-ico" style={{ color: iconColor }}>
           <Icon size={17} strokeWidth={2.2} />
@@ -91,9 +95,24 @@ export function Kpi({
       </div>
       <div className="kpi-label">{label}</div>
       <div className="font-num kpi-value">{value}</div>
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link to={to as any} search={search as any} className="kpi kpi-link" style={{ background: tint }}>
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="kpi" style={{ background: tint }}>
+      {body}
     </div>
   );
 }
+
 
 export const KPI_TINTS = {
   blue: { tint: "#EAF0FB", iconColor: "#2563EB" },
