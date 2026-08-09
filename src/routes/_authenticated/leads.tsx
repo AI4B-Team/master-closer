@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 
 export const Route = createFileRoute("/_authenticated/leads")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    q: typeof s.q === "string" ? s.q : undefined,
+    lead: typeof s.lead === "string" ? s.lead : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Leads — Master Closer" },
@@ -60,7 +64,8 @@ function parseCsv(raw: string) {
 
 function LeadsPage() {
   const qc = useQueryClient();
-  const [search, setSearch] = useState("");
+  const { q: qParam, lead: leadParam } = Route.useSearch();
+  const [search, setSearch] = useState(qParam ?? "");
   const [statusFilter, setStatusFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
