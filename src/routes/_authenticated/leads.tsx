@@ -144,12 +144,11 @@ function LeadsPage() {
       const rows = parseCsv(csv);
       if (rows.length === 0) throw new Error("No valid rows found.");
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
-      if (!prof) throw new Error("No profile");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
+      const workspaceId = prof?.active_workspace_id;
+      if (!workspaceId) throw new Error("No active workspace");
       const { error } = await supabase
         .from("leads")
-        .insert(rows.map((r) => ({ ...r, status: "new" as never, org_id: prof.org_id, workspace_id: prof.active_workspace_id })));
+        .insert(rows.map((r) => ({ ...r, status: "new" as never, org_id: prof!.org_id, workspace_id: workspaceId })));
       if (error) throw error;
       try {
         await emit({ data: { event_type: "leads.imported", payload: { kind: "leads.imported", count: rows.length } } });
@@ -206,10 +205,14 @@ function LeadsPage() {
   const bulkToList = useMutation({
     mutationFn: async () => {
       if (!listTarget) throw new Error("Pick a call list first.");
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      const workspaceId = prof?.active_workspace_id;
+      if (!workspaceId) throw new Error("No active workspace");
       const rows = (leads ?? [])
         .filter((l: any) => picked.includes(l.id) && l.phone)
         .map((l: any) => ({
           list_id: listTarget,
+          workspace_id: workspaceId,
           name: l.name,
           phone: l.phone as string,
           email: l.email,

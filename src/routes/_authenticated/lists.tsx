@@ -184,9 +184,12 @@ function ListsPage() {
       if (!active) throw new Error("Create a list first.");
       const rows = parseContacts(raw);
       if (!rows.length) throw new Error("No valid rows. Use: Name, Phone, Email");
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      const workspaceId = prof?.active_workspace_id;
+      if (!workspaceId) throw new Error("No active workspace");
       const { error } = await supabase
         .from("list_contacts")
-        .insert(rows.map((r) => ({ ...r, list_id: active.id })));
+        .insert(rows.map((r) => ({ ...r, workspace_id: workspaceId, list_id: active.id })));
       if (error) throw error;
       return rows.length;
     },
