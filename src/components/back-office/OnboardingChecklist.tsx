@@ -42,7 +42,7 @@ export function OnboardingChecklist() {
         count("agents", wsId),
         count("leads", wsId),
         count("campaigns", wsId),
-        count("agreement_templates"),
+        count("agreement_templates", wsId),
         count("calls", wsId),
       ]);
       return { agents, leads, campaigns, templates, calls };
