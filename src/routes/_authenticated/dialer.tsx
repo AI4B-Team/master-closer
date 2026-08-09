@@ -76,6 +76,7 @@ function DialerPage() {
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
   const [suggestionRowId, setSuggestionRowId] = useState<string | null>(null);
   const [lineUsed, setLineUsed] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const [simulate, setSimulate] = useState(true);
   const [dialing, setDialing] = useState(false);
   const [holding, setHolding] = useState(false);
