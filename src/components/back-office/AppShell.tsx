@@ -22,7 +22,7 @@ const NAV_PRIMARY: NavItem[] = [
   { to: "/leads", label: "Leads", icon: Users, also: ["/pipeline", "/tasks"] },
   { to: "/calls", label: "Calls", icon: PhoneCall, also: ["/dialer", "/agreements"] },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone, also: ["/lists"] },
-  { to: "/ai-closers", label: "AI Studio", icon: Bot, also: ["/playbook", "/practice"] },
+  { to: "/ai-closers", label: "Agents", icon: Bot, also: ["/playbook", "/practice"] },
   { to: "/team", label: "Reports", icon: BarChart3, also: ["/members"] },
 ];
 

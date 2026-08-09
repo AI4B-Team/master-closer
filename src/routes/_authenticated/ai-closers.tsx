@@ -74,7 +74,7 @@ function AIClosers() {
   return (
     <div>
       <PageHeader
-        title="AI Studio"
+        title="AI Agents"
         description="Closers — identity, knowledge, autonomy, and where to transfer."
         tabs={TAB_GROUPS.studio}
         action={
