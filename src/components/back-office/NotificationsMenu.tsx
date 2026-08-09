@@ -18,6 +18,8 @@ const LABELS: Record<string, string> = {
   "agreement.signed": "Agreement Signed",
   "campaign.started": "Campaign Started",
   "consent.logged": "Disclosure Logged",
+  "task.due": "Follow-Up Due",
+  "task.overdue": "Follow-Up Overdue",
 };
 
 type EventRow = { id: string; event_type: string; payload: any; created_at: string };
