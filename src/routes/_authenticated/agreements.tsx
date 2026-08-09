@@ -388,7 +388,7 @@ function TemplatesTab({
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!orgId) throw new Error("No workspace found.");
+      if (!orgId || !wsId) throw new Error("No workspace found.");
       if (!draft.name.trim()) throw new Error("Give the template a name.");
       if (draft.id) {
         const { error } = await supabase
@@ -399,6 +399,7 @@ function TemplatesTab({
       } else {
         const { error } = await supabase.from("agreement_templates").insert({
           org_id: orgId,
+          workspace_id: wsId,
           name: draft.name,
           body: draft.body,
           is_default: templates.length === 0,
@@ -406,6 +407,7 @@ function TemplatesTab({
         if (error) throw error;
       }
     },
+
     onSuccess: () => {
       toast.success("Template Saved.");
       setEditorOpen(false);
