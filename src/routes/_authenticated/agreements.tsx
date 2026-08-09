@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, EmptyState, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import {
-  Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History,
+  Copy, Download, FilePlus2, FileSignature, FileText, Send, Trash2, Upload, Star, Eye, History, Mail, Printer,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import {
   applyMerge, DEFAULT_AGREEMENT_BODY, MERGE_TOKENS, money, remainingTokens, signingUrl,
   STATUS_TONE, type AgreementStatus,
 } from "@/lib/agreements";
+import { emailSigningLink, printSignedCopy } from "@/lib/agreement-print";
 
 export const Route = createFileRoute("/_authenticated/agreements")({
   head: () => ({
@@ -813,14 +814,53 @@ function AgreementDrawer({
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               {agreement.status === "draft" && (
                 <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl" onClick={send}>
                   <Send className="h-4 w-4 mr-1" /> Send For Signature
                 </Button>
               )}
+              {agreement.status !== "void" && agreement.status !== "signed" && (
+                <Button
+                  variant="outline"
+                  className="rounded-xl"
+                  onClick={() =>
+                    emailSigningLink({
+                      to: agreement.signer_email,
+                      title: agreement.title,
+                      link,
+                      amount: Number(agreement.amount ?? 0),
+                      currency: agreement.currency,
+                    })
+                  }
+                >
+                  <Mail className="h-4 w-4 mr-1" /> Email Link
+                </Button>
+              )}
               <Button variant="outline" className="rounded-xl" onClick={() => window.open(link, "_blank", "noopener")}>
                 <Eye className="h-4 w-4 mr-1" /> Preview As Signer
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  const ok = printSignedCopy({
+                    title: agreement.title,
+                    body: agreement.body,
+                    amount: Number(agreement.amount ?? 0),
+                    currency: agreement.currency,
+                    signerName: agreement.signer_name,
+                    signerEmail: agreement.signer_email,
+                    signedAt: agreement.signed_at,
+                    signatureType: agreement.signature_type,
+                    signatureData: agreement.signature_data,
+                    signerIp: agreement.signer_ip,
+                  });
+                  if (!ok) toast.error("Allow pop-ups to download the PDF copy.");
+                }}
+              >
+                <Printer className="h-4 w-4 mr-1" />
+                {agreement.status === "signed" ? "Download Signed PDF" : "Download PDF"}
               </Button>
               {agreement.status !== "signed" && agreement.status !== "void" && (
                 <Button variant="ghost" className="text-[#CC0000]" onClick={voidIt}>Void</Button>
@@ -841,6 +881,7 @@ function AgreementDrawer({
               <div className="text-xs text-[#4A6B5C] mt-2">IP recorded: {agreement.signer_ip ?? "n/a"}</div>
             </Card>
           )}
+
 
           <div>
             <Label className="text-xs">Document</Label>

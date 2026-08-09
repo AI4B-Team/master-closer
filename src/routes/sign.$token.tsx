@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getAgreementByToken, signAgreement, declineAgreement } from "@/lib/agreements.functions";
 import { money } from "@/lib/agreements";
+import { printSignedCopy } from "@/lib/agreement-print";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,7 +79,10 @@ function SignPage() {
     ctx.strokeStyle = "#111318";
   }, [mode]);
 
+  const signedRef = useRef<{ data: string; at: string } | null>(null);
+
   if (!agreement) return <Shell><Missing /></Shell>;
+
 
   const point = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -100,6 +104,7 @@ function SignPage() {
       await doSign({
         data: { token, signerName: name.trim(), signerEmail: email.trim(), signatureType: mode, signatureData },
       });
+      signedRef.current = { data: signatureData, at: new Date().toISOString() };
       setDone(true);
       toast.success("Signed. A copy is on the record.");
     } catch (e: any) {
@@ -151,6 +156,26 @@ function SignPage() {
                 A signed copy is stored with the call record. You can close this window.
               </div>
             </div>
+            <Button
+              variant="outline"
+              className="rounded-xl ml-auto bg-white"
+              onClick={() =>
+                printSignedCopy({
+                  title: agreement.title,
+                  body: agreement.body,
+                  amount: agreement.amount,
+                  currency: agreement.currency,
+                  orgName: agreement.orgName,
+                  signerName: name.trim(),
+                  signerEmail: email.trim(),
+                  signedAt: signedRef.current?.at ?? new Date().toISOString(),
+                  signatureType: mode,
+                  signatureData: signedRef.current?.data ?? typed.trim(),
+                })
+              }
+            >
+              <Download className="h-4 w-4 mr-1" /> Download Signed Copy
+            </Button>
           </div>
         ) : (
           <div style={{ padding: "28px 32px", borderTop: "1px solid #EDEDF1" }}>
