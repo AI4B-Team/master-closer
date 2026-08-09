@@ -1551,6 +1551,38 @@ export type Database = {
           },
         ]
       }
+      notification_reads: {
+        Row: {
+          id: string
+          item_key: string
+          read_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          id?: string
+          item_key: string
+          read_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          id?: string
+          item_key?: string
+          read_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_reads_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objections: {
         Row: {
           category: string | null

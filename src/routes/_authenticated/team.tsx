@@ -6,6 +6,16 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
 import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+
 import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -335,26 +345,96 @@ function ReportsPage() {
 
 
 
-  const exportCsv = () => {
-    const header = ["Rep", "Calls", "Connects", "Connect Rate", "Talk Minutes", "Closed Revenue"];
-    const rows = leaderboard.map((r) => [
-      nameFor(r.repId === "unassigned" ? null : r.repId),
-      r.calls,
-      r.connects,
-      r.calls ? Math.round((r.connects / r.calls) * 100) + "%" : "0%",
-      Math.round(r.talkSec / 60),
-      r.revenue,
-    ]);
-    const csv = [header, ...rows]
-      .map((line) => line.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `master-closer-reports-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  /** Every report on this page, exportable as its own CSV. */
+  const EXPORTS: { slug: string; label: string; headers: string[]; rows: () => unknown[][] }[] = [
+    {
+      slug: "leaderboard",
+      label: "Rep Leaderboard",
+      headers: ["Rep", "Calls", "Connects", "Connect Rate", "Talk Minutes", "Closed Revenue"],
+      rows: () =>
+        leaderboard.map((r) => [
+          nameFor(r.repId === "unassigned" ? null : r.repId),
+          r.calls,
+          r.connects,
+          r.calls ? Math.round((r.connects / r.calls) * 100) + "%" : "0%",
+          Math.round(r.talkSec / 60),
+          r.revenue,
+        ]),
+    },
+    {
+      slug: "call-activity",
+      label: "Call Activity",
+      headers: ["Period", "Calls", "Connects"],
+      rows: () => trend.map((t) => [t.label, t.calls, t.connects]),
+    },
+    {
+      slug: "outcomes",
+      label: "Outcome Breakdown",
+      headers: ["Outcome", "Calls", "Share"],
+      rows: () => outcomes.map((o) => [titleCase(o.key), o.count, `${o.share}%`]),
+    },
+    {
+      slug: "mode-split",
+      label: "Mode Split",
+      headers: ["Mode", "Calls", "Share", "Avg Close Probability"],
+      rows: () => modeSplit.map((m) => [m.label, m.count, `${m.share}%`, `${m.avgProbability}%`]),
+    },
+    {
+      slug: "agents",
+      label: "Agent Performance",
+      headers: ["Agent", "Mode", "Active", "Calls", "Connect Rate", "Avg Talk (sec)", "Avg Close Probability"],
+      rows: () =>
+        agentPerf.map((a) => [
+          a.name,
+          a.mode,
+          a.isAgent ? (a.active ? "Yes" : "No") : "—",
+          a.calls,
+          `${a.connectRate}%`,
+          a.avgTalk,
+          `${a.avgProbability}%`,
+        ]),
+    },
+    {
+      slug: "campaigns",
+      label: "Campaign Performance",
+      headers: ["Campaign", "Mode", "Status", "Calls", "Connect Rate", "Avg Close Probability"],
+      rows: () =>
+        campaignPerf.map((c) => [
+          c.name,
+          c.mode,
+          c.status ?? "—",
+          c.calls,
+          `${c.connectRate}%`,
+          `${c.avgProbability}%`,
+        ]),
+    },
+    {
+      slug: "objections",
+      label: "Top Objections",
+      headers: ["Objection", "Surfaced", "Used", "Use Rate"],
+      rows: () => topObjections.map((o) => [o.trigger, o.surfaced, o.used, `${o.useRate}%`]),
+    },
+    {
+      slug: "funnel",
+      label: "Stage Conversion",
+      headers: ["Stage", "Kind", "Deals Here", "Value", "Reached", "Conversion", "Stale"],
+      rows: () =>
+        funnel.map((f) => [f.label, titleCase(f.kind), f.here, f.value, f.reached, `${f.conversion}%`, f.stale]),
+    },
+  ];
+
+  const exportOne = (slug: string) => {
+    const report = EXPORTS.find((e) => e.slug === slug);
+    if (!report) return;
+    downloadCsv(stampedName(`reports-${slug}`), toCsv(report.headers, report.rows()));
   };
+
+  /** One file containing every report, separated by a titled block. */
+  const exportAll = () => {
+    const blocks = EXPORTS.map((e) => [e.label, toCsv(e.headers, e.rows())].join("\n"));
+    downloadCsv(stampedName("reports-all"), blocks.join("\n\n"));
+  };
+
 
   const money = (n: number) =>
     "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -382,9 +462,24 @@ function ReportsPage() {
             </button>
           ))}
         </div>
-        <Button variant="outline" onClick={exportCsv} className="rounded-xl gap-2">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="rounded-xl gap-2">
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Export A Report</DropdownMenuLabel>
+            {EXPORTS.map((e) => (
+              <DropdownMenuItem key={e.slug} onClick={() => exportOne(e.slug)}>
+                {e.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={exportAll}>Everything (One File)</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">

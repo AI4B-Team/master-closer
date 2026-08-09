@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Check, Rocket, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { ArrowRight, Check, Rocket, Sparkles, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { seedStarterWorkspace } from "@/lib/starter.functions";
+
 
 
 const DISMISS_KEY = "mc_onboarding_dismissed";
@@ -47,6 +51,21 @@ export function OnboardingChecklist() {
       ]);
       return { agents, leads, campaigns, templates, calls };
     },
+  });
+
+  const qc = useQueryClient();
+  const runSeed = useServerFn(seedStarterWorkspace);
+
+  /** Fills an empty workspace with a starter closer, list, leads and playbook. */
+  const seed = useMutation({
+    mutationFn: () => runSeed({ data: undefined } as any),
+    onSuccess: (res: any) => {
+      const created: string[] = res?.created ?? [];
+      if (created.length === 0) toast("Your workspace already has data — nothing to add.");
+      else toast.success(`Starter data loaded: ${created.join(", ")}.`);
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not load starter data."),
   });
 
 
@@ -114,10 +133,22 @@ export function OnboardingChecklist() {
             <p>{doneCount} of {steps.length} done — finish these to start closing.</p>
           </div>
         </div>
-        <button type="button" className="onb-x" onClick={dismiss} aria-label="Dismiss Checklist">
-          <X size={15} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="onb-cta"
+            disabled={seed.isPending}
+            onClick={() => seed.mutate()}
+          >
+            {seed.isPending ? "Loading…" : "Load Starter Data"}
+            <Sparkles size={13} strokeWidth={2.6} />
+          </button>
+          <button type="button" className="onb-x" onClick={dismiss} aria-label="Dismiss Checklist">
+            <X size={15} />
+          </button>
+        </div>
       </div>
+
 
       <div className="onb-bar"><span style={{ width: `${pct}%` }} /></div>
 
