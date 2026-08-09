@@ -539,10 +539,17 @@ function DialerPage() {
 
   /** Teammates available as merge or transfer targets in this workspace. */
   const { data: teammates } = useQuery({
-    queryKey: ["dialer-teammates"],
+    queryKey: ["dialer-teammates", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email").limit(50);
-      return data ?? [];
+      const { data } = await supabase
+        .from("workspace_members")
+        .select("user_id, profiles:user_id(id, full_name, email)")
+        .eq("workspace_id", wsId!)
+        .limit(50);
+      return (data ?? [])
+        .map((m: any) => m.profiles)
+        .filter(Boolean);
     },
   });
 
