@@ -165,7 +165,7 @@ function IntegrationsPage() {
                     ? "Settings Saved — Not Connected"
                     : "No Settings Yet"}
               </p>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Badge variant={connected ? "default" : "secondary"} className={connected ? "bg-[#0E9F6E]" : ""}>
                   {connected ? "Connected" : "Not Connected"}
                 </Badge>
