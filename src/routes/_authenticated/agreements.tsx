@@ -652,8 +652,16 @@ function ComposeDialog({
         event_type: send ? "sent" : "created",
         meta: { to: signerEmail },
       });
+      if (send) {
+        void logActivity("agreement.sent", {
+          agreement_id: data.id,
+          signer_email: signerEmail,
+          amount: Number(amount || 0),
+        });
+      }
       return data;
     },
+
     onSuccess: async (data, send) => {
       if (send) {
         await navigator.clipboard.writeText(signingUrl(data.token)).catch(() => {});
