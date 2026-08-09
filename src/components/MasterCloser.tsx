@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { closeObjection } from "@/lib/demo.functions";
 import {
   AudioLines, ArrowRight, Play, Check, Minus, Building2, Home, Sun, ShieldCheck,
@@ -1337,15 +1338,15 @@ export default function MasterCloser() {
             </div>
             <div className="foot-col">
               <div className="foot-col-h font-mono">COMPANY</div>
-              <a href="#">About</a>
-              <a href="#">Contact</a>
-              <a href="#">Careers</a>
+              <a href="#uses">About</a>
+              <a href="mailto:hello@mastercloser.ai">Contact</a>
+              <a href="mailto:careers@mastercloser.ai">Careers</a>
             </div>
             <div className="foot-col">
               <div className="foot-col-h font-mono">LEGAL</div>
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
-              <a href="#">Consent Policy</a>
+              <Link to="/legal/privacy">Privacy</Link>
+              <Link to="/legal/terms">Terms</Link>
+              <Link to="/legal/consent">Consent Policy</Link>
             </div>
           </div>
         </div>

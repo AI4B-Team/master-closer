@@ -13,6 +13,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignTokenRouteImport } from './routes/sign.$token'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalConsentRouteImport } from './routes/legal.consent'
 import { Route as AuthHubRouteImport } from './routes/auth_.hub'
 import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
@@ -61,6 +64,21 @@ const IndexRoute = IndexRouteImport.update({
 const SignTokenRoute = SignTokenRouteImport.update({
   id: '/sign/$token',
   path: '/sign/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalConsentRoute = LegalConsentRouteImport.update({
+  id: '/legal/consent',
+  path: '/legal/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthHubRoute = AuthHubRouteImport.update({
@@ -241,6 +259,9 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth/hub': typeof AuthHubRoute
+  '/legal/consent': typeof LegalConsentRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
@@ -276,6 +297,9 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth/hub': typeof AuthHubRoute
+  '/legal/consent': typeof LegalConsentRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
@@ -313,6 +337,9 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
   '/auth_/hub': typeof AuthHubRoute
+  '/legal/consent': typeof LegalConsentRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/sign/$token': typeof SignTokenRoute
   '/api/v1/calls': typeof ApiV1CallsRoute
   '/api/v1/campaigns': typeof ApiV1CampaignsRoute
@@ -350,6 +377,9 @@ export interface FileRouteTypes {
     | '/team'
     | '/tutorials'
     | '/auth/hub'
+    | '/legal/consent'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
@@ -385,6 +415,9 @@ export interface FileRouteTypes {
     | '/team'
     | '/tutorials'
     | '/auth/hub'
+    | '/legal/consent'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
@@ -421,6 +454,9 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/_authenticated/tutorials'
     | '/auth_/hub'
+    | '/legal/consent'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/sign/$token'
     | '/api/v1/calls'
     | '/api/v1/campaigns'
@@ -436,6 +472,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   AuthHubRoute: typeof AuthHubRoute
+  LegalConsentRoute: typeof LegalConsentRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
   SignTokenRoute: typeof SignTokenRoute
   ApiV1CallsRoute: typeof ApiV1CallsRoute
   ApiV1CampaignsRoute: typeof ApiV1CampaignsRoute
@@ -474,6 +513,27 @@ declare module '@tanstack/react-router' {
       path: '/sign/$token'
       fullPath: '/sign/$token'
       preLoaderRoute: typeof SignTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/consent': {
+      id: '/legal/consent'
+      path: '/legal/consent'
+      fullPath: '/legal/consent'
+      preLoaderRoute: typeof LegalConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth_/hub': {
@@ -747,6 +807,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   AuthHubRoute: AuthHubRoute,
+  LegalConsentRoute: LegalConsentRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
   SignTokenRoute: SignTokenRoute,
   ApiV1CallsRoute: ApiV1CallsRoute,
   ApiV1CampaignsRoute: ApiV1CampaignsRoute,
