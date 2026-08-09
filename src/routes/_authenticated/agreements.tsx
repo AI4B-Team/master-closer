@@ -226,6 +226,10 @@ function AgreementsPage() {
                   </Button>
                 }
               />
+            ) : visible.length === 0 ? (
+              <div className="px-4 py-10 text-center text-sm text-[#6B6B76]">
+                No agreements match these filters.
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
