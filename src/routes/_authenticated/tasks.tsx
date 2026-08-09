@@ -71,6 +71,8 @@ function TasksPage() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
+  const [assignee, setAssignee] = useState("all");
+  const [priority, setPriority] = useState("all");
   const [selected, setSelected] = useState<string[]>([]);
   const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
 
