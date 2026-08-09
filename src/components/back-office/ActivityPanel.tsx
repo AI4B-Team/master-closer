@@ -30,9 +30,20 @@ function dayLabel(iso: string) {
  * Passive stream of everything that happened in the workspace. Distinct from
  * the bell: the bell is what needs you, this is the record of what occurred.
  */
+const SEEN_KEY = "mc:activity:seen";
+
 export function ActivityPanel() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [seen, setSeen] = useState<string>("");
+
+  useEffect(() => {
+    try {
+      setSeen(localStorage.getItem(SEEN_KEY) ?? "");
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
 
   const { data: events = [], isFetching, refetch } = useQuery({
     queryKey: ["activity-panel"],
@@ -48,6 +59,41 @@ export function ActivityPanel() {
       return (data ?? []) as EventRow[];
     },
   });
+
+  // Cheap "is there anything new?" probe so the icon can show a dot while closed.
+  const { data: latest } = useQuery({
+    queryKey: ["activity-latest"],
+    refetchInterval: 45000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("created_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.created_at as string | undefined) ?? null;
+    },
+  });
+
+  const newest = events[0]?.created_at ?? latest ?? null;
+  const hasUnseen = Boolean(newest && (!seen || newest > seen));
+
+  const markSeen = (iso: string | null) => {
+    if (!iso) return;
+    setSeen(iso);
+    try {
+      localStorage.setItem(SEEN_KEY, iso);
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  useEffect(() => {
+    if (open && newest) markSeen(newest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, newest]);
+
 
   useEffect(() => {
     if (!open) return;
