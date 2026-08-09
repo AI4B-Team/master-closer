@@ -521,6 +521,7 @@ export type Database = {
           owner_id: string | null
           sort_order: number
           stage: Database["public"]["Enums"]["deal_stage"]
+          stage_id: string | null
           title: string
           updated_at: string
           value: number
@@ -535,6 +536,7 @@ export type Database = {
           owner_id?: string | null
           sort_order?: number
           stage?: Database["public"]["Enums"]["deal_stage"]
+          stage_id?: string | null
           title: string
           updated_at?: string
           value?: number
@@ -549,6 +551,7 @@ export type Database = {
           owner_id?: string | null
           sort_order?: number
           stage?: Database["public"]["Enums"]["deal_stage"]
+          stage_id?: string | null
           title?: string
           updated_at?: string
           value?: number
@@ -566,6 +569,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -987,6 +997,44 @@ export type Database = {
           real_elite_org_id?: string | null
         }
         Relationships: []
+      }
+      pipeline_stages: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string
+          org_id: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label: string
+          org_id: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string
+          org_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_stages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       playbooks: {
         Row: {
