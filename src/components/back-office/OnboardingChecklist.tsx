@@ -53,6 +53,21 @@ export function OnboardingChecklist() {
     },
   });
 
+  const qc = useQueryClient();
+  const runSeed = useServerFn(seedStarterWorkspace);
+
+  /** Fills an empty workspace with a starter closer, list, leads and playbook. */
+  const seed = useMutation({
+    mutationFn: () => runSeed({ data: undefined } as any),
+    onSuccess: (res: any) => {
+      const created: string[] = res?.created ?? [];
+      if (created.length === 0) toast("Your workspace already has data — nothing to add.");
+      else toast.success(`Starter data loaded: ${created.join(", ")}.`);
+      qc.invalidateQueries();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not load starter data."),
+  });
+
 
   if (dismissed || !data) return null;
 
