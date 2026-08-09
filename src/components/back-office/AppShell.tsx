@@ -275,7 +275,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     </span>
                   </button>
                   {openSub === "theme" && (
-                    <div className="pm-sub">
+                    <div className="pm-sub pm-sub-flyout">
                       {(["light", "dark"] as const).map((t) => (
                         <button
                           key={t}
