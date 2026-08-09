@@ -45,6 +45,7 @@ function Dashboard() {
         : 0;
       const modeSplit = ["full_ai", "hybrid", "copilot"].map((m) => ({
         name: m === "full_ai" ? "AI" : m === "hybrid" ? "Hybrid" : "Copilot",
+        mode: m,
         value: (calls ?? []).filter((c) => c.mode === m).length,
       }));
       return { callsToday: callsToday ?? 0, revenue, closeRate, avgProb, modeSplit, totalCalls: calls?.length ?? 0 };
