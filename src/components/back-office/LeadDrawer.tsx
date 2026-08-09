@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText } from "lucide-react";
+import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 
@@ -106,6 +106,39 @@ export function LeadDrawer({
       return data ?? [];
     },
   });
+
+  /* One-click deal creation drops the lead into the first pipeline stage. */
+  const createDeal = useMutation({
+    mutationFn: async () => {
+      if (!lead) throw new Error("No lead selected.");
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      if (!prof) throw new Error("No workspace found.");
+      const { data: stage } = await supabase
+        .from("pipeline_stages")
+        .select("id")
+        .order("position", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      const { error } = await supabase.from("deals").insert({
+        title: `${lead.company || lead.name} — New Deal`,
+        value: 0,
+        stage: "new" as any,
+        stage_id: stage?.id ?? null,
+        close_probability: 50,
+        lead_id: lead.id,
+        owner_id: lead.owner_id ?? null,
+        org_id: prof.org_id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Deal created.");
+      qc.invalidateQueries({ queryKey: ["lead-deals", lead?.id] });
+      qc.invalidateQueries({ queryKey: ["deals"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
 
   const save = useMutation({
     mutationFn: async () => {
@@ -325,7 +358,19 @@ export function LeadDrawer({
           </div>
 
           <div className="pt-2 border-t border-[#E7E7EC]">
-            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Deals</p>
+            <div className="flex items-center justify-between mt-4 mb-2">
+              <p className="text-xs uppercase tracking-wider text-[#6B6B76]">Deals</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={() => createDeal.mutate()}
+                disabled={createDeal.isPending}
+              >
+                <Plus className="h-4 w-4 mr-1" /> New Deal
+              </Button>
+            </div>
             {!deals || deals.length === 0 ? (
               <p className="text-sm text-[#6B6B76]">No deals linked to this lead yet.</p>
             ) : (
