@@ -46,6 +46,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const localize = (value: string) => {
       const label = value.trim();
       if (!label) return value;
+      if (typeof window !== "undefined") console.log("BTNLOC", label, t(label));
       const lead = value.slice(0, value.indexOf(label[0]!));
       const tail = value.slice(lead.length + label.length);
       return `${lead}${t(label)}${tail}`;
