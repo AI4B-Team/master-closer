@@ -167,7 +167,7 @@ export const declineAgreement = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, status")
+      .select("id, org_id, status, title")
       .eq("token", data.token)
       .maybeSingle();
     if (!row) throw new Error("This agreement link is no longer valid.");
@@ -183,5 +183,11 @@ export const declineAgreement = createServerFn({ method: "POST" })
       event_type: "declined",
       meta: { reason: data.reason ?? null },
     });
+    await supabaseAdmin.from("events").insert({
+      org_id: row.org_id,
+      event_type: "job.completed",
+      payload: { kind: "agreement.declined", agreement_id: row.id, title: row.title, reason: data.reason ?? null },
+    });
+
     return { ok: true };
   });
