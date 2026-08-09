@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+import { DigestSchedules } from "@/components/back-office/DigestSchedules";
+
 
 import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
