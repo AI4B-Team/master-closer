@@ -201,6 +201,7 @@ export function NotificationsMenu() {
                   type="button"
                   className="notif-item"
                   onClick={() => {
+                    markAllRead();
                     setOpen(false);
                     navigate({ to: routeFor(e) });
                   }}
@@ -215,6 +216,18 @@ export function NotificationsMenu() {
               ))}
             </div>
           )}
+
+          <button
+            type="button"
+            className="notif-foot"
+            onClick={() => {
+              markAllRead();
+              setOpen(false);
+              navigate({ to: "/activity" });
+            }}
+          >
+            View All Activity <ArrowRight size={13} />
+          </button>
         </div>
       )}
     </div>
