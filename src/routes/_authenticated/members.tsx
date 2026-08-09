@@ -14,7 +14,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState } from "@/components/back-office/ui";
-import { UserPlus, Trash2, ShieldCheck, Users, MailClock, X } from "lucide-react";
+import { UserPlus, Trash2, ShieldCheck, Users, MailQuestion, X } from "lucide-react";
 import { inviteMember, listInvites, listMembers, removeMember, revokeInvite, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
 
 export const Route = createFileRoute("/_authenticated/members")({
@@ -269,7 +269,7 @@ function MembersPage() {
       {pendingInvites.length > 0 ? (
         <Card className="mt-6 p-0 rounded-2xl border-[#E7E7EC] shadow-none overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-[#E7E7EC] text-sm font-medium">
-            <MailClock className="h-4 w-4 text-[#6B6B76]" />
+            <MailQuestion className="h-4 w-4 text-[#6B6B76]" />
             Pending Invites
             <Badge className="bg-gray-100 text-gray-600">{pendingInvites.length}</Badge>
           </div>
