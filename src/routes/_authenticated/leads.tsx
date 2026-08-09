@@ -25,7 +25,7 @@ import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { formatPhone } from "@/lib/phone";
 
 export const Route = createFileRoute("/_authenticated/leads")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { q?: string; lead?: string } => ({
     q: typeof s.q === "string" ? s.q : undefined,
     lead: typeof s.lead === "string" ? s.lead : undefined,
   }),

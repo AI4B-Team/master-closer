@@ -30,7 +30,7 @@ import { fetchObjectionLibrary } from "@/lib/objections";
 
 
 export const Route = createFileRoute("/_authenticated/dialer")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { number?: string } => ({
     number: typeof search.number === "string" ? search.number : undefined,
   }),
   head: () => ({
