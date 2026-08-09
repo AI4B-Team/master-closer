@@ -75,7 +75,8 @@ function valueText(v: unknown) {
 
 function AgentsPage() {
   const qc = useQueryClient();
-  const [view, setView] = useState<(typeof VIEWS)[number]["key"]>("registry");
+  const { view: viewParam } = Route.useSearch();
+  const [view, setView] = useState<AgentsView>(viewParam ?? "registry");
 
   const fetchAgents = useServerFn(listAgents);
   const fetchProposals = useServerFn(listProposals);
