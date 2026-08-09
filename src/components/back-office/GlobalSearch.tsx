@@ -72,6 +72,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
         title: c.summary?.slice(0, 70) || `${c.mode} call`,
         sub: `${c.outcome} · ${new Date(c.started_at).toLocaleDateString()}`,
         to: "/calls",
+        params: { call: c.id },
       });
     }
   }
@@ -100,6 +101,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
         title: d.title,
         sub: `${d.stage} · $${Number(d.value ?? 0).toLocaleString()}`,
         to: "/pipeline",
+        params: { deal: d.id },
       });
     }
   }
