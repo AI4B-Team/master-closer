@@ -268,7 +268,7 @@ function DialerPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("campaigns")
-        .select("id, name, mode, status, list_id")
+        .select("id, name, mode, status, list_id, agent_id")
         .eq("status", "active")
         .order("created_at", { ascending: false });
       return data ?? [];
