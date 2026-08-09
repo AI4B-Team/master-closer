@@ -405,6 +405,19 @@ function Objections() {
                 <div className="min-w-0">
                   <p className="font-medium text-sm">“{o.trigger}”</p>
                   <p className="text-sm text-[#4A505C] mt-1">{o.response}</p>
+                  {(() => {
+                    const s = statsFor(o.trigger);
+                    if (!s.surfaced) return null;
+                    const rate = Math.round((s.used / s.surfaced) * 100);
+                    return (
+                      <p className="text-xs text-[#6B6B76] mt-2">
+                        Surfaced On {s.surfaced} {s.surfaced === 1 ? "Call" : "Calls"} · Delivered {s.used} ·{" "}
+                        <span style={{ color: rate >= 60 ? "#0F9D58" : rate >= 30 ? "#B26B00" : "#CC0000", fontWeight: 600 }}>
+                          {rate}% Use Rate
+                        </span>
+                      </p>
+                    );
+                  })()}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   {o.category && <Badge variant="secondary">{o.category}</Badge>}
