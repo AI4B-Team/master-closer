@@ -13,7 +13,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { LeadDrawer } from "@/components/back-office/LeadDrawer";
-import { Plus, Search, Users, Upload } from "lucide-react";
+import { Plus, Search, Users, Upload, Download, Trash2, ListPlus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
