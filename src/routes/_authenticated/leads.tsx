@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
+import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -248,20 +249,12 @@ function LeadsPage() {
   function exportCsv() {
     const rows = picked.length > 0 ? filtered.filter((l: any) => picked.includes(l.id)) : filtered;
     if (rows.length === 0) return toast.error("Nothing to export.");
-    const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const csvOut = [
-      ["Name", "Company", "Email", "Phone", "Status", "Consent", "Created"].join(","),
-      ...rows.map((l: any) =>
-        [l.name, l.company, l.email, l.phone, l.status, l.consent, l.created_at].map(cell).join(","),
-      ),
-    ].join("\n");
-    const url = URL.createObjectURL(new Blob([csvOut], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(`Exported ${rows.length} lead${rows.length === 1 ? "" : "s"}.`);
+    const csvOut = toCsv(
+      ["Name", "Company", "Email", "Phone", "Status", "Consent", "Created"],
+      rows.map((l: any) => [l.name, l.company, l.email, l.phone, l.status, l.consent, l.created_at]),
+    );
+    downloadCsv(stampedName("leads"), csvOut);
+    toast.success(`Exported ${rows.length} Lead${rows.length === 1 ? "" : "s"}.`);
   }
 
 

@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { summarizeCall } from "@/lib/calls.functions";
 import { useQueryClient } from "@tanstack/react-query";
+import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/calls")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -107,9 +108,10 @@ function CallsPage() {
   });
 
   function exportCsv() {
-    const header = "date,lead,company,agent,campaign,mode,outcome,disposition,duration_sec,close_probability";
-    const rows = filtered.map((c: any) =>
-      [
+    if (filtered.length === 0) return;
+    const csv = toCsv(
+      ["Date", "Lead", "Company", "Agent", "Campaign", "Mode", "Outcome", "Disposition", "Duration (sec)", "Close Probability"],
+      filtered.map((c: any) => [
         new Date(c.started_at).toISOString(),
         c.leads?.name ?? "",
         c.leads?.company ?? "",
@@ -120,15 +122,9 @@ function CallsPage() {
         c.disposition ?? "",
         c.duration_sec ?? 0,
         c.close_probability ?? 0,
-      ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")
+      ]),
     );
-    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `master-closer-calls-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(stampedName("calls"), csv);
   }
 
   const connected = filtered.filter((c: any) => c.outcome === "completed").length;
