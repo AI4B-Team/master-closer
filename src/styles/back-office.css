@@ -247,6 +247,8 @@
 .donut-hole small { font-size: 11px; color: var(--muted); }
 .legend { display: flex; flex-direction: column; gap: 9px; }
 .legend-row { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+.legend-link { color: inherit; text-decoration: none; border-radius: 8px; padding: 2px 6px; margin: -2px -6px; transition: background 0.15s ease; }
+.legend-link:hover { background: #F4F4F6; }
 .legend-dot { width: 9px; height: 9px; border-radius: 3px; }
 .legend-v { margin-left: auto; font-weight: 600; }
 
