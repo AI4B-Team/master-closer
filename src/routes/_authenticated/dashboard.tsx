@@ -252,6 +252,17 @@ function describeEvent(e: any): { icon: typeof Activity; label: string; detail: 
         label: "Agreement Sent",
         detail: [p.signer_email, p.amount ? `$${Number(p.amount).toLocaleString()}` : null].filter(Boolean).join(" · "),
       };
+    case "agreement.signed":
+      return {
+        icon: FileSignature,
+        label: "Agreement Signed",
+        detail: [p.signer_name ?? p.signer_email, p.amount ? `$${Number(p.amount).toLocaleString()}` : null]
+          .filter(Boolean)
+          .join(" · "),
+      };
+    case "agreement.declined":
+      return { icon: ShieldOff, label: "Agreement Declined", detail: [p.title, p.reason].filter(Boolean).join(" · ") };
+
     case "deal.won":
       return {
         icon: DollarSign,

@@ -100,9 +100,10 @@ export const signAgreement = createServerFn({ method: "POST" })
     const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, status, deal_id")
+      .select("id, org_id, status, deal_id, title, amount")
       .eq("token", data.token)
       .maybeSingle();
+
     if (!row) throw new Error("This agreement link is no longer valid.");
     if (row.status === "signed") return { ok: true, alreadySigned: true };
     if (row.status !== "sent" && row.status !== "viewed") {
@@ -136,9 +137,24 @@ export const signAgreement = createServerFn({ method: "POST" })
       meta: { signer: data.signerName, email: data.signerEmail, method: data.signatureType, ip },
     });
 
+    // Workspace-wide feed: the closer sees signatures land in the Activity Log.
+    await supabaseAdmin.from("events").insert({
+      org_id: row.org_id,
+      event_type: "job.completed",
+      payload: {
+        kind: "agreement.signed",
+        agreement_id: row.id,
+        title: row.title,
+        amount: row.amount,
+        signer_name: data.signerName,
+        signer_email: data.signerEmail,
+      },
+    });
+
     if (row.deal_id) {
       await supabaseAdmin.from("deals").update({ stage: "won", close_probability: 100 }).eq("id", row.deal_id);
     }
+
 
     return { ok: true, alreadySigned: false };
   });
@@ -151,7 +167,7 @@ export const declineAgreement = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, status")
+      .select("id, org_id, status, title")
       .eq("token", data.token)
       .maybeSingle();
     if (!row) throw new Error("This agreement link is no longer valid.");
@@ -167,5 +183,11 @@ export const declineAgreement = createServerFn({ method: "POST" })
       event_type: "declined",
       meta: { reason: data.reason ?? null },
     });
+    await supabaseAdmin.from("events").insert({
+      org_id: row.org_id,
+      event_type: "job.completed",
+      payload: { kind: "agreement.declined", agreement_id: row.id, title: row.title, reason: data.reason ?? null },
+    });
+
     return { ok: true };
   });
