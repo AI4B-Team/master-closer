@@ -167,14 +167,33 @@ function TasksPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const bulk = useMutation({
+    mutationFn: async (action: "done" | "delete") => {
+      if (action === "delete") {
+        const { error } = await supabase.from("tasks").delete().in("id", selected);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "done", completed_at: new Date().toISOString() })
+        .in("id", selected);
+      if (error) throw error;
+    },
+    onSuccess: (_d, action) => {
+      toast.success(action === "delete" ? "Follow-ups deleted." : "Follow-ups completed.");
+      setSelected([]);
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const inDays = (days: number) => {
     const d = new Date();
     d.setDate(d.getDate() + days);
     d.setHours(17, 0, 0, 0);
     return d.toISOString();
   };
-
-
 
   const all = tasks ?? [];
   const openTasks = all.filter((t) => t.status !== "done");
@@ -185,13 +204,26 @@ function TasksPage() {
     done: all.filter((t) => t.status === "done").length,
   };
 
+  const term = q.trim().toLowerCase();
   const visible = all.filter((t) => {
-    if (filter === "done") return t.status === "done";
-    if (t.status === "done") return false;
-    if (filter === "today") return isToday(t.due_at);
-    if (filter === "overdue") return isOverdue(t.due_at);
+    if (filter === "done") {
+      if (t.status !== "done") return false;
+    } else {
+      if (t.status === "done") return false;
+      if (filter === "today" && !isToday(t.due_at)) return false;
+      if (filter === "overdue" && !isOverdue(t.due_at)) return false;
+    }
+    if (mineOnly && t.assignee_id !== me) return false;
+    if (term) {
+      const hay = [t.title, t.notes ?? "", t.leads?.name ?? "", t.leads?.company ?? ""].join(" ").toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
     return true;
   });
+
+  const toggleSelect = (id: string) =>
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
 
   return (
     <>
