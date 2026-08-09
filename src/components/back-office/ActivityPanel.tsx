@@ -125,6 +125,7 @@ export function ActivityPanel() {
         onClick={() => setOpen(true)}
       >
         <Activity size={17} />
+        {hasUnseen && <span className="act-dot" aria-hidden="true" />}
       </button>
 
       {open && (
