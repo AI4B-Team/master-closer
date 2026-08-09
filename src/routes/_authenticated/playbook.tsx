@@ -196,6 +196,53 @@ function Objections() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const runGenerate = async () => {
+    setGenerating(true);
+    try {
+      const res = await suggestObjections({
+        data: {
+          industry: gen.industry || null,
+          focus: gen.focus || null,
+          existing: (objections ?? []).map((o: any) => String(o.trigger)).slice(0, 50),
+        },
+      });
+      setSuggestions(res.items);
+      setPicked({});
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not generate objections.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const saveMany = useMutation({
+    mutationFn: async () => {
+      const chosen = suggestions.filter((_, i) => picked[i] ?? true);
+      if (chosen.length === 0) return 0;
+      const org = await orgId();
+      const { error } = await supabase.from("objections").insert(
+        chosen.map((s) => ({
+          trigger: s.trigger,
+          response: s.response,
+          category: s.category || null,
+          org_id: org,
+        })),
+      );
+      if (error) throw error;
+      return chosen.length;
+    },
+    onSuccess: (count) => {
+      toast.success(`${count} Objection${count === 1 ? "" : "s"} Added.`);
+      setGenOpen(false);
+      setSuggestions([]);
+      setPicked({});
+      qc.invalidateQueries({ queryKey: ["objections"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+
+
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("objections").delete().eq("id", id);
