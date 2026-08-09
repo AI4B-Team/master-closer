@@ -11,6 +11,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { closeObjection } from "@/lib/demo.functions";
+import { summarizeCall } from "@/lib/calls.functions";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -86,6 +87,20 @@ function DialerPage() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferTo, setTransferTo] = useState("");
   const [agentId, setAgentId] = useState<string>("");
+  const [wrap, setWrap] = useState<{
+    callId: string;
+    prospect: string;
+    disposition: string;
+    summary: string;
+    nextStep: string;
+    sentiment: string | null;
+    lines: AssistLine[];
+    loading: boolean;
+    task: boolean;
+    dueDays: number;
+  } | null>(null);
+  const summarize = useServerFn(summarizeCall);
+
   const holdRef = useRef(false);
   holdRef.current = holding;
 
@@ -560,6 +575,12 @@ function DialerPage() {
         // Never block wrap-up on hub availability.
       }
     }
+
+    const endedCallId = callId;
+    const endedLines = transcript;
+    const label = disposition ?? DISPOSITIONS.find((d) => d.value === dial)?.label ?? "Completed";
+    const prospectName = contact?.name ?? "Outbound Prospect";
+
     setConnected(false);
     setCallId(null);
     setTranscript([]);
@@ -570,8 +591,84 @@ function DialerPage() {
     setParticipants([]);
 
     qc.invalidateQueries({ queryKey: ["calls"] });
+
+    if (endedCallId && dial !== "dnc") {
+      setWrap({
+        callId: endedCallId,
+        prospect: prospectName,
+        disposition: label,
+        summary: "",
+        nextStep: "",
+        sentiment: null,
+        lines: endedLines,
+        loading: true,
+        task: true,
+        dueDays: 2,
+      });
+      try {
+        const res: any = await summarize({
+          data: {
+            mode,
+            outcome: label,
+            prospect: prospectName,
+            lines: endedLines.map((l) => ({ speaker: l.speaker, text: l.text })),
+          },
+        });
+        setWrap((w) =>
+          w && w.callId === endedCallId
+            ? {
+                ...w,
+                loading: false,
+                summary: res?.summary ?? "",
+                nextStep: res?.next_step ?? "",
+                sentiment: res?.sentiment ?? null,
+              }
+            : w,
+        );
+      } catch {
+        setWrap((w) => (w && w.callId === endedCallId ? { ...w, loading: false } : w));
+      }
+    }
+
     if (campaignId) await loadNext(campaignId);
   };
+
+  const saveWrap = async () => {
+    if (!wrap) return;
+    setBusy(true);
+    try {
+      await supabase.from("calls").update({ summary: wrap.summary || null }).eq("id", wrap.callId);
+
+      if (wrap.task && wrap.nextStep.trim()) {
+        const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
+        if (prof) {
+          const due = new Date();
+          due.setDate(due.getDate() + wrap.dueDays);
+          await supabase.from("tasks").insert({
+            org_id: prof.org_id,
+            title: wrap.nextStep.trim().slice(0, 200),
+            notes: wrap.summary || null,
+            due_at: due.toISOString(),
+            priority: "medium",
+            status: "open",
+            assignee_id: prof.id,
+            created_by: prof.id,
+            call_id: wrap.callId,
+          });
+          qc.invalidateQueries({ queryKey: ["tasks"] });
+        }
+      }
+
+      toast.success(wrap.task && wrap.nextStep.trim() ? "Wrap-Up Saved And Follow-Up Created." : "Wrap-Up Saved.");
+      setWrap(null);
+      qc.invalidateQueries({ queryKey: ["calls"] });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
 
   const flagDnc = async () => {
     setBusy(true);
@@ -902,7 +999,78 @@ function DialerPage() {
         )}
       </div>
 
+      <Dialog open={!!wrap} onOpenChange={(o) => !o && setWrap(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Call Wrap-Up</DialogTitle>
+          </DialogHeader>
+          {wrap && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-[#6B6B76]">
+                <span className="font-semibold text-[#111]">{wrap.prospect}</span>
+                <span>·</span>
+                <span>{wrap.disposition}</span>
+                {wrap.sentiment && <StatusPill label={wrap.sentiment} tone={wrap.sentiment === "Hot" ? "green" : "amber"} />}
+              </div>
+
+              <div>
+                <div className="lead-k" style={{ marginBottom: 6 }}>Summary</div>
+                <textarea
+                  value={wrap.loading ? "Writing the summary…" : wrap.summary}
+                  readOnly={wrap.loading}
+                  onChange={(e) => setWrap({ ...wrap, summary: e.target.value })}
+                  rows={5}
+                  style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 10, padding: 10, font: "inherit" }}
+                />
+              </div>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={wrap.task}
+                  onChange={(e) => setWrap({ ...wrap, task: e.target.checked })}
+                />
+                Create A Follow-Up Task
+              </label>
+
+              {wrap.task && (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Next step"
+                    value={wrap.nextStep}
+                    onChange={(e) => setWrap({ ...wrap, nextStep: e.target.value })}
+                  />
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[1, 2, 5, 7].map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className="tab"
+                        style={{ fontWeight: 600, borderColor: wrap.dueDays === d ? "var(--signal)" : undefined }}
+                        onClick={() => setWrap({ ...wrap, dueDays: d })}
+                      >
+                        In {d} {d === 1 ? "Day" : "Days"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button type="button" className="flex-1" onClick={saveWrap} disabled={busy || wrap.loading}>
+                  Save Wrap-Up
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setWrap(null)} disabled={busy}>
+                  Skip
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
+
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Merge Another Line</DialogTitle>
