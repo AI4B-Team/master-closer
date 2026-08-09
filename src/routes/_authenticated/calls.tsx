@@ -214,6 +214,8 @@ function CallsPage() {
                   <td className="py-3 font-medium">
                     {c.leads?.name ?? "—"}{c.leads?.company ? ` · ${c.leads.company}` : ""}
                   </td>
+                  <td className="py-3 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
+
                   <td className="py-3">
                     <Badge variant="secondary">{MODE_LABEL[c.mode] ?? c.mode}</Badge>
                   </td>
