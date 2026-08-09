@@ -32,9 +32,19 @@ function dayLabel(iso: string) {
  */
 const SEEN_KEY = "mc:activity:seen";
 
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "call", label: "Calls" },
+  { key: "lead", label: "Leads" },
+  { key: "agreement", label: "Agreements" },
+  { key: "deal", label: "Deals" },
+  { key: "campaign", label: "Campaigns" },
+] as const;
+
 export function ActivityPanel() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState<string>("all");
   const [seen, setSeen] = useState<string>("");
 
   useEffect(() => {
@@ -113,9 +123,14 @@ export function ActivityPanel() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const shown = useMemo(
+    () => (filter === "all" ? events : events.filter((e) => describeEvent(e).kind.startsWith(filter))),
+    [events, filter],
+  );
+
   const groups = useMemo(() => {
     const map = new Map<string, EventRow[]>();
-    for (const e of events) {
+    for (const e of shown) {
       const key = dayLabel(e.created_at);
       const list = map.get(key);
       if (list) list.push(e);
@@ -163,11 +178,25 @@ export function ActivityPanel() {
               </div>
             </div>
 
+            <div className="act-filters">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  className={`act-chip${filter === f.key ? " is-on" : ""}`}
+                  aria-pressed={filter === f.key}
+                  onClick={() => setFilter(f.key)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
             <div className="act-body">
-              {events.length === 0 ? (
+              {shown.length === 0 ? (
                 <div className="notif-empty">
                   <Inbox size={20} />
-                  <p>No Activity Yet</p>
+                  <p>{events.length === 0 ? "No Activity Yet" : "Nothing In This Filter"}</p>
                   <span>Calls, leads, agreements and campaigns show up here as they happen.</span>
                 </div>
               ) : (
@@ -209,7 +238,10 @@ export function ActivityPanel() {
               className="notif-foot"
               onClick={() => {
                 setOpen(false);
-                navigate({ to: "/activity", search: { range: "7" } });
+                navigate({
+                  to: "/activity",
+                  search: { range: "7", ...(filter === "all" ? {} : { type: filter }) },
+                });
               }}
             >
               Open Activity Log <ArrowRight size={13} />

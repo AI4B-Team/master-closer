@@ -1031,3 +1031,16 @@
 .act-label { font-size: 0.86rem; font-weight: 650; }
 .act-detail { font-size: 0.78rem; color: var(--muted, #7b818d); overflow-wrap: anywhere; }
 .act-time { font-size: 0.72rem; color: var(--muted, #7b818d); flex: none; padding-top: 2px; }
+.act-filters {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.act-chip {
+  border: 1px solid var(--line); background: none; cursor: pointer;
+  border-radius: 999px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600;
+  color: var(--muted, #7b818d);
+}
+.act-chip:hover { background: var(--surface); }
+.act-chip.is-on {
+  background: var(--mc-crimson, #c8102e); border-color: var(--mc-crimson, #c8102e); color: #fff;
+}
