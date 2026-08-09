@@ -138,7 +138,7 @@ export function ProductTour({ open, onClose }: { open: boolean; onClose: () => v
                 </div>
               ))}
             </div>
-            <p className="tour-rail-note">60-second guided tour</p>
+            <p className="tour-rail-note">60-Second Guided Tour</p>
           </div>
 
           <div className="tour-welcome-body">
@@ -166,7 +166,7 @@ export function ProductTour({ open, onClose }: { open: boolean; onClose: () => v
               Start 60-Second Tour
             </button>
             <button type="button" className="tour-skip-wide" onClick={() => finish("skipped")}>
-              Skip for now
+              Skip For Now
             </button>
           </div>
         </div>
