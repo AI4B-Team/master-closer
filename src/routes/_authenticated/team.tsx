@@ -483,6 +483,58 @@ function ReportsPage() {
         </div>
       </Card>
 
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+            <Bot className="h-5 w-5 text-[#CC0000]" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Agent Performance</h3>
+            <p className="text-sm text-[#6B6B76]">Which AI agents ran the calls, and how they converted.</p>
+          </div>
+        </div>
+
+        {agentPerf.length === 0 ? (
+          <EmptyState icon={Bot} title="No Agent Calls Yet" hint="Assign an agent to a campaign to see results here." />
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-[#6B6B76] border-b border-[#E7E7EC]">
+                <th className="py-2 font-medium">Agent</th>
+                <th className="py-2 font-medium">Mode</th>
+                <th className="py-2 font-medium text-right">Calls</th>
+                <th className="py-2 font-medium text-right">Connect Rate</th>
+                <th className="py-2 font-medium text-right">Avg Talk</th>
+                <th className="py-2 font-medium text-right">Avg Close Probability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agentPerf.map((a) => (
+                <tr key={a.id} className="border-b border-[#F0F1F4] last:border-0">
+                  <td className="py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{a.name}</span>
+                      {a.isAgent ? (
+                        <StatusPill tone={a.active ? "green" : "gray"}>{a.active ? "Active" : "Paused"}</StatusPill>
+                      ) : null}
+                    </div>
+                  </td>
+                  <td className="py-3 text-[#6B6B76]">{a.mode}</td>
+                  <td className="py-3 text-right font-num">{a.calls}</td>
+                  <td className="py-3 text-right font-num">{a.connectRate}%</td>
+                  <td className="py-3 text-right font-num">
+                    {Math.floor(a.avgTalk / 60)}:{String(a.avgTalk % 60).padStart(2, "0")}
+                  </td>
+                  <td className="py-3 text-right font-num font-semibold">{a.avgProbability}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+
+
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
         <div className="flex items-start gap-3 mb-4">
           <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
