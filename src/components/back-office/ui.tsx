@@ -86,6 +86,7 @@ export function Kpi({
   onClick?: () => void;
   active?: boolean;
 }) {
+  const { t } = usePrefs();
   const body = (
     <>
       <div className="kpi-top">
@@ -95,11 +96,11 @@ export function Kpi({
         {delta && (
           <span className={"kpi-delta " + (up ? "up" : "down")}>
             {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            {delta}
+            {t(delta)}
           </span>
         )}
       </div>
-      <div className="kpi-label">{label}</div>
+      <div className="kpi-label">{t(label)}</div>
       <div className="font-num kpi-value">{value}</div>
     </>
   );
@@ -150,11 +151,12 @@ export function Panel({
   children: ReactNode;
   className?: string;
 }) {
+  const { t } = usePrefs();
   return (
     <div className={"mc-card " + className}>
       {(title || action) && (
         <div className="card-head">
-          {title && <h3 className="font-display card-h">{title}</h3>}
+          {title && <h3 className="font-display card-h">{t(title)}</h3>}
           {action}
         </div>
       )}
