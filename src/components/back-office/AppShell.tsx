@@ -105,16 +105,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link
           key={item.to}
           to={item.to}
-          title={item.label}
+          title={collapsed ? undefined : item.label}
+          data-tip={collapsed ? item.label : undefined}
           data-tour={`nav-${item.to.replace("/", "")}`}
           onClick={() => setMobileNav(false)}
-          className={`nav-item ${muted ? "nav-muted" : ""} ${active ? "nav-on" : ""}`}
+          className={`nav-item ${muted ? "nav-muted" : ""} ${active ? "nav-on" : ""} ${collapsed ? "has-tip tip-right" : ""}`}
         >
           <span className="nav-ico">
             <Icon size={muted ? 16 : 17} strokeWidth={muted ? 2 : 2.1} />
           </span>
           <span className="nav-label">{item.label}</span>
         </Link>
+
       );
     });
 
