@@ -276,11 +276,27 @@ function CallDetail({ call }: { call: any }) {
           <div className="space-y-3">
             {data.suggestions.map((s: any) => (
               <div key={s.id} className="rounded-xl border border-[#E7E7EC] p-3">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-1 gap-2">
                   <span className="text-xs uppercase tracking-wider text-[#6B6B76]">{s.objection}</span>
-                  <Badge variant={s.was_used ? "default" : "secondary"}>
-                    {s.was_used ? "Used" : "Offered"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={s.was_used ? "default" : "secondary"}>
+                      {s.was_used ? "Used" : "Offered"}
+                    </Badge>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs"
+                      disabled={promote.isPending || saved.includes(s.id)}
+                      onClick={() => promote.mutate({ id: s.id, trigger: s.objection, response: s.line })}
+                    >
+                      {saved.includes(s.id) ? (
+                        <><Check className="h-3.5 w-3.5 mr-1" />In Playbook</>
+                      ) : (
+                        <><BookPlus className="h-3.5 w-3.5 mr-1" />Add To Playbook</>
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-sm text-[#3A3A44]">{s.line}</p>
               </div>
@@ -290,6 +306,7 @@ function CallDetail({ call }: { call: any }) {
           <p className="text-sm text-[#6B6B76]">No AI suggestions recorded.</p>
         )}
       </Section>
+
 
       <Section icon={ShieldCheck} title="Consent & Disclosure">
         {data && data.consent.length > 0 ? (
