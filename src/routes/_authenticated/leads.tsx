@@ -249,6 +249,9 @@ function LeadsPage() {
         tabs={TAB_GROUPS.leads}
         action={
           <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export
+            </Button>
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="rounded-xl">
