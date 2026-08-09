@@ -19,6 +19,7 @@ import {
   Plus, Trash2, GripVertical, KanbanSquare, MoreHorizontal, Pencil,
   ArrowLeft, ArrowRight, Columns3,
 } from "lucide-react";
+import { DealDrawer, type DealRow } from "@/components/back-office/DealDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -63,6 +64,7 @@ function PipelinePage() {
   const [overStage, setOverStage] = useState<string | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const [colOpen, setColOpen] = useState(false);
+  const [selected, setSelected] = useState<DealRow | null>(null);
   const [editing, setEditing] = useState<Stage | null>(null);
   const [colForm, setColForm] = useState({ label: "", kind: "open" });
   const [form, setForm] = useState({
@@ -110,6 +112,9 @@ function PipelinePage() {
   }, [leads]);
 
   const columns = stages ?? [];
+  const selectedDeal = selected
+    ? ((deals ?? []).find((d) => d.id === selected.id) as DealRow | undefined) ?? selected
+    : null;
   const firstStage = columns[0];
   const stageById = useMemo(() => new Map(columns.map((s) => [s.id, s])), [columns]);
 
@@ -526,6 +531,7 @@ function PipelinePage() {
                       const after = e.clientY > rect.top + rect.height / 2;
                       drop(s.id, after ? idx + 1 : idx);
                     }}
+                    onClick={() => setSelected(d as DealRow)}
                     className={`group p-3 rounded-xl border-[#E7E7EC] shadow-none hover:border-[#CC0000] transition cursor-grab active:cursor-grabbing ${
                       dragId === d.id ? "opacity-50" : ""
                     }`}
@@ -583,6 +589,14 @@ function PipelinePage() {
         })}
       </div>
       )}
+
+      <DealDrawer
+        deal={selectedDeal}
+        stages={columns.map((c) => ({ id: c.id, label: c.label, kind: c.kind }))}
+        leads={(leads ?? []).map((l) => ({ id: l.id, name: l.name, company: l.company }))}
+        legacyStage={(stage) => legacyStage(stage as Stage | undefined)}
+        onOpenChange={(v) => { if (!v) setSelected(null); }}
+      />
     </div>
   );
 }
