@@ -472,9 +472,46 @@ function PipelinePage() {
           }
         />
       ) : (
+      <>
+      <Card className="p-3 rounded-2xl border-[#E7E7EC] shadow-none mb-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B76]" />
+            <Input
+              placeholder="Search deals by title or linked lead"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+            <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Owners</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {(members ?? []).map((m: any) => (
+                <SelectItem key={m.id} value={m.id}>{m.full_name || m.email || "Teammate"}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {filterActive ? (
+            <>
+              <span className="text-xs text-[#6B6B76]">Drag is paused while filtering</span>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-9"
+                onClick={() => { setSearch(""); setOwnerFilter("all"); }}
+              >
+                Clear Filters
+              </Button>
+            </>
+          ) : null}
+        </div>
+      </Card>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {columns.map((s, colIdx) => {
-          const items = itemsIn(s.id);
+          const items = itemsIn(s.id).filter(matches);
           const total = items.reduce((sum, d) => sum + Number(d.value ?? 0), 0);
           const isOver = overStage === s.id;
           const limit = s.wip_limit ?? 0;
