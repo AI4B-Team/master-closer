@@ -71,6 +71,8 @@ function TasksPage() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
+  const [assignee, setAssignee] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [selected, setSelected] = useState<string[]>([]);
   const [form, setForm] = useState({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
 
@@ -243,6 +245,10 @@ function TasksPage() {
       if (filter === "overdue" && !isOverdue(t.due_at)) return false;
     }
     if (mineOnly && t.assignee_id !== me) return false;
+    if (assignee !== "all") {
+      if (assignee === "unassigned" ? !!t.assignee_id : t.assignee_id !== assignee) return false;
+    }
+    if (priorityFilter !== "all" && t.priority !== priorityFilter) return false;
     if (term) {
       const hay = [t.title, t.notes ?? "", t.leads?.name ?? "", t.leads?.company ?? ""].join(" ").toLowerCase();
       if (!hay.includes(term)) return false;
@@ -360,6 +366,25 @@ function TasksPage() {
               placeholder="Search Follow-Ups"
               className="h-8 w-48 rounded-xl text-xs"
             />
+            <Select value={assignee} onValueChange={setAssignee}>
+              <SelectTrigger className="h-8 w-[150px] rounded-xl text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Assignees</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {(team ?? []).map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>{p.full_name || p.email || "Teammate"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="h-8 w-[130px] rounded-xl text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
             <button
               type="button"
               onClick={() => setMineOnly((v) => !v)}
@@ -370,6 +395,7 @@ function TasksPage() {
             >
               Mine Only
             </button>
+
             <span className="h-4 w-px bg-[#E7E7EC]" />
             {FILTERS.map((f) => (
               <button
