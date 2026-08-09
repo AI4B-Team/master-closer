@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Phone, Trash2, Save, PhoneCall, Clock, X } from "lucide-react";
+import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 
@@ -73,6 +73,35 @@ export function LeadDrawer({
         .eq("lead_id", lead!.id)
         .order("started_at", { ascending: false })
         .limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  /* Linked revenue: deals and agreements tied to this lead. */
+  const { data: deals } = useQuery({
+    queryKey: ["lead-deals", lead?.id],
+    enabled: !!lead?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("deals")
+        .select("id, title, value, close_probability, stage_id, updated_at")
+        .eq("lead_id", lead!.id)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: agreements } = useQuery({
+    queryKey: ["lead-agreements", lead?.id],
+    enabled: !!lead?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("agreements")
+        .select("id, title, amount, currency, status, created_at")
+        .eq("lead_id", lead!.id)
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
@@ -289,6 +318,44 @@ export function LeadDrawer({
                       {Math.round((c.duration_sec ?? 0) / 60)}m
                     </span>
                     <Badge variant="outline">{c.close_probability}%</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-[#E7E7EC]">
+            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Deals</p>
+            {!deals || deals.length === 0 ? (
+              <p className="text-sm text-[#6B6B76]">No deals linked to this lead yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {deals.map((d) => (
+                  <li key={d.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+                    <Briefcase className="h-4 w-4 text-[#CC0000]" />
+                    <span className="font-medium truncate">{d.title}</span>
+                    <span className="ml-auto text-[#6B6B76]">${Number(d.value ?? 0).toLocaleString()}</span>
+                    <Badge variant="outline">{d.close_probability}%</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-[#E7E7EC]">
+            <p className="text-xs uppercase tracking-wider text-[#6B6B76] mt-4 mb-2">Agreements</p>
+            {!agreements || agreements.length === 0 ? (
+              <p className="text-sm text-[#6B6B76]">No agreements sent to this lead yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {agreements.map((a) => (
+                  <li key={a.id} className="flex items-center gap-3 rounded-xl border border-[#E7E7EC] px-3 py-2 text-sm">
+                    <FileText className="h-4 w-4 text-[#CC0000]" />
+                    <span className="font-medium truncate">{a.title}</span>
+                    <span className="ml-auto text-[#6B6B76]">
+                      {a.currency} {Number(a.amount ?? 0).toLocaleString()}
+                    </span>
+                    <Badge variant="outline" className="capitalize">{a.status}</Badge>
                   </li>
                 ))}
               </ul>
