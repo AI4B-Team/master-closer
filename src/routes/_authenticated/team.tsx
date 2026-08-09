@@ -169,6 +169,39 @@ function ReportsPage() {
       .sort((a, b) => b.count - a.count);
   }, [calls]);
 
+  const funnel = useMemo(() => {
+    const cols = (stages ?? []).filter((s) => s.kind !== "lost");
+    const list = deals ?? [];
+    const indexOf = new Map(cols.map((s, i) => [s.id, i]));
+    const rows = cols.map((s, i) => {
+      const here = list.filter((d) => d.stage_id === s.id);
+      const reached = list.filter((d) => {
+        const idx = indexOf.get(d.stage_id ?? "");
+        return idx !== undefined && idx >= i;
+      }).length;
+      const stale = (s.stale_days ?? 0) > 0 && s.kind === "open"
+        ? here.filter((d) => (Date.now() - new Date(d.updated_at).getTime()) / 86400000 > (s.stale_days ?? 0)).length
+        : 0;
+      return {
+        id: s.id,
+        label: s.label,
+        kind: s.kind,
+        here: here.length,
+        value: here.reduce((sum, d) => sum + Number(d.value ?? 0), 0),
+        reached,
+        stale,
+      };
+    });
+    const top = rows[0]?.reached || 1;
+    return rows.map((r, i) => ({
+      ...r,
+      share: Math.round((r.reached / top) * 100),
+      conversion: i === 0 ? 100 : rows[i - 1].reached ? Math.round((r.reached / rows[i - 1].reached) * 100) : 0,
+    }));
+  }, [stages, deals]);
+
+
+
   const exportCsv = () => {
     const header = ["Rep", "Calls", "Connects", "Connect Rate", "Talk Minutes", "Closed Revenue"];
     const rows = leaderboard.map((r) => [
