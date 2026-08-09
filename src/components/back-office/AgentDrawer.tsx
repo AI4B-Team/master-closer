@@ -209,6 +209,17 @@ export function AgentDrawer({
             </p>
           </div>
 
+          {agent && (
+            <AgentQuickDrill
+              agentId={agent.id}
+              name={form.name ?? agent.name}
+              industry={form.industry}
+              systemPrompt={form.system_prompt}
+              mode={form.default_mode ?? "hybrid"}
+            />
+          )}
+
+
           <div className="flex items-center gap-2 pt-1">
             <Button
               type="button"
