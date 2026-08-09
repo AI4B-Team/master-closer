@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -53,25 +54,34 @@ export function LeadDrawer({
   }, [lead]);
 
   /* Owners come from the org's profiles so leads can be routed to a real closer. */
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: members } = useQuery({
-    queryKey: ["org-members-min"],
+    queryKey: ["org-members-min", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id, full_name, email");
+      const { data, error } = await supabase
+        .from("workspace_members")
+        .select("user_id, profiles:user_id(id, full_name, email)")
+        .eq("workspace_id", wsId!)
+        .limit(200);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map((m: any) => m.profiles).filter(Boolean) as { id: string; full_name: string | null; email: string | null }[];
     },
   });
 
 
 
   const { data: calls } = useQuery({
-    queryKey: ["lead-calls", lead?.id],
-    enabled: !!lead?.id,
+    queryKey: ["lead-calls", lead?.id, wsId],
+    enabled: !!lead?.id && !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("calls")
         .select("id, mode, outcome, disposition, duration_sec, close_probability, started_at")
         .eq("lead_id", lead!.id)
+        .eq("workspace_id", wsId!)
         .order("started_at", { ascending: false })
         .limit(20);
       if (error) throw error;
@@ -81,13 +91,14 @@ export function LeadDrawer({
 
   /* Linked revenue: deals and agreements tied to this lead. */
   const { data: deals } = useQuery({
-    queryKey: ["lead-deals", lead?.id],
-    enabled: !!lead?.id,
+    queryKey: ["lead-deals", lead?.id, wsId],
+    enabled: !!lead?.id && !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("deals")
         .select("id, title, value, close_probability, stage_id, updated_at")
         .eq("lead_id", lead!.id)
+        .eq("workspace_id", wsId!)
         .order("updated_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -95,13 +106,14 @@ export function LeadDrawer({
   });
 
   const { data: agreements } = useQuery({
-    queryKey: ["lead-agreements", lead?.id],
-    enabled: !!lead?.id,
+    queryKey: ["lead-agreements", lead?.id, wsId],
+    enabled: !!lead?.id && !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreements")
         .select("id, title, amount, currency, status, created_at")
         .eq("lead_id", lead!.id)
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];

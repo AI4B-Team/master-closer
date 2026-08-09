@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { Save, Trash2, Phone, Clock, FileSignature, User } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -52,14 +53,18 @@ export function DealDrawer({
     if (deal) setForm({ ...deal });
   }, [deal]);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: calls } = useQuery({
-    queryKey: ["deal-calls", deal?.lead_id],
-    enabled: !!deal?.lead_id,
+    queryKey: ["deal-calls", deal?.lead_id, wsId],
+    enabled: !!deal?.lead_id && !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("calls")
         .select("id, mode, outcome, disposition, duration_sec, close_probability, started_at")
         .eq("lead_id", deal!.lead_id!)
+        .eq("workspace_id", wsId!)
         .order("started_at", { ascending: false })
         .limit(10);
       if (error) throw error;
@@ -68,13 +73,14 @@ export function DealDrawer({
   });
 
   const { data: agreements } = useQuery({
-    queryKey: ["deal-agreements", deal?.id],
-    enabled: !!deal?.id,
+    queryKey: ["deal-agreements", deal?.id, wsId],
+    enabled: !!deal?.id && !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreements")
         .select("id, title, status, amount, currency, signed_at, created_at")
         .eq("deal_id", deal!.id)
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(10);
       if (error) throw error;
