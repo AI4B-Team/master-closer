@@ -25,18 +25,26 @@ export const Route = createFileRoute("/_authenticated/activity")({
   component: ActivityPage,
 });
 
+const RANGES = [
+  { key: "7", label: "Last 7 Days", days: 7 },
+  { key: "30", label: "Last 30 Days", days: 30 },
+  { key: "90", label: "Last 90 Days", days: 90 },
+  { key: "all", label: "All Time", days: null as number | null },
+];
+
 function ActivityPage() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState<string>("all");
+  const [range, setRange] = useState<string>("30");
+  const [limit, setLimit] = useState(200);
 
   const { data: events, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["org-events"],
+    queryKey: ["org-events", range, limit],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(300);
+      const days = RANGES.find((r) => r.key === range)?.days ?? null;
+      let q = supabase.from("events").select("*").order("created_at", { ascending: false }).limit(limit);
+      if (days) q = q.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
+      const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
     },
@@ -98,13 +106,23 @@ function ActivityPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             <Input
               placeholder="Search Events"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs"
             />
+            <div className="flex flex-wrap gap-1.5">
+              {RANGES.map((r) => (
+                <FilterChip key={r.key} active={range === r.key} onClick={() => setRange(r.key)}>
+                  {r.label}
+                </FilterChip>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <div className="flex flex-wrap gap-1.5">
               <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
               {types.map((t) => (
@@ -113,6 +131,9 @@ function ActivityPage() {
                 </FilterChip>
               ))}
             </div>
+            <span className="ml-auto text-xs text-[#6B6B76]">
+              {rows.length} Event{rows.length === 1 ? "" : "s"}
+            </span>
           </div>
 
           {isLoading ? (
@@ -154,6 +175,20 @@ function ActivityPage() {
               })}
             </div>
           )}
+
+          {(events?.length ?? 0) >= limit ? (
+            <div className="mt-4 text-center">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setLimit((l) => l + 200)}
+                disabled={isFetching}
+              >
+                Load More
+              </Button>
+            </div>
+          ) : null}
         </Card>
       </AccountShell>
     </div>
