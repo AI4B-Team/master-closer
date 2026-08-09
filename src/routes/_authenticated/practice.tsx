@@ -101,7 +101,7 @@ function PracticePage() {
           agentName: agent?.name ?? null,
           industry: agent?.industry ?? null,
           systemPrompt: agent?.system_prompt ? String(agent.system_prompt).slice(0, 4000) : null,
-          library: await fetchObjectionLibrary(),
+          library: await fetchObjectionLibrary(wsId),
         },
       });
       const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();

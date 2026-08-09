@@ -236,7 +236,7 @@ function DialerPage() {
           agentName: agent?.name ?? null,
           industry: agent?.industry ?? null,
           systemPrompt: agent?.system_prompt ?? null,
-          library: await fetchObjectionLibrary(),
+          library: await fetchObjectionLibrary(wsId),
         },
       });
       setAiConfidence(res.confidence);
