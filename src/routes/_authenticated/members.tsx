@@ -229,7 +229,9 @@ function MembersPage() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Badge className={ROLE_STYLE[m.role] ?? ROLE_STYLE.rep}>{m.role}</Badge>
+                  <Badge className={ROLE_STYLE[m.role] ?? ROLE_STYLE.rep}>
+                    {ROLES.find((r) => r.value === m.role)?.label ?? "Rep"}
+                  </Badge>
                 )}
                 {isAdmin && !m.isSelf && m.workspaceRole !== "owner" ? (
                   <Select
