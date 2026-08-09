@@ -162,6 +162,12 @@ function Objections() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ trigger: "", response: "", category: "" });
+  const [genOpen, setGenOpen] = useState(false);
+  const [gen, setGen] = useState({ industry: "", focus: "" });
+  const [generating, setGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [picked, setPicked] = useState<Record<number, boolean>>({});
+
 
   const { data: objections } = useQuery({
     queryKey: ["objections"],
