@@ -120,7 +120,7 @@ function AgentsPage() {
       <PageHeader
         title="Background Agents"
         description="Six agents learn from finished calls. Every change arrives as a proposal a human approves — never a change that happens on its own."
-        tabs={TAB_GROUPS["/ai-closers"]}
+        tabs={TAB_GROUPS.studio}
         action={
           <div style={{ display: "flex", gap: 8 }}>
             <Button variant="outline" onClick={() => runNow.mutate(undefined)} disabled={runNow.isPending}>
