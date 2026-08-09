@@ -9,8 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
+import { helpSystemPrompt } from "@/lib/agents.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 type Agent = {
   id: string;
@@ -32,10 +34,37 @@ export function AgentDrawer({
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Agent>>({});
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiHelp = useServerFn(helpSystemPrompt);
 
   useEffect(() => {
     if (agent) setForm({ ...agent });
   }, [agent]);
+
+  const runAiHelp = async (instruction: "generate" | "improve" | "shorten" | "tone") => {
+    if (!form.name) {
+      toast.error("Add a name first so AI knows who this closer is.");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await aiHelp({
+        data: {
+          name: form.name,
+          industry: form.industry ?? null,
+          mode: (form.default_mode ?? "hybrid") as "full_ai" | "hybrid" | "copilot",
+          current: form.system_prompt ?? null,
+          instruction,
+        },
+      });
+      setForm((f) => ({ ...f, system_prompt: res.prompt }));
+      toast.success("Prompt updated.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "AI help failed.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const save = useMutation({
     mutationFn: async () => {
@@ -122,7 +151,52 @@ export function AgentDrawer({
           </div>
 
           <div>
-            <Label>System Prompt</Label>
+            <div className="flex items-start justify-between gap-3 mb-1.5">
+              <Label className="mt-1.5 shrink-0">System Prompt</Label>
+              <div className="flex flex-wrap justify-end items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading}
+                  onClick={() => runAiHelp("generate")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  {aiLoading ? <RefreshCw className="h-3 w-3 mr-1 animate-spin" /> : <Wand2 className="h-3 w-3 mr-1" />}
+                  Generate
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !form.system_prompt}
+                  onClick={() => runAiHelp("improve")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  <Sparkles className="h-3 w-3 mr-1" /> Improve
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !form.system_prompt}
+                  onClick={() => runAiHelp("shorten")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  <Scissors className="h-3 w-3 mr-1" /> Shorten
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !form.system_prompt}
+                  onClick={() => runAiHelp("tone")}
+                  className="h-7 text-xs rounded-lg border-[#E7E7EC] hover:border-[#CC0000]/40 hover:bg-[#CC0000]/5"
+                >
+                  <Megaphone className="h-3 w-3 mr-1" /> Tone Up
+                </Button>
+              </div>
+            </div>
             <Textarea
               rows={10}
               value={form.system_prompt ?? ""}
