@@ -981,6 +981,16 @@
 }
 
 /* ---------------------------- activity panel ---------------------------- */
+.act-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--mc-crimson, #c8102e);
+  box-shadow: 0 0 0 2px var(--bo-topbar-bg, #fff);
+}
 .act-scrim {
   position: fixed; inset: 0; z-index: 60; border: none; padding: 0;
   background: rgba(17, 19, 24, 0.32);
