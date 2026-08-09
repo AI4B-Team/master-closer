@@ -404,6 +404,20 @@ function PipelinePage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Card Limit</Label>
+                <Input type="number" min={0} placeholder="No Limit" value={colForm.wip_limit}
+                  onChange={(e) => setColForm({ ...colForm, wip_limit: e.target.value })} />
+                <p className="text-[11px] text-[#6B6B76] mt-1">Warn when this column holds more cards than this.</p>
+              </div>
+              <div>
+                <Label>Stalled After (Days)</Label>
+                <Input type="number" min={0} value={colForm.stale_days}
+                  onChange={(e) => setColForm({ ...colForm, stale_days: e.target.value })} />
+                <p className="text-[11px] text-[#6B6B76] mt-1">Flag a deal that sits here without an update. 0 turns it off.</p>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" onClick={() => saveColumn.mutate()}
