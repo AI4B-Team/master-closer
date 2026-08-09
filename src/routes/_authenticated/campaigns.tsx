@@ -13,8 +13,10 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonRows, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
-import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users, Pencil, Trash2 } from "lucide-react";
+import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users, Pencil, Trash2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
@@ -209,6 +211,29 @@ function CampaignsPage() {
     return true;
   });
 
+  const exportCsv = () => {
+    const csv = toCsv(
+      ["Campaign", "Goal", "Mode", "Closer", "List", "Contacts", "Dialed", "Connects", "Status", "Created"],
+      visible.map((c: any) => {
+        const s = statsFor(c.id);
+        return [
+          c.name,
+          c.goal ?? "",
+          MODE_LABEL[c.mode] ?? c.mode,
+          c.agents?.name ?? "",
+          c.call_lists?.name ?? "",
+          c.call_lists?.list_contacts?.length ?? 0,
+          s.dialed,
+          s.connects,
+          c.status,
+          c.created_at ? new Date(c.created_at).toLocaleDateString() : "",
+        ];
+      }),
+    );
+    downloadCsv(stampedName("campaigns"), csv);
+  };
+
+
   return (
     <div>
       <PageHeader
@@ -338,6 +363,16 @@ function CampaignsPage() {
               </Button>
             )}
             <span className="ml-auto text-xs text-[#6B6B76]">{visible.length} Of {all.length}</span>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-xl text-xs"
+              onClick={exportCsv}
+              disabled={visible.length === 0}
+            >
+              <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+            </Button>
+
           </div>
         )}
         {campaignsLoading ? (
