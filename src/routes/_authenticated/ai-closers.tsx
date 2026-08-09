@@ -77,6 +77,37 @@ function AIClosers() {
     },
   });
 
+  /** Real call performance per agent: volume, connect rate and average close probability. */
+  const { data: perf } = useQuery({
+    queryKey: ["agent-call-perf"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("calls")
+        .select("agent_id, dial_outcome, close_probability");
+      const map: Record<string, { calls: number; connects: number; prob: number }> = {};
+      for (const row of data ?? []) {
+        if (!row.agent_id) continue;
+        const m = map[row.agent_id] ?? { calls: 0, connects: 0, prob: 0 };
+        m.calls += 1;
+        if (row.dial_outcome === "connected") m.connects += 1;
+        m.prob += row.close_probability ?? 0;
+        map[row.agent_id] = m;
+      }
+      return Object.fromEntries(
+        Object.entries(map).map(([id, m]) => [
+          id,
+          {
+            calls: m.calls,
+            connectRate: Math.round((m.connects / m.calls) * 100),
+            avgProb: Math.round(m.prob / m.calls),
+          },
+        ]),
+      );
+    },
+  });
+
+
+
   const create = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
