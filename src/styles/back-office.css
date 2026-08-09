@@ -1052,3 +1052,36 @@
   background: color-mix(in srgb, var(--mc-crimson, #c8102e) 12%, transparent);
   border-radius: 999px; padding: 1px 6px;
 }
+
+/* ---- Workspace switcher ---- */
+.ws-wrap { position: relative; }
+.ws-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 34px; padding: 0 10px; border-radius: 10px;
+  background: #fff; border: 1px solid var(--bo-border, #e8e8ea);
+  font-size: 13px; font-weight: 600; color: #1a1a1a; cursor: pointer;
+  max-width: 220px;
+}
+.ws-btn:hover { background: #fafafa; }
+.ws-dot { width: 8px; height: 8px; border-radius: 999px; flex: 0 0 auto; }
+.ws-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-menu {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 60;
+  min-width: 260px; background: #fff; border: 1px solid var(--bo-border, #e8e8ea);
+  border-radius: 14px; box-shadow: 0 18px 40px rgba(0,0,0,.12); padding: 6px;
+}
+.ws-menu-h { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #8a8a8f; padding: 8px 10px 6px; }
+.ws-empty { padding: 10px; font-size: 13px; color: #8a8a8f; }
+.ws-item {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 10px; background: transparent; border: 0;
+  cursor: pointer; text-align: left;
+}
+.ws-item:hover { background: #f6f6f7; }
+.ws-item-active { background: rgba(204,0,0,.06); }
+.ws-item-t { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ws-item-name { font-size: 13px; font-weight: 600; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-item-slug { font-size: 11px; color: #8a8a8f; }
+:root.dark .ws-btn, :root.dark .ws-menu { background: #141416; border-color: #2a2a2e; color: #f2f2f3; }
+:root.dark .ws-item:hover { background: #1e1e21; }
+:root.dark .ws-item-name { color: #f2f2f3; }
