@@ -43,12 +43,12 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    const { t } = usePrefs();
+    const { t, lang } = usePrefs();
     // Plain-string labels flow through the translation layer automatically.
     const localize = (value: string) => {
       const label = value.trim();
       if (!label) return value;
-      if (typeof window !== "undefined") (window as any).__btnloc = [...((window as any).__btnloc ?? []), label + "=>" + t(label)];
+      if (typeof window !== "undefined") (window as any).__btnloc = [...((window as any).__btnloc ?? []), lang + ":" + label + "=>" + t(label)];
       const lead = value.slice(0, value.indexOf(label[0]!));
       const tail = value.slice(lead.length + label.length);
       return `${lead}${t(label)}${tail}`;
