@@ -164,9 +164,23 @@ function Scripts() {
                   <p className="font-medium text-sm">{s.name}</p>
                   {s.description && <p className="text-xs text-[#6B6B76] mt-0.5">{s.description}</p>}
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => remove.mutate(s.id)}>
-                  <Trash2 className="h-4 w-4 text-[#6B6B76]" />
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setEditId(s.id);
+                      setForm({ name: s.name ?? "", description: s.description ?? "", content: s.content ?? "" });
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4 text-[#6B6B76]" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove.mutate(s.id)}>
+                    <Trash2 className="h-4 w-4 text-[#6B6B76]" />
+                  </Button>
+                </div>
               </div>
               {s.content && (
                 <p className="text-sm text-[#4A505C] mt-2 whitespace-pre-line">{s.content}</p>
