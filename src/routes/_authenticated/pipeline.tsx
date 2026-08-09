@@ -497,7 +497,9 @@ function PipelinePage() {
               <div className="flex items-center justify-between mb-1 px-1">
                 <span className="text-xs font-semibold uppercase tracking-wider truncate">{s.label}</span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-xs text-[#6B6B76]">{items.length}</span>
+                  <span className={`text-xs font-mono ${overLimit ? "text-[#CC0000] font-semibold" : "text-[#6B6B76]"}`}>
+                    {limit > 0 ? `${items.length}/${limit}` : items.length}
+                  </span>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0">
