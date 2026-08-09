@@ -205,12 +205,54 @@ function ListsPage() {
         tabs={TAB_GROUPS.campaigns}
         action={
           <div className="flex gap-2">
+            <Button variant="outline" className="rounded-xl" disabled={!active} onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+
+            <Dialog open={renameOpen} onOpenChange={(o) => { setRenameOpen(o); if (o) setRenameValue(active?.name ?? ""); }}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="rounded-xl" disabled={!active}>
+                  <Pencil className="h-4 w-4 mr-1" /> Rename
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Rename List</DialogTitle></DialogHeader>
+                <div>
+                  <Label>List Name</Label>
+                  <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} />
+                </div>
+                <DialogFooter className="justify-between">
+                  <Button
+                    variant="outline"
+                    className="rounded-xl text-[#CC0000] border-[#CC0000]/30 hover:bg-[#CC0000]/5"
+                    disabled={deleteList.isPending}
+                    onClick={() => {
+                      if (confirm("Delete this list and all of its contacts?")) {
+                        deleteList.mutate();
+                        setRenameOpen(false);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete List
+                  </Button>
+                  <Button
+                    className="bg-[#CC0000] hover:bg-[#A30000]"
+                    disabled={!renameValue.trim() || renameList.isPending}
+                    onClick={() => renameList.mutate()}
+                  >
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="rounded-xl" disabled={!active}>
                   <Upload className="h-4 w-4 mr-1" /> Import
                 </Button>
               </DialogTrigger>
+
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Import Into {active?.name ?? "List"}</DialogTitle>
