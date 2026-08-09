@@ -133,7 +133,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
         kind: "Agent",
         id: p.id,
         title: `${p.proposal_type.replace(/_/g, " ")} — ${p.target_table}${p.target_field ? `.${p.target_field}` : ""}`,
-        sub: `Proposal · ${p.status} · ${p.agent_key.replace(/_/g, " ")}`,
+        sub: `Proposal · ${p.status} · ${(p.agent_key ?? "agent").replace(/_/g, " ")}`,
         to: "/agents",
         params: { view: "proposals" },
       });
