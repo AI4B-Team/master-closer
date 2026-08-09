@@ -335,7 +335,7 @@ function AgreementsPage() {
           </Card>
         </>
       ) : (
-        <TemplatesTab templates={templates ?? []} orgId={me?.org_id ?? null} onChange={invalidate} />
+        <TemplatesTab templates={templates ?? []} orgId={me?.org_id ?? null} wsId={wsId} onChange={invalidate} />
       )}
 
       <ComposeDialog
