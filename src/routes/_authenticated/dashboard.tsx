@@ -185,7 +185,7 @@ function Dashboard() {
               <Link
                 key={m.name}
                 to="/calls"
-                search={{ mode: m.mode }}
+                search={{ mode: m.mode, campaign: undefined, agent: undefined, call: undefined }}
                 className="legend-row legend-link"
               >
                 <span className="legend-dot" style={{ background: MODE_COLORS[i] }} />
