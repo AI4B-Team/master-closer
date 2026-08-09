@@ -114,6 +114,14 @@ function PipelinePage() {
     },
   });
 
+  const { data: members } = useQuery({
+    queryKey: ["org-members"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, full_name, email");
+      return data ?? [];
+    },
+  });
+
   const leadName = useMemo(() => {
     const map = new Map<string, string>();
     for (const l of leads ?? []) map.set(l.id, l.company ? `${l.name} · ${l.company}` : l.name);
