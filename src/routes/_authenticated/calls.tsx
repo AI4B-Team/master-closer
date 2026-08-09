@@ -19,7 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/calls")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { campaign?: string; agent?: string; call?: string; mode?: string } => ({
     campaign: typeof s.campaign === "string" ? s.campaign : undefined,
     agent: typeof s.agent === "string" ? s.agent : undefined,
     call: typeof s.call === "string" ? s.call : undefined,
