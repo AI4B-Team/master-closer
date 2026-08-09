@@ -74,7 +74,7 @@ function HubHandoff() {
             <h1 className="text-xl font-semibold mb-2">Handoff Failed</h1>
             <p className="text-sm text-[#6B6B76]">{error}</p>
             <a href="/auth" className="inline-block mt-6 text-sm font-medium text-[#CC0000]">
-              Sign in directly instead
+              Sign In Directly Instead
             </a>
           </>
         ) : (

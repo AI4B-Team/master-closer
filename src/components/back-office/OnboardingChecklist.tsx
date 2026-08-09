@@ -107,7 +107,7 @@ export function OnboardingChecklist() {
             <p>{doneCount} of {steps.length} done — finish these to start closing.</p>
           </div>
         </div>
-        <button type="button" className="onb-x" onClick={dismiss} aria-label="Dismiss checklist">
+        <button type="button" className="onb-x" onClick={dismiss} aria-label="Dismiss Checklist">
           <X size={15} />
         </button>
       </div>

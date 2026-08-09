@@ -44,7 +44,7 @@ export function LiveAssistPanel({
           className={"switch has-tip tip-below " + (live ? "on" : "")}
           onClick={() => setLive((v) => !v)}
           data-tip={live ? "Pause live transcription" : "Resume live transcription"}
-          aria-label="Toggle live transcription"
+          aria-label="Toggle Live Transcription"
         />
 
       </div>

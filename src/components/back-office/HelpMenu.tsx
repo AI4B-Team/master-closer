@@ -83,7 +83,7 @@ export function HelpMenu({ onStartTour }: { onStartTour: () => void }) {
           data-tour="help"
           className="icon-btn has-tip tip-below"
           data-tip="Help, tour and feedback"
-          aria-label="Open help menu"
+          aria-label="Open Help Menu"
           onClick={() => setOpen((v) => !v)}
         >
           <CircleHelp size={17} />
@@ -124,7 +124,7 @@ export function HelpMenu({ onStartTour }: { onStartTour: () => void }) {
             }
           }}
         >
-          <div className="fb-modal" role="dialog" aria-modal="true" aria-label="Send feedback">
+          <div className="fb-modal" role="dialog" aria-modal="true" aria-label="Send Feedback">
             <button
               type="button"
               className="fb-x"
