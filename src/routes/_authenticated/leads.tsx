@@ -343,6 +343,53 @@ function LeadsPage() {
           </Select>
           <span className="text-sm text-[#6B6B76] whitespace-nowrap">{filtered.length} Shown</span>
         </div>
+        {picked.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 rounded-xl border border-[#E7E7EC] bg-[#F4F4F6]/70 px-3 py-2">
+            <span className="text-sm font-medium">{picked.length} Selected</span>
+            <Select onValueChange={(v) => bulkStatus.mutate(v)}>
+              <SelectTrigger className="w-[170px] h-9 bg-white"><SelectValue placeholder="Set Status" /></SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={listTarget} onValueChange={setListTarget}>
+              <SelectTrigger className="w-[190px] h-9 bg-white"><SelectValue placeholder="Add To Call List" /></SelectTrigger>
+              <SelectContent>
+                {(lists ?? []).length === 0 ? (
+                  <SelectItem value="none" disabled>No Call Lists Yet</SelectItem>
+                ) : (
+                  (lists ?? []).map((l: any) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)
+                )}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl h-9"
+              disabled={!listTarget || bulkToList.isPending}
+              onClick={() => bulkToList.mutate()}
+            >
+              <ListPlus className="h-4 w-4 mr-1" /> Add
+            </Button>
+            <Button type="button" variant="outline" className="rounded-xl h-9" onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export Selected
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl h-9 text-[#CC0000] border-[#CC0000]/30 hover:bg-[#CC0000]/5"
+              disabled={bulkDelete.isPending}
+              onClick={() => bulkDelete.mutate()}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+            <Button type="button" variant="ghost" className="rounded-xl h-9" onClick={() => setPicked([])}>
+              Clear
+            </Button>
+          </div>
+        )}
 
         {leadsLoading ? (
           <SkeletonRows rows={6} />
@@ -366,6 +413,15 @@ function LeadsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                <th className="py-2 w-8">
+                  <Checkbox
+                    checked={allShownPicked}
+                    onCheckedChange={(v) =>
+                      setPicked(v ? filtered.map((l: any) => l.id) : [])
+                    }
+                    aria-label="Select all shown leads"
+                  />
+                </th>
                 <th className="py-2">Name</th><th className="py-2">Company</th>
                 <th className="py-2">Email</th><th className="py-2">Phone</th>
                 <th className="py-2">Consent</th><th className="py-2">Status</th>
@@ -378,6 +434,15 @@ function LeadsPage() {
                   onClick={() => setSelected(l)}
                   className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/70 cursor-pointer"
                 >
+                  <td className="py-3" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={picked.includes(l.id)}
+                      onCheckedChange={(v) =>
+                        setPicked((p) => (v ? [...p, l.id] : p.filter((x) => x !== l.id)))
+                      }
+                      aria-label={`Select ${l.name}`}
+                    />
+                  </td>
                   <td className="py-3 font-medium">{l.name}</td>
                   <td className="py-3 text-[#6B6B76]">{l.company ?? "—"}</td>
                   <td className="py-3 text-[#6B6B76]">{l.email ?? "—"}</td>
@@ -391,6 +456,7 @@ function LeadsPage() {
             </tbody>
           </table>
         )}
+
       </Card>
 
       <LeadDrawer lead={selected} onOpenChange={(o) => !o && setSelected(null)} />
