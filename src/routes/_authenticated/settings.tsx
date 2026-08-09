@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { HubPanel } from "@/components/back-office/HubPanel";
@@ -92,21 +93,31 @@ function WebhooksCard({ orgId }: { orgId: string | null }) {
   const emit = useServerFn(emitOrgEvent);
 
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: hooks } = useQuery({
-    queryKey: ["org-webhooks"],
+    queryKey: ["org-webhooks", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("org_webhooks").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("org_webhooks")
+        .select("*")
+        .eq("workspace_id", wsId!)
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const { data: deliveries } = useQuery({
-    queryKey: ["webhook-deliveries"],
+    queryKey: ["webhook-deliveries", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("webhook_deliveries")
         .select("*")
+        .eq("workspace_id", wsId!)
         .order("delivered_at", { ascending: false })
         .limit(15);
       return data ?? [];
