@@ -228,7 +228,7 @@ function TasksPage() {
         }
       />
 
-      <div className="kpi-grid">
+      <div className="kpis">
         <Kpi label="Open" value={String(counts.open)} icon={ListChecks} {...KPI_TINTS.blue} />
         <Kpi label="Due Today" value={String(counts.today)} icon={CalendarClock} {...KPI_TINTS.mint} />
         <Kpi label="Overdue" value={String(counts.overdue)} icon={AlarmClock} {...KPI_TINTS.red} />
