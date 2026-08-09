@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { usePrefs } from "@/hooks/use-prefs";
 
 
-if (typeof window !== "undefined") console.log("BTNMOD loaded");
+if (typeof window !== "undefined") (window as any).__btnmod = ((window as any).__btnmod ?? 0) + 1;
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -48,7 +48,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const localize = (value: string) => {
       const label = value.trim();
       if (!label) return value;
-      if (typeof window !== "undefined") console.log("BTNLOC", label, t(label));
+      if (typeof window !== "undefined") (window as any).__btnloc = [...((window as any).__btnloc ?? []), label + "=>" + t(label)];
       const lead = value.slice(0, value.indexOf(label[0]!));
       const tail = value.slice(lead.length + label.length);
       return `${lead}${t(label)}${tail}`;
