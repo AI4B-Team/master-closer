@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { fetchObjectionLibrary } from "@/lib/objections";
 
 
 
@@ -165,7 +166,9 @@ function DialerPage() {
           ts_sec: elapsed,
         });
       }
-      const res = await askCloser({ data: { prospect: prospectLine, mode: MODE_KEY[mode] } });
+      const res = await askCloser({
+        data: { prospect: prospectLine, mode: MODE_KEY[mode], library: await fetchObjectionLibrary() },
+      });
       setAiConfidence(res.confidence);
       setSuggestions([res.line]);
       if (mode === "full_ai") {

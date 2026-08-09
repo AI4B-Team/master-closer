@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { closeObjection } from "@/lib/demo.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fetchObjectionLibrary } from "@/lib/objections";
 
 const MODE_LABEL: Record<string, string> = {
   full_ai: "AI Says To Prospect",
@@ -22,7 +23,7 @@ const SUGGESTED = [
   "Just send me some information.",
 ];
 
-type Drill = { objection: string; tone: string; confidence: number; line: string };
+type Drill = { objection: string; tone: string; confidence: number; line: string; source?: "library" | "ai" };
 
 /** Run a live objection drill against this agent's own prompt, industry, and mode. */
 export function AgentQuickDrill({
@@ -65,6 +66,7 @@ export function AgentQuickDrill({
           agentName: name,
           industry: industry ?? null,
           systemPrompt: systemPrompt ?? null,
+          library: await fetchObjectionLibrary(),
         },
       });
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
@@ -140,6 +142,11 @@ export function AgentQuickDrill({
             <Badge variant="outline" className="text-[#CC0000] border-[#CC0000]/30">
               {result.confidence}% Close Probability
             </Badge>
+            {result.source === "library" && (
+              <Badge variant="outline" className="border-[#E7E7EC] text-[#6B6B76]">
+                From Playbook
+              </Badge>
+            )}
           </div>
           <p className="text-[11px] uppercase tracking-wide text-[#6B6B76] mb-1">
             {MODE_LABEL[mode] ?? "Next Best Response"}

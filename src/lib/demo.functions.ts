@@ -14,6 +14,10 @@ export const closeObjection = createServerFn({ method: "POST" })
         agentName: z.string().max(120).nullish(),
         industry: z.string().max(120).nullish(),
         systemPrompt: z.string().max(4000).nullish(),
+        library: z
+          .array(z.object({ trigger: z.string().max(300), response: z.string().max(1200) }))
+          .max(25)
+          .optional(),
       })
       .parse(data),
   )
@@ -27,11 +31,17 @@ export const closeObjection = createServerFn({ method: "POST" })
       `You are ${data.agentName || "Master Closer"}, a real-time sales AI. ${m.persona}\n\n` +
       (data.industry ? `You sell in the ${data.industry} industry.\n` : "") +
       (data.systemPrompt ? `Follow this operating brief:\n"""\n${data.systemPrompt}\n"""\n\n` : "") +
+      (data.library?.length
+        ? `Approved objection library — if one of these clearly matches, reuse its approved response almost verbatim (light wording changes only) and set "source" to "library":\n` +
+          data.library.map((l) => `- Objection: "${l.trigger}"\n  Approved response: "${l.response}"`).join("\n") +
+          `\n\n`
+        : "") +
       `The prospect just said: "${data.prospect}"\n\n` +
       `Respond with ONLY a JSON object (no markdown, no backticks, no commentary) with exactly these keys:\n` +
       `"objection": a 2-4 word label for what's really going on,\n` +
       `"tone": 1-2 words for the prospect's tone,\n` +
       `"confidence": an integer 0-100 estimate of close probability if the next move lands,\n` +
+      `"source": "library" if you reused an approved library response, otherwise "ai",\n` +
       `"line": ${m.lineDesc}. Keep it under 30 words, conversational, never pushy or manipulative.`;
 
     const gateway = createLovableAiGatewayProvider(key);
@@ -69,5 +79,6 @@ export const closeObjection = createServerFn({ method: "POST" })
       tone: String(parsed.tone ?? "Neutral"),
       confidence: Number(parsed.confidence ?? 60),
       line: String(parsed.line ?? ""),
+      source: parsed.source === "library" ? ("library" as const) : ("ai" as const),
     };
   });

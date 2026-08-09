@@ -13,6 +13,7 @@ import { GraduationCap, Sparkles, Send, RotateCcw, Bot } from "lucide-react";
 import { closeObjection } from "@/lib/demo.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fetchObjectionLibrary } from "@/lib/objections";
 
 export const Route = createFileRoute("/_authenticated/practice")({
   head: () => ({
@@ -93,6 +94,7 @@ function PracticePage() {
           agentName: agent?.name ?? null,
           industry: agent?.industry ?? null,
           systemPrompt: agent?.system_prompt ? String(agent.system_prompt).slice(0, 4000) : null,
+          library: await fetchObjectionLibrary(),
         },
       });
       const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
