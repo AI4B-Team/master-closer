@@ -264,7 +264,7 @@ function Dashboard() {
           title="Latest Digest"
           action={<Link to="/team" className="card-link">Manage Schedules</Link>}
         >
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", columnGap: 12, rowGap: 4 }}>
             <FileBarChart className="h-4 w-4 shrink-0 text-[#CC0000]" />
             <span className="text-base font-semibold">{(digest as any).payload?.message}</span>
             <span className="text-sm text-[#6B6B76]">
