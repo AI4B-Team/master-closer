@@ -78,6 +78,35 @@ export function LeadDrawer({
     },
   });
 
+  /* Linked revenue: deals and agreements tied to this lead. */
+  const { data: deals } = useQuery({
+    queryKey: ["lead-deals", lead?.id],
+    enabled: !!lead?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("deals")
+        .select("id, title, value, close_probability, stage_id, updated_at")
+        .eq("lead_id", lead!.id)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: agreements } = useQuery({
+    queryKey: ["lead-agreements", lead?.id],
+    enabled: !!lead?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("agreements")
+        .select("id, title, amount, currency, status, created_at")
+        .eq("lead_id", lead!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
