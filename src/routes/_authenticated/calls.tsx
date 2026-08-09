@@ -9,9 +9,12 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check } from "lucide-react";
+import { PhoneCall, Sparkles, ShieldCheck, MessageSquare, Search, Download, BookPlus, Check, CalendarClock, Plus } from "lucide-react";
 import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { summarizeCall } from "@/lib/calls.functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/calls")({
   head: () => ({
@@ -252,6 +255,76 @@ function CallDetail({ call }: { call: any }) {
     },
   });
 
+  const qc = useQueryClient();
+  const summarize = useServerFn(summarizeCall);
+  const [summary, setSummary] = useState<string | null>(call.summary ?? null);
+  const [taskTitle, setTaskTitle] = useState("");
+
+  const followUps = useQuery({
+    queryKey: ["call-tasks", call.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tasks")
+        .select("id, title, status, due_at, priority")
+        .eq("call_id", call.id)
+        .order("due_at", { nullsFirst: false });
+      return data ?? [];
+    },
+  });
+
+  const genSummary = useMutation({
+    mutationFn: async () => {
+      const lines = (data?.segments ?? []).map((s: any) => ({ speaker: s.speaker, text: s.text }));
+      const res: any = await summarize({
+        data: {
+          mode: call.mode,
+          outcome: call.disposition ?? String(call.outcome),
+          prospect: call.leads?.name ?? null,
+          lines,
+        },
+      });
+      const text: string = res?.summary ?? "";
+      const { error } = await supabase.from("calls").update({ summary: text }).eq("id", call.id);
+      if (error) throw error;
+      return { text, nextStep: res?.next_step as string | null };
+    },
+    onSuccess: ({ text, nextStep }) => {
+      setSummary(text);
+      if (nextStep && !taskTitle) setTaskTitle(nextStep);
+      qc.invalidateQueries({ queryKey: ["calls"] });
+      toast.success("Summary Written");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Could not write the summary"),
+  });
+
+  const addFollowUp = useMutation({
+    mutationFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
+      if (!prof?.org_id) throw new Error("No workspace found");
+      const due = new Date();
+      due.setDate(due.getDate() + 2);
+      const { error } = await supabase.from("tasks").insert({
+        org_id: prof.org_id,
+        title: taskTitle.trim().slice(0, 200),
+        notes: summary ?? null,
+        due_at: due.toISOString(),
+        priority: "medium",
+        status: "open",
+        assignee_id: prof.id,
+        created_by: prof.id,
+        call_id: call.id,
+        lead_id: call.lead_id ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setTaskTitle("");
+      followUps.refetch();
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Follow-Up Created");
+    },
+    onError: (e: any) => toast.error(e.message ?? "Could not create the follow-up"),
+  });
 
   return (
     <div className="mt-5 space-y-5">
@@ -262,11 +335,58 @@ function CallDetail({ call }: { call: any }) {
         <Stat label="Close Probability" value={`${call.close_probability ?? 0}%`} />
       </div>
 
-      {call.summary ? (
-        <Section icon={Sparkles} title="AI Summary">
-          <p className="text-sm text-[#3A3A44] leading-relaxed">{call.summary}</p>
-        </Section>
-      ) : null}
+      <Section icon={Sparkles} title="AI Summary">
+        {summary ? (
+          <p className="text-sm text-[#3A3A44] leading-relaxed">{summary}</p>
+        ) : (
+          <p className="text-sm text-[#6B6B76]">No summary yet for this call.</p>
+        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-3"
+          onClick={() => genSummary.mutate()}
+          disabled={genSummary.isPending || isLoading}
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          {genSummary.isPending ? "Writing…" : summary ? "Rewrite Summary" : "Write Summary"}
+        </Button>
+      </Section>
+
+      <Section icon={CalendarClock} title="Follow-Ups">
+        {(followUps.data ?? []).length > 0 ? (
+          <div className="space-y-2 mb-3">
+            {(followUps.data ?? []).map((t: any) => (
+              <div key={t.id} className="flex items-center justify-between text-sm">
+                <span className="text-[#3A3A44]">{t.title}</span>
+                <Badge variant="outline" className="capitalize">
+                  {t.status}
+                  {t.due_at ? ` · ${new Date(t.due_at).toLocaleDateString()}` : ""}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[#6B6B76] mb-3">No follow-ups on this call yet.</p>
+        )}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Next step"
+            value={taskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => addFollowUp.mutate()}
+            disabled={!taskTitle.trim() || addFollowUp.isPending}
+          >
+            <Plus className="h-3.5 w-3.5" /> Add
+          </Button>
+        </div>
+      </Section>
+
 
       {call.recording_url ? (
         <Section icon={PhoneCall} title="Recording">
