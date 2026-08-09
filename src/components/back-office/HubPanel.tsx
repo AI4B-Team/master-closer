@@ -100,8 +100,8 @@ export function HubPanel() {
         {hub?.connected ? (
           <div className="text-xs text-[#6B6B76] space-y-1">
             <div>Workspace: <span className="text-foreground">{hub.orgName}</span></div>
-            <div>Hub org ID: <span className="font-mono">{hub.reoOrgId}</span></div>
-            <div>Hub user ID: <span className="font-mono">{hub.reoUserId ?? "—"}</span></div>
+            <div>Hub Org ID: <span className="font-mono">{hub.reoOrgId}</span></div>
+            <div>Hub User ID: <span className="font-mono">{hub.reoUserId ?? "—"}</span></div>
           </div>
         ) : (
           <Button asChild className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
