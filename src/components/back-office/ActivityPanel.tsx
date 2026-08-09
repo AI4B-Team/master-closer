@@ -195,7 +195,7 @@ export function ActivityPanel() {
               className="notif-foot"
               onClick={() => {
                 setOpen(false);
-                navigate({ to: "/activity" });
+                navigate({ to: "/activity", search: { range: "7" } });
               }}
             >
               Open Activity Log <ArrowRight size={13} />
