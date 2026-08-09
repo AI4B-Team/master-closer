@@ -107,6 +107,17 @@ function AIClosers() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["agents"] }),
   });
 
+  const needle = q.trim().toLowerCase();
+  const filtered = (agents ?? []).filter((a: any) => {
+    const matchesText =
+      !needle ||
+      [a.name, a.industry, a.default_mode].some((v) => String(v ?? "").toLowerCase().includes(needle));
+    const matchesMode =
+      modeFilter === "all" ||
+      (modeFilter === "active" ? !!a.active : a.default_mode === modeFilter);
+    return matchesText && matchesMode;
+  });
+
   return (
     <div>
       <PageHeader
