@@ -12,7 +12,7 @@ export const FEEDBACK_CATEGORIES = [
 
 /** Resolves the caller's workspace so feedback lands on the right org. */
 export async function callerOrg(supabase: SupabaseClient<Database>, userId: string) {
-  const { data } = await supabase.from("profiles").select("org_id").eq("id", userId).maybeSingle();
+  const { data } = await supabase.from("profiles").select("org_id, active_workspace_id").eq("id", userId).maybeSingle();
   if (!data) throw new Error("No profile for the signed-in user.");
   return data.org_id as string;
 }

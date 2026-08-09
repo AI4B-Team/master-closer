@@ -123,11 +123,11 @@ function ListsPage() {
 
   const addToDnc = useMutation({
     mutationFn: async (contact: any) => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const { error } = await supabase
         .from("dnc_list")
-        .insert({ org_id: prof.org_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
+        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
       if (error) throw error;
       await supabase.from("list_contacts").update({ consent: "opt_out" }).eq("id", contact.id);
     },
@@ -156,11 +156,11 @@ function ListsPage() {
 
   const createList = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const { data, error } = await supabase
         .from("call_lists")
-        .insert({ org_id: prof.org_id, name: listName })
+        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, name: listName })
         .select("id")
         .single();
       if (error) throw error;

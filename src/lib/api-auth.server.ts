@@ -29,7 +29,7 @@ export async function apiClient(request: Request) {
 
   const { data: prof } = await supabase
     .from("profiles")
-    .select("org_id")
+    .select("org_id, active_workspace_id")
     .eq("id", data.claims.sub as string)
     .maybeSingle();
   if (!prof) throw new Response("No workspace for this user", { status: 403 });

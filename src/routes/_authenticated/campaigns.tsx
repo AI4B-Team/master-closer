@@ -94,12 +94,12 @@ function CampaignsPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const { data, error } = await supabase
         .from("campaigns")
         .insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           name: form.name,
           mode: form.mode as any,
           agent_id: form.agent_id || null,

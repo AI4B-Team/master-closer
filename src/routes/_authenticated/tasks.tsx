@@ -120,10 +120,10 @@ function TasksPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof?.org_id) throw new Error("No workspace found for your account.");
       const { error } = await supabase.from("tasks").insert({
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         title: form.title.trim(),
         notes: form.notes.trim() || null,
         due_at: form.due ? new Date(form.due).toISOString() : null,

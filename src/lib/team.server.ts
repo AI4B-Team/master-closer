@@ -8,7 +8,7 @@ export async function assertAdmin(
 ): Promise<{ orgId: string }> {
   const { data: prof } = await supabase
     .from("profiles")
-    .select("org_id")
+    .select("org_id, active_workspace_id")
     .eq("id", userId)
     .maybeSingle();
   if (!prof) throw new Error("No profile for the signed-in user.");

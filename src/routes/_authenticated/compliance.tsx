@@ -63,10 +63,10 @@ function CompliancePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const payload = {
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         script,
         default_jurisdiction: jurisdiction.toUpperCase(),
         ...methods,
@@ -344,7 +344,7 @@ function DncRegistry() {
 
   const add = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const numbers = phone
         .split(/[\n,;]+/)
@@ -353,7 +353,7 @@ function DncRegistry() {
       if (!numbers.length) throw new Error("Enter at least one number.");
       const { error } = await supabase.from("dnc_list").insert(
         numbers.map((p) => ({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           phone: p,
           reason: reason.trim() || "Added manually",
         })),

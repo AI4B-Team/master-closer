@@ -69,10 +69,10 @@ export function AgentQuickDrill({
           library: await fetchObjectionLibrary(),
         },
       });
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (prof) {
         await supabase.from("practice_sessions").insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           agent_id: agentId,
           mode,
           prospect,

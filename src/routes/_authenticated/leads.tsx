@@ -113,11 +113,11 @@ function LeadsPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { data: lead, error } = await supabase
         .from("leads")
-        .insert({ ...form, status: form.status as never, org_id: prof.org_id })
+        .insert({ ...form, status: form.status as never, org_id: prof.org_id, workspace_id: prof.active_workspace_id })
         .select("id, name")
         .single();
       if (error) throw error;
@@ -141,11 +141,11 @@ function LeadsPage() {
     mutationFn: async () => {
       const rows = parseCsv(csv);
       if (rows.length === 0) throw new Error("No valid rows found.");
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { error } = await supabase
         .from("leads")
-        .insert(rows.map((r) => ({ ...r, status: "new" as never, org_id: prof.org_id })));
+        .insert(rows.map((r) => ({ ...r, status: "new" as never, org_id: prof.org_id, workspace_id: prof.active_workspace_id })));
       if (error) throw error;
       try {
         await emit({ data: { event_type: "leads.imported", payload: { kind: "leads.imported", count: rows.length } } });

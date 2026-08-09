@@ -168,7 +168,7 @@ function PipelinePage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const stage = stageById.get(form.stage_id) ?? firstStage;
       const { error } = await supabase.from("deals").insert({
@@ -179,7 +179,7 @@ function PipelinePage() {
         close_probability: Math.max(0, Math.min(100, Number(form.close_probability) || 0)),
         expected_close_at: form.expected_close_at || null,
         lead_id: form.lead_id || null,
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
       });
       if (error) throw error;
     },
@@ -248,11 +248,11 @@ function PipelinePage() {
         if (error) throw error;
         return;
       }
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const nextPos = (columns.at(-1)?.position ?? 0) + 1;
       const { error } = await supabase.from("pipeline_stages")
-        .insert({ org_id: prof.org_id, label, kind: colForm.kind, position: nextPos, wip_limit, stale_days });
+        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, label, kind: colForm.kind, position: nextPos, wip_limit, stale_days });
       if (error) throw error;
     },
     onSuccess: () => {

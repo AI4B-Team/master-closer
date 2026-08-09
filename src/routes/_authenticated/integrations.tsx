@@ -72,11 +72,11 @@ function IntegrationsPage() {
 
   const toggle = useMutation({
     mutationFn: async ({ provider, connect }: { provider: string; connect: boolean }) => {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (connect) {
         const { error } = await supabase.from("integrations").upsert(
-          { org_id: prof.org_id, provider, status: "connected", connected_at: new Date().toISOString() },
+          { org_id: prof.org_id, workspace_id: prof.active_workspace_id, provider, status: "connected", connected_at: new Date().toISOString() },
           { onConflict: "org_id,provider" }
         );
         if (error) throw error;
@@ -95,12 +95,12 @@ function IntegrationsPage() {
   const saveConfig = useMutation({
     mutationFn: async () => {
       if (!connector) throw new Error("No integration selected.");
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const existing = rowFor(connector.key);
       const { error } = await supabase.from("integrations").upsert(
         {
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           provider: connector.key,
           status: existing?.status ?? "not_connected",
           connected_at: existing?.connected_at ?? null,

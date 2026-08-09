@@ -38,7 +38,7 @@ function SettingsPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("full_name, org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("full_name, org_id, active_workspace_id").maybeSingle();
       setFullName(prof?.full_name ?? "");
       setOrgId(prof?.org_id ?? null);
       if (prof?.org_id) {

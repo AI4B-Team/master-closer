@@ -121,7 +121,7 @@ function DialerPage() {
   const sendAgreement = async () => {
     setSendingAgreement(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id, full_name, email").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const { data: tpl } = await supabase
         .from("agreement_templates")
@@ -145,7 +145,7 @@ function DialerPage() {
       const { data: row, error } = await supabase
         .from("agreements")
         .insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           template_id: tpl?.id ?? null,
           call_id: callId,
           title: `${signer} — Agreement`,
@@ -163,7 +163,7 @@ function DialerPage() {
 
       await supabase.from("agreement_events").insert({
         agreement_id: row.id,
-        org_id: prof.org_id,
+        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         event_type: "sent",
         meta: { from: "dialer", call_id: callId },
       });
@@ -395,7 +395,7 @@ function DialerPage() {
   const startCall = async () => {
     setBusy(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
 
       // Hard stop: never dial a number on the Do Not Call list.
@@ -420,7 +420,7 @@ function DialerPage() {
       const { data: call, error } = await supabase
         .from("calls")
         .insert({
-          org_id: prof.org_id,
+          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
           mode,
           outcome: "in_progress",
           campaign_id: campaignId || null,
@@ -674,12 +674,12 @@ function DialerPage() {
       await supabase.from("calls").update({ summary: wrap.summary || null }).eq("id", wrap.callId);
 
       if (wrap.task && wrap.nextStep.trim()) {
-        const { data: prof } = await supabase.from("profiles").select("id, org_id").maybeSingle();
+        const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
         if (prof) {
           const due = new Date();
           due.setDate(due.getDate() + wrap.dueDays);
           await supabase.from("tasks").insert({
-            org_id: prof.org_id,
+            org_id: prof.org_id, workspace_id: prof.active_workspace_id,
             title: wrap.nextStep.trim().slice(0, 200),
             notes: wrap.summary || null,
             due_at: due.toISOString(),
@@ -707,9 +707,9 @@ function DialerPage() {
   const flagDnc = async () => {
     setBusy(true);
     try {
-      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
-      await supabase.from("dnc_list").insert({ org_id: prof.org_id, phone, reason: "Requested on call" });
+      await supabase.from("dnc_list").insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone, reason: "Requested on call" });
       try {
         await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, call_id: callId } } });
       } catch {

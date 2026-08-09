@@ -9,7 +9,7 @@ export const listMembers = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: me } = await context.supabase
       .from("profiles")
-      .select("org_id")
+      .select("org_id, active_workspace_id")
       .eq("id", context.userId)
       .maybeSingle();
     if (!me) throw new Error("No profile for the signed-in user.");
@@ -54,7 +54,7 @@ export const setMemberRole = createServerFn({ method: "POST" })
 
     const { data: target } = await supabaseAdmin
       .from("profiles")
-      .select("id, org_id")
+      .select("id, org_id, active_workspace_id")
       .eq("id", data.userId)
       .maybeSingle();
     if (!target || target.org_id !== orgId) throw new Error("That member is not in this workspace.");
@@ -82,7 +82,7 @@ export const inviteMember = createServerFn({ method: "POST" })
 
     const { data: existing } = await supabaseAdmin
       .from("profiles")
-      .select("id, org_id")
+      .select("id, org_id, active_workspace_id")
       .eq("email", email)
       .maybeSingle();
     if (existing && existing.org_id === orgId) {
@@ -101,7 +101,7 @@ export const inviteMember = createServerFn({ method: "POST" })
     // The signup trigger always spins up a fresh org — fold the new profile into ours.
     const { data: prof } = await supabaseAdmin
       .from("profiles")
-      .select("org_id")
+      .select("org_id, active_workspace_id")
       .eq("id", userId)
       .maybeSingle();
 
@@ -126,7 +126,7 @@ export const removeMember = createServerFn({ method: "POST" })
 
     const { data: target } = await supabaseAdmin
       .from("profiles")
-      .select("id, org_id")
+      .select("id, org_id, active_workspace_id")
       .eq("id", data.userId)
       .maybeSingle();
     if (!target || target.org_id !== orgId) throw new Error("That member is not in this workspace.");
