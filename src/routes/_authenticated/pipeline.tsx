@@ -289,13 +289,18 @@ function PipelinePage() {
 
   function openNewColumn() {
     setEditing(null);
-    setColForm({ label: "", kind: "open" });
+    setColForm({ label: "", kind: "open", wip_limit: "", stale_days: "14" });
     setColOpen(true);
   }
 
   function openEditColumn(s: Stage) {
     setEditing(s);
-    setColForm({ label: s.label, kind: s.kind });
+    setColForm({
+      label: s.label,
+      kind: s.kind,
+      wip_limit: s.wip_limit ? String(s.wip_limit) : "",
+      stale_days: String(s.stale_days ?? 14),
+    });
     setColOpen(true);
   }
 
