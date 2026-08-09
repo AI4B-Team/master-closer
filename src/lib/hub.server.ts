@@ -177,7 +177,7 @@ export async function dispatchEvent(event: EventRow) {
 export async function dispatchPending(limit = 100) {
   const { data: events } = await supabaseAdmin
     .from("events")
-    .select("id, org_id, event_type, payload, created_at")
+    .select("id, org_id, workspace_id, event_type, payload, created_at")
     .order("created_at", { ascending: true })
     .limit(limit);
 
