@@ -196,6 +196,7 @@ function CallsPage() {
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
                 <th className="py-2">Date</th><th className="py-2">Lead</th>
+                <th className="py-2">Agent</th>
                 <th className="py-2">Mode</th><th className="py-2">Duration</th>
                 <th className="py-2">Outcome</th><th className="py-2 text-right">Close Probability</th>
               </tr>
