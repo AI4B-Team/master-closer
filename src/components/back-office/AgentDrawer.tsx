@@ -96,6 +96,7 @@ export function AgentDrawer({
           default_mode: (form.default_mode ?? "hybrid") as never,
           active: form.active ?? true,
           system_prompt: form.system_prompt || null,
+          transfer_to: form.transfer_to || null,
         })
         .eq("id", agent!.id);
       if (error) throw error;
