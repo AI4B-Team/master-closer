@@ -63,8 +63,11 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: ShieldOff, label: "Flagged Do Not Call", detail: join(p.phone ?? p.name, p.reason) };
     case "campaign.launched":
       return { kind, icon: Megaphone, label: "Campaign Launched", detail: join(p.name, p.mode) };
+    case "report.digest":
+      return { kind, icon: BarChart3, label: p.name ? `Digest · ${p.name}` : "Report Digest", detail: String(p.message ?? "") };
     case "call.completed":
       return { kind, icon: PhoneCall, label: "Call Completed", detail: join(p.lead_name, p.disposition) };
+
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
   }
