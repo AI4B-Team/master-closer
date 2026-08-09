@@ -351,6 +351,27 @@ function PipelinePage() {
     setColOpen(true);
   }
 
+  function exportCsv() {
+    const rows = (deals ?? []).map((d: any) => [
+      d.title,
+      d.company ?? "",
+      stageById.get(columnOf(d) ?? "")?.label ?? "",
+      d.value ?? "",
+      d.close_probability ?? "",
+      d.mode ?? "",
+      d.updated_at ?? d.created_at ?? "",
+    ]);
+    if (rows.length === 0) {
+      toast.error("Nothing to export yet.");
+      return;
+    }
+    downloadCsv(
+      stampedName("deals"),
+      toCsv(["Deal", "Company", "Stage", "Value", "Probability", "Mode", "Updated"], rows),
+    );
+    toast.success(`Exported ${rows.length} Deal(s).`);
+  }
+
   return (
     <div>
       <PageHeader
@@ -359,10 +380,14 @@ function PipelinePage() {
         tabs={TAB_GROUPS.leads}
         action={
           <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={exportCsv}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
             <Button type="button" variant="outline" className="rounded-xl" onClick={openNewColumn}>
               <Columns3 className="h-4 w-4 mr-1" /> Add Column
             </Button>
             <Dialog open={open} onOpenChange={(v) => {
+
               setOpen(v);
               if (v && !form.stage_id) setForm((f) => ({ ...f, stage_id: firstStage?.id ?? "" }));
             }}>
