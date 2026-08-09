@@ -137,6 +137,7 @@ export function LeadDrawer({
       const { data: stage } = await supabase
         .from("pipeline_stages")
         .select("id")
+        .eq("workspace_id", prof.active_workspace_id)
         .order("position", { ascending: true })
         .limit(1)
         .maybeSingle();

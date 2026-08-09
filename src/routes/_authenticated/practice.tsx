@@ -130,7 +130,8 @@ function PracticePage() {
 
   const clear = useMutation({
     mutationFn: async () => {
-      let q = supabase.from("practice_sessions").delete();
+      if (!wsId) throw new Error("No active workspace");
+      let q = supabase.from("practice_sessions").delete().eq("workspace_id", wsId);
       q = agentId === "none" ? q.is("agent_id", null) : q.eq("agent_id", agentId);
       const { error } = await q;
       if (error) throw error;
