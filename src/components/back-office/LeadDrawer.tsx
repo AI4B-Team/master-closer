@@ -175,7 +175,7 @@ export function LeadDrawer({
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2">
+            <div>
               <Label>Consent</Label>
               <Select value={form.consent ?? "unknown"} onValueChange={(v) => setForm({ ...form, consent: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -186,6 +186,57 @@ export function LeadDrawer({
                 </SelectContent>
               </Select>
             </div>
+            <div className="col-span-2">
+              <Label>Owner</Label>
+              <Select
+                value={form.owner_id ?? UNASSIGNED}
+                onValueChange={(v) => setForm({ ...form, owner_id: v === UNASSIGNED ? null : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                  {(members ?? []).map((m: any) => (
+                    <SelectItem key={m.id} value={m.id}>{m.full_name || m.email || "Teammate"}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2">
+              <Label>Tags</Label>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {(form.tags ?? []).map((t) => (
+                  <Badge key={t} variant="outline" className="gap-1">
+                    {t}
+                    <button
+                      type="button"
+                      aria-label={`Remove tag ${t}`}
+                      className="text-[#6B6B76] hover:text-[#CC0000]"
+                      onClick={() => setForm({ ...form, tags: (form.tags ?? []).filter((x) => x !== t) })}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                {(form.tags ?? []).length === 0 && (
+                  <span className="text-xs text-[#6B6B76]">No tags yet.</span>
+                )}
+              </div>
+              <Input
+                value={tagDraft}
+                onChange={(e) => setTagDraft(e.target.value)}
+                placeholder="Type a tag and press Enter"
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  const t = tagDraft.trim();
+                  if (!t) return;
+                  const next = Array.from(new Set([...(form.tags ?? []), t]));
+                  setForm({ ...form, tags: next });
+                  setTagDraft("");
+                }}
+              />
+            </div>
+
             <div className="col-span-2">
               <Label>Notes</Label>
               <Textarea
