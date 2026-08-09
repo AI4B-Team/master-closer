@@ -74,6 +74,8 @@ function DialerPage() {
   const [contact, setContact] = useState<{ id: string; name: string; phone: string } | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
+  const [suggestionRowId, setSuggestionRowId] = useState<string | null>(null);
+  const [lineUsed, setLineUsed] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [simulate, setSimulate] = useState(true);
   const [dialing, setDialing] = useState(false);
@@ -171,16 +173,24 @@ function DialerPage() {
       });
       setAiConfidence(res.confidence);
       setSuggestions([res.line]);
+      setSuggestionRowId(null);
+      setLineUsed(mode === "full_ai");
       if (mode === "full_ai") {
         setTranscript((t) => [...t, { speaker: "Master Closer", text: res.line }]);
       }
       if (activeCall) {
-        await supabase.from("suggestions").insert({
-          call_id: activeCall,
-          objection: res.objection,
-          line: res.line,
-          ts_sec: elapsed,
-        });
+        const { data: sugg } = await supabase
+          .from("suggestions")
+          .insert({
+            call_id: activeCall,
+            objection: res.objection,
+            line: res.line,
+            ts_sec: elapsed,
+            was_used: mode === "full_ai",
+          })
+          .select("id")
+          .maybeSingle();
+        if (sugg?.id) setSuggestionRowId(sugg.id);
         if (mode === "full_ai") {
           await supabase.from("transcript_segments").insert({
             call_id: activeCall,
@@ -194,6 +204,29 @@ function DialerPage() {
       toast.error(e?.message ?? "Copilot Is Unavailable.");
     } finally {
       setThinking(false);
+    }
+  };
+
+  /** The rep delivered the suggested line — log it so the Playbook learns what works. */
+  const useSuggestedLine = async (line: string) => {
+    if (lineUsed) return;
+    setLineUsed(true);
+    setTranscript((t) => [...t, { speaker: "You", text: line }]);
+    try {
+      if (suggestionRowId) {
+        await supabase.from("suggestions").update({ was_used: true }).eq("id", suggestionRowId);
+      }
+      if (callId) {
+        await supabase.from("transcript_segments").insert({
+          call_id: callId,
+          speaker: "You",
+          text: line,
+          ts_sec: elapsed,
+        });
+      }
+      toast.success("Logged. That Line Counts Toward Your Playbook Stats.");
+    } catch {
+      /* non-blocking */
     }
   };
 
@@ -801,6 +834,8 @@ function DialerPage() {
             locked={blocked}
             thinking={thinking}
             onAsk={(line) => runAssist(line)}
+            onUseLine={(line) => void useSuggestedLine(line)}
+            usedLine={lineUsed}
           />
         ) : (
 
