@@ -25,7 +25,10 @@ type Agent = {
   default_mode: string;
   active: boolean;
   system_prompt: string | null;
+  transfer_to?: string | null;
 };
+
+const NO_TRANSFER = "none";
 
 export function AgentDrawer({
   agent,
@@ -39,9 +42,22 @@ export function AgentDrawer({
   const [aiLoading, setAiLoading] = useState(false);
   const aiHelp = useServerFn(helpSystemPrompt);
 
+  const { data: members } = useQuery({
+    queryKey: ["transfer-members"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .order("full_name", { ascending: true });
+      return data ?? [];
+    },
+  });
+
   useEffect(() => {
     if (agent) setForm({ ...agent });
   }, [agent]);
+
+
 
   const runAiHelp = async (instruction: "generate" | "improve" | "shorten" | "tone") => {
     if (!form.name) {
