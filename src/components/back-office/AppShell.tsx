@@ -347,11 +347,12 @@ export function PageHeader({
   action?: ReactNode;
   tabs?: { label: string; to: string }[];
 }) {
+  const { t } = usePrefs();
   return (
     <div className="page-head">
       <div>
-        <h1 className="font-display page-title">{title}</h1>
-        {description && <p className="page-sub">{description}</p>}
+        <h1 className="font-display page-title">{t(title)}</h1>
+        {description && <p className="page-sub">{t(description)}</p>}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {tabs && <TabStrip tabs={tabs} />}
