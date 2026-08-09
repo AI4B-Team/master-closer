@@ -45,12 +45,22 @@ function CallsPage() {
   const [mode, setMode] = useState("all");
   const [outcome, setOutcome] = useState("all");
   const [range, setRange] = useState("all");
+  const [agent, setAgent] = useState("all");
 
   const { data: calls, isLoading: callsLoading } = useQuery({
     queryKey: ["calls"],
     queryFn: async () => {
       const { data, error } = await supabase.from("calls")
-        .select("*, leads(name, company)").order("started_at", { ascending: false }).limit(500);
+        .select("*, leads(name, company), agents(name)").order("started_at", { ascending: false }).limit(500);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: agents } = useQuery({
+    queryKey: ["agents-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("agents").select("id, name").order("name");
       if (error) throw error;
       return data ?? [];
     },
@@ -63,11 +73,13 @@ function CallsPage() {
     if (search && !(
       c.leads?.name?.toLowerCase().includes(q) ||
       c.leads?.company?.toLowerCase().includes(q) ||
+      c.agents?.name?.toLowerCase().includes(q) ||
       c.disposition?.toLowerCase().includes(q) ||
       c.summary?.toLowerCase().includes(q)
     )) return false;
     if (mode !== "all" && c.mode !== mode) return false;
     if (outcome !== "all" && c.outcome !== outcome) return false;
+    if (agent === "none" ? !!c.agent_id : agent !== "all" && c.agent_id !== agent) return false;
     if (range !== "all") {
       const cutoff = Date.now() - RANGES[range] * 86400000;
       if (new Date(c.started_at).getTime() < cutoff) return false;
