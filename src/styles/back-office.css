@@ -857,7 +857,10 @@
   .search input { min-width: 0; }
   .search-caret { display: none; }
   .search-menu, .search-results { width: min(94vw, 420px); }
+  /* Dialer and help live in the nav and on their own pages — reclaim the width. */
+  .topbar-hide-sm { display: none; }
 }
+
 
 
 /* Page headers stack on small screens so titles, tabs and actions stay reachable. */
