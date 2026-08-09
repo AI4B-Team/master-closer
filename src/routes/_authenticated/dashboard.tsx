@@ -116,10 +116,10 @@ function Dashboard() {
       <OnboardingChecklist />
 
       <div className="kpis">
-        <Kpi label="Calls Today" value={String(stats?.callsToday ?? 0)} icon={PhoneCall} {...KPI_TINTS.blue} delta="Today" />
-        <Kpi label="Close Rate" value={`${(stats?.closeRate ?? 0).toFixed(1)}%`} icon={Percent} {...KPI_TINTS.red} delta="Last 200" />
-        <Kpi label="Revenue Closed" value={`$${(stats?.revenue ?? 0).toLocaleString()}`} icon={DollarSign} {...KPI_TINTS.mint} delta="Won" />
-        <Kpi label="Avg Close Probability" value={`${(stats?.avgProb ?? 0).toFixed(0)}%`} icon={TrendingUp} {...KPI_TINTS.lavender} delta="Live" />
+        <Kpi label="Calls Today" value={String(stats?.callsToday ?? 0)} icon={PhoneCall} {...KPI_TINTS.blue} delta="Today" to="/calls" />
+        <Kpi label="Close Rate" value={`${(stats?.closeRate ?? 0).toFixed(1)}%`} icon={Percent} {...KPI_TINTS.red} delta="Last 200" to="/team" />
+        <Kpi label="Revenue Closed" value={`$${(stats?.revenue ?? 0).toLocaleString()}`} icon={DollarSign} {...KPI_TINTS.mint} delta="Won" to="/pipeline" />
+        <Kpi label="Avg Close Probability" value={`${(stats?.avgProb ?? 0).toFixed(0)}%`} icon={TrendingUp} {...KPI_TINTS.lavender} delta="Live" to="/calls" />
       </div>
 
       <div className="grid-2">
