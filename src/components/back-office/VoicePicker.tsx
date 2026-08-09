@@ -83,6 +83,7 @@ export function VoicePicker({
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data, error } = await supabase
         .from("custom_voices")
         .insert({

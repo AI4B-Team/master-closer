@@ -125,6 +125,7 @@ function ListsPage() {
     mutationFn: async (contact: any) => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase
         .from("dnc_list")
         .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
@@ -158,6 +159,7 @@ function ListsPage() {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data, error } = await supabase
         .from("call_lists")
         .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, name: listName })

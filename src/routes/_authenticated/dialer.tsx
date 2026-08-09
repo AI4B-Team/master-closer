@@ -123,6 +123,7 @@ function DialerPage() {
     try {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data: tpl } = await supabase
         .from("agreement_templates")
         .select("id, body, file_path, file_name")
@@ -397,6 +398,7 @@ function DialerPage() {
     try {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
 
       // Hard stop: never dial a number on the Do Not Call list.
       const target = (phone ?? "").replace(/\D/g, "");
@@ -709,6 +711,7 @@ function DialerPage() {
     try {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       await supabase.from("dnc_list").insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone, reason: "Requested on call" });
       try {
         await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, call_id: callId } } });

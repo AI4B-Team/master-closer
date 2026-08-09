@@ -65,6 +65,7 @@ function CompliancePage() {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const payload = {
         org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         script,
@@ -346,6 +347,7 @@ function DncRegistry() {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const numbers = phone
         .split(/[\n,;]+/)
         .map((p) => p.trim())

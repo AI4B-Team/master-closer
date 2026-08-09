@@ -113,6 +113,7 @@ export function LeadDrawer({
       if (!lead) throw new Error("No lead selected.");
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data: stage } = await supabase
         .from("pipeline_stages")
         .select("id")

@@ -46,6 +46,7 @@ export function HubPanel() {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase
         .from("org_webhooks")
         .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, url, secret, enabled: true });
