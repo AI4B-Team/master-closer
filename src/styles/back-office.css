@@ -1116,9 +1116,8 @@
 }
 .ws-item:hover { background: #f6f6f7; }
 .ws-item-active { background: rgba(204,0,0,.06); }
-.ws-item-t { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ws-item-t { display: flex; align-items: center; min-width: 0; flex: 1; }
 .ws-item-name { font-size: 13px; font-weight: 600; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ws-item-slug { font-size: 11px; color: #8a8a8f; }
 
 .ws-item-actions {
   display: flex; align-items: center; gap: 2px;
