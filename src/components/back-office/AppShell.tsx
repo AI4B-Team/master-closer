@@ -187,9 +187,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="status-dot" />{" "}
               {prefs.t(callStatus === "on_call" ? "On Call" : callStatus === "dialing" ? "Dialing" : "Available")}
             </span>
-            <DialerQuickAccess />
+            <span className="topbar-hide-sm">
+              <DialerQuickAccess />
+            </span>
             <ActivityPanel />
-            <HelpMenu onStartTour={tour.start} />
+            <span className="topbar-hide-sm">
+              <HelpMenu onStartTour={tour.start} />
+            </span>
+
             <NotificationsMenu />
 
             <div className="profile-wrap">
