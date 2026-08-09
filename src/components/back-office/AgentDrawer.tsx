@@ -13,7 +13,6 @@ import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone } from "l
 import { VoicePicker } from "@/components/back-office/VoicePicker";
 import { helpSystemPrompt } from "@/lib/agents.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
 
 type Agent = {
   id: string;
