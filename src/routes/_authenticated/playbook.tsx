@@ -372,6 +372,49 @@ function Objections() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["objections"] }),
   });
 
+  const bulkImport = useMutation({
+    mutationFn: async (rows: { trigger: string; category: string | null; response: string }[]) => {
+      const { data: u } = await supabase.auth.getUser();
+      const { data: prof } = await supabase
+        .from("profiles").select("workspace_id").eq("id", u.user!.id).maybeSingle();
+      const { error } = await supabase.from("objections").insert(
+        rows.map((r) => ({ ...r, workspace_id: prof?.workspace_id ?? null })),
+      );
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`Imported ${n} ${n === 1 ? "Objection" : "Objections"}`);
+      qc.invalidateQueries({ queryKey: ["objections"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    (objections ?? []).forEach((o: any) => { if (o.category) set.add(o.category); });
+    return ["All", ...Array.from(set).sort()];
+  }, [objections]);
+
+  const exportCsv = () => {
+    const rows = objections ?? [];
+    if (!rows.length) return;
+    const url = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `objections-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const onFile = async (file: File | null) => {
+    if (!file) return;
+    const rows = parseCsv(await file.text());
+    if (!rows.length) { toast.error("No Rows Found. Use Columns: Trigger, Category, Response."); return; }
+    bulkImport.mutate(rows);
+  };
+
+
   return (
     <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
       <div className="flex items-start justify-between gap-4 mb-4">
