@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Rocket, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
+
 
 const DISMISS_KEY = "mc_onboarding_dismissed";
 
@@ -15,33 +17,38 @@ type Step = {
   done: boolean;
 };
 
-async function count(table: string) {
-  const { count: c } = await supabase
-    .from(table as never)
-    .select("id", { count: "exact", head: true });
+async function count(table: string, workspaceId?: string) {
+  let q = supabase.from(table as never).select("id", { count: "exact", head: true });
+  if (workspaceId) q = q.eq("workspace_id", workspaceId);
+  const { count: c } = await q;
   return c ?? 0;
 }
 
+
 export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(true);
+  const { data: workspace } = useWorkspace();
 
   useEffect(() => {
     setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
   }, []);
 
   const { data } = useQuery({
-    queryKey: ["onboarding-progress"],
+    queryKey: ["onboarding-progress", workspace?.id],
+    enabled: !!workspace?.id,
     queryFn: async () => {
+      const wsId = workspace!.id;
       const [agents, leads, campaigns, templates, calls] = await Promise.all([
-        count("ai_agents"),
-        count("leads"),
-        count("campaigns"),
+        count("agents", wsId),
+        count("leads", wsId),
+        count("campaigns", wsId),
         count("agreement_templates"),
-        count("calls"),
+        count("calls", wsId),
       ]);
       return { agents, leads, campaigns, templates, calls };
     },
   });
+
 
   if (dismissed || !data) return null;
 
