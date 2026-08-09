@@ -13,6 +13,7 @@ import { HelpMenu } from "@/components/back-office/HelpMenu";
 import { NotificationsMenu } from "@/components/back-office/NotificationsMenu";
 import { ProductTour, useProductTour } from "@/components/back-office/ProductTour";
 import { GlobalSearch } from "@/components/back-office/GlobalSearch";
+import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 
 
 type NavItem = { to: string; label: string; icon: any; also?: string[] };
@@ -67,6 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user } = useAuth();
+  useLiveWorkspace();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
