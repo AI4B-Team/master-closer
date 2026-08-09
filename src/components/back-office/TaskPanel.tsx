@@ -74,6 +74,7 @@ export function TaskPanel({ leadId, dealId }: { leadId?: string; dealId?: string
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof?.org_id) throw new Error("No workspace found for your account.");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase.from("tasks").insert({
         org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         title: title.trim(),

@@ -277,6 +277,7 @@ function CallDetail({ call }: { call: any }) {
     mutationFn: async (p: { id: string; trigger: string; response: string }) => {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof?.org_id) throw new Error("No workspace found");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { error } = await supabase.from("objections").insert({
         org_id: prof.org_id, workspace_id: prof.active_workspace_id,
         trigger: p.trigger,
@@ -355,6 +356,7 @@ function CallDetail({ call }: { call: any }) {
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
       if (!prof?.org_id) throw new Error("No workspace found");
+      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const due = new Date();
       due.setDate(due.getDate() + 2);
       const { error } = await supabase.from("tasks").insert({
