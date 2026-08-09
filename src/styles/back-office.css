@@ -819,7 +819,7 @@
   .topbar { padding: 0 14px; gap: 10px; }
   .search-wrap { flex: 1; min-width: 0; }
   .search { width: 100% !important; }
-  .topbar-right { gap: 10px; }
+  .topbar-right { gap: 2px; }
   .status-chip { display: none; }
   .content { padding: 18px 14px; }
 }
