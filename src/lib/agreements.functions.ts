@@ -32,7 +32,7 @@ export const getAgreementByToken = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, active_workspace_id, title, body, amount, currency, status, signer_name, signer_email, signed_at, signature_type, signature_data, file_path, file_name, viewed_at")
+      .select("id, org_id, title, body, amount, currency, status, signer_name, signer_email, signed_at, signature_type, signature_data, file_path, file_name, viewed_at")
       .eq("token", data.token)
       .maybeSingle();
     if (!row || row.status === "draft" || row.status === "void") return null;
@@ -100,7 +100,7 @@ export const signAgreement = createServerFn({ method: "POST" })
     const { getRequestHeader } = await import("@tanstack/react-start/server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, active_workspace_id, status, deal_id, title, amount")
+      .select("id, org_id, status, deal_id, title, amount")
       .eq("token", data.token)
       .maybeSingle();
 
@@ -167,7 +167,7 @@ export const declineAgreement = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, active_workspace_id, status, title")
+      .select("id, org_id, status, title")
       .eq("token", data.token)
       .maybeSingle();
     if (!row) throw new Error("This agreement link is no longer valid.");

@@ -76,7 +76,7 @@ export async function verifyHubToken(token: string): Promise<HubClaims> {
 export async function emitEvent(orgId: string, eventType: string, payload: Record<string, unknown> = {}) {
   const { data: org } = await supabaseAdmin
     .from("organizations")
-    .select("real_elite_org_id, active_workspace_id")
+    .select("real_elite_org_id")
     .eq("id", orgId)
     .maybeSingle();
 
@@ -88,7 +88,7 @@ export async function emitEvent(orgId: string, eventType: string, payload: Recor
   const { data: event, error } = await supabaseAdmin
     .from("events")
     .insert({ org_id: orgId, event_type: eventType, payload: body })
-    .select("id, org_id, active_workspace_id, event_type, payload, created_at")
+    .select("id, org_id, event_type, payload, created_at")
     .single();
   if (error) throw error;
 
@@ -156,7 +156,7 @@ export async function dispatchEvent(event: EventRow) {
 export async function dispatchPending(limit = 100) {
   const { data: events } = await supabaseAdmin
     .from("events")
-    .select("id, org_id, active_workspace_id, event_type, payload, created_at")
+    .select("id, org_id, event_type, payload, created_at")
     .order("created_at", { ascending: true })
     .limit(limit);
 

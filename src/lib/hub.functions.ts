@@ -18,7 +18,7 @@ export const hubSignIn = createServerFn({ method: "POST" })
     // 1) Existing linked profile → just sign in.
     const { data: linked } = await supabaseAdmin
       .from("profiles")
-      .select("id, email, org_id, active_workspace_id")
+      .select("id, email, org_id")
       .eq("real_elite_user_id", claims.reo_user_id)
       .maybeSingle();
 
@@ -35,7 +35,7 @@ export const hubSignIn = createServerFn({ method: "POST" })
       // Existing local user with this email?
       const { data: existingByEmail } = await supabaseAdmin
         .from("profiles")
-        .select("id, org_id, active_workspace_id")
+        .select("id, org_id")
         .eq("email", claims.email)
         .maybeSingle();
 
@@ -60,7 +60,7 @@ export const hubSignIn = createServerFn({ method: "POST" })
       // exists locally, move the profile into it and drop the throwaway org.
       const { data: prof } = await supabaseAdmin
         .from("profiles")
-        .select("org_id, active_workspace_id")
+        .select("org_id")
         .eq("id", userId)
         .maybeSingle();
 
@@ -117,14 +117,14 @@ export const hubLink = createServerFn({ method: "POST" })
 
     const { data: prof } = await supabaseAdmin
       .from("profiles")
-      .select("org_id, active_workspace_id, real_elite_user_id")
+      .select("org_id, real_elite_user_id")
       .eq("id", context.userId)
       .maybeSingle();
     if (!prof) throw new Error("No profile for the signed-in user.");
 
     const { data: org } = await supabaseAdmin
       .from("organizations")
-      .select("id, real_elite_org_id, active_workspace_id")
+      .select("id, real_elite_org_id")
       .eq("id", prof.org_id)
       .maybeSingle();
 
@@ -157,14 +157,14 @@ export const hubStatus = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: prof } = await context.supabase
       .from("profiles")
-      .select("real_elite_user_id, org_id, active_workspace_id")
+      .select("real_elite_user_id, org_id")
       .eq("id", context.userId)
       .maybeSingle();
 
     const { data: org } = prof
       ? await context.supabase
           .from("organizations")
-          .select("name, real_elite_org_id, active_workspace_id")
+          .select("name, real_elite_org_id")
           .eq("id", prof.org_id)
           .maybeSingle()
       : { data: null };
@@ -201,7 +201,7 @@ export const emitOrgEvent = createServerFn({ method: "POST" })
     const { emitEvent } = await import("./hub.server");
     const { data: prof } = await context.supabase
       .from("profiles")
-      .select("org_id, active_workspace_id")
+      .select("org_id")
       .eq("id", context.userId)
       .maybeSingle();
     if (!prof) throw new Error("No profile for the signed-in user.");

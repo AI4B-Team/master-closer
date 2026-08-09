@@ -18,7 +18,7 @@ export function useWorkspace() {
     queryFn: async () => {
       const { data: prof, error: profError } = await supabase
         .from("profiles")
-        .select("active_workspace_id")
+        .select("")
         .maybeSingle();
       if (profError) throw profError;
       if (!prof?.active_workspace_id) return null;

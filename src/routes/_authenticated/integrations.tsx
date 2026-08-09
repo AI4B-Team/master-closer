@@ -72,7 +72,7 @@ function IntegrationsPage() {
 
   const toggle = useMutation({
     mutationFn: async ({ provider, connect }: { provider: string; connect: boolean }) => {
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (connect) {
         const { error } = await supabase.from("integrations").upsert(
@@ -95,7 +95,7 @@ function IntegrationsPage() {
   const saveConfig = useMutation({
     mutationFn: async () => {
       if (!connector) throw new Error("No integration selected.");
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const existing = rowFor(connector.key);
       const { error } = await supabase.from("integrations").upsert(

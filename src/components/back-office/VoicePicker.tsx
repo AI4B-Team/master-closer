@@ -80,7 +80,7 @@ export function VoicePicker({
 
   const createVoice = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { data, error } = await supabase
         .from("custom_voices")

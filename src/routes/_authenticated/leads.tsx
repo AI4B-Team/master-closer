@@ -113,7 +113,7 @@ function LeadsPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { data: lead, error } = await supabase
         .from("leads")
@@ -141,7 +141,7 @@ function LeadsPage() {
     mutationFn: async () => {
       const rows = parseCsv(csv);
       if (rows.length === 0) throw new Error("No valid rows found.");
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { error } = await supabase
         .from("leads")

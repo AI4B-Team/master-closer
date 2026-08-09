@@ -168,7 +168,7 @@ function PipelinePage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const stage = stageById.get(form.stage_id) ?? firstStage;
       const { error } = await supabase.from("deals").insert({
@@ -248,7 +248,7 @@ function PipelinePage() {
         if (error) throw error;
         return;
       }
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       const nextPos = (columns.at(-1)?.position ?? 0) + 1;
       const { error } = await supabase.from("pipeline_stages")

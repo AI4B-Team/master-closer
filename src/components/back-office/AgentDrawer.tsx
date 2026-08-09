@@ -124,7 +124,7 @@ export function AgentDrawer({
 
   const duplicate = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       const { error } = await supabase.from("agents").insert({
         org_id: prof.org_id, workspace_id: prof.active_workspace_id,
