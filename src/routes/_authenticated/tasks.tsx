@@ -312,7 +312,24 @@ function TasksPage() {
       <Panel
         title="Follow-Up Queue"
         action={
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search Follow-Ups"
+              className="h-8 w-48 rounded-xl text-xs"
+            />
+            <button
+              type="button"
+              onClick={() => setMineOnly((v) => !v)}
+              className={
+                "rounded-full px-3 py-1 text-xs font-medium " +
+                (mineOnly ? "bg-[#CC0000] text-white" : "text-[#6B6B76] hover:bg-[#F4F4F6]")
+              }
+            >
+              Mine Only
+            </button>
+            <span className="h-4 w-px bg-[#E7E7EC]" />
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -329,6 +346,37 @@ function TasksPage() {
           </div>
         }
       >
+        {selected.length > 0 && (
+          <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F4F4F6] px-3 py-2 text-xs">
+            <span className="font-medium">{selected.length} Selected</span>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 rounded-lg text-xs"
+                onClick={() => bulk.mutate("done")}
+                disabled={bulk.isPending}
+              >
+                Mark Complete
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 rounded-lg text-xs text-[#CC0000]"
+                onClick={() => bulk.mutate("delete")}
+                disabled={bulk.isPending}
+              >
+                Delete
+              </Button>
+              <Button type="button" size="sm" variant="ghost" className="h-7 rounded-lg text-xs" onClick={() => setSelected([])}>
+                Clear
+              </Button>
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <SkeletonRows rows={6} />
         ) : visible.length === 0 ? (
