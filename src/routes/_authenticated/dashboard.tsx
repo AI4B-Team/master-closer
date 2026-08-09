@@ -68,7 +68,7 @@ function Dashboard() {
   }, []);
   const donut = total
     ? `conic-gradient(${stops.join(", ")})`
-    : "conic-gradient(#EEF0F3 0 100%)";
+    : "conic-gradient(#F4F0EF 0 100%)";
 
   return (
     <div>
