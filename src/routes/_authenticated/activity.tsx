@@ -116,21 +116,27 @@ function ActivityPage() {
             <p className="text-sm text-[#6B6B76]">No events yet. Activity appears here as calls, leads and campaigns run.</p>
           ) : (
             <div className="space-y-1.5">
-              {rows.map((e: any) => (
-                <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="font-mono text-[11px]">{e.event_type}</Badge>
-                    <span className="text-xs text-[#6B6B76] ml-auto shrink-0">
-                      {new Date(e.created_at).toLocaleString()}
-                    </span>
+              {rows.map((e: any) => {
+                const a = describeEvent(e);
+                return (
+                  <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
+                    <div className="flex items-center gap-2.5">
+                      <a.icon className="h-4 w-4 text-[#CC0000] shrink-0" />
+                      <span className="text-sm font-medium">{a.label}</span>
+                      {a.detail ? <span className="text-sm text-[#6B6B76] truncate">{a.detail}</span> : null}
+                      <Badge variant="secondary" className="font-mono text-[11px] ml-auto shrink-0">{a.kind}</Badge>
+                      <span className="text-xs text-[#6B6B76] shrink-0">
+                        {new Date(e.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    {e.payload && Object.keys(e.payload).length > 0 ? (
+                      <pre className="mt-1.5 text-[11px] text-[#6B6B76] font-mono whitespace-pre-wrap break-all">
+                        {JSON.stringify(e.payload)}
+                      </pre>
+                    ) : null}
                   </div>
-                  {e.payload && Object.keys(e.payload).length > 0 ? (
-                    <pre className="mt-1.5 text-[11px] text-[#6B6B76] font-mono whitespace-pre-wrap break-all">
-                      {JSON.stringify(e.payload)}
-                    </pre>
-                  ) : null}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
