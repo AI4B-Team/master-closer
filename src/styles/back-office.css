@@ -102,7 +102,9 @@
   height: 60px; background: var(--card); border-bottom: 1px solid var(--line); display: flex;
   align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 10;
 }
-.topbar-right { display: flex; align-items: center; gap: 14px; }
+.topbar-right { display: flex; align-items: center; gap: 4px; }
+.topbar-right > .status-chip { margin-right: 8px; }
+.topbar-right > .profile-wrap { margin-left: 6px; }
 .search-wrap { position: relative; }
 .search {
   display: flex; align-items: center; gap: 8px; background: var(--surface);
@@ -817,7 +819,7 @@
   .topbar { padding: 0 14px; gap: 10px; }
   .search-wrap { flex: 1; min-width: 0; }
   .search { width: 100% !important; }
-  .topbar-right { gap: 10px; }
+  .topbar-right { gap: 2px; }
   .status-chip { display: none; }
   .content { padding: 18px 14px; }
 }
