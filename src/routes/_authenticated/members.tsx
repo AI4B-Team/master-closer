@@ -14,8 +14,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState } from "@/components/back-office/ui";
-import { UserPlus, Trash2, ShieldCheck, Users } from "lucide-react";
-import { inviteMember, listMembers, removeMember, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
+import { UserPlus, Trash2, ShieldCheck, Users, MailClock, X } from "lucide-react";
+import { inviteMember, listInvites, listMembers, removeMember, revokeInvite, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({
@@ -60,6 +60,8 @@ function MembersPage() {
   const changeRole = useServerFn(setMemberRole);
   const kick = useServerFn(removeMember);
   const changeAccess = useServerFn(setWorkspaceRole);
+  const fetchInvites = useServerFn(listInvites);
+  const cancelInvite = useServerFn(revokeInvite);
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
