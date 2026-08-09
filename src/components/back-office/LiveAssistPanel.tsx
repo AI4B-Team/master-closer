@@ -100,6 +100,25 @@ export function LiveAssistPanel({
                   <span>{TAG[mode]}</span>
                 </div>
                 <p>{s}</p>
+                <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="tab"
+                    onClick={() => onUseLine?.(s)}
+                    disabled={usedLine}
+                    style={usedLine ? { opacity: 0.6 } : { fontWeight: 600 }}
+                  >
+                    <Check size={12} style={{ display: "inline", marginRight: 6 }} />
+                    {usedLine ? "Line Used" : "I Said This"}
+                  </button>
+                  <button
+                    type="button"
+                    className="tab"
+                    onClick={() => void navigator.clipboard.writeText(s).catch(() => {})}
+                  >
+                    <Copy size={12} style={{ display: "inline", marginRight: 6 }} /> Copy Line
+                  </button>
+                </div>
               </div>
             ))}
 
