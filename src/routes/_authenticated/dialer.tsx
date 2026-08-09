@@ -392,6 +392,16 @@ function DialerPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
 
+      // Hard stop: never dial a number on the Do Not Call list.
+      const target = (phone ?? "").replace(/\D/g, "");
+      if (target) {
+        const { data: dncRows } = await supabase.from("dnc_list").select("phone");
+        const blocked = (dncRows ?? []).some((d: any) => (d.phone ?? "").replace(/\D/g, "") === target);
+        if (blocked) throw new Error("This Number Is On The Do Not Call List.");
+      }
+
+
+
       // Simulated ring cadence stands in for the carrier until credentials are live.
       if (simulate) {
         setDialing(true);
