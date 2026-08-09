@@ -374,13 +374,26 @@ function Objections() {
                 disabled={!form.trigger.trim() || !form.response.trim() || create.isPending}
                 className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
               >
-                Save Objection
+                {editId ? "Save Changes" : "Save Objection"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
         </div>
       </div>
+
+      {objections && objections.length > 0 && (
+        <div className="relative mb-3">
+          <Search className="h-4 w-4 text-[#9A9AA6] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search Objections"
+            className="pl-9 rounded-xl"
+          />
+        </div>
+      )}
+
 
       <Dialog open={genOpen} onOpenChange={setGenOpen}>
         <DialogContent className="max-w-2xl">
