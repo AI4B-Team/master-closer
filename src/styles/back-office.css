@@ -92,7 +92,7 @@
 .side-user-e { font-size: 11px; color: var(--muted); }
 
 /* -------------------------------- main -------------------------------- */
-.main { flex: 1; margin-left: 236px; display: flex; flex-direction: column; min-height: 100vh; transition: margin 0.18s ease; }
+.main { flex: 1; min-width: 0; margin-left: 236px; display: flex; flex-direction: column; min-height: 100vh; transition: margin 0.18s ease; }
 .main-collapsed { margin-left: 70px; }
 .topbar {
   height: 60px; background: #fff; border-bottom: 1px solid var(--line); display: flex;
@@ -171,7 +171,7 @@
   color: #4a505c; display: grid; place-items: center; cursor: pointer;
 }
 .icon-btn:hover { background: var(--surface); }
-.content { padding: 26px 28px; flex: 1; }
+.content { padding: 26px 28px; flex: 1; min-width: 0; }
 
 /* ------------------------------ page head ------------------------------ */
 .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
