@@ -593,7 +593,7 @@ function DialerPage() {
               call_id: callId,
               mode,
               dial_outcome: dial,
-              lead_name: contact?.name ?? lead?.name ?? null,
+              lead_name: contact?.name ?? null,
               disposition: disposition ?? DISPOSITIONS.find((d) => d.value === dial)?.label ?? null,
               campaign_id: campaignId || null,
             },
