@@ -59,6 +59,12 @@ function fmt(sec: number) {
   return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 }
 
+async function workspaceContext() {
+  const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+  if (!prof?.active_workspace_id) throw new Error("No active workspace");
+  return { orgId: prof.org_id, workspaceId: prof.active_workspace_id };
+}
+
 function DialerPage() {
   const [mode, setMode] = useState<Mode>("full_ai");
   const [phone, setPhone] = useState("+1 555 0142");
