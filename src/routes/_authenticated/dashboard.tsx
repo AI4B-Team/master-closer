@@ -19,7 +19,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-const MODE_COLORS = ["#CC0000", "#111318", "#B6B7C0"];
+// Tonal crimson ramp so the chart reads as one brand family, not three unrelated colors.
+const MODE_COLORS = ["#CC0000", "#EE7A66", "#F7CFC7"];
 
 function Dashboard() {
   const { data: stats } = useQuery({
@@ -67,7 +68,7 @@ function Dashboard() {
   }, []);
   const donut = total
     ? `conic-gradient(${stops.join(", ")})`
-    : "conic-gradient(#EEF0F3 0 100%)";
+    : "conic-gradient(#F4F0EF 0 100%)";
 
   return (
     <div>
