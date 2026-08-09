@@ -174,7 +174,14 @@ function ActivityPage() {
                           Open
                         </Link>
                       ) : null}
-                      <Badge variant="secondary" className="font-mono text-[11px] ml-auto shrink-0">{a.kind}</Badge>
+                      <button
+                        type="button"
+                        onClick={() => setType(a.kind)}
+                        title={`Filter By ${a.label}`}
+                        className="ml-auto shrink-0"
+                      >
+                        <Badge variant="secondary" className="font-mono text-[11px] hover:bg-[#E7E7EC]">{a.kind}</Badge>
+                      </button>
                       <span className="text-xs text-[#6B6B76] shrink-0">
                         {new Date(e.created_at).toLocaleString()}
                       </span>
