@@ -100,7 +100,30 @@ function DialerPage() {
   useEffect(() => {
     setCallStatus(connected ? "on_call" : dialing ? "dialing" : "idle");
   }, [connected, dialing]);
-  useEffect(() => () => setCallStatus("idle"), []);
+
+  // Keep the live call id/elapsed in refs so the unmount cleanup can close out a
+  // call the rep walked away from instead of leaving it stuck "in progress".
+  const liveCall = useRef<{ id: string | null; sec: number }>({ id: null, sec: 0 });
+  liveCall.current = { id: callId, sec: elapsed };
+
+  useEffect(
+    () => () => {
+      setCallStatus("idle");
+      const { id, sec } = liveCall.current;
+      if (!id) return;
+      void supabase
+        .from("calls")
+        .update({
+          outcome: sec > 0 ? "completed" : "failed",
+          duration_sec: sec,
+          ended_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .eq("outcome", "in_progress");
+    },
+    [],
+  );
+
   const [holding, setHolding] = useState(false);
   const [participants, setParticipants] = useState<string[]>([]);
   const [mergeOpen, setMergeOpen] = useState(false);
