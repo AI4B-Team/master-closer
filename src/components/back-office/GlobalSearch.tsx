@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePrefs } from "@/hooks/use-prefs";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ChevronDown, Check, Users, PhoneCall, Megaphone, KanbanSquare, StickyNote, Bot } from "lucide-react";
@@ -153,6 +154,7 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
 
 export function GlobalSearch() {
   const navigate = useNavigate();
+  const { t } = usePrefs();
   const [scope, setScope] = useState<SearchScope>("Everything");
   const [scopeOpen, setScopeOpen] = useState(false);
   const [term, setTerm] = useState("");
@@ -217,7 +219,7 @@ export function GlobalSearch() {
         <input
           ref={inputRef}
           value={term}
-          placeholder={`Search ${scope}…`}
+          placeholder={`${t("Search")} ${t(scope)}…`}
           onChange={(e) => {
             setTerm(e.target.value);
             setOpen(true);
@@ -243,7 +245,7 @@ export function GlobalSearch() {
           data-tip="Choose What To Search"
           aria-label="Search Options"
         >
-          {scope} <ChevronDown size={14} />
+          {t(scope)} <ChevronDown size={14} />
         </button>
       </div>
 
@@ -252,7 +254,7 @@ export function GlobalSearch() {
           <div className="search-menu-label">Search In</div>
           {SEARCH_SCOPES.map((s) => (
             <button
-              key={s}
+              key={t(s)}
               type="button"
               data-on={s === scope}
               onClick={() => {
@@ -261,7 +263,7 @@ export function GlobalSearch() {
                 inputRef.current?.focus();
               }}
             >
-              {s === scope && <Check size={14} />} {s}
+              {s === scope && <Check size={14} />} {t(s)}
             </button>
           ))}
         </div>
