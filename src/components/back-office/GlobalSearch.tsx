@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ChevronDown, Check, Users, PhoneCall, Megaphone, KanbanSquare, StickyNote, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export const SEARCH_SCOPES = ["Everything", "Leads", "Calls", "Campaigns", "Deals", "Notes", "Agents"] as const;
 export type SearchScope = (typeof SEARCH_SCOPES)[number];
@@ -29,7 +30,7 @@ function esc(q: string) {
   return q.replace(/[%,()]/g, " ").trim();
 }
 
-async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
+async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise<Hit[]> {
   const q = esc(raw);
   if (q.length < 2) return [];
   const like = `%${q}%`;
@@ -39,6 +40,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
   if (want("Leads") || want("Notes")) {
     const { data } = await supabase
       .from("leads")
+      .eq("workspace_id", wsId)
       .select("id,name,company,phone,email,notes,status")
       .or(`name.ilike.${like},company.ilike.${like},phone.ilike.${like},email.ilike.${like},notes.ilike.${like}`)
       .limit(6);
@@ -62,6 +64,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
   if (want("Calls")) {
     const { data } = await supabase
       .from("calls")
+      .eq("workspace_id", wsId)
       .select("id,summary,disposition,outcome,mode,started_at")
       .or(`summary.ilike.${like},disposition.ilike.${like}`)
       .order("started_at", { ascending: false })
@@ -81,6 +84,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
   if (want("Campaigns")) {
     const { data } = await supabase
       .from("campaigns")
+      .eq("workspace_id", wsId)
       .select("id,name,status,goal")
       .or(`name.ilike.${like},goal.ilike.${like}`)
       .limit(5);
@@ -92,6 +96,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
   if (want("Deals")) {
     const { data } = await supabase
       .from("deals")
+      .eq("workspace_id", wsId)
       .select("id,title,stage,value")
       .ilike("title", like)
       .limit(5);
@@ -110,6 +115,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
   if (want("Agents")) {
     const { data: ags } = await supabase
       .from("background_agents")
+      .eq("workspace_id", wsId)
       .select("id,agent_key,mode,enabled")
       .ilike("agent_key", like)
       .limit(4);
@@ -125,6 +131,7 @@ async function runSearch(raw: string, scope: SearchScope): Promise<Hit[]> {
     }
     const { data: props } = await supabase
       .from("agent_proposals")
+      .eq("workspace_id", wsId)
       .select("id,agent_key,proposal_type,target_table,target_field,status,rationale")
       .or(`rationale.ilike.${like},target_table.ilike.${like},proposal_type.ilike.${like}`)
       .limit(5);
@@ -182,10 +189,13 @@ export function GlobalSearch() {
     };
   }, []);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: hits, isFetching } = useQuery({
-    queryKey: ["global-search", debounced, scope],
-    queryFn: () => runSearch(debounced, scope),
-    enabled: debounced.trim().length >= 2,
+    queryKey: ["global-search", debounced, scope, wsId],
+    queryFn: () => runSearch(debounced, scope, wsId!),
+    enabled: debounced.trim().length >= 2 && !!wsId,
     staleTime: 15_000,
   });
 
