@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, CheckCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { eventHref } from "@/lib/activity-labels";
 
 const SEEN_KEY = "mc.notifications.seenAt";
 
@@ -158,7 +159,7 @@ export function NotificationsMenu() {
                   className="notif-item"
                   onClick={() => {
                     setOpen(false);
-                    navigate({ to: routeFor(e.event_type) });
+                    navigate({ to: routeFor(e) });
                   }}
                 >
                   <span className="notif-dot" data-new={!seenAt || new Date(e.created_at) > new Date(seenAt)} />
