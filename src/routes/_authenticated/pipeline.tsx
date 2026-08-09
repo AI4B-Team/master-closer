@@ -537,8 +537,18 @@ function PipelinePage() {
                   </DropdownMenu>
                 </div>
               </div>
-              <div className="text-[10px] text-[#6B6B76] px-1 mb-2 font-mono">
-                {money(total)}
+              <div className="flex items-center gap-1.5 px-1 mb-2">
+                <span className="text-[10px] text-[#6B6B76] font-mono">{money(total)}</span>
+                {overLimit ? (
+                  <span className="text-[10px] font-medium text-[#CC0000] bg-[#CC0000]/8 rounded px-1.5 py-0.5">
+                    Over Limit
+                  </span>
+                ) : null}
+                {stalledCount ? (
+                  <span className="text-[10px] font-medium text-[#B4690E] bg-[#B4690E]/10 rounded px-1.5 py-0.5">
+                    {stalledCount} Stalled
+                  </span>
+                ) : null}
               </div>
               <div
                 className={`space-y-2 min-h-[140px] rounded-xl p-1 transition ${
