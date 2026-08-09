@@ -49,11 +49,13 @@ export function AgentDrawer({
     setAiLoading(true);
     try {
       const res = await aiHelp({
-        name: form.name,
-        industry: form.industry ?? null,
-        mode: (form.default_mode ?? "hybrid") as "full_ai" | "hybrid" | "copilot",
-        current: form.system_prompt ?? null,
-        instruction,
+        data: {
+          name: form.name,
+          industry: form.industry ?? null,
+          mode: (form.default_mode ?? "hybrid") as "full_ai" | "hybrid" | "copilot",
+          current: form.system_prompt ?? null,
+          instruction,
+        },
       });
       setForm((f) => ({ ...f, system_prompt: res.prompt }));
       toast.success("Prompt updated.");
