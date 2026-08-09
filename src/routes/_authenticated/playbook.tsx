@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState } from "@/components/back-office/ui";
-import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles } from "lucide-react";
+import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles, Pencil, Search } from "lucide-react";
 import { suggestObjections } from "@/lib/agents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -57,6 +57,7 @@ function PlaybookPage() {
 function Scripts() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", description: "", content: "" });
 
   const { data: scripts } = useQuery({
@@ -69,17 +70,24 @@ function Scripts() {
 
   const create = useMutation({
     mutationFn: async () => {
+      if (editId) {
+        const { error } = await supabase.from("playbooks").update({ ...form }).eq("id", editId);
+        if (error) throw error;
+        return;
+      }
       const { error } = await supabase.from("playbooks").insert({ ...form, org_id: await orgId() });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Script Saved.");
+      toast.success(editId ? "Script Updated." : "Script Saved.");
       setOpen(false);
+      setEditId(null);
       setForm({ name: "", description: "", content: "" });
       qc.invalidateQueries({ queryKey: ["playbooks"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
@@ -101,14 +109,23 @@ function Scripts() {
             <p className="text-sm text-[#6B6B76]">Openers, discovery frames, and closing sequences.</p>
           </div>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) {
+              setEditId(null);
+              setForm({ name: "", description: "", content: "" });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button size="sm" className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl">
               <Plus className="h-4 w-4 mr-1" /> New Script
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New Script</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? "Edit Script" : "New Script"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>Name</Label>
@@ -129,7 +146,7 @@ function Scripts() {
                 disabled={!form.name.trim() || create.isPending}
                 className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
               >
-                Save Script
+                {editId ? "Save Changes" : "Save Script"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -147,9 +164,23 @@ function Scripts() {
                   <p className="font-medium text-sm">{s.name}</p>
                   {s.description && <p className="text-xs text-[#6B6B76] mt-0.5">{s.description}</p>}
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => remove.mutate(s.id)}>
-                  <Trash2 className="h-4 w-4 text-[#6B6B76]" />
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setEditId(s.id);
+                      setForm({ name: s.name ?? "", description: s.description ?? "", content: s.content ?? "" });
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4 text-[#6B6B76]" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove.mutate(s.id)}>
+                    <Trash2 className="h-4 w-4 text-[#6B6B76]" />
+                  </Button>
+                </div>
               </div>
               {s.content && (
                 <p className="text-sm text-[#4A505C] mt-2 whitespace-pre-line">{s.content}</p>
@@ -165,6 +196,8 @@ function Scripts() {
 function Objections() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [q, setQ] = useState("");
   const [form, setForm] = useState({ trigger: "", response: "", category: "" });
   const [genOpen, setGenOpen] = useState(false);
   const [gen, setGen] = useState({ industry: "", focus: "" });
@@ -210,17 +243,23 @@ function Objections() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("objections").insert({
+      const payload = {
         trigger: form.trigger,
         response: form.response,
         category: form.category || null,
-        org_id: await orgId(),
-      });
+      };
+      if (editId) {
+        const { error } = await supabase.from("objections").update(payload).eq("id", editId);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase.from("objections").insert({ ...payload, org_id: await orgId() });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Objection Saved.");
+      toast.success(editId ? "Objection Updated." : "Objection Saved.");
       setOpen(false);
+      setEditId(null);
       setForm({ trigger: "", response: "", category: "" });
       qc.invalidateQueries({ queryKey: ["objections"] });
     },
@@ -298,15 +337,23 @@ function Objections() {
         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setGenOpen(true)}>
           <Sparkles className="h-4 w-4 mr-1 text-[#CC0000]" /> Generate With AI
         </Button>
-        <Dialog open={open} onOpenChange={setOpen}>
-
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) {
+              setEditId(null);
+              setForm({ trigger: "", response: "", category: "" });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button size="sm" variant="outline" className="rounded-xl">
               <Plus className="h-4 w-4 mr-1" /> New Objection
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New Objection</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? "Edit Objection" : "New Objection"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>Trigger</Label>
@@ -327,13 +374,26 @@ function Objections() {
                 disabled={!form.trigger.trim() || !form.response.trim() || create.isPending}
                 className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
               >
-                Save Objection
+                {editId ? "Save Changes" : "Save Objection"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
         </div>
       </div>
+
+      {objections && objections.length > 0 && (
+        <div className="relative mb-3">
+          <Search className="h-4 w-4 text-[#9A9AA6] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search Objections"
+            className="pl-9 rounded-xl"
+          />
+        </div>
+      )}
+
 
       <Dialog open={genOpen} onOpenChange={setGenOpen}>
         <DialogContent className="max-w-2xl">
@@ -399,7 +459,13 @@ function Objections() {
         <EmptyState icon={MessageSquareQuote} title="No Objections Yet" hint="Load the pushback your reps hear most." />
       ) : (
         <div className="space-y-2">
-          {objections.map((o: any) => (
+          {objections
+            .filter((o: any) => {
+              const needle = q.trim().toLowerCase();
+              if (!needle) return true;
+              return `${o.trigger ?? ""} ${o.response ?? ""} ${o.category ?? ""}`.toLowerCase().includes(needle);
+            })
+            .map((o: any) => (
             <div key={o.id} className="border border-[#E7E7EC] rounded-xl px-4 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -421,6 +487,18 @@ function Objections() {
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   {o.category && <Badge variant="secondary">{o.category}</Badge>}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setEditId(o.id);
+                      setForm({ trigger: o.trigger ?? "", response: o.response ?? "", category: o.category ?? "" });
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4 text-[#6B6B76]" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove.mutate(o.id)}>
                     <Trash2 className="h-4 w-4 text-[#6B6B76]" />
                   </Button>
