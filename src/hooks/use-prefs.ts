@@ -55,12 +55,6 @@ function hydrate() {
   emit();
 }
 
-if (typeof window !== "undefined") {
-  // Hydrate stored prefs before the first client render so translated copy is
-  // correct immediately instead of one render late.
-  hydrate();
-}
-
 export function usePrefs() {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
