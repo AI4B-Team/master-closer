@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState, Kpi, KPI_TINTS, StatusPill, titleCase } from "@/components/back-office/ui";
-import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot } from "lucide-react";
+import { BarChart3, PhoneCall, Trophy, Percent, DollarSign, Download, Activity, Filter, Bot, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
