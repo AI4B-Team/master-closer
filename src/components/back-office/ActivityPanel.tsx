@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowRight, Inbox, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { describeEvent, eventHref, type EventRow } from "@/lib/activity-labels";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 function ago(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -55,14 +56,18 @@ export function ActivityPanel() {
     }
   }, []);
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: events = [], isFetching, refetch } = useQuery({
-    queryKey: ["activity-panel"],
-    enabled: open,
+    queryKey: ["activity-panel", wsId],
+    enabled: open && !!wsId,
     refetchInterval: open ? 20000 : false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("events")
         .select("id,event_type,payload,created_at")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(60);
       if (error) throw error;
@@ -72,17 +77,23 @@ export function ActivityPanel() {
 
   // Cheap "how much is new?" probe so the icon can show a count while closed.
   const { data: latest } = useQuery({
-    queryKey: ["activity-latest", seen],
+    queryKey: ["activity-latest", wsId, seen],
+    enabled: !!wsId,
     refetchInterval: 45000,
     queryFn: async () => {
       const newestQ = supabase
         .from("events")
         .select("created_at")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       const unseenQ = seen
-        ? supabase.from("events").select("id", { count: "exact", head: true }).gt("created_at", seen)
+        ? supabase
+            .from("events")
+            .select("id", { count: "exact", head: true })
+            .eq("workspace_id", wsId!)
+            .gt("created_at", seen)
         : null;
       const [newestRes, unseenRes] = await Promise.all([newestQ, unseenQ]);
       if (newestRes.error) throw newestRes.error;

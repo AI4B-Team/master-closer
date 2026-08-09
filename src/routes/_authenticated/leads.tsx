@@ -116,7 +116,6 @@ function LeadsPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const { data: lead, error } = await supabase
         .from("leads")
         .insert({ ...form, status: form.status as never, org_id: prof.org_id, workspace_id: prof.active_workspace_id })

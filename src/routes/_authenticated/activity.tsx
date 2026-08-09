@@ -10,6 +10,7 @@ import { AccountShell } from "@/components/back-office/AccountShell";
 import { supabase } from "@/integrations/supabase/client";
 import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 import { Activity, Download, RefreshCw } from "lucide-react";
 
@@ -65,11 +66,19 @@ function ActivityPage() {
 
 
 
+  const { data: workspace } = useWorkspace();
+
   const { data: events, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["org-events", range, limit],
+    queryKey: ["org-events", workspace?.id ?? null, range, limit],
+    enabled: !!workspace?.id,
     queryFn: async () => {
       const days = RANGES.find((r) => r.key === range)?.days ?? null;
-      let q = supabase.from("events").select("*").order("created_at", { ascending: false }).limit(limit);
+      let q = supabase
+        .from("events")
+        .select("*")
+        .eq("workspace_id", workspace!.id)
+        .order("created_at", { ascending: false })
+        .limit(limit);
       if (days) q = q.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
       const { data, error } = await q;
       if (error) throw error;
