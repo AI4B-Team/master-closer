@@ -74,6 +74,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const [openSub, setOpenSub] = useState<"lang" | "theme" | null>(null);
+  const prefs = usePrefs();
+
   const tour = useProductTour();
 
 
