@@ -511,6 +511,27 @@ function Objections() {
         </div>
       )}
 
+      {categories.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {categories.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCat(c)}
+              className={
+                "text-xs font-medium rounded-full px-3 py-1.5 border transition-colors " +
+                (cat === c
+                  ? "bg-[#CC0000] border-[#CC0000] text-white"
+                  : "bg-white border-[#E7E7EC] text-[#4A505C] hover:bg-[#F6F6F8]")
+              }
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+
+
 
       <Dialog open={genOpen} onOpenChange={setGenOpen}>
         <DialogContent className="max-w-2xl">
