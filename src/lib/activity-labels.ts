@@ -83,6 +83,8 @@ export function eventHref(e: EventRow): string | null {
   if (kind.startsWith("leads.")) return "/leads";
   if (kind === "lead.flagged_dnc") return "/lists";
   if (kind.startsWith("campaign.")) return "/campaigns";
+  if (kind.startsWith("agent.")) return "/ai-closers";
+  if (kind.startsWith("call.") && p.call_id) return `/calls?call=${p.call_id}`;
   if (kind.startsWith("call.")) return "/calls";
   return null;
 }
