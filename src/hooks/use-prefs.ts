@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 
 export type Theme = "light" | "dark";
 export const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "pt", label: "Português" },
+  { code: "en", label: "English", flag: "🇺🇸" },
+  { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪" },
+  { code: "pt", label: "Português", flag: "🇵🇹" },
 ] as const;
 export type LangCode = (typeof LANGUAGES)[number]["code"];
 
