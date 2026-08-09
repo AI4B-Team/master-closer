@@ -1933,4 +1933,25 @@ a{text-decoration:none;color:inherit;}
 @media(prefers-reduced-motion:reduce){.indtrack{animation:none;}.indrow{overflow-x:auto;}}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* ===== mobile safety net (must stay last to win the cascade) ===== */
+@media(max-width:1100px){
+  .sec-h2,.hero-h1,.story-h2,.indquote{white-space:normal!important;}
+  .hero-pills{flex-wrap:wrap!important;}
+}
+@media(max-width:760px){
+  .wrap,.hero-grid,.foot-in,.foot-bottom{padding-left:20px!important;padding-right:20px!important;}
+  .story{grid-template-columns:1fr!important;gap:34px!important;}
+  .story-flip .story-copy,.story-flip .story-vis{order:0!important;}
+  .hero-sub{max-width:none;}
+  .hero-actions .btn-lg,.hero-actions a{flex:1 1 auto;justify-content:center;text-align:center;}
+  .hero-pill{flex:1 1 auto;}
+  .nav-in,.foot-in{gap:14px;}
+}
+@media(max-width:520px){
+  .hero-glow{width:360px;height:360px;right:-100px;top:-120px;}
+  .sec-h2{font-size:1.72rem!important;}
+  .hero-h1{font-size:2.5rem!important;}
+}
+html,body{overflow-x:hidden;max-width:100vw;}
 `;
