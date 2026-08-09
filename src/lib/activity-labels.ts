@@ -77,8 +77,8 @@ export function describeEvent(e: EventRow): EventDescription {
 export function eventHref(e: EventRow): string | null {
   const p = (e.payload ?? {}) as Record<string, any>;
   const kind = String(p.kind ?? e.event_type);
-  if (kind.startsWith("agreement.")) return "/agreements";
-  if (kind.startsWith("deal.")) return "/pipeline";
+  if (kind.startsWith("agreement.")) return p.agreement_id ? `/agreements?agreement=${p.agreement_id}` : "/agreements";
+  if (kind.startsWith("deal.")) return p.deal_id ? `/pipeline?deal=${p.deal_id}` : "/pipeline";
   if (kind === "leads.new" && p.lead_id) return `/leads?lead=${p.lead_id}`;
   if (kind.startsWith("leads.")) return "/leads";
   if (kind === "lead.flagged_dnc") return "/lists";

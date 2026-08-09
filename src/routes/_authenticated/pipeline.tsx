@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -135,6 +135,13 @@ function PipelinePage() {
   }, [leads]);
 
   const columns = stages ?? [];
+  /* Deep link: ?deal=<id> opens that card's drawer once deals load. */
+  useEffect(() => {
+    if (!sp.deal || selected) return;
+    const hit = (deals ?? []).find((d: any) => d.id === sp.deal);
+    if (hit) setSelected(hit as DealRow);
+  }, [sp.deal, deals, selected]);
+
   const selectedDeal = selected
     ? ((deals ?? []).find((d) => d.id === selected.id) as DealRow | undefined) ?? selected
     : null;
