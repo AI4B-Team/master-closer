@@ -229,7 +229,7 @@ function CallDetail({ call }: { call: any }) {
       if (error) throw error;
       return p.id;
     },
-    onSuccess: (id) => {
+    onSuccess: (id: string) => {
       setSaved((s) => [...s, id]);
       toast.success("Added To Playbook");
     },
