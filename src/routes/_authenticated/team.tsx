@@ -86,20 +86,27 @@ function ReportsPage() {
     },
   });
 
+  /* Reps are the members of this workspace only — not everyone in the org. */
   const { data: people } = useQuery({
-    queryKey: ["report_people"],
+    queryKey: ["report_people", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email");
+      const { data: mem } = await supabase.from("workspace_members").select("user_id").eq("workspace_id", wsId!);
+      const ids = (mem ?? []).map((m) => m.user_id);
+      if (!ids.length) return [];
+      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
       return data ?? [];
     },
   });
 
   const { data: suggestions } = useQuery({
-    queryKey: ["report_suggestions"],
+    queryKey: ["report_suggestions", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("suggestions")
         .select("id, objection, was_used, call_id")
+        .eq("workspace_id", wsId!)
         .limit(1000);
       return data ?? [];
     },
