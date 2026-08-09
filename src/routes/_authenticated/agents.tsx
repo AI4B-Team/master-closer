@@ -134,10 +134,10 @@ function AgentsPage() {
       />
 
       <div className="kpi-row">
-        <Kpi icon={Bot} label="Agents Enabled" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} tint={KPI_TINTS.a} />
-        <Kpi icon={Inbox} label="Proposals Waiting" value={String(pendingCount)} tint={KPI_TINTS.b} />
-        <Kpi icon={Activity} label="Labeled Conversations" value={String(reportQ.data?.total ?? 0)} tint={KPI_TINTS.c} />
-        <Kpi icon={ShieldAlert} label="Flagged For Human Eyes" value={String(reportQ.data?.flagged ?? 0)} tint={KPI_TINTS.d} />
+        <Kpi icon={Bot} label="Agents Enabled" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} {...KPI_TINTS.blue} />
+        <Kpi icon={Inbox} label="Proposals Waiting" value={String(pendingCount)} {...KPI_TINTS.lavender} />
+        <Kpi icon={Activity} label="Labeled Conversations" value={String(reportQ.data?.total ?? 0)} {...KPI_TINTS.mint} />
+        <Kpi icon={ShieldAlert} label="Flagged For Human Eyes" value={String(reportQ.data?.flagged ?? 0)} {...KPI_TINTS.red} />
       </div>
 
       <div className="tabs" style={{ margin: "4px 0 14px" }}>
@@ -221,7 +221,7 @@ function Registry({
         >
           <p style={{ maxWidth: 900, marginBottom: 10 }}>{a.meta.blurb}</p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-            <StatusPill label={a.enabled ? (a.mode === "active" ? "Active" : a.mode === "off" ? "Off" : "Flag Only") : "Paused"} tone={a.mode === "active" && a.enabled ? "good" : a.enabled ? "neutral" : "warn"} />
+            <StatusPill label={a.enabled ? (a.mode === "active" ? "Active" : a.mode === "off" ? "Off" : "Flag Only") : "Paused"} tone={a.mode === "active" && a.enabled ? "green" : a.enabled ? "neutral" : "amber"} />
             {!a.meta.canActivate && (
               <span className="muted" style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <ShieldCheck size={13} /> No Active Mode Ever — Proposals Only
@@ -229,8 +229,8 @@ function Registry({
             )}
             <span className="muted" style={{ fontSize: 12 }}>Last Run {timeAgo(a.last_run_at)}</span>
             <span className="muted" style={{ fontSize: 12 }}>Next Run {timeAgo(a.next_run_at)}</span>
-            {a.pending > 0 && <StatusPill label={`${a.pending} Waiting`} tone="warn" />}
-            {a.consecutive_failures >= 3 && <StatusPill label="Disabled After 3 Failures" tone="bad" />}
+            {a.pending > 0 && <StatusPill label={`${a.pending} Waiting`} tone="amber" />}
+            {a.consecutive_failures >= 3 && <StatusPill label="Disabled After 3 Failures" tone="red" />}
           </div>
 
           <div className="table-wrap">
@@ -250,7 +250,7 @@ function Registry({
                     <td>
                       <StatusPill
                         label={r.status === "ok" ? "Ok" : r.status === "skipped" ? "Skipped" : "Failed"}
-                        tone={r.status === "ok" ? "good" : r.status === "skipped" ? "neutral" : "bad"}
+                        tone={r.status === "ok" ? "green" : r.status === "skipped" ? "neutral" : "red"}
                       />
                     </td>
                     <td>{r.items_examined}</td>
@@ -299,8 +299,7 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
       <EmptyPanel
         title="Proposal Inbox"
         icon={Inbox}
-        heading="Nothing Waiting"
-        hint="Agents write proposals here with the evidence behind them. Nothing is ever applied without your approval."
+        hint="Nothing waiting. Agents write proposals here with the evidence behind them. Nothing is ever applied without your approval."
       />
     );
   }
@@ -311,7 +310,7 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
         <Panel
           key={p.id}
           title={`${p.agent_key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())} · ${p.proposal_type.replace(/_/g, " ")}`}
-          action={<StatusPill label="Pending" tone="warn" />}
+          action={<StatusPill label="Pending" tone="amber" />}
         >
           <p style={{ marginBottom: 10 }}>{p.rationale}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
@@ -377,7 +376,7 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
                     <td>{p.agent_key}</td>
                     <td>{p.proposal_type.replace(/_/g, " ")}</td>
                     <td>
-                      <StatusPill label={p.status === "approved" ? "Approved" : "Rejected"} tone={p.status === "approved" ? "good" : "bad"} />
+                      <StatusPill label={p.status === "approved" ? "Approved" : "Rejected"} tone={p.status === "approved" ? "green" : "red"} />
                     </td>
                     <td>{timeAgo(p.reviewed_at)}</td>
                     <td className="muted">{p.review_note ?? "—"}</td>
@@ -433,8 +432,7 @@ function Worklist({ loading, rows }: { loading: boolean; rows: any[] }) {
       <EmptyPanel
         title="Suggested Worklist"
         icon={ListChecks}
-        heading="Nothing Genuinely Due"
-        hint="The Lead Scout leaves this empty rather than padding it with names that are not worth a call today."
+        hint="Nothing genuinely due. The Lead Scout leaves this empty rather than padding it with names that are not worth a call today."
       />
     );
   }
@@ -545,7 +543,7 @@ function Insights({
         action={
           <StatusPill
             label={active?.is_default === false ? `Fitted On ${active?.fitted_on ?? 0} Outcomes` : "Learning, Using Defaults"}
-            tone={active?.is_default === false ? "good" : "neutral"}
+            tone={active?.is_default === false ? "green" : "neutral"}
           />
         }
       >

@@ -37,6 +37,7 @@ import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
 import { Route as AuthenticatedAgreementsRouteImport } from './routes/_authenticated/agreements'
+import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiV1ListsRouteImport } from './routes/api/v1/lists'
@@ -188,6 +189,11 @@ const AuthenticatedAgreementsRoute = AuthenticatedAgreementsRouteImport.update({
   path: '/agreements',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/agreements': typeof AuthenticatedAgreementsRoute
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
@@ -324,6 +332,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/agreements': typeof AuthenticatedAgreementsRoute
   '/_authenticated/ai-closers': typeof AuthenticatedAiClosersRoute
   '/_authenticated/calls': typeof AuthenticatedCallsRoute
@@ -365,6 +374,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/account'
     | '/activity'
+    | '/agents'
     | '/agreements'
     | '/ai-closers'
     | '/calls'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/account'
     | '/activity'
+    | '/agents'
     | '/agreements'
     | '/ai-closers'
     | '/calls'
@@ -444,6 +455,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/account'
     | '/_authenticated/activity'
+    | '/_authenticated/agents'
     | '/_authenticated/agreements'
     | '/_authenticated/ai-closers'
     | '/_authenticated/calls'
@@ -696,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgreementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/agents': {
+      id: '/_authenticated/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/activity': {
       id: '/_authenticated/activity'
       path: '/activity'
@@ -772,6 +791,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAgreementsRoute: typeof AuthenticatedAgreementsRoute
   AuthenticatedAiClosersRoute: typeof AuthenticatedAiClosersRoute
   AuthenticatedCallsRoute: typeof AuthenticatedCallsRoute
@@ -797,6 +817,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAgreementsRoute: AuthenticatedAgreementsRoute,
   AuthenticatedAiClosersRoute: AuthenticatedAiClosersRoute,
   AuthenticatedCallsRoute: AuthenticatedCallsRoute,
