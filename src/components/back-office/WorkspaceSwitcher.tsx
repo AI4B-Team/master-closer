@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Building2, Check, ChevronDown } from "lucide-react";
+import { Building2, Check, ChevronDown, Plus } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { createWorkspace } from "@/lib/workspaces.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 
@@ -15,6 +17,9 @@ export function WorkspaceSwitcher() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const makeWorkspace = useServerFn(createWorkspace);
   const { data: active } = useWorkspace();
 
   useEffect(() => {
@@ -55,6 +60,20 @@ export function WorkspaceSwitcher() {
       toast.success("Workspace Switched");
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not switch workspace."),
+  });
+
+  const create = useMutation({
+    mutationFn: () => makeWorkspace({ data: { name: newName.trim() } }),
+    onSuccess: async () => {
+      setCreating(false);
+      setNewName("");
+      setOpen(false);
+      await qc.invalidateQueries({ queryKey: ["my-workspaces"] });
+      await qc.invalidateQueries({ queryKey: ["active-workspace"] });
+      await qc.invalidateQueries();
+      toast.success("Workspace Created");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not create the workspace."),
   });
 
   const list = workspaces ?? [];
@@ -99,6 +118,33 @@ export function WorkspaceSwitcher() {
                 </button>
               );
             })
+          )}
+
+          <div className="ws-sep" />
+          {creating ? (
+            <form
+              className="ws-create"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (newName.trim().length >= 2) create.mutate();
+              }}
+            >
+              <input
+                className="ws-input"
+                placeholder="Workspace Name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                autoFocus
+              />
+              <button type="submit" className="ws-create-btn" disabled={create.isPending}>
+                {create.isPending ? "Creating…" : "Create"}
+              </button>
+            </form>
+          ) : (
+            <button type="button" className="ws-item" onClick={() => setCreating(true)}>
+              <Plus size={14} className="text-[#CC0000]" />
+              <span className="ws-item-name">New Workspace</span>
+            </button>
           )}
         </div>
       )}

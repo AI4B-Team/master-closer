@@ -1085,3 +1085,17 @@
 :root.dark .ws-btn, :root.dark .ws-menu { background: #141416; border-color: #2a2a2e; color: #f2f2f3; }
 :root.dark .ws-item:hover { background: #1e1e21; }
 :root.dark .ws-item-name { color: #f2f2f3; }
+
+.ws-sep { height: 1px; background: var(--bo-border, #e8e8ea); margin: 6px 4px; }
+.ws-create { display: flex; gap: 6px; padding: 4px; }
+.ws-input {
+  flex: 1; min-width: 0; height: 32px; padding: 0 10px; font-size: 13px;
+  border: 1px solid var(--bo-border, #e8e8ea); border-radius: 9px; background: #fff; color: #1a1a1a;
+}
+.ws-create-btn {
+  height: 32px; padding: 0 12px; border-radius: 9px; border: 0; cursor: pointer;
+  background: #CC0000; color: #fff; font-size: 12px; font-weight: 700;
+}
+.ws-create-btn:disabled { opacity: .6; }
+:root.dark .ws-sep { background: #2a2a2e; }
+:root.dark .ws-input { background: #1a1a1d; border-color: #2a2a2e; color: #f2f2f3; }
