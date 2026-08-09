@@ -390,7 +390,7 @@ function CallDetail({ call }: { call: any }) {
 
       <div className="flex flex-wrap gap-2">
         {call.lead_id ? (
-          <Link to="/leads" search={{ open: call.lead_id } as any} className="mc-btn-link">
+          <Link to="/leads" search={{ lead: call.lead_id } as any} className="mc-btn-link">
             <Button type="button" variant="outline" size="sm" className="rounded-xl">Open Lead</Button>
           </Link>
         ) : null}
