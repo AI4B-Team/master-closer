@@ -954,10 +954,11 @@ function DialerPage() {
                   <span className="muted" style={{ fontSize: 12 }}>
                     Disclosure{" "}
                     <strong style={{ color: required ? "var(--signal)" : "var(--ink)" }}>
-                      {disclosureStatus(jurisdiction)}
+                      {disclosureStatus(jurisdiction).toLowerCase()}
                     </strong>{" "}
-                    Here.
+                    in this state.
                   </span>
+
                 </div>
                 <div className="lead-field">
                   <span className="lead-k">Simulation</span>
