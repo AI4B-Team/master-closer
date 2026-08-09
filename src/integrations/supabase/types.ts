@@ -519,6 +519,7 @@ export type Database = {
           lead_id: string | null
           org_id: string
           owner_id: string | null
+          sort_order: number
           stage: Database["public"]["Enums"]["deal_stage"]
           title: string
           updated_at: string
@@ -532,6 +533,7 @@ export type Database = {
           lead_id?: string | null
           org_id: string
           owner_id?: string | null
+          sort_order?: number
           stage?: Database["public"]["Enums"]["deal_stage"]
           title: string
           updated_at?: string
@@ -545,6 +547,7 @@ export type Database = {
           lead_id?: string | null
           org_id?: string
           owner_id?: string | null
+          sort_order?: number
           stage?: Database["public"]["Enums"]["deal_stage"]
           title?: string
           updated_at?: string
