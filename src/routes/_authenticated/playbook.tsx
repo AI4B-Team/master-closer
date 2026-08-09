@@ -70,17 +70,24 @@ function Scripts() {
 
   const create = useMutation({
     mutationFn: async () => {
+      if (editId) {
+        const { error } = await supabase.from("playbooks").update({ ...form }).eq("id", editId);
+        if (error) throw error;
+        return;
+      }
       const { error } = await supabase.from("playbooks").insert({ ...form, org_id: await orgId() });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Script Saved.");
+      toast.success(editId ? "Script Updated." : "Script Saved.");
       setOpen(false);
+      setEditId(null);
       setForm({ name: "", description: "", content: "" });
       qc.invalidateQueries({ queryKey: ["playbooks"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
