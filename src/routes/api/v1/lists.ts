@@ -35,6 +35,7 @@ export const Route = createFileRoute("/api/v1/lists")({
           const { data: contacts, error: cErr } = await supabase
             .from("list_contacts")
             .select("name, phone, email, consent")
+            .eq("workspace_id", workspaceId)
             .eq("list_id", body.list_id);
           if (cErr) throw new Error(cErr.message);
           if (!contacts?.length) return Response.json({ error: "List is empty" }, { status: 400 });
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/api/v1/lists")({
           const { data: campaign, error: kErr } = await supabase
             .from("campaigns")
             .select("id, name, mode")
+            .eq("workspace_id", workspaceId)
             .eq("id", body.campaign_id)
             .maybeSingle();
           if (kErr) throw new Error(kErr.message);
