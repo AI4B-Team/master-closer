@@ -229,12 +229,13 @@ function CallsPage() {
           <div className="mc-tablewrap"><table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                <th className="py-2">Date</th><th className="py-2">Lead</th>
-                <th className="py-2">Agent</th>
-                <th className="py-2">Campaign</th>
-                <th className="py-2">Mode</th><th className="py-2">Duration</th>
-                <th className="py-2">Outcome</th><th className="py-2 text-right">Close Probability</th>
+                <th className="py-2 pr-4">Date</th><th className="py-2 pr-4">Lead</th>
+                <th className="py-2 pr-4">Agent</th>
+                <th className="py-2 pr-4">Campaign</th>
+                <th className="py-2 pr-4">Mode</th><th className="py-2 pr-4 whitespace-nowrap">Duration</th>
+                <th className="py-2 pr-4">Outcome</th><th className="py-2 text-right whitespace-nowrap">Close Probability</th>
               </tr>
+
             </thead>
             <tbody>
               {filtered.map((c: any) => (
@@ -243,21 +244,22 @@ function CallsPage() {
                   onClick={() => setOpenId(c.id)}
                   className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50 cursor-pointer"
                 >
-                  <td className="py-3 text-[#6B6B76] font-mono text-xs">
+                  <td className="py-3 pr-4 text-[#6B6B76] font-mono text-xs">
                     {new Date(c.started_at).toLocaleString()}
                   </td>
-                  <td className="py-3 font-medium">
+                  <td className="py-3 pr-4 font-medium">
                     {c.leads?.name ?? "—"}{c.leads?.company ? ` · ${c.leads.company}` : ""}
                   </td>
-                  <td className="py-3 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
-                  <td className="py-3 text-[#6B6B76]">{c.campaigns?.name ?? "—"}</td>
+                  <td className="py-3 pr-4 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
+                  <td className="py-3 pr-4 text-[#6B6B76]">{c.campaigns?.name ?? "—"}</td>
 
-                  <td className="py-3">
+                  <td className="py-3 pr-4">
                     <Badge variant="secondary">{MODE_LABEL[c.mode] ?? c.mode}</Badge>
                   </td>
-                  <td className="py-3 font-mono">{fmtDur(c.duration_sec)}</td>
-                  <td className="py-3 capitalize">{c.outcome}</td>
+                  <td className="py-3 pr-4 font-mono whitespace-nowrap">{fmtDur(c.duration_sec)}</td>
+                  <td className="py-3 pr-4 capitalize">{c.outcome}</td>
                   <td className="py-3 text-right font-mono">{c.close_probability ?? 0}%</td>
+
                 </tr>
               ))}
             </tbody>
