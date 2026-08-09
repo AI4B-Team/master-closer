@@ -92,7 +92,8 @@ function ActivityPage() {
     const q = search.trim().toLowerCase();
     return (events ?? []).filter((e: any) => {
       const a = describeEvent(e);
-      if (type !== "all" && a.kind !== type) return false;
+      // Exact kind from a badge click, or a family prefix (e.g. "call") from a deep link.
+      if (type !== "all" && a.kind !== type && !a.kind.startsWith(`${type}.`)) return false;
       if (!q) return true;
       return (
         a.label.toLowerCase().includes(q) ||
@@ -157,6 +158,11 @@ function ActivityPage() {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <div className="flex flex-wrap gap-1.5">
               <FilterChip active={type === "all"} onClick={() => setType("all")}>All</FilterChip>
+              {type !== "all" && !types.some((t) => t.kind === type) && (
+                <FilterChip active onClick={() => setType("all")}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </FilterChip>
+              )}
               {types.map((t) => (
                 <FilterChip key={t.kind} active={type === t.kind} onClick={() => setType(t.kind)}>
                   {t.label}
