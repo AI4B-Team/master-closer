@@ -754,3 +754,9 @@
   .status-chip { display: none; }
   .content { padding: 18px 14px; }
 }
+
+.side-collapsed .nav-label, .side-collapsed .side-word { display: none; }
+@media (max-width: 860px) {
+  .side-collapsed .nav-label, .side-collapsed .side-word { display: inline; }
+  .side-collapsed .nav-item { justify-content: flex-start; padding: 9px 12px; }
+}

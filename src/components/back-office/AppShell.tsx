@@ -101,7 +101,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className="nav-ico">
             <Icon size={muted ? 16 : 17} strokeWidth={muted ? 2 : 2.1} />
           </span>
-          {!collapsed && <span className="nav-label">{item.label}</span>}
+          <span className="nav-label">{item.label}</span>
         </Link>
       );
     });
@@ -116,7 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className="side-mark">
             <Crosshair size={17} strokeWidth={2.6} />
           </span>
-          {!collapsed && <span className="side-word font-display">Master Closer</span>}
+          <span className="side-word font-display">Master Closer</span>
           <button
             type="button"
             className="side-toggle has-tip tip-below"
