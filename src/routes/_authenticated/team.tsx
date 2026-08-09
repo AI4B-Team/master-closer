@@ -321,6 +321,42 @@ function ReportsPage() {
       </div>
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <h3 className="font-semibold">Stage Conversion</h3>
+        <p className="text-sm text-[#6B6B76]">How deals move through the pipeline, and where they stall.</p>
+        {funnel.length === 0 ? (
+          <EmptyState icon={Filter} title="No Pipeline Stages Yet" hint="Add pipeline columns to see conversion rates." />
+        ) : (
+          <div className="mt-4 space-y-3">
+            {funnel.map((f) => (
+              <div key={f.id}>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium flex items-center gap-2">
+                    {titleCase(f.label)}
+                    {f.stale ? (
+                      <span className="text-[10px] font-medium text-[#B4690E] bg-[#B4690E]/10 rounded px-1.5 py-0.5">
+                        {f.stale} Stalled
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="font-num text-[#6B6B76]">
+                    {f.here} Here · {money(f.value)} · {f.conversion}% Conversion
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 rounded-full bg-[#F0F1F4]">
+                  <div
+                    className={`h-2 rounded-full ${f.kind === "won" ? "bg-[#1F9D55]" : "bg-[#CC0000]"}`}
+                    style={{ width: `${Math.max(2, f.share)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+
+
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
         <h3 className="font-semibold">Mode Split</h3>
         <p className="text-sm text-[#6B6B76]">How the work is divided across AI, Hybrid and Copilot.</p>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
