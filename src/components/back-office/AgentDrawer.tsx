@@ -95,23 +95,16 @@ export function AgentDrawer({
             <Input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Industry</Label>
-              <Input value={form.industry ?? ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
-            </div>
-            <div>
-              <Label>Voice</Label>
-              <Select value={form.voice ?? "aria"} onValueChange={(v) => setForm({ ...form, voice: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="aria">Aria</SelectItem>
-                  <SelectItem value="marcus">Marcus</SelectItem>
-                  <SelectItem value="june">June</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>Industry</Label>
+            <Input value={form.industry ?? ""} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
           </div>
+
+          <VoicePicker
+            value={form.voices ?? []}
+            onChange={(voices) => setForm({ ...form, voices })}
+          />
+
 
           <div>
             <Label>Default Mode</Label>
