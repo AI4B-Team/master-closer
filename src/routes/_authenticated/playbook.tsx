@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyState } from "@/components/back-office/ui";
-import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles } from "lucide-react";
+import { Plus, BookOpen, MessageSquareQuote, Trash2, Sparkles, Pencil, Search } from "lucide-react";
 import { suggestObjections } from "@/lib/agents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
