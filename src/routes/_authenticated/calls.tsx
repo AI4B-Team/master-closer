@@ -229,12 +229,13 @@ function CallsPage() {
           <div className="mc-tablewrap"><table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                <th className="py-2">Date</th><th className="py-2">Lead</th>
-                <th className="py-2">Agent</th>
-                <th className="py-2">Campaign</th>
-                <th className="py-2">Mode</th><th className="py-2">Duration</th>
-                <th className="py-2">Outcome</th><th className="py-2 text-right">Close Probability</th>
+                <th className="py-2 pr-4">Date</th><th className="py-2 pr-4">Lead</th>
+                <th className="py-2 pr-4">Agent</th>
+                <th className="py-2 pr-4">Campaign</th>
+                <th className="py-2 pr-4">Mode</th><th className="py-2 pr-4 whitespace-nowrap">Duration</th>
+                <th className="py-2 pr-4">Outcome</th><th className="py-2 text-right whitespace-nowrap">Close Probability</th>
               </tr>
+
             </thead>
             <tbody>
               {filtered.map((c: any) => (
