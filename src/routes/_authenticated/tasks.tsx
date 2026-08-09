@@ -10,10 +10,13 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Kpi, KPI_TINTS, Panel, SkeletonRows } from "@/components/back-office/ui";
 import { PRIORITIES, dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
-import { ListChecks, Plus, Trash2, CalendarClock, CheckCircle2, AlarmClock } from "lucide-react";
+import { ListChecks, Plus, Trash2, CalendarClock, CheckCircle2, AlarmClock, MoreVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -133,6 +136,36 @@ function TasksPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const reschedule = useMutation({
+    mutationFn: async ({ id, due }: { id: string; due: string | null }) => {
+      const { error } = await supabase.from("tasks").update({ due_at: due }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Follow-up rescheduled.");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const setPriority = useMutation({
+    mutationFn: async ({ id, priority }: { id: string; priority: string }) => {
+      const { error } = await supabase.from("tasks").update({ priority }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const inDays = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(17, 0, 0, 0);
+    return d.toISOString();
+  };
+
+
 
   const all = tasks ?? [];
   const openTasks = all.filter((t) => t.status !== "done");
@@ -286,14 +319,49 @@ function TasksPage() {
                   <span className={"ml-auto shrink-0 text-sm " + (done ? "text-[#9A9AA5]" : TONE_STYLE[d.tone])}>
                     {done ? "Done" : d.text}
                   </span>
-                  <button
-                    type="button"
-                    aria-label="Delete Task"
-                    className="mt-0.5 text-[#9A9AA5] hover:text-[#CC0000]"
-                    onClick={() => remove.mutate(t.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Task Actions"
+                        className="mt-0.5 text-[#9A9AA5] hover:text-[#111114]"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuLabel>Reschedule</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: inDays(0) })}>
+                        Today
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: inDays(1) })}>
+                        Tomorrow
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: inDays(7) })}>
+                        Next Week
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => reschedule.mutate({ id: t.id, due: null })}>
+                        Clear Due Date
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Priority</DropdownMenuLabel>
+                      {PRIORITIES.map((p) => (
+                        <DropdownMenuItem
+                          key={p}
+                          className="capitalize"
+                          onClick={() => setPriority.mutate({ id: t.id, priority: p })}
+                        >
+                          {p}
+                          {t.priority === p ? " ·" : ""}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-[#CC0000]" onClick={() => remove.mutate(t.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                 </li>
               );
             })}
