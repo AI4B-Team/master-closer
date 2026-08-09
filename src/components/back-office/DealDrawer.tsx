@@ -116,12 +116,8 @@ export function DealDrawer({
       qc.invalidateQueries({ queryKey: ["deals"] });
       onOpenChange(false);
     },
-    onError: (e: Error) => taostErr(e),
+    onError: (e: Error) => toast.error(e.message),
   });
-
-  function taostErr(e: Error) {
-    toast.error(e.message);
-  }
 
   const prob = Math.max(0, Math.min(100, Number(form.close_probability ?? 0)));
   const weighted = (Number(form.value) || 0) * (prob / 100);
