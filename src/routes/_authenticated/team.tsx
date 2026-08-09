@@ -388,6 +388,37 @@ function ReportsPage() {
         )}
       </Card>
 
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <h3 className="font-semibold">Top Objections</h3>
+        <p className="text-sm text-[#6B6B76]">
+          What prospects push back on most, and how often reps actually deliver the suggested line.
+        </p>
+        {topObjections.length === 0 ? (
+          <EmptyState
+            icon={Activity}
+            title="No Objections Logged Yet"
+            hint="AI suggestions from live calls show up here."
+          />
+        ) : (
+          <div className="mt-4 space-y-3">
+            {topObjections.map((o) => (
+              <div key={o.trigger}>
+                <div className="flex items-center justify-between text-sm gap-3">
+                  <span className="font-medium truncate">{o.trigger}</span>
+                  <span className="font-num text-[#6B6B76] shrink-0">
+                    {o.surfaced} Surfaced · {o.used} Used · {o.useRate}% Use Rate
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 rounded-full bg-[#F0F1F4] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#141418]" style={{ width: `${Math.max(2, o.share)}%` }}>
+                    <div className="h-2 rounded-full bg-[#CC0000]" style={{ width: `${o.useRate}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
