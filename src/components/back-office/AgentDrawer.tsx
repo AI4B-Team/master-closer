@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
+import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
+
 import { helpSystemPrompt } from "@/lib/agents.functions";
 import { useServerFn } from "@tanstack/react-start";
 
