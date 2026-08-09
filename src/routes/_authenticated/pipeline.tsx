@@ -193,7 +193,17 @@ function PipelinePage() {
         const { error } = await supabase.from("deals").update(payload).eq("id", ordered[i]);
         if (error) throw error;
       }
+      const moved = deals?.find((d: any) => d.id === id);
+      if (stage && legacyStage(stage) === "won") {
+        void logActivity("deal.won", {
+          deal_id: id,
+          title: moved?.title ?? null,
+          value: Number(moved?.value ?? 0),
+          stage: stage.label,
+        });
+      }
     },
+
     onSuccess: () => qc.invalidateQueries({ queryKey: ["deals"] }),
     onError: (e: any) => toast.error(e.message),
   });
