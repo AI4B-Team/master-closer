@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, CheckCheck, Inbox } from "lucide-react";
+import { ArrowRight, Bell, CheckCheck, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { eventHref } from "@/lib/activity-labels";
 import { useAuth } from "@/hooks/use-auth";
@@ -169,8 +169,9 @@ export function NotificationsMenu() {
         data-tip={unread ? `${unread} new notification${unread > 1 ? "s" : ""}` : "Notifications"}
         aria-label="Notifications"
         onClick={() => {
+          // Keep the unread dots visible while the panel is open; mark seen on close.
+          if (open) markAllRead();
           setOpen((v) => !v);
-          if (!open) markAllRead();
         }}
       >
         <Bell size={17} />
@@ -200,6 +201,7 @@ export function NotificationsMenu() {
                   type="button"
                   className="notif-item"
                   onClick={() => {
+                    markAllRead();
                     setOpen(false);
                     navigate({ to: routeFor(e) });
                   }}
@@ -214,6 +216,18 @@ export function NotificationsMenu() {
               ))}
             </div>
           )}
+
+          <button
+            type="button"
+            className="notif-foot"
+            onClick={() => {
+              markAllRead();
+              setOpen(false);
+              navigate({ to: "/activity" });
+            }}
+          >
+            View All Activity <ArrowRight size={13} />
+          </button>
         </div>
       )}
     </div>
