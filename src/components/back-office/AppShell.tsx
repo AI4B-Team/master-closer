@@ -152,40 +152,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Menu size={18} />
           </button>
-          <div className="search-wrap">
-            <div className="search">
-              <Search size={15} />
-              <input placeholder={`Search ${scope}…`} />
-              <button
-                type="button"
-                className="search-caret has-tip tip-below"
-                onClick={() => setScopeOpen((v) => !v)}
-                data-tip="Choose What To Search"
-                aria-label="Search Options"
-              >
-                {scope} <ChevronDown size={14} />
-              </button>
+          <GlobalSearch />
 
-            </div>
-            {scopeOpen && (
-              <div className="search-menu">
-                <div className="search-menu-label">Search In</div>
-                {SEARCH_SCOPES.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    data-on={s === scope}
-                    onClick={() => {
-                      setScope(s);
-                      setScopeOpen(false);
-                    }}
-                  >
-                    {s === scope && <Check size={14} />} {s}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <div className="topbar-right">
             <span className="status-chip">
               <span className="status-dot" /> On Call
