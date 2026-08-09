@@ -15,6 +15,7 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, SkeletonRows, Kpi, KPI_TINTS, StatusPill, toneForStatus } from "@/components/back-office/ui";
 import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users, Pencil, Trash2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 
 import { toast } from "sonner";
@@ -55,12 +56,17 @@ function CampaignsPage() {
 
   const emptyForm = { name: "", mode: "copilot", agent_id: "", list_id: "", goal: "", daily_cap: "100" };
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: campaigns, isLoading: campaignsLoading } = useQuery({
-    queryKey: ["campaigns"],
+    queryKey: ["campaigns", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaigns")
         .select("*, agents(name), call_lists(name, list_contacts(id))")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -68,21 +74,28 @@ function CampaignsPage() {
   });
 
   const { data: agents } = useQuery({
-    queryKey: ["agents-min"],
-    queryFn: async () => (await supabase.from("agents").select("id, name").order("name")).data ?? [],
+    queryKey: ["agents-min", wsId],
+    enabled: !!wsId,
+    queryFn: async () =>
+      (await supabase.from("agents").select("id, name").eq("workspace_id", wsId!).order("name")).data ?? [],
   });
 
   const { data: lists } = useQuery({
-    queryKey: ["lists-min"],
+    queryKey: ["lists-min", wsId],
+    enabled: !!wsId,
     queryFn: async () =>
-      (await supabase.from("call_lists").select("id, name, list_contacts(id)").order("created_at", { ascending: false }))
-        .data ?? [],
+      (await supabase
+        .from("call_lists")
+        .select("id, name, list_contacts(id)")
+        .eq("workspace_id", wsId!)
+        .order("created_at", { ascending: false })).data ?? [],
   });
 
   const { data: callStats } = useQuery({
-    queryKey: ["campaign-call-stats"],
+    queryKey: ["campaign-call-stats", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("calls").select("campaign_id, dial_outcome").limit(2000);
+      const { data } = await supabase.from("calls").select("campaign_id, dial_outcome").eq("workspace_id", wsId!).limit(2000);
       return data ?? [];
     },
   });

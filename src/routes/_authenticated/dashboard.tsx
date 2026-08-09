@@ -6,6 +6,7 @@ import { Avatar, EmptyState, KPI_TINTS, Kpi, Panel, StatusPill, titleCase, toneF
 import { describeEvent, eventHref } from "@/lib/activity-labels";
 import { Activity, Bot, DollarSign, Eye, ListChecks, Percent, Phone, PhoneCall, Sparkles, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { OnboardingChecklist } from "@/components/back-office/OnboardingChecklist";
 import { dueLabel, type TaskRow } from "@/components/back-office/TaskPanel";
 import { useServerFn } from "@tanstack/react-start";
@@ -27,15 +28,19 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 const MODE_COLORS = ["#CC0000", "#EE7A66", "#F7CFC7"];
 
 function Dashboard() {
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
   const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats"],
+    queryKey: ["dashboard-stats", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const [{ count: callsToday }, { data: deals }, { data: calls }] = await Promise.all([
-        supabase.from("calls").select("id", { count: "exact", head: true }).gte("started_at", today.toISOString()),
-        supabase.from("deals").select("value,stage"),
-        supabase.from("calls").select("mode,outcome,close_probability,started_at").order("started_at", { ascending: false }).limit(200),
+        supabase.from("calls").select("id", { count: "exact", head: true }).eq("workspace_id", wsId!).gte("started_at", today.toISOString()),
+        supabase.from("deals").select("value,stage").eq("workspace_id", wsId!),
+        supabase.from("calls").select("mode,outcome,close_probability,started_at").eq("workspace_id", wsId!).order("started_at", { ascending: false }).limit(200),
       ]);
       const won = (deals ?? []).filter((d) => d.stage === "won");
       const revenue = won.reduce((s, d) => s + Number(d.value ?? 0), 0);
@@ -55,22 +60,25 @@ function Dashboard() {
   });
 
   const { data: recentDeals } = useQuery({
-    queryKey: ["recent-deals"],
+    queryKey: ["recent-deals", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase.from("deals")
-        .select("id,title,value,stage,updated_at").order("updated_at", { ascending: false }).limit(6);
+        .select("id,title,value,stage,updated_at").eq("workspace_id", wsId!).order("updated_at", { ascending: false }).limit(6);
       return data ?? [];
     },
   });
 
   const { data: dueTasks } = useQuery({
-    queryKey: ["dashboard-tasks"],
+    queryKey: ["dashboard-tasks", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const end = new Date();
       end.setHours(23, 59, 59, 999);
       const { data } = await supabase
         .from("tasks")
         .select("id,title,due_at,priority,status,leads(name)")
+        .eq("workspace_id", wsId!)
         .eq("status", "open")
         .lte("due_at", end.toISOString())
         .order("due_at", { ascending: true })
@@ -87,11 +95,13 @@ function Dashboard() {
   });
 
   const { data: activity } = useQuery({
-    queryKey: ["dashboard-activity"],
+    queryKey: ["dashboard-activity", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
       const { data } = await supabase
         .from("events")
         .select("id,event_type,payload,created_at")
+        .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(6);
       return data ?? [];
