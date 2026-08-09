@@ -493,6 +493,7 @@ function Objections() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+          </div>
         </div>
       </div>
 
