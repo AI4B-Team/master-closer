@@ -366,7 +366,7 @@ function CampaignsPage() {
               </tr>
             </thead>
             <tbody>
-              {all.map((c: any) => {
+              {visible.map((c: any) => {
                 const s = statsFor(c.id);
                 return (
                   <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
