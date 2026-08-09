@@ -155,6 +155,30 @@ function DialerPage() {
     }
   };
 
+  /** Active AI closers available to run this call. */
+  const { data: agents } = useQuery({
+    queryKey: ["dialer-agents"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("agents")
+        .select("id, name, industry, default_mode, system_prompt, transfer_to, active")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const agent = (agents ?? []).find((a: any) => a.id === agentId);
+
+  /** Selecting an agent adopts its default mode and its human transfer target. */
+  const pickAgent = (id: string) => {
+    setAgentId(id);
+    const a = (agents ?? []).find((x: any) => x.id === id);
+    if (a?.default_mode) setMode(a.default_mode as Mode);
+    if (a?.transfer_to) setTransferTo(a.transfer_to);
+  };
+
+
   /** Persist a transcript line and get the next best response from the AI gateway. */
   const runAssist = async (prospectLine: string, id?: string | null) => {
     const activeCall = id ?? callId;
