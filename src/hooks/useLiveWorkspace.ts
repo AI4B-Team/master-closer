@@ -10,9 +10,21 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    const keys = ["notifications", "activity", "dashboard", "tasks", ...extraKeys];
+    const prefixes = [
+      "notifications",
+      "org-events",
+      "activity",
+      "dashboard-stats",
+      "dashboard-tasks",
+      "dashboard-activity",
+      "tasks",
+      "followups",
+      ...extraKeys,
+    ];
     const bump = () => {
-      for (const k of keys) qc.invalidateQueries({ queryKey: [k] });
+      qc.invalidateQueries({
+        predicate: (q) => prefixes.includes(String(q.queryKey[0])),
+      });
     };
 
     const channel = supabase
