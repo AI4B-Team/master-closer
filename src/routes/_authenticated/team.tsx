@@ -573,6 +573,46 @@ function ReportsPage() {
         )}
       </Card>
 
+      <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+            <Megaphone className="h-5 w-5 text-[#CC0000]" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Campaign Performance</h3>
+            <p className="text-sm text-[#6B6B76]">Dial volume, connect rate and close probability by campaign.</p>
+          </div>
+        </div>
+
+        {campaignPerf.length === 0 ? (
+          <EmptyState icon={Megaphone} title="No Campaign Calls Yet" hint="Launch a campaign to see results here." />
+        ) : (
+          <div className="space-y-3">
+            {campaignPerf.map((c) => (
+              <div key={c.id}>
+                <div className="flex items-center justify-between text-sm gap-3">
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium truncate">{c.name}</span>
+                    <span className="text-xs text-[#6B6B76] shrink-0">{c.mode}</span>
+                    {c.status ? <StatusPill tone={c.status === "Active" ? "green" : "neutral"} label={c.status} /> : null}
+                  </span>
+                  <span className="font-num text-[#6B6B76] shrink-0">
+                    {c.calls} Dialed · {c.connects} Connected ({c.connectRate}%) · {c.avgProbability}% Avg Close
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 rounded-full bg-[#F0F1F4] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#141418]" style={{ width: `${Math.max(2, c.share)}%` }}>
+                    <div className="h-2 rounded-full bg-[#CC0000]" style={{ width: `${c.connectRate}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+
+
 
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
