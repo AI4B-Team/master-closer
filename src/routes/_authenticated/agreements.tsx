@@ -673,6 +673,7 @@ function ComposeDialog({
         .from("agreements")
         .insert({
           org_id: orgId,
+          workspace_id: prof.active_workspace_id,
           template_id: template?.id ?? null,
           lead_id: leadId || null,
           title: title.trim() || `${signerName} — Agreement`,
