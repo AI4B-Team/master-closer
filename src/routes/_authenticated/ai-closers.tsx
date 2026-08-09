@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
-import { Plus, Bot, GraduationCap, Search, PhoneCall } from "lucide-react";
+import { Plus, Bot, GraduationCap, Search, PhoneCall, ShieldCheck } from "lucide-react";
 import { AgentDrawer } from "@/components/back-office/AgentDrawer";
 import { EmptyPanel, SkeletonCards } from "@/components/back-office/ui";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
