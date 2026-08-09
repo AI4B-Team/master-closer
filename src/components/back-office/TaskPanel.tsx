@@ -6,8 +6,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, ListChecks, Plus, Trash2 } from "lucide-react";
-import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
+import { Plus, Trash2 } from "lucide-react";
+import { SkeletonRows } from "@/components/back-office/ui";
 
 export type TaskRow = {
   id: string;
@@ -178,5 +178,3 @@ export function TaskPanel({ leadId, dealId }: { leadId?: string; dealId?: string
     </div>
   );
 }
-
-export { ListChecks, CheckCircle2, EmptyPanel };
