@@ -48,6 +48,7 @@ import { Route as ApiV1EventsRouteImport } from './routes/api/v1/events'
 import { Route as ApiV1DncRouteImport } from './routes/api/v1/dnc'
 import { Route as ApiV1CampaignsRouteImport } from './routes/api/v1/campaigns'
 import { Route as ApiV1CallsRouteImport } from './routes/api/v1/calls'
+import { Route as ApiPublicReportsDigestRouteImport } from './routes/api/public/reports/digest'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
 import { Route as ApiPublicAgentsTickRouteImport } from './routes/api/public/agents/tick'
 
@@ -247,6 +248,11 @@ const ApiV1CallsRoute = ApiV1CallsRouteImport.update({
   path: '/api/v1/calls',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReportsDigestRoute = ApiPublicReportsDigestRouteImport.update({
+  id: '/api/public/reports/digest',
+  path: '/api/public/reports/digest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHubDispatchRoute = ApiPublicHubDispatchRouteImport.update({
   id: '/api/public/hub/dispatch',
   path: '/api/public/hub/dispatch',
@@ -299,6 +305,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
+  '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
+  '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
+  '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -429,6 +438,7 @@ export interface FileRouteTypes {
     | '/api/v1/lists'
     | '/api/public/agents/tick'
     | '/api/public/hub/dispatch'
+    | '/api/public/reports/digest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/api/v1/lists'
     | '/api/public/agents/tick'
     | '/api/public/hub/dispatch'
+    | '/api/public/reports/digest'
   id:
     | '__root__'
     | '/'
@@ -514,6 +525,7 @@ export interface FileRouteTypes {
     | '/api/v1/lists'
     | '/api/public/agents/tick'
     | '/api/public/hub/dispatch'
+    | '/api/public/reports/digest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -533,6 +545,7 @@ export interface RootRouteChildren {
   ApiV1ListsRoute: typeof ApiV1ListsRoute
   ApiPublicAgentsTickRoute: typeof ApiPublicAgentsTickRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
+  ApiPublicReportsDigestRoute: typeof ApiPublicReportsDigestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -810,6 +823,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1CallsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/reports/digest': {
+      id: '/api/public/reports/digest'
+      path: '/api/public/reports/digest'
+      fullPath: '/api/public/reports/digest'
+      preLoaderRoute: typeof ApiPublicReportsDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hub/dispatch': {
       id: '/api/public/hub/dispatch'
       path: '/api/public/hub/dispatch'
@@ -903,6 +923,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1ListsRoute: ApiV1ListsRoute,
   ApiPublicAgentsTickRoute: ApiPublicAgentsTickRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
+  ApiPublicReportsDigestRoute: ApiPublicReportsDigestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
