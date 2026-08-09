@@ -617,11 +617,18 @@ function PipelinePage() {
                         style={{ width: `${Math.max(0, Math.min(100, Number(d.close_probability ?? 0)))}%` }}
                       />
                     </div>
-                    {d.expected_close_at ? (
-                      <div className="text-[10px] text-[#6B6B76] font-mono mt-1.5">
-                        Close {new Date(d.expected_close_at).toLocaleDateString()}
-                      </div>
-                    ) : null}
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      {d.expected_close_at ? (
+                        <span className="text-[10px] text-[#6B6B76] font-mono">
+                          Close {new Date(d.expected_close_at).toLocaleDateString()}
+                        </span>
+                      ) : null}
+                      {staleAfter > 0 && daysSince(d.updated_at) > staleAfter ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#B4690E] bg-[#B4690E]/10 rounded px-1.5 py-0.5">
+                          <Clock className="h-2.5 w-2.5" /> Stalled {daysSince(d.updated_at)}d
+                        </span>
+                      ) : null}
+                    </div>
                   </Card>
                     {isOver && overIndex === idx + 1 && idx === items.length - 1 && dragId && dragId !== d.id ? (
                       <div className="h-0.5 rounded-full bg-[#CC0000] mt-2" />
