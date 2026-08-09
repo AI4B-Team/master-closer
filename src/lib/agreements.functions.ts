@@ -32,7 +32,7 @@ export const getAgreementByToken = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("agreements")
-      .select("id, org_id, title, body, amount, currency, status, signer_name, signer_email, signed_at, signature_type, signature_data, file_path, file_name, viewed_at")
+    .select("id, org_id, workspace_id, title, body, amount, currency, status, signer_name, signer_email, signed_at, signature_type, signature_data, file_path, file_name, viewed_at")
       .eq("token", data.token)
       .maybeSingle();
     if (!row || row.status === "draft" || row.status === "void") return null;
