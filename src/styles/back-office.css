@@ -318,7 +318,9 @@
 .lead-field > select, .lead-field > input { max-width: 100%; box-sizing: border-box; }
 .lead-field > span { overflow-wrap: anywhere; }
 .lead-field > .tabs { max-width: 100%; flex-wrap: wrap; }
-.lead-field > .tabs .tab { padding-left: 10px; padding-right: 10px; font-size: 12px; }
+.lead-field > .tabs { gap: 3px; }
+.lead-field > .tabs .tab { padding-left: 7px; padding-right: 7px; font-size: 11.5px; }
+
 
 
 .lead-k { font-size: 9.5px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
