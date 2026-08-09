@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { Activity, Download, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/activity")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { type?: string; q?: string; range?: string } => ({
     type: typeof search.type === "string" && search.type ? search.type : undefined,
     q: typeof search.q === "string" && search.q ? search.q : undefined,
     range: typeof search.range === "string" && search.range ? search.range : undefined,
@@ -41,10 +41,28 @@ const RANGES = [
 
 function ActivityPage() {
   const sp = Route.useSearch();
+  const navigate = useNavigate();
   const [search, setSearch] = useState(sp.q ?? "");
   const [type, setType] = useState<string>(sp.type ?? "all");
   const [range, setRange] = useState<string>(sp.range ?? "30");
   const [limit, setLimit] = useState(200);
+
+  // Keep the URL in sync so filtered views are shareable and survive a reload.
+  useEffect(() => {
+    const next = {
+      type: type === "all" ? undefined : type,
+      q: search.trim() ? search.trim() : undefined,
+      range: range === "30" ? undefined : range,
+    };
+    if (next.type === sp.type && next.q === sp.q && next.range === sp.range) return;
+    const t = setTimeout(() => {
+      navigate({ to: "/activity", search: next, replace: true });
+    }, 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, search, range]);
+
+
 
 
   const { data: events, isLoading, refetch, isFetching } = useQuery({
