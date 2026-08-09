@@ -101,6 +101,21 @@ function TasksPage() {
     },
   });
 
+  const { data: team } = useQuery({
+    queryKey: ["tasks-team-options"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email").order("full_name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const teamName = (id: string | null) => {
+    if (!id) return "Unassigned";
+    const m = (team ?? []).find((p: any) => p.id === id);
+    return m?.full_name || m?.email || "Teammate";
+  };
+
   const create = useMutation({
     mutationFn: async () => {
       const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
@@ -112,17 +127,31 @@ function TasksPage() {
         due_at: form.due ? new Date(form.due).toISOString() : null,
         priority: form.priority,
         lead_id: form.lead_id || null,
+        assignee_id: form.assignee_id || me || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Follow-up added.");
       setOpen(false);
-      setForm({ title: "", notes: "", due: "", priority: "normal", lead_id: "" });
+      setForm({ title: "", notes: "", due: "", priority: "normal", lead_id: "", assignee_id: "" });
       qc.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const assign = useMutation({
+    mutationFn: async ({ id, assignee }: { id: string; assignee: string | null }) => {
+      const { error } = await supabase.from("tasks").update({ assignee_id: assignee }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Follow-up reassigned.");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const toggle = useMutation({
     mutationFn: async (t: TaskRow) => {
