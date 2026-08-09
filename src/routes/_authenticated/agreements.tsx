@@ -30,6 +30,9 @@ import { logActivity } from "@/lib/activity";
 
 
 export const Route = createFileRoute("/_authenticated/agreements")({
+  validateSearch: (q: Record<string, unknown>) => ({
+    agreement: typeof q.agreement === "string" ? q.agreement : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Agreements — Master Closer" },
@@ -117,6 +120,7 @@ function AgreementsPage() {
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [detail, setDetail] = useState<any | null>(null);
+  const sp = Route.useSearch();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
