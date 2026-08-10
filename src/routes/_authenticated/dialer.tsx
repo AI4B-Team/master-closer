@@ -1032,9 +1032,9 @@ function DialerPage() {
                   <span className="muted" style={{ fontSize: 12 }}>
                     Disclosure{" "}
                     <strong style={{ color: required ? "var(--signal)" : "var(--ink)" }}>
-                      {disclosureStatus(jurisdiction).toLowerCase()}
+                      {disclosureStatus(jurisdiction)}
                     </strong>{" "}
-                    in this state.
+                    In This State.
                   </span>
 
                 </div>
