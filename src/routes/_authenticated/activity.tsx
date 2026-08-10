@@ -101,8 +101,15 @@ function ActivityPage() {
     const q = search.trim().toLowerCase();
     return (events ?? []).filter((e: any) => {
       const a = describeEvent(e);
-      // Exact kind from a badge click, or a family prefix (e.g. "call") from a deep link.
-      if (type !== "all" && a.kind !== type && !a.kind.startsWith(`${type}.`)) return false;
+      // "governance" is a synthetic bucket: every change made to closer copy,
+      // objection libraries or compliance settings, in one review-friendly view.
+      if (type === "governance") {
+        if (!GOVERNANCE_PREFIXES.some((pre) => a.kind.startsWith(pre)) && !GOVERNANCE_KINDS.includes(a.kind))
+          return false;
+      } else if (type !== "all" && a.kind !== type && !a.kind.startsWith(`${type}.`)) {
+        // Exact kind from a badge click, or a family prefix (e.g. "call") from a deep link.
+        return false;
+      }
       if (!q) return true;
       return (
         a.label.toLowerCase().includes(q) ||
