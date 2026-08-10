@@ -723,6 +723,84 @@ export type Database = {
           },
         ]
       }
+      closer_profiles: {
+        Row: {
+          banned_topics: string[]
+          context_framing: string | null
+          created_at: string
+          default_campaign_id: string | null
+          dispositions: string[]
+          escalation_triggers: string[]
+          faqs: Json
+          id: string
+          industry: string | null
+          is_default: boolean
+          name: string
+          objections: Json
+          opener: string
+          screening_questions: Json
+          source: string | null
+          tone: string | null
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          banned_topics?: string[]
+          context_framing?: string | null
+          created_at?: string
+          default_campaign_id?: string | null
+          dispositions?: string[]
+          escalation_triggers?: string[]
+          faqs?: Json
+          id?: string
+          industry?: string | null
+          is_default?: boolean
+          name: string
+          objections?: Json
+          opener: string
+          screening_questions?: Json
+          source?: string | null
+          tone?: string | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          banned_topics?: string[]
+          context_framing?: string | null
+          created_at?: string
+          default_campaign_id?: string | null
+          dispositions?: string[]
+          escalation_triggers?: string[]
+          faqs?: Json
+          id?: string
+          industry?: string | null
+          is_default?: boolean
+          name?: string
+          objections?: Json
+          opener?: string
+          screening_questions?: Json
+          source?: string | null
+          tone?: string | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closer_profiles_default_campaign_id_fkey"
+            columns: ["default_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closer_profiles_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_logs: {
         Row: {
           call_id: string | null
@@ -1435,6 +1513,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          industry: string | null
           name: string
           notes: string | null
           org_id: string
@@ -1443,6 +1522,7 @@ export type Database = {
           source: string | null
           status: Database["public"]["Enums"]["lead_status"]
           tags: string[] | null
+          timezone: string | null
           title: string | null
           updated_at: string
           workspace_id: string
@@ -1453,6 +1533,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          industry?: string | null
           name: string
           notes?: string | null
           org_id: string
@@ -1461,6 +1542,7 @@ export type Database = {
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           tags?: string[] | null
+          timezone?: string | null
           title?: string | null
           updated_at?: string
           workspace_id: string
@@ -1471,6 +1553,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          industry?: string | null
           name?: string
           notes?: string | null
           org_id?: string
@@ -1479,6 +1562,7 @@ export type Database = {
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           tags?: string[] | null
+          timezone?: string | null
           title?: string | null
           updated_at?: string
           workspace_id?: string
