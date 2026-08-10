@@ -290,7 +290,7 @@ function CloserProfilesPage() {
       />
 
       <div className="mb-4">
-        <LinePerformancePanel />
+        <LinePerformancePanel profiles={mine.map((p) => ({ id: p.id, name: p.name }))} />
       </div>
 
 

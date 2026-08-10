@@ -1,22 +1,43 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyPanel, Panel, SkeletonRows } from "@/components/back-office/ui";
-import { linePerformance } from "@/lib/line-performance.functions";
-import { BarChart3 } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { linePerformance, promoteLineToProfile } from "@/lib/line-performance.functions";
+import { BarChart3, ArrowUpRight } from "lucide-react";
+import { toast } from "sonner";
 
 const RANGES = [7, 30, 90] as const;
 
 /**
  * Line Performance — which objection answers get used on live calls and which
- * of those calls ended in a win. Read-only: promoting a line stays a human
- * decision in the profile editor.
+ * of those calls ended in a win. Proven lines can be promoted into a workspace
+ * closer profile, but only by a human clicking Promote.
  */
-export function LinePerformancePanel() {
+export function LinePerformancePanel({
+  profiles = [],
+}: {
+  profiles?: Array<{ id: string; name: string }>;
+}) {
   const run = useServerFn(linePerformance);
+  const promote = useServerFn(promoteLineToProfile);
   const [days, setDays] = useState<number>(30);
+  const [target, setTarget] = useState<string>(profiles[0]?.id ?? "");
+
+  const promoting = useMutation({
+    mutationFn: async (row: { objection: string; topLine: string }) => {
+      if (!target) throw new Error("Pick a workspace profile to promote into.");
+      return await promote({
+        data: { profileId: target, trigger: row.objection, response: row.topLine },
+      });
+    },
+    onSuccess: () => toast.success("Line Promoted Into Profile."),
+    onError: (e: any) => toast.error(e?.message ?? "Could not promote that line."),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["line-performance", days],
@@ -45,9 +66,27 @@ export function LinePerformancePanel() {
         </div>
       }
     >
-      <p className="mb-4 text-sm text-[#6B6B76]">
-        How Each Objection Answer Performs On Live Calls.
-      </p>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <p className="text-sm text-[#6B6B76]">
+          How Each Objection Answer Performs On Live Calls.
+        </p>
+        {profiles.length > 0 && (
+          <div className="w-56">
+            <Select value={target} onValueChange={setTarget}>
+              <SelectTrigger className="h-8 rounded-xl text-xs">
+                <SelectValue placeholder="Promote Into…" />
+              </SelectTrigger>
+              <SelectContent>
+                {profiles.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
 
       {isLoading ? (
         <SkeletonRows rows={4} />
@@ -83,6 +122,18 @@ export function LinePerformancePanel() {
                   <p className="text-xs text-[#6B6B76]">
                     {r.used}/{r.surfaced} Used · {r.adoption}% Adoption
                   </p>
+                  {profiles.length > 0 && r.topLine ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="mt-1 h-7 rounded-full px-2 text-xs"
+                      disabled={promoting.isPending}
+                      onClick={() => promoting.mutate({ objection: r.objection, topLine: r.topLine })}
+                    >
+                      <ArrowUpRight className="mr-1 h-3.5 w-3.5" /> Promote
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             ))}
