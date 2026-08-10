@@ -204,7 +204,8 @@
 }
 .btn-primary:hover { background: var(--signal-deep); }
 .btn-primary:disabled { opacity: 0.6; cursor: default; }
-.tabs { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.tabs { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
   border: none; background: none; padding: 7px 14px; border-radius: 7px; font: inherit;
   font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; text-decoration: none; white-space: nowrap;
