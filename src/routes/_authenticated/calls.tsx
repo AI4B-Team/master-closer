@@ -257,7 +257,7 @@ function CallsPage() {
                     <Badge variant="secondary">{MODE_LABEL[c.mode] ?? c.mode}</Badge>
                   </td>
                   <td className="py-3 pr-4 font-mono whitespace-nowrap">{fmtDur(c.duration_sec)}</td>
-                  <td className="py-3 pr-4 capitalize">{c.outcome}</td>
+                  <td className="py-3 pr-4">{prettyOutcome(c.disposition ?? c.outcome)}</td>
                   <td className="py-3 text-right font-mono">{c.close_probability ?? 0}%</td>
 
                 </tr>
