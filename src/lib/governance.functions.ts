@@ -114,6 +114,15 @@ export const listProposals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { workspaceId } = await callerScope(context.supabase, context.userId);
+    // Stale proposals lose their evidence window, so they retire instead of
+    // sitting in the queue waiting for a rubber-stamp approval.
+    await context.supabase
+      .from("agent_proposals")
+      .update({ status: "expired", reviewed_at: new Date().toISOString(), review_note: "Expired before review." })
+      .eq("workspace_id", workspaceId)
+      .eq("status", "pending")
+      .lt("expires_at", new Date().toISOString());
+
     const { data } = await context.supabase
       .from("agent_proposals")
       .select(
