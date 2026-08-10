@@ -15,6 +15,7 @@ import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText, Ban, Trash2 } fr
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
+import { CallingWindowPanel } from "@/components/back-office/CallingWindowPanel";
 
 import { formatPhone } from "@/lib/phone";
 import {
@@ -263,6 +264,8 @@ function CompliancePage() {
           </table>
         </div>
       </Card>
+
+      <CallingWindowPanel />
 
       <DncRegistry />
 
