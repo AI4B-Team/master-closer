@@ -1,4 +1,6 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/back-office/AppShell";
 
@@ -7,23 +9,40 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
+    return { user: data.user };
+  },
+  component: AuthenticatedLayout,
+});
 
-    // First run: send the user through setup before showing the back office.
-    const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
-    if (prof?.active_workspace_id) {
+/** Sends brand-new workspaces through first-run setup, without blocking render. */
+function useFirstRunRedirect() {
+  const navigate = useNavigate();
+
+  const { data: needsSetup } = useQuery({
+    queryKey: ["workspace-onboarded"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      if (!prof?.active_workspace_id) return false;
       const { data: ws } = await supabase
         .from("workspaces")
         .select("onboarded_at" as never)
         .eq("id", prof.active_workspace_id)
         .maybeSingle();
-      if (ws && !(ws as any).onboarded_at) throw redirect({ to: "/welcome" });
-    }
+      return !!ws && !(ws as any).onboarded_at;
+    },
+  });
 
-    return { user: data.user };
-  },
-  component: () => (
+  useEffect(() => {
+    if (needsSetup) navigate({ to: "/welcome" });
+  }, [needsSetup, navigate]);
+}
+
+function AuthenticatedLayout() {
+  useFirstRunRedirect();
+  return (
     <AppShell>
       <Outlet />
     </AppShell>
-  ),
-});
+  );
+}
