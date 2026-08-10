@@ -10,7 +10,9 @@ import { EmptyPanel, Kpi, KPI_TINTS, Panel, SkeletonRows, StatusPill } from "@/c
 import {
   Bot, Play, Pause, ShieldCheck, ShieldAlert, Inbox, ListChecks, Sparkles, Check, X,
   ThumbsUp, ThumbsDown, Undo2, Activity, Gauge,
+  MessageSquareText, Radar, CalendarClock, GraduationCap, Lightbulb,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import {
   listAgents, setAgentMode, pauseAllAgents, runAgentNow, listProposals, reviewProposal,
