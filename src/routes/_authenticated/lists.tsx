@@ -321,7 +321,7 @@ function ListsPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[260px_minmax(0,1fr)] [&>*]:min-w-0">
         <Card className="p-3 rounded-2xl border-[#E7E7EC] shadow-none h-fit">
           <div className="text-xs uppercase tracking-wider text-[#6B6B76] px-2 pb-2">Lists</div>
           {(lists ?? []).length === 0 ? (

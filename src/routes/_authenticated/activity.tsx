@@ -135,7 +135,7 @@ function ActivityPage() {
       <PageHeader title="Activity Log" description="Every event emitted by this workspace." />
       <AccountShell current="activity">
         <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none max-w-4xl">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <Activity className="h-4 w-4 text-[#CC0000]" />
             <h3 className="font-semibold">Workspace Events</h3>
             <div className="ml-auto flex items-center gap-2">
