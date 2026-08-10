@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { History, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { listProfileVersions, restoreProfileVersion } from "@/lib/profile-versions.functions";
+import { logActivity } from "@/lib/activity";
 
 const SOURCE_LABEL: Record<string, string> = {
   manual: "Saved By A Human",
