@@ -59,11 +59,14 @@ export const getAgreementByToken = createServerFn({ method: "GET" })
       fileUrl = signed?.signedUrl ?? null;
     }
 
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("name")
-      .eq("id", row.org_id)
-      .maybeSingle();
+    // Prefer the workspace (brand) name signers recognise; fall back to the org name.
+    const [{ data: ws }, { data: org }] = await Promise.all([
+      row.workspace_id
+        ? supabaseAdmin.from("workspaces").select("name").eq("id", row.workspace_id).maybeSingle()
+        : Promise.resolve({ data: null as { name: string } | null }),
+      supabaseAdmin.from("organizations").select("name").eq("id", row.org_id).maybeSingle(),
+    ]);
+
 
     return {
       id: row.id,
@@ -79,7 +82,7 @@ export const getAgreementByToken = createServerFn({ method: "GET" })
       signatureData: row.signature_data,
       fileName: row.file_name,
       fileUrl,
-      orgName: org?.name ?? null,
+      orgName: ws?.name ?? org?.name ?? null,
     };
   });
 
