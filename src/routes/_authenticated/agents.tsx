@@ -53,7 +53,7 @@ const MODES = [
 ] as const;
 
 const VIEWS = [
-  { key: "registry", label: "Agents", icon: Bot },
+  { key: "registry", label: "Overview", icon: Bot },
   { key: "proposals", label: "Proposals", icon: Inbox },
   { key: "worklist", label: "Suggested Worklist", icon: ListChecks },
   { key: "insights", label: "Learning", icon: Sparkles },
