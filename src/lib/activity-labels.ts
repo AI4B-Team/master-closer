@@ -78,6 +78,14 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: History, label: "Closer Profile Saved", detail: join(p.name, p.industry) };
     case "profile.restored":
       return { kind, icon: History, label: "Closer Profile Restored", detail: p.version ? `Version ${p.version}` : "" };
+    case "objection.approved":
+      return { kind, icon: Check, label: "Objection Approved", detail: join(p.trigger) };
+    case "objection.dismissed":
+      return { kind, icon: ShieldOff, label: "Objection Dismissed", detail: join(p.trigger) };
+    case "objection.reopened":
+      return { kind, icon: Check, label: "Objection Reopened", detail: join(p.trigger) };
+    case "line.promoted":
+      return { kind, icon: BarChart3, label: "Line Promoted Into Profile", detail: join(p.trigger) };
 
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
