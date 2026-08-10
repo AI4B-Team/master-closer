@@ -211,9 +211,17 @@ export async function runDueDigests(opts: { workspaceId?: string; scheduleId?: s
   if (error) throw new Error(error.message);
 
   const ran: { schedule_id: string; name: string; headline: string }[] = [];
+  const failed: { schedule_id: string; reason: string }[] = [];
+  // One broken schedule used to abort the whole cron tick, silently starving every
+  // other workspace's digest. Each schedule now succeeds or fails on its own.
   for (const s of (data ?? []) as DigestSchedule[]) {
-    ran.push(await runSchedule(s));
+    try {
+      ran.push(await runSchedule(s));
+    } catch (e) {
+      failed.push({ schedule_id: s.id, reason: e instanceof Error ? e.message : "Digest failed." });
+    }
   }
+
 
   // Prime anything that has never been scheduled so the next tick picks it up.
   if (!opts.force) {
@@ -231,5 +239,5 @@ export async function runDueDigests(opts: { workspaceId?: string; scheduleId?: s
     }
   }
 
-  return { ran: ran.length, digests: ran };
+  return { ran: ran.length, digests: ran, failed };
 }

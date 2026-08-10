@@ -2,6 +2,7 @@
 // Every agent is read-only unless its mode is 'active', and every behaviour
 // change leaves the agent as a proposal a human approves.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { localHourIn, resolveLeadTimezone, withLocalHour } from "./calling-window";
 
 export const LABELER_VERSION = "labeler-v1";
 
@@ -505,19 +506,31 @@ async function runBookingAuditor(ctx: Ctx): Promise<RunStats> {
       return h;
     });
 
-    const bookedHour = new Date(a.due_at as string).getHours();
+    // The booked hour has to be read in the prospect's own timezone. Reading it
+    // with getHours() used the worker's clock (UTC), which flagged almost every
+    // correct booking and proposed a time hours off.
+    let leadTz = "America/New_York";
+    if (a.lead_id) {
+      const { data: lead } = await db()
+        .from("leads")
+        .select("timezone, phone")
+        .eq("id", a.lead_id as string)
+        .maybeSingle();
+      if (lead) leadTz = resolveLeadTimezone(lead as { timezone?: string | null; phone?: string | null }).timezone;
+    }
+    const dueAt = new Date(a.due_at as string);
+    const bookedHour = localHourIn(dueAt, leadTz);
     let rationale: string | null = null;
     let proposedValue: string | null = null;
 
     if (!hours.length) {
       rationale = `No time request from the lead appears anywhere in the source call, so this slot was not asked for. That usually means the closer invented it — a prompt problem, not a lead problem.`;
     } else if (!hours.includes(bookedHour)) {
-      const want = hours[0];
-      const d = new Date(a.due_at as string);
-      d.setHours(want, 0, 0, 0);
-      proposedValue = d.toISOString();
-      rationale = `The lead said "${quoted.slice(0, 160)}". Booked for ${bookedHour}:00 but the lead asked for ${want}:00 in their own timezone. AM/PM and timezone drift is the most common mis-book.`;
+      const want = hours[0]!;
+      proposedValue = withLocalHour(dueAt, leadTz, want).toISOString();
+      rationale = `The lead said "${quoted.slice(0, 160)}". Booked for ${bookedHour}:00 but the lead asked for ${want}:00 in their own timezone (${leadTz}). AM/PM and timezone drift is the most common mis-book.`;
     }
+
 
     if (!rationale) continue;
     const { error } = await db().from("agent_proposals").insert({
