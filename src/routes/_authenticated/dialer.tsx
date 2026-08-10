@@ -340,6 +340,22 @@ function DialerPage() {
       if (mode === "full_ai") {
         setTranscript((t) => [...t, { speaker: "Master Closer", text: res.line }]);
       }
+      // The AI had to improvise — queue the moment for human review in Studio.
+      if (res.source !== "library" && res.line) {
+        captureCandidate({
+          data: {
+            prospectText: prospectLine,
+            aiResponse: res.line,
+            label: res.objection,
+            mode: MODE_KEY[mode],
+            industry: agent?.industry ?? resolvedProfile?.profileName ? agent?.industry ?? null : null,
+            profileId: resolvedProfile?.profileId ?? null,
+            callId: activeCall ?? null,
+          },
+        }).catch(() => {
+          /* review capture is best-effort and must never interrupt a live call */
+        });
+      }
       if (activeCall) {
         const { data: sugg } = await supabase
           .from("suggestions")
