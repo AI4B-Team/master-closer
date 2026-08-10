@@ -126,6 +126,7 @@ export function AgentDrawer({
     },
     onSuccess: () => {
       toast.success("Closer updated.");
+      void logActivity("prompt.updated", { agent_id: agent!.id, name: form.name ?? "" });
       qc.invalidateQueries({ queryKey: ["agents"] });
       qc.invalidateQueries({ queryKey: ["prompt-versions"] });
       onOpenChange(false);
