@@ -368,7 +368,7 @@ function TasksPage() {
       <Panel
         title="Follow-Up Queue"
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
