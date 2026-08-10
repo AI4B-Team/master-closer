@@ -38,6 +38,7 @@ export function ProfileHistory({
     mutationFn: (versionId: string) => restoreFn({ data: { versionId } }),
     onSuccess: (r: any) => {
       toast.success(`Profile restored from version ${r.restoredFrom}.`);
+      void logActivity("profile.restored", { profile_id: profileId, version: r.restoredFrom });
       qc.invalidateQueries({ queryKey: ["closer-profiles"] });
       qc.invalidateQueries({ queryKey: ["closer-profile-versions"] });
       onRestored?.();
