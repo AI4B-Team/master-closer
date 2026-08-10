@@ -395,7 +395,12 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
         <Panel
           key={p.id}
           title={`${p.agent_key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())} · ${p.proposal_type.replace(/_/g, " ")}`}
-          action={<StatusPill label="Pending" tone="amber" />}
+          action={
+            <span style={{ display: "inline-flex", gap: 6 }}>
+              <StatusPill label="Pending" tone="amber" />
+              {p.expires_at && <StatusPill label={expiryLabel(p.expires_at)} tone={expirySoon(p.expires_at) ? "red" : "neutral"} />}
+            </span>
+          }
         >
           <p style={{ marginBottom: 10 }}>{p.rationale}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
