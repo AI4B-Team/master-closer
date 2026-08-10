@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronRight, Check, Search, LogOut, Zap, UserPlus, Mail, Languages, Sun, Moon, Menu, X,
   Youtube, Instagram, MessageCircle,
 } from "lucide-react";
+import { useFirstRunSetup } from "@/hooks/use-first-run";
 import { usePrefs, LANGUAGES } from "@/hooks/use-prefs";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -77,6 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   useLiveWorkspace();
+  useFirstRunSetup();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
