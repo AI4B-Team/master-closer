@@ -2557,6 +2557,7 @@ export type Database = {
           legal_business_name: string | null
           logo_url: string | null
           name: string
+          onboarded_at: string | null
           org_id: string | null
           owner_id: string
           slug: string
@@ -2572,6 +2573,7 @@ export type Database = {
           legal_business_name?: string | null
           logo_url?: string | null
           name: string
+          onboarded_at?: string | null
           org_id?: string | null
           owner_id: string
           slug: string
@@ -2587,6 +2589,7 @@ export type Database = {
           legal_business_name?: string | null
           logo_url?: string | null
           name?: string
+          onboarded_at?: string | null
           org_id?: string | null
           owner_id?: string
           slug?: string

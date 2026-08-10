@@ -104,9 +104,19 @@ function Welcome() {
     }
   };
 
+  /** Marks setup complete so the back office stops redirecting here. */
+  const finish = async () => {
+    if (!wsId) return;
+    await supabase
+      .from("workspaces")
+      .update({ onboarded_at: new Date().toISOString() } as never)
+      .eq("id", wsId);
+    setStep(3);
+  };
+
   const seed = async (withData: boolean) => {
     if (!withData) {
-      setStep(3);
+      await finish();
       return;
     }
     setBusy(true);
@@ -115,7 +125,7 @@ function Welcome() {
       const created: string[] = res?.created ?? [];
       if (created.length === 0) toast("Your workspace already has data — nothing to add.");
       else toast.success(`Starter data loaded: ${created.join(", ")}.`);
-      setStep(3);
+      await finish();
     } catch (err: any) {
       toast.error(err?.message ?? "Could not load starter data.");
     } finally {
