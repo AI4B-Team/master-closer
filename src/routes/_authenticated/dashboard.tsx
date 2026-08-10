@@ -291,7 +291,7 @@ function Dashboard() {
       <Panel
 
         title="Suggested Today"
-        action={<Link to="/agents" className="card-link">View Worklist</Link>}
+        action={<Link to="/worklist" className="card-link">View Worklist</Link>}
       >
         {worklist?.rows?.length ? (
           <ul className="space-y-2">

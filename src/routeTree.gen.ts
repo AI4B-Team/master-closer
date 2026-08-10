@@ -19,6 +19,7 @@ import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalConsentRouteImport } from './routes/legal.consent'
 import { Route as AuthHubRouteImport } from './routes/auth_.hub'
+import { Route as AuthenticatedWorklistRouteImport } from './routes/_authenticated/worklist'
 import { Route as AuthenticatedTutorialsRouteImport } from './routes/_authenticated/tutorials'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
@@ -103,6 +104,11 @@ const AuthHubRoute = AuthHubRouteImport.update({
   id: '/auth_/hub',
   path: '/auth/hub',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWorklistRoute = AuthenticatedWorklistRouteImport.update({
+  id: '/worklist',
+  path: '/worklist',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTutorialsRoute = AuthenticatedTutorialsRouteImport.update({
   id: '/tutorials',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
+  '/worklist': typeof AuthenticatedWorklistRoute
   '/auth/hub': typeof AuthHubRoute
   '/legal/consent': typeof LegalConsentRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -360,6 +367,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
   '/tutorials': typeof AuthenticatedTutorialsRoute
+  '/worklist': typeof AuthenticatedWorklistRoute
   '/auth/hub': typeof AuthHubRoute
   '/legal/consent': typeof LegalConsentRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -408,6 +416,7 @@ export interface FileRoutesById {
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/tutorials': typeof AuthenticatedTutorialsRoute
+  '/_authenticated/worklist': typeof AuthenticatedWorklistRoute
   '/auth_/hub': typeof AuthHubRoute
   '/legal/consent': typeof LegalConsentRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/tutorials'
+    | '/worklist'
     | '/auth/hub'
     | '/legal/consent'
     | '/legal/privacy'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/tutorials'
+    | '/worklist'
     | '/auth/hub'
     | '/legal/consent'
     | '/legal/privacy'
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks'
     | '/_authenticated/team'
     | '/_authenticated/tutorials'
+    | '/_authenticated/worklist'
     | '/auth_/hub'
     | '/legal/consent'
     | '/legal/privacy'
@@ -658,6 +670,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/hub'
       preLoaderRoute: typeof AuthHubRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/worklist': {
+      id: '/_authenticated/worklist'
+      path: '/worklist'
+      fullPath: '/worklist'
+      preLoaderRoute: typeof AuthenticatedWorklistRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tutorials': {
       id: '/_authenticated/tutorials'
@@ -934,6 +953,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTutorialsRoute: typeof AuthenticatedTutorialsRoute
+  AuthenticatedWorklistRoute: typeof AuthenticatedWorklistRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -963,6 +983,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTutorialsRoute: AuthenticatedTutorialsRoute,
+  AuthenticatedWorklistRoute: AuthenticatedWorklistRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

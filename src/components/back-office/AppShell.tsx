@@ -42,6 +42,7 @@ const NAV_PRIMARY: NavItem[] = [
 export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
   leads: [
     { label: "List", to: "/leads" },
+    { label: "Worklist", to: "/worklist" },
     { label: "Pipeline", to: "/pipeline" },
     { label: "Follow-Ups", to: "/tasks" },
   ],
