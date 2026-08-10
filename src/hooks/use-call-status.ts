@@ -8,13 +8,16 @@ const listeners = new Set<() => void>();
 export function setCallStatus(status: CallStatus) {
   if (current === status) return;
   current = status;
-  // Notify synchronously: useSyncExternalStore expects the store to be
-  // consistent with its subscribers. Deferring the notification to a
-  // microtask made React re-render subscribers that were no longer (or not
-  // yet) mounted, which logged a false "state update on an unmounted
-  // component" warning. Every caller lives in an effect, never in render.
-  listeners.forEach((l) => l());
+  // Update the snapshot immediately (so any render happening right now already
+  // sees the new value) but notify subscribers after the current commit has
+  // fully flushed. Notifying synchronously from a caller's effect re-rendered
+  // sibling subscribers that were rendered but not yet mounted, which logged a
+  // bogus "state update on a component that hasn't mounted yet" warning.
+  setTimeout(() => {
+    listeners.forEach((l) => l());
+  }, 0);
 }
+
 
 function subscribe(onChange: () => void) {
   listeners.add(onChange);

@@ -45,7 +45,16 @@ function fmtDur(sec: number) {
   return `${Math.floor((sec ?? 0) / 60)}m ${(sec ?? 0) % 60}s`;
 }
 
+/** Human-readable disposition/outcome label: "in_progress" -> "In Progress". */
+function prettyOutcome(value?: string | null) {
+  if (!value) return "—";
+  return String(value)
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
 const OUTCOMES = ["scheduled", "in_progress", "completed", "no_answer", "voicemail", "failed"];
+
 const RANGES: Record<string, number> = { "7": 7, "30": 30, "90": 90 };
 
 function CallsPage() {
@@ -257,7 +266,7 @@ function CallsPage() {
                     <Badge variant="secondary">{MODE_LABEL[c.mode] ?? c.mode}</Badge>
                   </td>
                   <td className="py-3 pr-4 font-mono whitespace-nowrap">{fmtDur(c.duration_sec)}</td>
-                  <td className="py-3 pr-4 capitalize">{c.outcome}</td>
+                  <td className="py-3 pr-4">{prettyOutcome(c.disposition ?? c.outcome)}</td>
                   <td className="py-3 text-right font-mono">{c.close_probability ?? 0}%</td>
 
                 </tr>
@@ -400,7 +409,7 @@ function CallDetail({ call }: { call: any }) {
     <div className="mt-5 space-y-5">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Mode" value={MODE_LABEL[call.mode] ?? call.mode} />
-        <Stat label="Outcome" value={String(call.outcome).replace(/_/g, " ")} />
+        <Stat label="Outcome" value={prettyOutcome(call.disposition ?? call.outcome)} />
         <Stat label="Duration" value={fmtDur(call.duration_sec)} />
         <Stat label="Close Probability" value={`${call.close_probability ?? 0}%`} />
         <Stat label="Agent" value={call.agents?.name ?? "No Agent"} />
