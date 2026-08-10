@@ -12,6 +12,28 @@ async function callerScope(supabase: any, userId: string) {
   return { orgId: data.org_id as string, workspaceId: data.active_workspace_id as string };
 }
 
+/**
+ * Server-side twin of logActivity: governance decisions are audit-relevant, so
+ * they are written from the handler rather than trusted to the browser.
+ */
+async function logGovernance(
+  supabase: any,
+  scope: { orgId: string; workspaceId: string },
+  kind: string,
+  payload: Record<string, unknown> = {},
+) {
+  try {
+    await supabase.from("events").insert({
+      org_id: scope.orgId,
+      workspace_id: scope.workspaceId,
+      event_type: "job.completed",
+      payload: { kind, ...payload },
+    });
+  } catch {
+    /* non-blocking */
+  }
+}
+
 /** Registry + recent runs for the Agents admin surface. */
 export const listAgents = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
