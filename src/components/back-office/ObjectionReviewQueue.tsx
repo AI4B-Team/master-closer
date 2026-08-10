@@ -86,7 +86,7 @@ export function ObjectionReviewQueue({ profiles }: { profiles: ProfileOption[] }
       className="mb-4"
       action={
         <div className="flex items-center gap-2">
-          <StatusPill label={`${pendingCount} Pending`} tone={pendingCount ? "warn" : "neutral"} />
+          <StatusPill label={`${pendingCount} Pending`} tone={pendingCount ? "amber" : "neutral"} />
           <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setShowResolved((v) => !v)}>
             {showResolved ? "Show Pending" : "Show Reviewed"}
           </Button>
@@ -125,7 +125,7 @@ export function ObjectionReviewQueue({ profiles }: { profiles: ProfileOption[] }
                   <span>· {new Date(c.last_seen_at).toLocaleString()}</span>
                   {resolved ? (
                     <span className="ml-auto">
-                      <StatusPill label={c.status === "approved" ? "Approved" : "Dismissed"} tone={c.status === "approved" ? "good" : "neutral"} />
+                      <StatusPill label={c.status === "approved" ? "Approved" : "Dismissed"} tone={c.status === "approved" ? "green" : "neutral"} />
                     </span>
                   ) : null}
                 </div>
