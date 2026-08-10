@@ -1,0 +1,2 @@
+UPDATE public.agreements SET status='sent', signed_at=NULL, signature_type=NULL, signature_data=NULL, viewed_at=NULL WHERE token='f4cce36b21d7ea039240e328b3cf8fe2cd7ce60874ab7f54';
+DELETE FROM public.agreement_events WHERE event_type IN ('viewed','signed') AND agreement_id IN (SELECT id FROM public.agreements WHERE token='f4cce36b21d7ea039240e328b3cf8fe2cd7ce60874ab7f54');
