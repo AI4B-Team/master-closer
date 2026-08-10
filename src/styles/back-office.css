@@ -1368,7 +1368,7 @@
   text-transform: uppercase; color: var(--muted);
 }
 .runcell { font-size: 14px; min-width: 0; }
-.rc-num { text-align: right; font-variant-numeric: tabular-nums; }
+.rc-num { text-align: center; font-variant-numeric: tabular-nums; }
 .rc-sum { overflow-wrap: anywhere; }
 
 @media (max-width: 900px) {
