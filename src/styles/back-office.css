@@ -193,7 +193,8 @@
 .content { padding: 26px 28px; flex: 1; min-width: 0; }
 
 /* ------------------------------ page head ------------------------------ */
-.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; min-width: 0; }
+.page-head > div { min-width: 0; }
 .page-title { font-size: 1.7rem; font-weight: 800; margin: 0; }
 .page-sub { color: var(--muted); font-size: 13.5px; margin: 4px 0 0; }
 .btn-primary {
