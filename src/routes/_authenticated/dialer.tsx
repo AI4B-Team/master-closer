@@ -1003,7 +1003,7 @@ function DialerPage() {
                 </div>
                 <div className="lead-field">
                   <span className="lead-k">AI Closer</span>
-                  <Select value={agentId} onValueChange={pickAgent}>
+                  <Select value={agentId || "__no_agent__"} onValueChange={(v) => pickAgent(v === "__no_agent__" ? "" : v)}>
                     <SelectTrigger
                       className="w-full h-auto"
                       style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
@@ -1011,7 +1011,7 @@ function DialerPage() {
                       <SelectValue placeholder="Default Closer" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Default Closer</SelectItem>
+                      <SelectItem value="__no_agent__">Default Closer</SelectItem>
                       {(agents ?? []).map((a: any) => (
                         <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                       ))}
