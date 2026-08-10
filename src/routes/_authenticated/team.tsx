@@ -281,9 +281,19 @@ function ReportsPage() {
   }, [calls, deals]);
 
   const trend = useMemo(() => {
-    const buckets = rangeDays ? Math.min(rangeDays, 14) : 14;
-    const span = rangeDays ? Math.ceil(rangeDays / buckets) : 7;
     const now = Date.now();
+    // "All Time" has no fixed window: measure back to the oldest call so old
+    // history is not silently dropped from the chart.
+    const oldest = (calls ?? []).reduce<number>(
+      (min, c) => Math.min(min, new Date(c.started_at).getTime()),
+      now,
+    );
+    const windowDays = rangeDays || Math.max(7, Math.ceil((now - oldest) / 86400000));
+    // Pick the bucket size first, then only as many buckets as the window
+    // actually covers — otherwise a 30-day range renders 42 days of buckets and
+    // the leading ones are always empty.
+    const span = Math.max(1, Math.ceil(windowDays / 14));
+    const buckets = Math.max(1, Math.ceil(windowDays / span));
     const rows = Array.from({ length: buckets }, (_, i) => {
       const end = now - i * span * 86400000;
       const start = end - span * 86400000;
@@ -299,6 +309,7 @@ function ReportsPage() {
     }).reverse();
     return rows;
   }, [calls, rangeDays]);
+
 
   const trendMax = Math.max(1, ...trend.map((t) => t.calls));
 
