@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import { Check, Inbox, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
 import {
   listObjectionCandidates,
   reviewObjectionCandidate,
