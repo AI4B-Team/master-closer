@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { fetchObjectionLibrary } from "@/lib/objections";
+import { assemblePromptForCall } from "@/lib/closer-profiles.functions";
 import { useCallingWindow } from "@/hooks/use-calling-window";
 import { nextOpenAt, timezoneLabel } from "@/lib/calling-window";
 
@@ -189,6 +190,7 @@ function DialerPage() {
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const askCloser = useServerFn(closeObjection);
+  const assemblePrompt = useServerFn(assemblePromptForCall);
 
   const [sendingAgreement, setSendingAgreement] = useState(false);
 
@@ -274,6 +276,25 @@ function DialerPage() {
 
   const agent = (agents ?? []).find((a: any) => a.id === agentId);
 
+  /**
+   * The horizontal engine decides which closer owns this call, so the live brief
+   * comes from the resolved profile rather than the agent row alone.
+   */
+  const { data: resolved } = useQuery({
+    queryKey: ["resolved-closer", wsId, agent?.industry ?? null, campaign?.id ?? null, mode],
+    enabled: !!wsId,
+    queryFn: () =>
+      assemblePrompt({
+        data: {
+          industry: agent?.industry ?? null,
+          source: campaign ? "campaign" : null,
+          leadName: contact?.name ?? null,
+          mode,
+        },
+      }),
+  });
+  const resolvedProfile = resolved?.ok ? resolved : null;
+
   /** Selecting an agent adopts its default mode and its human transfer target. */
   const pickAgent = (id: string) => {
     setAgentId(id);
@@ -303,10 +324,13 @@ function DialerPage() {
         data: {
           prospect: prospectLine,
           mode: MODE_KEY[mode],
-          agentName: agent?.name ?? null,
+          agentName: agent?.name ?? resolvedProfile?.profileName ?? null,
           industry: agent?.industry ?? null,
-          systemPrompt: agent?.system_prompt ?? null,
-          library: await fetchObjectionLibrary(wsId),
+          systemPrompt: resolvedProfile?.prompt ?? agent?.system_prompt ?? null,
+          library: [
+            ...(resolvedProfile?.objections ?? []),
+            ...(await fetchObjectionLibrary(wsId)),
+          ].slice(0, 25),
         },
       });
       setAiConfidence(res.confidence);
@@ -971,6 +995,13 @@ function DialerPage() {
                     {agent
                       ? `${agent.industry || "General"} · ${agent.transfer_to ? `Transfers to ${teammateLabel(agent.transfer_to)}` : "No transfer target set"}`
                       : "Uses the generic Master Closer brief."}
+                  </span>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {resolvedProfile
+                      ? `Brief: ${resolvedProfile.profileName}${resolvedProfile.isPlatformDefault ? " (platform)" : ""} · ${resolvedProfile.matchedLabel}`
+                      : resolved && !resolved.ok
+                        ? "No closer profile resolved — add one in Studio."
+                        : "Resolving closer profile…"}
                   </span>
                 </div>
                 <div className="lead-field">
