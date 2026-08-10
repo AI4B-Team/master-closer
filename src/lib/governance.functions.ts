@@ -88,7 +88,7 @@ export const setAgentMode = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), mode: z.enum(["off", "flag_only", "active"]) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { workspaceId } = await callerScope(context.supabase, context.userId);
+    const { orgId, workspaceId } = await callerScope(context.supabase, context.userId);
     const { data: agent } = await context.supabase
       .from("background_agents")
       .select("agent_key")
@@ -105,6 +105,10 @@ export const setAgentMode = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
+    await logGovernance(context.supabase, { orgId, workspaceId }, "agent.mode_changed", {
+      agent_key: agent.agent_key,
+      mode: data.mode,
+    });
     return { ok: true };
   });
 
@@ -112,12 +116,13 @@ export const pauseAllAgents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ paused: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { workspaceId } = await callerScope(context.supabase, context.userId);
+    const { orgId, workspaceId } = await callerScope(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("background_agents")
       .update({ enabled: !data.paused })
       .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
+    await logGovernance(context.supabase, { orgId, workspaceId }, data.paused ? "agent.paused_all" : "agent.resumed_all");
     return { paused: data.paused };
   });
 
@@ -135,15 +140,24 @@ export const runAgentNow = createServerFn({ method: "POST" })
 export const listProposals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { workspaceId } = await callerScope(context.supabase, context.userId);
+    const { orgId, workspaceId } = await callerScope(context.supabase, context.userId);
     // Stale proposals lose their evidence window, so they retire instead of
     // sitting in the queue waiting for a rubber-stamp approval.
-    await context.supabase
+    const { data: retired } = await context.supabase
       .from("agent_proposals")
       .update({ status: "expired", reviewed_at: new Date().toISOString(), review_note: "Expired before review." })
       .eq("workspace_id", workspaceId)
       .eq("status", "pending")
-      .lt("expires_at", new Date().toISOString());
+      .lt("expires_at", new Date().toISOString())
+      .select("id, agent_key, proposal_type");
+
+    for (const r of retired ?? []) {
+      await logGovernance(context.supabase, { orgId, workspaceId }, "agent.proposal_expired", {
+        proposal_id: r.id,
+        agent_key: r.agent_key,
+        proposal_type: r.proposal_type,
+      });
+    }
 
     const { data } = await context.supabase
       .from("agent_proposals")
@@ -281,6 +295,12 @@ export const reviewProposal = createServerFn({ method: "POST" })
       .eq("id", p.id)
       .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
+    await logGovernance(
+      context.supabase,
+      { orgId, workspaceId },
+      data.decision === "approved" ? "agent.proposal_approved" : "agent.proposal_rejected",
+      { proposal_id: p.id, agent_key: p.agent_key, proposal_type: p.proposal_type, note: data.note ?? null },
+    );
     return { ok: true };
   });
 
