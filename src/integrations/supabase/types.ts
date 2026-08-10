@@ -14,6 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_prompt_versions: {
+        Row: {
+          agent_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          proposal_id: string | null
+          source: string
+          system_prompt: string
+          version: number
+          workspace_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          proposal_id?: string | null
+          source?: string
+          system_prompt: string
+          version: number
+          workspace_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          proposal_id?: string | null
+          source?: string
+          system_prompt?: string
+          version?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_prompt_versions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_prompt_versions_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "agent_proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_prompt_versions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_proposals: {
         Row: {
           agent_id: string | null

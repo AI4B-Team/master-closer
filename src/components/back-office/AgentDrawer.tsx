@@ -10,11 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
-import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone, Copy } from "lucide-react";
+import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone, Copy, History, RotateCcw } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
 import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
 
 import { helpSystemPrompt } from "@/lib/agents.functions";
+import { listPromptVersions, recordPromptVersion, revertPromptVersion } from "@/lib/prompt-versions.functions";
 import { useServerFn } from "@tanstack/react-start";
 
 type Agent = {
@@ -96,6 +97,8 @@ export function AgentDrawer({
     }
   };
 
+  const recordVersion = useServerFn(recordPromptVersion);
+
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -112,14 +115,23 @@ export function AgentDrawer({
         })
         .eq("id", agent!.id);
       if (error) throw error;
+      if (form.system_prompt) {
+        try {
+          await recordVersion({ data: { agentId: agent!.id, prompt: form.system_prompt } });
+        } catch {
+          /* Versioning is an audit convenience — never block the save on it. */
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Closer updated.");
       qc.invalidateQueries({ queryKey: ["agents"] });
+      qc.invalidateQueries({ queryKey: ["prompt-versions"] });
       onOpenChange(false);
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const remove = useMutation({
     mutationFn: async () => {
@@ -292,6 +304,10 @@ export function AgentDrawer({
             </p>
           </div>
 
+          {agent && <PromptHistory agentId={agent.id} />}
+
+
+
           {agent && (
             <AgentQuickDrill
               agentId={agent.id}
@@ -336,3 +352,109 @@ export function AgentDrawer({
     </Sheet>
   );
 }
+
+const SOURCE_LABEL: Record<string, string> = {
+  manual: "Edited By A Human",
+  proposal: "Approved Agent Proposal",
+  revert: "Restored",
+  seed: "Prior Copy",
+};
+
+function PromptHistory({ agentId }: { agentId: string }) {
+  const qc = useQueryClient();
+  const fetchVersions = useServerFn(listPromptVersions);
+  const revertFn = useServerFn(revertPromptVersion);
+  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const versionsQ = useQuery({
+    queryKey: ["prompt-versions", agentId],
+    enabled: open,
+    queryFn: () => fetchVersions({ data: { agentId } }),
+  });
+
+  const revert = useMutation({
+    mutationFn: (versionId: string) => revertFn({ data: { versionId } }),
+    onSuccess: (r: any) => {
+      toast.success(`Prompt restored from version ${r.restoredFrom}.`);
+      qc.invalidateQueries({ queryKey: ["agents"] });
+      qc.invalidateQueries({ queryKey: ["prompt-versions"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const versions = versionsQ.data?.versions ?? [];
+
+  return (
+    <div className="rounded-xl border border-[#E7E7EC]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <History className="h-4 w-4 text-[#6B6B76]" /> Prompt History
+        </span>
+        <span className="text-xs text-[#6B6B76]">{open ? "Hide" : "Show"}</span>
+      </button>
+
+      {open && (
+        <div className="border-t border-[#E7E7EC] px-4 py-3">
+          {versionsQ.isLoading ? (
+            <p className="text-xs text-[#6B6B76]">Loading history…</p>
+          ) : versions.length === 0 ? (
+            <p className="text-xs text-[#6B6B76]">
+              No saved versions yet. Every prompt you save, and every approved agent proposal, is recorded here so you can
+              restore an earlier copy.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {versions.map((v: any) => (
+                <li key={v.id} className="rounded-lg border border-[#E7E7EC] px-3 py-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">
+                        Version {v.version} · {SOURCE_LABEL[v.source] ?? v.source}
+                      </p>
+                      <p className="text-xs text-[#6B6B76]">
+                        {new Date(v.created_at).toLocaleString()}
+                        {v.note ? ` · ${v.note}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => setExpanded((e) => (e === v.id ? null : v.id))}
+                      >
+                        {expanded === v.id ? "Hide Copy" : "View Copy"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs rounded-lg border-[#E7E7EC]"
+                        disabled={revert.isPending}
+                        onClick={() => revert.mutate(v.id)}
+                      >
+                        <RotateCcw className="mr-1 h-3 w-3" /> Restore
+                      </Button>
+                    </div>
+                  </div>
+                  {expanded === v.id && (
+                    <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-[#F7F7F9] p-3 text-xs leading-relaxed">
+                      {v.system_prompt}
+                    </pre>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
