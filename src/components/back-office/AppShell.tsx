@@ -56,7 +56,7 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
     { label: "Closer Profiles", to: "/closer-profiles" },
     { label: "Playbook", to: "/playbook" },
     { label: "Practice", to: "/practice" },
-    { label: "Intelligence Agents", to: "/agents" },
+    { label: "Intelligence", to: "/agents" },
   ],
   campaigns: [
     { label: "Campaigns", to: "/campaigns" },

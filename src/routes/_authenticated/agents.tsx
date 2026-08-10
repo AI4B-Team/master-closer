@@ -10,7 +10,9 @@ import { EmptyPanel, Kpi, KPI_TINTS, Panel, SkeletonRows, StatusPill } from "@/c
 import {
   Bot, Play, Pause, ShieldCheck, ShieldAlert, Inbox, ListChecks, Sparkles, Check, X,
   ThumbsUp, ThumbsDown, Undo2, Activity, Gauge,
+  MessageSquareText, Radar, CalendarClock, GraduationCap, Lightbulb,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import {
   listAgents, setAgentMode, pauseAllAgents, runAgentNow, listProposals, reviewProposal,
@@ -51,7 +53,7 @@ const MODES = [
 ] as const;
 
 const VIEWS = [
-  { key: "registry", label: "Agents", icon: Bot },
+  { key: "registry", label: "Overview", icon: Bot },
   { key: "proposals", label: "Proposals", icon: Inbox },
   { key: "worklist", label: "Suggested Worklist", icon: ListChecks },
   { key: "insights", label: "Learning", icon: Sparkles },
@@ -126,26 +128,27 @@ function AgentsPage() {
     <div className="page">
       <PageHeader
         title="Intelligence Agents"
-        description="Six agents learn from finished calls. Every change arrives as a proposal a human approves — never a change that happens on its own."
+        description="Six specialized agents analyze completed calls, surface opportunities, and propose improvements for your approval. Nothing changes without you."
         tabs={TAB_GROUPS.studio}
         action={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Button variant="outline" onClick={() => runNow.mutate(undefined)} disabled={runNow.isPending}>
-              <Play size={14} /> Run Due Agents
+              <Play size={14} /> Run Due Tasks
             </Button>
             <Button variant={paused ? "default" : "outline"} onClick={() => pauseAll.mutate(!paused)}>
-              <Pause size={14} /> {paused ? "Resume All Agents" : "Pause All Agents"}
+              <Pause size={14} /> {paused ? "Resume All" : "Pause All"}
             </Button>
           </div>
         }
       />
 
       <div className="kpis">
-        <Kpi icon={Bot} label="Agents Enabled" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} {...KPI_TINTS.blue} />
-        <Kpi icon={Inbox} label="Proposals Waiting" value={String(pendingCount)} {...KPI_TINTS.lavender} />
-        <Kpi icon={Activity} label="Labeled Conversations" value={String(reportQ.data?.total ?? 0)} {...KPI_TINTS.mint} />
-        <Kpi icon={ShieldAlert} label="Flagged For Human Eyes" value={String(reportQ.data?.flagged ?? 0)} {...KPI_TINTS.red} />
+        <Kpi icon={Bot} label="Active Agents" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} {...KPI_TINTS.blue} />
+        <Kpi icon={Inbox} label="Pending Proposals" value={String(pendingCount)} {...KPI_TINTS.lavender} />
+        <Kpi icon={Activity} label="Calls Analyzed" value={String(reportQ.data?.total ?? 0)} {...KPI_TINTS.mint} />
+        <Kpi icon={ShieldAlert} label="Needs Review" value={String(reportQ.data?.flagged ?? 0)} {...KPI_TINTS.red} />
       </div>
+
 
       <div className="tabs" style={{ margin: "4px 0 14px" }}>
         {VIEWS.map((v) => (
@@ -185,6 +188,151 @@ function AgentsPage() {
 
 /* --------------------------------- Registry ------------------------------------ */
 
+const AGENT_ICONS: Record<string, any> = {
+  conversation_labeler: MessageSquareText,
+  lead_scout: Radar,
+  hot_lead_scorer: Gauge,
+  booking_auditor: CalendarClock,
+  coach: GraduationCap,
+  wisdom_miner: Lightbulb,
+};
+
+const EMPTY_HINTS: Record<string, string> = {
+  conversation_labeler: "No new finished calls were available during this run.",
+  lead_scout: "No leads met the nomination bar during this run.",
+  hot_lead_scorer: "Not enough labeled outcomes collected yet for the first refit.",
+  booking_auditor: "No booking drift detected.",
+  coach: "No coachable pattern reached the evidence threshold.",
+  wisdom_miner: "No eligible takeover examples found.",
+};
+
+function RunRow({ r }: { r: any }) {
+  return (
+    <div className="runrow">
+      <div className="runcell rc-run" data-label="Run">{timeAgo(r.started_at)}</div>
+      <div className="runcell rc-status" data-label="Status">
+        <StatusPill
+          label={r.status === "ok" ? "Ok" : r.status === "skipped" ? "Skipped" : "Failed"}
+          tone={r.status === "ok" ? "green" : r.status === "skipped" ? "neutral" : "red"}
+        />
+      </div>
+      <div className="runcell rc-num font-num" data-label="Examined">{r.items_examined}</div>
+      <div className="runcell rc-num font-num" data-label="Actioned">{r.items_actioned}</div>
+      <div className="runcell rc-num font-num" data-label="Flagged">{r.items_flagged}</div>
+      <div className="runcell rc-sum muted" data-label="Summary">{r.error ?? r.summary ?? "—"}</div>
+    </div>
+  );
+}
+
+function AgentCard({
+  a, onMode, onRun,
+}: {
+  a: any;
+  onMode: (id: string, mode: "off" | "flag_only" | "active") => void;
+  onRun: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const Icon = AGENT_ICONS[a.agent_key] ?? Bot;
+  const runs: any[] = a.runs ?? [];
+  const latest = runs[0];
+  const rest = runs.slice(1);
+  const allZero =
+    runs.length > 0 && runs.every((r) => !r.items_actioned && !r.items_flagged && r.status !== "failed");
+
+  return (
+    <div className="mc-card agent-card">
+      <div className="agent-head">
+        <div className="agent-id">
+          <span className="agent-ico"><Icon size={17} strokeWidth={2.1} /></span>
+          <h3 className="font-display card-h">{a.meta.name}</h3>
+        </div>
+        <div className="agent-ctl">
+          <span className="pill pill-quiet">{a.meta.cadence}</span>
+          <div className="segmented">
+            {MODES.map((m) => {
+              const blocked = m.key === "active" && !a.meta.canActivate;
+              return (
+                <button
+                  key={m.key}
+                  className={"seg " + (a.mode === m.key ? "seg-on" : "")}
+                  disabled={blocked}
+                  title={blocked ? "This agent has no active mode; it proposes only." : undefined}
+                  onClick={() => onMode(a.id, m.key)}
+                >
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+          <Button variant="outline" size="sm" onClick={() => onRun(a.id)}>
+            <Play size={13} /> Run Now
+          </Button>
+        </div>
+      </div>
+
+      <p className="agent-blurb">{a.meta.blurb}</p>
+
+      <div className="agent-meta">
+        <StatusPill
+          label={a.enabled ? (a.mode === "active" ? "Active" : a.mode === "off" ? "Off" : "Flag Only") : "Paused"}
+          tone={a.mode === "active" && a.enabled ? "green" : a.enabled ? "neutral" : "amber"}
+        />
+        {!a.meta.canActivate && <span className="pill pill-quiet">Proposals Only</span>}
+        <span className="pill pill-quiet">Last Run {timeAgo(a.last_run_at)}</span>
+        <span className="pill pill-quiet">Next Run {timeAgo(a.next_run_at)}</span>
+        {a.pending > 0 && <StatusPill label={`${a.pending} Waiting`} tone="amber" />}
+        {a.consecutive_failures >= 3 && <StatusPill label="Disabled After 3 Failures" tone="red" />}
+      </div>
+
+      {runs.length === 0 ? (
+        <p className="agent-note">No runs yet. This agent has not been due since it was enabled.</p>
+      ) : allZero ? (
+        <>
+          <p className="agent-note">{latest.summary || EMPTY_HINTS[a.agent_key] || "Nothing to act on during this run."}</p>
+          {rest.length > 0 && (
+            <button className="link-btn" onClick={() => setOpen((v) => !v)}>
+              {open ? "Hide Run History" : `View Run History (${rest.length})`}
+            </button>
+          )}
+          {open && (
+            <div className="runtable" style={{ marginTop: 10 }}>
+              <div className="runrow runhead">
+                <div className="runcell rc-run">Run</div>
+                <div className="runcell rc-status">Status</div>
+                <div className="runcell rc-num">Examined</div>
+                <div className="runcell rc-num">Actioned</div>
+                <div className="runcell rc-num">Flagged</div>
+                <div className="runcell rc-sum">Summary</div>
+              </div>
+              {rest.map((r) => <RunRow key={r.id} r={r} />)}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="runtable">
+            <div className="runrow runhead">
+              <div className="runcell rc-run">Run</div>
+              <div className="runcell rc-status">Status</div>
+              <div className="runcell rc-num">Examined</div>
+              <div className="runcell rc-num">Actioned</div>
+              <div className="runcell rc-num">Flagged</div>
+              <div className="runcell rc-sum">Summary</div>
+            </div>
+            <RunRow r={latest} />
+            {open && rest.map((r) => <RunRow key={r.id} r={r} />)}
+          </div>
+          {rest.length > 0 && (
+            <button className="link-btn" onClick={() => setOpen((v) => !v)}>
+              {open ? "Hide Run History" : `View Run History (${rest.length})`}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function Registry({
   loading, agents, onMode, onRun,
 }: {
@@ -196,84 +344,14 @@ function Registry({
   if (loading) return <Panel title="Agent Registry"><SkeletonRows rows={6} /></Panel>;
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 16 }}>
       {agents.map((a) => (
-        <Panel
-          key={a.id}
-          title={a.meta.name}
-          action={
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="muted" style={{ fontSize: 12 }}>{a.meta.cadence}</span>
-              <div className="segmented">
-                {MODES.map((m) => {
-                  const blocked = m.key === "active" && !a.meta.canActivate;
-                  return (
-                    <button
-                      key={m.key}
-                      className={"seg " + (a.mode === m.key ? "seg-on" : "")}
-                      disabled={blocked}
-                      title={blocked ? "This agent has no active mode; it proposes only." : undefined}
-                      onClick={() => onMode(a.id, m.key)}
-                    >
-                      {m.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <Button variant="outline" size="sm" onClick={() => onRun(a.id)}>
-                <Play size={13} /> Run Now
-              </Button>
-            </div>
-          }
-        >
-          <p style={{ maxWidth: 900, marginBottom: 10 }}>{a.meta.blurb}</p>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-            <StatusPill label={a.enabled ? (a.mode === "active" ? "Active" : a.mode === "off" ? "Off" : "Flag Only") : "Paused"} tone={a.mode === "active" && a.enabled ? "green" : a.enabled ? "neutral" : "amber"} />
-            {!a.meta.canActivate && (
-              <span className="muted" style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <ShieldCheck size={13} /> No Active Mode Ever — Proposals Only
-              </span>
-            )}
-            <span className="muted" style={{ fontSize: 12 }}>Last Run {timeAgo(a.last_run_at)}</span>
-            <span className="muted" style={{ fontSize: 12 }}>Next Run {timeAgo(a.next_run_at)}</span>
-            {a.pending > 0 && <StatusPill label={`${a.pending} Waiting`} tone="amber" />}
-            {a.consecutive_failures >= 3 && <StatusPill label="Disabled After 3 Failures" tone="red" />}
-          </div>
-
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Run</th><th>Status</th><th>Examined</th><th>Actioned</th><th>Flagged</th><th>Summary</th>
-                </tr>
-              </thead>
-              <tbody>
-                {a.runs.length === 0 && (
-                  <tr><td colSpan={6} className="muted">No Runs Yet.</td></tr>
-                )}
-                {a.runs.map((r: any) => (
-                  <tr key={r.id}>
-                    <td>{timeAgo(r.started_at)}</td>
-                    <td>
-                      <StatusPill
-                        label={r.status === "ok" ? "Ok" : r.status === "skipped" ? "Skipped" : "Failed"}
-                        tone={r.status === "ok" ? "green" : r.status === "skipped" ? "neutral" : "red"}
-                      />
-                    </td>
-                    <td>{r.items_examined}</td>
-                    <td>{r.items_actioned}</td>
-                    <td>{r.items_flagged}</td>
-                    <td className="muted">{r.error ?? r.summary ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
+        <AgentCard key={a.id} a={a} onMode={onMode} onRun={onRun} />
       ))}
     </div>
   );
 }
+
 
 /* --------------------------------- Proposals ----------------------------------- */
 
