@@ -970,7 +970,7 @@ function DialerPage() {
               <div className="lead-grid">
                 <div className="lead-field">
                   <span className="lead-k">Campaign Queue</span>
-                  <Select value={campaignId} onValueChange={pickCampaign}>
+                  <Select value={campaignId || "__no_campaign__"} onValueChange={(v) => pickCampaign(v === "__no_campaign__" ? "" : v)}>
                     <SelectTrigger
                       className="w-full h-auto"
                       style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
@@ -978,7 +978,7 @@ function DialerPage() {
                       <SelectValue placeholder="Direct Dial" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Direct Dial</SelectItem>
+                      <SelectItem value="__no_campaign__">Direct Dial</SelectItem>
                       {(campaigns ?? []).map((c: any) => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                       ))}
