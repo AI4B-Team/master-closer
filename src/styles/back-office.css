@@ -899,7 +899,7 @@
 }
 
 /* Wide data tables scroll sideways instead of being clipped. */
-.mc-tablewrap { width: 100%; }
+.mc-tablewrap { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; }
 @media (max-width: 900px) {
   .mc-tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .mc-tablewrap > table { min-width: 720px; }
