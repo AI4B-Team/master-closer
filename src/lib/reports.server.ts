@@ -60,25 +60,38 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
   const days = cadence === "daily" ? 1 : 7;
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
-  const [{ data: calls }, { data: deals }, { data: suggestions }] = await Promise.all([
-    db()
-      .from("calls")
-      .select("outcome, dial_outcome, duration_sec, close_probability, started_at")
-      .eq("workspace_id", workspaceId)
-      .gte("started_at", since)
-      .limit(2000),
-    db()
-      .from("deals")
-      .select("value, stage, updated_at")
-      .eq("workspace_id", workspaceId)
-      .gte("updated_at", since)
-      .limit(2000),
-    db()
-      .from("suggestions")
-      .select("objection, was_used")
-      .eq("workspace_id", workspaceId)
-      .limit(2000),
-  ]);
+  const [{ data: calls }, { data: deals }, { data: suggestions }, { data: proposals }, { data: candidates }] =
+    await Promise.all([
+      db()
+        .from("calls")
+        .select("outcome, dial_outcome, duration_sec, close_probability, started_at")
+        .eq("workspace_id", workspaceId)
+        .gte("started_at", since)
+        .limit(2000),
+      db()
+        .from("deals")
+        .select("value, stage, updated_at")
+        .eq("workspace_id", workspaceId)
+        .gte("updated_at", since)
+        .limit(2000),
+      db()
+        .from("suggestions")
+        .select("objection, was_used")
+        .eq("workspace_id", workspaceId)
+        .limit(2000),
+      db()
+        .from("agent_proposals")
+        .select("status, expires_at, reviewed_at")
+        .eq("workspace_id", workspaceId)
+        .limit(2000),
+      db()
+        .from("objection_candidates")
+        .select("status")
+        .eq("workspace_id", workspaceId)
+        .eq("status", "pending")
+        .limit(2000),
+    ]);
+
 
   const rows = calls ?? [];
   const connects = rows.filter((c) => CONNECTED.has(String(c.dial_outcome ?? c.outcome ?? ""))).length;
