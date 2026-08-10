@@ -552,6 +552,11 @@ function CloserProfilesPage() {
                 </div>
                 <Switch checked={editing.is_default} onCheckedChange={(v) => setEditing({ ...editing, is_default: v })} />
               </div>
+
+              {editing.id ? (
+                <ProfileHistory profileId={editing.id} onRestored={() => setEditing(null)} />
+              ) : null}
+
             </div>
           ) : null}
 
