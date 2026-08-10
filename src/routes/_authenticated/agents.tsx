@@ -232,7 +232,7 @@ function AgentCard({
   onRun: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const Icon = AGENT_ICONS[a.key] ?? Bot;
+  const Icon = AGENT_ICONS[a.agent_key] ?? Bot;
   const runs: any[] = a.runs ?? [];
   const latest = runs[0];
   const rest = runs.slice(1);
@@ -288,7 +288,7 @@ function AgentCard({
         <p className="agent-note">No runs yet. This agent has not been due since it was enabled.</p>
       ) : allZero ? (
         <>
-          <p className="agent-note">{latest.summary || EMPTY_HINTS[a.key] || "Nothing to act on during this run."}</p>
+          <p className="agent-note">{latest.summary || EMPTY_HINTS[a.agent_key] || "Nothing to act on during this run."}</p>
           {rest.length > 0 && (
             <button className="link-btn" onClick={() => setOpen((v) => !v)}>
               {open ? "Hide Run History" : `View Run History (${rest.length})`}
