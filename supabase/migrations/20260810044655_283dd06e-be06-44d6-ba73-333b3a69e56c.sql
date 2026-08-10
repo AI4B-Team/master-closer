@@ -1,0 +1,1 @@
+delete from public.leads where name in ('QA Smoke Lead','QA Stack Lead');
