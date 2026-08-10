@@ -168,11 +168,41 @@ export const reviewProposal = createServerFn({ method: "POST" })
           .eq("product_line", "default");
       } else if (p.proposal_type === "profile_copy" && p.target_id) {
         // Version the profile: keep the prior copy and who approved the change.
+        const { appendPromptVersion } = await import("./prompt-versions.server");
+        const { data: agentRow } = await context.supabase
+          .from("agents")
+          .select("system_prompt")
+          .eq("id", p.target_id)
+          .eq("workspace_id", workspaceId)
+          .maybeSingle();
+
+        if (agentRow?.system_prompt) {
+          await appendPromptVersion(context.supabase, {
+            workspaceId,
+            agentId: p.target_id,
+            prompt: String(agentRow.system_prompt),
+            source: "seed",
+            note: "Copy in use before the agent proposal was approved.",
+            userId: context.userId,
+          });
+        }
+
+        const nextPrompt = String((p.proposed_value as any) ?? "");
         await context.supabase
           .from("agents")
-          .update({ system_prompt: String((p.proposed_value as any) ?? "") })
+          .update({ system_prompt: nextPrompt })
           .eq("id", p.target_id)
           .eq("workspace_id", workspaceId);
+
+        await appendPromptVersion(context.supabase, {
+          workspaceId,
+          agentId: p.target_id,
+          prompt: nextPrompt,
+          source: "proposal",
+          note: `Approved from ${p.agent_key} proposal.`,
+          proposalId: p.id,
+          userId: context.userId,
+        });
       } else if (p.proposal_type === "booking_correction" && p.target_id && p.proposed_value) {
         await context.supabase
           .from("tasks")
