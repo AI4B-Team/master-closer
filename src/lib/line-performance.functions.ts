@@ -105,3 +105,46 @@ export const linePerformance = createServerFn({ method: "GET" })
 
     return { days: data.days, totals, rows };
   });
+
+/**
+ * Promote a proven live line into a workspace closer profile's objection
+ * library. Same write path as the review queue: human-triggered only.
+ */
+export const promoteLineToProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        profileId: z.string().uuid(),
+        trigger: z.string().trim().min(2).max(300),
+        response: z.string().trim().min(2).max(1200),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const workspaceId = await activeWorkspace(context.supabase, context.userId);
+
+    const { data: profile } = await context.supabase
+      .from("closer_profiles")
+      .select("id, workspace_id, objections")
+      .eq("id", data.profileId)
+      .maybeSingle();
+    if (!profile) throw new Error("Closer profile not found.");
+    if (profile.workspace_id !== workspaceId)
+      throw new Error("Platform profiles are read-only. Duplicate it into this workspace first.");
+
+    const objections = [
+      ...(((profile.objections as any[]) ?? []).filter(
+        (o) => String(o?.trigger ?? "").toLowerCase() !== data.trigger.toLowerCase(),
+      )),
+      { trigger: data.trigger, approved_response: data.response },
+    ].slice(-60);
+
+    const { error } = await context.supabase
+      .from("closer_profiles")
+      .update({ objections })
+      .eq("id", profile.id);
+    if (error) throw new Error(error.message);
+
+    return { ok: true as const };
+  });
