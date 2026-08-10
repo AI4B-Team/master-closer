@@ -37,6 +37,7 @@ import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedDialerRouteImport } from './routes/_authenticated/dialer'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedComplianceRouteImport } from './routes/_authenticated/compliance'
+import { Route as AuthenticatedCloserProfilesRouteImport } from './routes/_authenticated/closer-profiles'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedCallsRouteImport } from './routes/_authenticated/calls'
 import { Route as AuthenticatedAiClosersRouteImport } from './routes/_authenticated/ai-closers'
@@ -195,6 +196,12 @@ const AuthenticatedComplianceRoute = AuthenticatedComplianceRouteImport.update({
   path: '/compliance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCloserProfilesRoute =
+  AuthenticatedCloserProfilesRouteImport.update({
+    id: '/closer-profiles',
+    path: '/closer-profiles',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
@@ -288,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/closer-profiles': typeof AuthenticatedCloserProfilesRoute
   '/compliance': typeof AuthenticatedComplianceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dialer': typeof AuthenticatedDialerRoute
@@ -333,6 +341,7 @@ export interface FileRoutesByTo {
   '/ai-closers': typeof AuthenticatedAiClosersRoute
   '/calls': typeof AuthenticatedCallsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/closer-profiles': typeof AuthenticatedCloserProfilesRoute
   '/compliance': typeof AuthenticatedComplianceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dialer': typeof AuthenticatedDialerRoute
@@ -380,6 +389,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-closers': typeof AuthenticatedAiClosersRoute
   '/_authenticated/calls': typeof AuthenticatedCallsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
+  '/_authenticated/closer-profiles': typeof AuthenticatedCloserProfilesRoute
   '/_authenticated/compliance': typeof AuthenticatedComplianceRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dialer': typeof AuthenticatedDialerRoute
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/ai-closers'
     | '/calls'
     | '/campaigns'
+    | '/closer-profiles'
     | '/compliance'
     | '/dashboard'
     | '/dialer'
@@ -472,6 +483,7 @@ export interface FileRouteTypes {
     | '/ai-closers'
     | '/calls'
     | '/campaigns'
+    | '/closer-profiles'
     | '/compliance'
     | '/dashboard'
     | '/dialer'
@@ -518,6 +530,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-closers'
     | '/_authenticated/calls'
     | '/_authenticated/campaigns'
+    | '/_authenticated/closer-profiles'
     | '/_authenticated/compliance'
     | '/_authenticated/dashboard'
     | '/_authenticated/dialer'
@@ -772,6 +785,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedComplianceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/closer-profiles': {
+      id: '/_authenticated/closer-profiles'
+      path: '/closer-profiles'
+      fullPath: '/closer-profiles'
+      preLoaderRoute: typeof AuthenticatedCloserProfilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/campaigns': {
       id: '/_authenticated/campaigns'
       path: '/campaigns'
@@ -895,6 +915,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiClosersRoute: typeof AuthenticatedAiClosersRoute
   AuthenticatedCallsRoute: typeof AuthenticatedCallsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
+  AuthenticatedCloserProfilesRoute: typeof AuthenticatedCloserProfilesRoute
   AuthenticatedComplianceRoute: typeof AuthenticatedComplianceRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDialerRoute: typeof AuthenticatedDialerRoute
@@ -923,6 +944,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiClosersRoute: AuthenticatedAiClosersRoute,
   AuthenticatedCallsRoute: AuthenticatedCallsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
+  AuthenticatedCloserProfilesRoute: AuthenticatedCloserProfilesRoute,
   AuthenticatedComplianceRoute: AuthenticatedComplianceRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDialerRoute: AuthenticatedDialerRoute,
@@ -970,13 +992,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
