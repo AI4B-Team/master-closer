@@ -97,6 +97,8 @@ export function AgentDrawer({
     }
   };
 
+  const recordVersion = useServerFn(recordPromptVersion);
+
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -113,14 +115,23 @@ export function AgentDrawer({
         })
         .eq("id", agent!.id);
       if (error) throw error;
+      if (form.system_prompt) {
+        try {
+          await recordVersion({ data: { agentId: agent!.id, prompt: form.system_prompt } });
+        } catch {
+          /* Versioning is an audit convenience — never block the save on it. */
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Closer updated.");
       qc.invalidateQueries({ queryKey: ["agents"] });
+      qc.invalidateQueries({ queryKey: ["prompt-versions"] });
       onOpenChange(false);
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const remove = useMutation({
     mutationFn: async () => {
