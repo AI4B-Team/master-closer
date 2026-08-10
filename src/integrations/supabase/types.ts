@@ -546,6 +546,104 @@ export type Database = {
           },
         ]
       }
+      calling_window_blocks: {
+        Row: {
+          attempted_by: string | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          lead_timezone: string
+          local_time: string
+          phone: string | null
+          reason: string
+          timezone_source: string
+          workspace_id: string
+        }
+        Insert: {
+          attempted_by?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          lead_timezone: string
+          local_time: string
+          phone?: string | null
+          reason: string
+          timezone_source: string
+          workspace_id: string
+        }
+        Update: {
+          attempted_by?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          lead_timezone?: string
+          local_time?: string
+          phone?: string | null
+          reason?: string
+          timezone_source?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calling_window_blocks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calling_window_blocks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calling_windows: {
+        Row: {
+          created_at: string
+          days: number[]
+          default_timezone: string
+          end_minute: number
+          enforce: boolean
+          id: string
+          start_minute: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          days?: number[]
+          default_timezone?: string
+          end_minute?: number
+          enforce?: boolean
+          id?: string
+          start_minute?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          days?: number[]
+          default_timezone?: string
+          end_minute?: number
+          enforce?: boolean
+          id?: string
+          start_minute?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calling_windows_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
           agent_id: string | null
