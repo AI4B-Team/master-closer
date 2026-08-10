@@ -970,16 +970,20 @@ function DialerPage() {
               <div className="lead-grid">
                 <div className="lead-field">
                   <span className="lead-k">Campaign Queue</span>
-                  <select
-                    value={campaignId}
-                    onChange={(e) => pickCampaign(e.target.value)}
-                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
-                  >
-                    <option value="">Direct Dial</option>
-                    {(campaigns ?? []).map((c: any) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <Select value={campaignId} onValueChange={pickCampaign}>
+                    <SelectTrigger
+                      className="w-full h-auto"
+                      style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
+                    >
+                      <SelectValue placeholder="Direct Dial" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Direct Dial</SelectItem>
+                      {(campaigns ?? []).map((c: any) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <span className="muted" style={{ fontSize: 12 }}>
                     {campaign
                       ? contact
@@ -999,16 +1003,20 @@ function DialerPage() {
                 </div>
                 <div className="lead-field">
                   <span className="lead-k">AI Closer</span>
-                  <select
-                    value={agentId}
-                    onChange={(e) => pickAgent(e.target.value)}
-                    style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
-                  >
-                    <option value="">Default Closer</option>
-                    {(agents ?? []).map((a: any) => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                  </select>
+                  <Select value={agentId} onValueChange={pickAgent}>
+                    <SelectTrigger
+                      className="w-full h-auto"
+                      style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "8px 10px", font: "inherit" }}
+                    >
+                      <SelectValue placeholder="Default Closer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Default Closer</SelectItem>
+                      {(agents ?? []).map((a: any) => (
+                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <span className="muted" style={{ fontSize: 12 }}>
                     {agent
                       ? `${agent.industry || "General"} · ${agent.transfer_to ? `Transfers to ${teammateLabel(agent.transfer_to)}` : "No transfer target set"}`
