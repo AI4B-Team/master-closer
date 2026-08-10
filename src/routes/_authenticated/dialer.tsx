@@ -1000,7 +1000,7 @@ function DialerPage() {
                     {resolvedProfile
                       ? `Brief: ${resolvedProfile.profileName}${resolvedProfile.isPlatformDefault ? " (platform)" : ""} · ${resolvedProfile.matchedLabel}`
                       : resolved && !resolved.ok
-                        ? "No closer profile resolved — add one in Studio."
+                        ? "No closer brief resolved — pick an AI Closer with an industry, or set a workspace default in Studio → Closer Profiles."
                         : "Resolving closer profile…"}
                   </span>
                 </div>
