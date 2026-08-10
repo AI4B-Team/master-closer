@@ -49,6 +49,7 @@ const FILTERS: { value: "all" | "unread" | NotifyCategory; label: string }[] = [
   { value: "agreements", label: "Agreements" },
   { value: "compliance", label: "Compliance" },
   { value: "tasks", label: "Follow-Ups" },
+  { value: "governance", label: "Governance" },
 ];
 
 function NotificationsPage() {

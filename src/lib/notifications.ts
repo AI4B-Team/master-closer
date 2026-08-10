@@ -49,6 +49,13 @@ const LABELS: Record<string, string> = {
   "consent.logged": "Disclosure Logged",
   "task.due": "Follow-Up Due",
   "task.overdue": "Follow-Up Overdue",
+  "agent.proposal_pending": "Proposal Waiting On You",
+  "agent.proposal_approved": "Proposal Approved",
+  "agent.proposal_rejected": "Proposal Rejected",
+  "agent.proposal_expired": "Proposal Expired",
+  "agent.mode_changed": "Agent Mode Changed",
+  "agent.paused_all": "Intelligence Agents Paused",
+  "agent.resumed_all": "Intelligence Agents Resumed",
 };
 
 export function notifyLabel(type: string) {
@@ -56,7 +63,15 @@ export function notifyLabel(type: string) {
 }
 
 /** Coarse buckets used by the inbox filter chips. */
-export type NotifyCategory = "calls" | "deals" | "leads" | "agreements" | "compliance" | "tasks" | "other";
+export type NotifyCategory =
+  | "calls"
+  | "deals"
+  | "leads"
+  | "agreements"
+  | "compliance"
+  | "tasks"
+  | "governance"
+  | "other";
 
 export function categoryFor(type: string): NotifyCategory {
   if (type.startsWith("task.")) return "tasks";
@@ -65,6 +80,14 @@ export function categoryFor(type: string): NotifyCategory {
   if (type.startsWith("lead")) return "leads";
   if (type.startsWith("agreement")) return "agreements";
   if (type.startsWith("consent.") || type.startsWith("disclosure.")) return "compliance";
+  if (
+    type.startsWith("agent.") ||
+    type.startsWith("prompt.") ||
+    type.startsWith("profile.") ||
+    type.startsWith("objection.") ||
+    type.startsWith("line.")
+  )
+    return "governance";
   return "other";
 }
 
@@ -104,7 +127,7 @@ export function ago(iso: string) {
 
 /** Events + due follow-ups for one workspace, newest first. */
 export async function fetchNotifications(wsId: string, limit = 24): Promise<NotifyItem[]> {
-  const [evt, tasks] = await Promise.all([
+  const [evt, tasks, proposals] = await Promise.all([
     supabase
       .from("events")
       .select("id,event_type,payload,created_at")
@@ -120,7 +143,34 @@ export async function fetchNotifications(wsId: string, limit = 24): Promise<Noti
       .lte("due_at", new Date(Date.now() + 86400000).toISOString())
       .order("due_at", { ascending: true })
       .limit(Math.min(limit, 25)),
+    // Pending proposals are the one queue that expires, so they belong in the
+    // inbox rather than only on the Intelligence page.
+    supabase
+      .from("agent_proposals")
+      .select("id,agent_key,proposal_type,created_at,expires_at")
+      .eq("workspace_id", wsId)
+      .eq("status", "pending")
+      .order("expires_at", { ascending: true })
+      .limit(Math.min(limit, 25)),
   ]);
+
+  const now = Date.now();
+  const proposalItems: NotifyItem[] = (proposals.data ?? [])
+    .filter((p: any) => !p.expires_at || new Date(p.expires_at).getTime() > now)
+    .map((p: any) => {
+      const hoursLeft = p.expires_at ? Math.max(0, Math.round((new Date(p.expires_at).getTime() - now) / 3600000)) : null;
+      const who = notifyLabel(String(p.agent_key ?? "agent"));
+      const what = String(p.proposal_type ?? "").replace(/[._]/g, " ");
+      return {
+        key: `proposal:${p.id}`,
+        type: "agent.proposal_pending",
+        title: notifyLabel("agent.proposal_pending"),
+        detail: [who, what, hoursLeft !== null ? `expires in ${hoursLeft}h` : null].filter(Boolean).join(" · "),
+        created_at: p.created_at,
+        href: "/agents",
+        category: "governance" as NotifyCategory,
+      };
+    });
 
   const taskItems: NotifyItem[] = (tasks.data ?? []).map((t: any) => {
     const type = new Date(t.due_at) < new Date() ? "task.overdue" : "task.due";
@@ -148,7 +198,7 @@ export async function fetchNotifications(wsId: string, limit = 24): Promise<Noti
     };
   });
 
-  return [...taskItems, ...eventItems]
+  return [...proposalItems, ...taskItems, ...eventItems]
     .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
     .slice(0, limit);
 }
