@@ -26,13 +26,13 @@ export const Route = createFileRoute("/_authenticated/agents")({
   },
   head: () => ({
     meta: [
-      { title: "Background Agents — Master Closer" },
+      { title: "Intelligence Agents — Master Closer" },
       {
         name: "description",
         content:
           "Six autonomous agents that learn from finished calls, plus the proposal inbox where a human approves every change before it reaches a live conversation.",
       },
-      { property: "og:title", content: "Background Agents — Master Closer" },
+      { property: "og:title", content: "Intelligence Agents — Master Closer" },
       {
         property: "og:description",
         content: "Learning loop, human-approved, auditable. Every agent ships flag-only with a kill switch.",
@@ -125,7 +125,7 @@ function AgentsPage() {
   return (
     <div className="page">
       <PageHeader
-        title="Background Agents"
+        title="Intelligence Agents"
         description="Six agents learn from finished calls. Every change arrives as a proposal a human approves — never a change that happens on its own."
         tabs={TAB_GROUPS.studio}
         action={
