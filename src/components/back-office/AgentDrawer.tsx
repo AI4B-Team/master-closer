@@ -304,6 +304,10 @@ export function AgentDrawer({
             </p>
           </div>
 
+          {agent && <PromptHistory agentId={agent.id} />}
+
+
+
           {agent && (
             <AgentQuickDrill
               agentId={agent.id}
