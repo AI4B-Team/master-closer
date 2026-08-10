@@ -400,8 +400,9 @@ function DncRegistry() {
       const { error } = await supabase.from("dnc_list").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_d, id) => {
       toast.success("Number released from Do Not Call.");
+      void logActivity("lead.released_dnc", { entry_id: id });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
     },
     onError: (e: any) => toast.error(e.message),
