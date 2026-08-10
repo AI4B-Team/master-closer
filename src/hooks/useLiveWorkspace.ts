@@ -49,6 +49,12 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
       "tasks",
       "followups",
       "calls",
+      "report_calls",
+      "report_deals",
+      "report_agents",
+      "report_campaigns",
+      "report_suggestions",
+
       "deals",
       "pipeline",
       "leads",
