@@ -114,6 +114,15 @@ export const listProposals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { workspaceId } = await callerScope(context.supabase, context.userId);
+    // Stale proposals lose their evidence window, so they retire instead of
+    // sitting in the queue waiting for a rubber-stamp approval.
+    await context.supabase
+      .from("agent_proposals")
+      .update({ status: "expired", reviewed_at: new Date().toISOString(), review_note: "Expired before review." })
+      .eq("workspace_id", workspaceId)
+      .eq("status", "pending")
+      .lt("expires_at", new Date().toISOString());
+
     const { data } = await context.supabase
       .from("agent_proposals")
       .select(
@@ -143,12 +152,21 @@ export const reviewProposal = createServerFn({ method: "POST" })
     const { orgId, workspaceId } = await callerScope(context.supabase, context.userId);
     const { data: p } = await context.supabase
       .from("agent_proposals")
-      .select("id, agent_key, proposal_type, target_table, target_id, target_field, current_value, proposed_value, status")
+      .select("id, agent_key, proposal_type, target_table, target_id, target_field, current_value, proposed_value, status, expires_at")
       .eq("id", data.id)
       .eq("workspace_id", workspaceId)
       .maybeSingle();
     if (!p) throw new Error("Proposal not found.");
+    if (p.status === "expired") throw new Error("This proposal expired and can no longer be applied.");
     if (p.status !== "pending") throw new Error("This proposal was already reviewed.");
+    if (p.expires_at && new Date(p.expires_at) < new Date()) {
+      await context.supabase
+        .from("agent_proposals")
+        .update({ status: "expired", reviewed_at: new Date().toISOString(), review_note: "Expired before review." })
+        .eq("id", p.id)
+        .eq("workspace_id", workspaceId);
+      throw new Error("This proposal expired and can no longer be applied.");
+    }
 
     if (data.decision === "approved" && GUARDED_TYPES.has(p.proposal_type) && !data.attested) {
       throw new Error("Compliance-adjacent copy needs the lawful-basis attestation re-affirmed before approval.");

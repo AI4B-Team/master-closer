@@ -376,6 +376,17 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
 
   if (loading) return <Panel title="Proposal Inbox"><SkeletonRows rows={5} /></Panel>;
 
+  // Proposals carry an evidence window; show how much of it is left.
+  const hoursLeft = (iso: string) => (new Date(iso).getTime() - Date.now()) / 3600000;
+  const expirySoon = (iso: string) => hoursLeft(iso) < 24;
+  const expiryLabel = (iso: string) => {
+    const h = hoursLeft(iso);
+    if (h <= 0) return "Expired";
+    if (h < 1) return "Expires In Under An Hour";
+    if (h < 48) return `Expires In ${Math.round(h)} Hours`;
+    return `Expires In ${Math.round(h / 24)} Days`;
+  };
+
   const pending = proposals.filter((p) => p.status === "pending");
   const reviewed = proposals.filter((p) => p.status !== "pending");
 
@@ -395,7 +406,12 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
         <Panel
           key={p.id}
           title={`${p.agent_key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())} · ${p.proposal_type.replace(/_/g, " ")}`}
-          action={<StatusPill label="Pending" tone="amber" />}
+          action={
+            <span style={{ display: "inline-flex", gap: 6 }}>
+              <StatusPill label="Pending" tone="amber" />
+              {p.expires_at && <StatusPill label={expiryLabel(p.expires_at)} tone={expirySoon(p.expires_at) ? "red" : "neutral"} />}
+            </span>
+          }
         >
           <p style={{ marginBottom: 10 }}>{p.rationale}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
@@ -461,7 +477,10 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
                     <td>{p.agent_key}</td>
                     <td>{p.proposal_type.replace(/_/g, " ")}</td>
                     <td>
-                      <StatusPill label={p.status === "approved" ? "Approved" : "Rejected"} tone={p.status === "approved" ? "green" : "red"} />
+                      <StatusPill
+                        label={p.status === "approved" ? "Approved" : p.status === "expired" ? "Expired" : "Rejected"}
+                        tone={p.status === "approved" ? "green" : p.status === "expired" ? "neutral" : "red"}
+                      />
                     </td>
                     <td>{timeAgo(p.reviewed_at)}</td>
                     <td className="muted">{p.review_note ?? "—"}</td>
