@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { GraduationCap, Sparkles, Send, RotateCcw, Bot } from "lucide-react";
 import { closeObjection } from "@/lib/demo.functions";
+import { assemblePromptForCall } from "@/lib/closer-profiles.functions";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fetchObjectionLibrary } from "@/lib/objections";
@@ -53,6 +55,8 @@ type Rep = {
 
 function PracticePage() {
   const run = useServerFn(closeObjection);
+  const assemble = useServerFn(assemblePromptForCall);
+
   const qc = useQueryClient();
   const [mode, setMode] = useState<string>("copilot");
   const [agentId, setAgentId] = useState<string>("none");
@@ -92,18 +96,41 @@ function PracticePage() {
     },
   });
 
+  const { data: resolved } = useQuery({
+    queryKey: ["practice-profile", wsId, agent?.industry ?? null, mode],
+    enabled: !!wsId,
+    queryFn: async () =>
+      await assemble({
+        data: {
+          industry: (agent?.industry as string) ?? null,
+          source: null,
+          leadName: null,
+          mode: mode as "full_ai" | "hybrid" | "copilot",
+        },
+      }),
+  });
+
   const ask = useMutation({
     mutationFn: async () => {
+      const profilePrompt = resolved?.ok ? resolved.prompt : null;
+      const profileLines = resolved?.ok
+        ? resolved.objections.map((o: { trigger: string; response: string }) => ({
+            trigger: o.trigger,
+            response: o.response,
+          }))
+        : [];
+
       const r = await run({
         data: {
           prospect,
           mode,
           agentName: agent?.name ?? null,
           industry: agent?.industry ?? null,
-          systemPrompt: agent?.system_prompt ? String(agent.system_prompt).slice(0, 4000) : null,
-          library: await fetchObjectionLibrary(wsId),
+          systemPrompt: String(profilePrompt ?? agent?.system_prompt ?? "").slice(0, 4000) || null,
+          library: [...profileLines, ...(await fetchObjectionLibrary(wsId))],
         },
       });
+
       const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
       if (prof?.active_workspace_id) {
         await supabase.from("practice_sessions").insert({
@@ -193,14 +220,31 @@ function PracticePage() {
               ))}
             </SelectContent>
           </Select>
-          {agent && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs text-[#6B6B76]">
-              <Bot className="h-3.5 w-3.5 text-[#CC0000]" />
-              {agent.system_prompt
-                ? "Using this agent's system prompt and industry knowledge."
-                : "This agent has no system prompt yet — add one for sharper drills."}
-            </p>
-          )}
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#6B6B76]">
+            <Bot className="h-3.5 w-3.5 text-[#CC0000]" />
+            {resolved?.ok ? (
+              <>
+                <span>
+                  Drilling On <strong className="text-[#111114]">{resolved.profileName}</strong> ·{" "}
+                  {resolved.matchedLabel}
+                </span>
+                {resolved.isPlatformDefault && (
+                  <Badge variant="secondary" className="rounded-full">
+                    Platform Default
+                  </Badge>
+                )}
+                <Badge variant="outline" className="rounded-full">
+                  {resolved.objections.length} Approved Lines
+                </Badge>
+              </>
+            ) : (
+              <span>
+                No Closer Profile Matched — Drilling On{" "}
+                {agent?.system_prompt ? "This Agent's Prompt." : "The Generic Closer."}
+              </span>
+            )}
+          </div>
+
 
           <div className="mt-5">
             <Label>Mode</Label>
