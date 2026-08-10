@@ -10,11 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
-import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone, Copy } from "lucide-react";
+import { Save, Trash2, Sparkles, Wand2, RefreshCw, Scissors, Megaphone, Copy, History, RotateCcw } from "lucide-react";
 import { VoicePicker } from "@/components/back-office/VoicePicker";
 import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
 
 import { helpSystemPrompt } from "@/lib/agents.functions";
+import { listPromptVersions, recordPromptVersion, revertPromptVersion } from "@/lib/prompt-versions.functions";
 import { useServerFn } from "@tanstack/react-start";
 
 type Agent = {
