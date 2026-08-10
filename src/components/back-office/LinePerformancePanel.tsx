@@ -36,7 +36,10 @@ export function LinePerformancePanel({
         data: { profileId: target, trigger: row.objection, response: row.topLine },
       });
     },
-    onSuccess: () => toast.success("Line Promoted Into Profile."),
+    onSuccess: (_r, row) => {
+      toast.success("Line Promoted Into Profile.");
+      void logActivity("line.promoted", { trigger: row.objection, profile_id: target });
+    },
     onError: (e: any) => toast.error(e?.message ?? "Could not promote that line."),
   });
 
