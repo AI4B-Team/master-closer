@@ -48,14 +48,15 @@ export function AccountShell({ current, children }: { current: string; children:
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <nav aria-label="Account" className="lg:sticky lg:top-6">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <nav aria-label="Account" className="min-w-0 lg:sticky lg:top-6">
         <div className="mb-4 hidden text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:block">
           Account &amp; Workspace
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+        <div className="flex min-w-0 gap-4 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
           {GROUPS.map((g) => (
-            <div key={g.label} className="min-w-0">
+            <div key={g.label} className="min-w-0 shrink-0 lg:shrink">
+
               <div className="mb-1.5 hidden px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70 lg:block">
                 {g.label}
               </div>
