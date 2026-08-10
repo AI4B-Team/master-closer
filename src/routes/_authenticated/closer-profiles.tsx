@@ -16,6 +16,8 @@ import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import { ObjectionReviewQueue } from "@/components/back-office/ObjectionReviewQueue";
 import { LinePerformancePanel } from "@/components/back-office/LinePerformancePanel";
+import { ProfileHistory } from "@/components/back-office/ProfileHistory";
+
 
 import {
   Plus, Copy, Eye, Trash2, Save, Sparkles, Link2, Layers, ShieldAlert, X,
@@ -552,6 +554,11 @@ function CloserProfilesPage() {
                 </div>
                 <Switch checked={editing.is_default} onCheckedChange={(v) => setEditing({ ...editing, is_default: v })} />
               </div>
+
+              {editing.id ? (
+                <ProfileHistory profileId={editing.id} onRestored={() => setEditing(null)} />
+              ) : null}
+
             </div>
           ) : null}
 
