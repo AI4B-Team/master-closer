@@ -882,6 +882,57 @@ export type Database = {
           },
         ]
       }
+      closer_profile_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          profile_id: string
+          snapshot: Json
+          source: string
+          version: number
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          profile_id: string
+          snapshot: Json
+          source?: string
+          version: number
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          profile_id?: string
+          snapshot?: Json
+          source?: string
+          version?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closer_profile_versions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "closer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closer_profile_versions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       closer_profiles: {
         Row: {
           banned_topics: string[]
