@@ -102,7 +102,19 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: PauseCircle, label: "Intelligence Agents Paused", detail: "" };
     case "agent.resumed_all":
       return { kind, icon: Bot, label: "Intelligence Agents Resumed", detail: "" };
+    case "agent.proposals_bulk_reviewed":
+      return {
+        kind,
+        icon: Check,
+        label: "Proposals Reviewed In Bulk",
+        detail: join(
+          humanize(String(p.decision ?? "")),
+          `${p.applied ?? 0} Applied`,
+          Number(p.skipped ?? 0) > 0 ? `${p.skipped} Skipped` : "",
+        ),
+      };
     case "agent.proposal_approved":
+
       return {
         kind,
         icon: Check,
