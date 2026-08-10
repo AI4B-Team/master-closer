@@ -51,7 +51,7 @@ describe("quiet hours run on the prospect's clock", () => {
     });
     expect(v.allowed).toBe(false);
     expect(v.reason).toBe("before_window");
-    expect(v.message).toContain("09:00 AM");
+    expect(v.message).toContain("9:00 AM");
   });
 
   it("does not let the caller's location change the verdict", () => {
