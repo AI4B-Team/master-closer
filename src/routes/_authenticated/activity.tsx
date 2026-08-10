@@ -33,6 +33,10 @@ export const Route = createFileRoute("/_authenticated/activity")({
   component: ActivityPage,
 });
 
+// Change-control events: closer copy, objection libraries and compliance settings.
+const GOVERNANCE_PREFIXES: string[] = ["prompt.", "profile.", "objection.", "line.", "disclosure.", "agent."];
+const GOVERNANCE_KINDS: string[] = ["lead.flagged_dnc", "lead.released_dnc"];
+
 const RANGES = [
   { key: "7", label: "Last 7 Days", days: 7 },
   { key: "30", label: "Last 30 Days", days: 30 },
