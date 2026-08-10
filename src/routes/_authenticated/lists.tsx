@@ -375,65 +375,67 @@ function ListsPage() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                    <th className="py-2">Name</th><th className="py-2">Phone</th>
-                    <th className="py-2">Email</th><th className="py-2">Attempts</th>
-                    <th className="py-2">Last Outcome</th><th className="py-2">Consent</th>
-                    <th className="py-2 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contacts.length === 0 ? (
-                    <tr><td colSpan={7} className="py-6 text-center text-[#6B6B76]">No Contacts Match That Search.</td></tr>
-                  ) : contacts.map((c: any) => {
-                    const onDnc = dncSet.has(digits(c.phone));
-                    return (
-                      <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
-                        <td className="py-3 font-medium">{c.name}</td>
-                        <td className="py-3 font-mono text-xs">
-                          {formatPhone(c.phone)}
-                          {onDnc ? <span className="ml-2 align-middle"><StatusPill label="DNC" tone="red" /></span> : null}
-                        </td>
-                        <td className="py-3 text-[#6B6B76]">{c.email ?? "—"}</td>
-                        <td className="py-3 font-mono">{c.attempts}</td>
-                        <td className="py-3">
-                          {c.last_outcome
-                            ? <StatusPill label={titleCase(c.last_outcome)} tone={toneForStatus(c.last_outcome)} />
-                            : <span className="text-[#6B6B76]">—</span>}
-                        </td>
-                        <td className="py-3 capitalize text-[#6B6B76]">{c.consent?.replace("_", " ")}</td>
-                        <td className="py-3">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="rounded-lg"
-                              title="Add To Do Not Call"
-                              disabled={onDnc || addToDnc.isPending}
-                              onClick={() => addToDnc.mutate(c)}
-                            >
-                              <ShieldOff className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="rounded-lg text-[#CC0000]"
-                              title="Remove Contact"
-                              onClick={() => { if (confirm(`Remove ${c.name} from this list?`)) deleteContact.mutate(c.id); }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="mc-tablewrap">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                      <th className="py-2">Name</th><th className="py-2">Phone</th>
+                      <th className="py-2">Email</th><th className="py-2">Attempts</th>
+                      <th className="py-2">Last Outcome</th><th className="py-2">Consent</th>
+                      <th className="py-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.length === 0 ? (
+                      <tr><td colSpan={7} className="py-6 text-center text-[#6B6B76]">No Contacts Match That Search.</td></tr>
+                    ) : contacts.map((c: any) => {
+                      const onDnc = dncSet.has(digits(c.phone));
+                      return (
+                        <tr key={c.id} className="border-b border-[#E7E7EC] last:border-0 hover:bg-[#F4F4F6]/50">
+                          <td className="py-3 font-medium">{c.name}</td>
+                          <td className="py-3 font-mono text-xs">
+                            {formatPhone(c.phone)}
+                            {onDnc ? <span className="ml-2 align-middle"><StatusPill label="DNC" tone="red" /></span> : null}
+                          </td>
+                          <td className="py-3 text-[#6B6B76]">{c.email ?? "—"}</td>
+                          <td className="py-3 font-mono">{c.attempts}</td>
+                          <td className="py-3">
+                            {c.last_outcome
+                              ? <StatusPill label={titleCase(c.last_outcome)} tone={toneForStatus(c.last_outcome)} />
+                              : <span className="text-[#6B6B76]">—</span>}
+                          </td>
+                          <td className="py-3 capitalize text-[#6B6B76]">{c.consent?.replace("_", " ")}</td>
+                          <td className="py-3">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="rounded-lg"
+                                title="Add To Do Not Call"
+                                disabled={onDnc || addToDnc.isPending}
+                                onClick={() => addToDnc.mutate(c)}
+                              >
+                                <ShieldOff className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="rounded-lg text-[#CC0000]"
+                                title="Remove Contact"
+                                onClick={() => { if (confirm(`Remove ${c.name} from this list?`)) deleteContact.mutate(c.id); }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
 

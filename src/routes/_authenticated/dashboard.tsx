@@ -169,42 +169,44 @@ function Dashboard() {
           action={<Link to="/pipeline" search={{ deal: undefined }} className="card-link">View All</Link>}
         >
           {recentDeals && recentDeals.length > 0 ? (
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>{t("Deal")}</th>
-                  <th>{t("Updated")}</th>
-                  <th>{t("Stage")}</th>
-                  <th>{t("Value")}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {recentDeals.map((d) => (
-                  <tr key={d.id}>
-                    <td>
-                      <div className="cell-name">
-                        <Avatar name={d.title ?? "Deal"} />
-                        <span>{d.title}</span>
-                      </div>
-                    </td>
-                    <td className="muted font-num">
-                      {new Date(d.updated_at as string).toLocaleDateString()}
-                    </td>
-                    <td>
-                      <StatusPill label={titleCase(d.stage)} tone={toneForStatus(d.stage)} />
-                    </td>
-                    <td className="font-num">${Number(d.value ?? 0).toLocaleString()}</td>
-                    <td>
-                      <div className="row-acts">
-                        <Link to="/dialer" aria-label="Call In Dialer" title="Call In Dialer"><Phone size={15} /></Link>
-                        <Link to="/pipeline" search={{ deal: d.id }} aria-label="View Deal" title="View Deal"><Eye size={15} /></Link>
-                      </div>
-                    </td>
+            <div className="mc-tablewrap">
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>{t("Deal")}</th>
+                    <th>{t("Updated")}</th>
+                    <th>{t("Stage")}</th>
+                    <th>{t("Value")}</th>
+                    <th />
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {recentDeals.map((d) => (
+                    <tr key={d.id}>
+                      <td>
+                        <div className="cell-name">
+                          <Avatar name={d.title ?? "Deal"} />
+                          <span>{d.title}</span>
+                        </div>
+                      </td>
+                      <td className="muted font-num">
+                        {new Date(d.updated_at as string).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <StatusPill label={titleCase(d.stage)} tone={toneForStatus(d.stage)} />
+                      </td>
+                      <td className="font-num">${Number(d.value ?? 0).toLocaleString()}</td>
+                      <td>
+                        <div className="row-acts">
+                          <Link to="/dialer" aria-label="Call In Dialer" title="Call In Dialer"><Phone size={15} /></Link>
+                          <Link to="/pipeline" search={{ deal: d.id }} aria-label="View Deal" title="View Deal"><Eye size={15} /></Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <EmptyState icon={DollarSign} title="No Deals Yet" hint="Deals will appear here as your team closes." />
           )}
