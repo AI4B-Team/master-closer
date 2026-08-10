@@ -15,7 +15,7 @@ import {
 
 import { toast } from "sonner";
 import {
-  listAgents, setAgentMode, pauseAllAgents, runAgentNow, listProposals, reviewProposal,
+  listAgents, setAgentMode, pauseAllAgents, runAgentNow, listProposals, reviewProposal, reviewProposalsBulk,
   listWorklist, sendWorklistFeedback, undoWorklistFeedback, conversationsReport,
 } from "@/lib/governance.functions";
 
