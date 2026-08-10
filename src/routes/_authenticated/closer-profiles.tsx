@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import {
-  Plus, Copy, Eye, Trash2, Save, ShieldCheck, Sparkles, Link2, Layers, ShieldAlert, X,
+  Plus, Copy, Eye, Trash2, Save, Sparkles, Link2, Layers, ShieldAlert, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -171,8 +171,8 @@ function CloserProfilesPage() {
   const [trainBaseline, setTrainBaseline] = useState<Row | null>(null);
 
   const q = useQuery({ queryKey: ["closer-profiles"], queryFn: () => fetchAll({}) });
-  const mine = (q.data?.profiles ?? []) as Row[];
-  const platform = (q.data?.platform ?? []) as Row[];
+  const mine = (q.data?.profiles ?? []) as unknown as Row[];
+  const platform = (q.data?.platform ?? []) as unknown as Row[];
 
   const grouped = useMemo(() => {
     const keys = industryFilter === "all" ? INDUSTRIES.map((i) => i.key) : [industryFilter as Industry];
@@ -282,7 +282,7 @@ function CloserProfilesPage() {
         }
       />
 
-      <Panel title="Always On" icon={ShieldCheck} className="mb-4">
+      <Panel title="Always On" className="mb-4">
         <p className="text-sm text-[#6B6B76]">
           Platform guardrails, the handoff patterns and the banned-output filter run on every call and cannot be
           relaxed by a profile. A profile's escalation triggers and never-discuss topics are additive only — they can
@@ -335,7 +335,7 @@ function CloserProfilesPage() {
       ) : (
         <div className="space-y-4">
           {grouped.map((group) => (
-            <Panel key={group.key} title={industryLabel(group.key)} icon={Layers}>
+            <Panel key={group.key} title={industryLabel(group.key)}>
               <div className="space-y-2">
                 {[...group.workspace, ...group.platform].length === 0 ? (
                   <p className="text-sm text-[#6B6B76]">Nothing configured for this industry yet.</p>
@@ -347,7 +347,7 @@ function CloserProfilesPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-[#111114] truncate">{p.name}</span>
                         <StatusPill label={sourceLabel(p.source)} tone="neutral" />
-                        {p.is_default ? <StatusPill label="Workspace Default" tone="good" /> : null}
+                        {p.is_default ? <StatusPill label="Workspace Default" tone="green" /> : null}
                       </div>
                       <p className="mt-1 text-xs text-[#6B6B76] line-clamp-2">{p.opener}</p>
                     </div>
@@ -393,7 +393,7 @@ function CloserProfilesPage() {
             </Panel>
           ))}
           {grouped.length === 0 ? (
-            <EmptyPanel title="Profiles" icon={Layers} emptyTitle="No Profiles" hint="Create a profile to get started." />
+            <EmptyPanel icon={Layers} title="No Profiles" hint="Create a profile to get started." />
           ) : null}
         </div>
       )}
