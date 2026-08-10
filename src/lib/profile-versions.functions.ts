@@ -75,7 +75,7 @@ export const restoreProfileVersion = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("closer_profiles")
-      .update(snapshot)
+      .update(snapshot as never)
       .eq("id", version.profile_id)
       .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
