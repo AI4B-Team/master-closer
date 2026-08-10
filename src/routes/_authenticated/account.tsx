@@ -265,7 +265,7 @@ function AccountPage() {
           }
         >
           <TabsContent value="profile" className="mt-0">
-            <div className="grid items-start gap-6 lg:grid-cols-[1fr_320px]">
+            <div className="grid items-start gap-6 xl:grid-cols-[1fr_minmax(0,320px)]">
               <div className="space-y-6">
                 <Card>
                   <CardHeader><CardTitle className="font-display text-base">Profile</CardTitle></CardHeader>
@@ -338,7 +338,7 @@ function AccountPage() {
           </TabsContent>
 
           <TabsContent value="notifications" className="mt-0">
-            <div className="grid items-start gap-6 lg:grid-cols-[1fr_320px]">
+            <div className="grid items-start gap-6 xl:grid-cols-[1fr_minmax(0,320px)]">
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -370,7 +370,7 @@ function AccountPage() {
           </TabsContent>
 
           <TabsContent value="security" className="mt-0">
-            <div className="grid items-start gap-6 lg:grid-cols-[1fr_320px]">
+            <div className="grid items-start gap-6 xl:grid-cols-[1fr_minmax(0,320px)]">
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
