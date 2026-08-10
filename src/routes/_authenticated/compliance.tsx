@@ -86,6 +86,7 @@ function CompliancePage() {
     },
     onSuccess: () => {
       toast.success("Disclosure Saved.");
+      void logActivity("disclosure.updated", { jurisdiction: jurisdiction.toUpperCase() });
       qc.invalidateQueries({ queryKey: ["disclosure_settings"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -399,8 +400,9 @@ function DncRegistry() {
       const { error } = await supabase.from("dnc_list").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_d, id) => {
       toast.success("Number released from Do Not Call.");
+      void logActivity("lead.released_dnc", { entry_id: id });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
     },
     onError: (e: any) => toast.error(e.message),

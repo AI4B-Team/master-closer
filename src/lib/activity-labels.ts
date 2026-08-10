@@ -87,6 +87,10 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: Check, label: "Objection Reopened", detail: join(p.trigger) };
     case "line.promoted":
       return { kind, icon: BarChart3, label: "Line Promoted Into Profile", detail: join(p.trigger) };
+    case "lead.released_dnc":
+      return { kind, icon: Check, label: "Released From Do Not Call", detail: join(p.phone) };
+    case "disclosure.updated":
+      return { kind, icon: History, label: "Disclosure Settings Updated", detail: join(p.jurisdiction) };
 
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
@@ -104,6 +108,7 @@ export function eventHref(e: EventRow): string | null {
   if (kind.startsWith("deal.")) return p.deal_id ? `/pipeline?deal=${p.deal_id}` : "/pipeline";
   if (kind === "leads.new" && p.lead_id) return `/leads?lead=${p.lead_id}`;
   if (kind.startsWith("leads.")) return "/leads";
+  if (kind === "lead.released_dnc" || kind.startsWith("disclosure.")) return "/compliance";
   if (kind === "lead.flagged_dnc") return "/lists";
   if (kind.startsWith("lead.")) return p.lead_id ? `/leads?lead=${p.lead_id}` : "/leads";
   if (kind === "report.digest") return "/team";
