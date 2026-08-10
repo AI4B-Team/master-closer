@@ -10,6 +10,7 @@ import {
 import { linePerformance, promoteLineToProfile } from "@/lib/line-performance.functions";
 import { BarChart3, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
 
 const RANGES = [7, 30, 90] as const;
 
@@ -35,7 +36,10 @@ export function LinePerformancePanel({
         data: { profileId: target, trigger: row.objection, response: row.topLine },
       });
     },
-    onSuccess: () => toast.success("Line Promoted Into Profile."),
+    onSuccess: (_r, row) => {
+      toast.success("Line Promoted Into Profile.");
+      void logActivity("line.promoted", { trigger: row.objection, profile_id: target });
+    },
     onError: (e: any) => toast.error(e?.message ?? "Could not promote that line."),
   });
 

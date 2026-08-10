@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import { Check, Inbox, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
 import {
   listObjectionCandidates,
   reviewObjectionCandidate,
@@ -63,6 +64,10 @@ export function ObjectionReviewQueue({ profiles }: { profiles: ProfileOption[] }
           : v.action === "dismiss"
             ? "Dismissed."
             : "Back in the queue.",
+      );
+      void logActivity(
+        v.action === "approve" ? "objection.approved" : v.action === "dismiss" ? "objection.dismissed" : "objection.reopened",
+        { trigger: v.trigger ?? "", candidate_id: v.id },
       );
       qc.invalidateQueries({ queryKey: ["objection-candidates"] });
       qc.invalidateQueries({ queryKey: ["closer-profiles"] });
