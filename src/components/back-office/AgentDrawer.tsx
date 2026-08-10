@@ -379,6 +379,7 @@ function PromptHistory({ agentId }: { agentId: string }) {
     mutationFn: (versionId: string) => revertFn({ data: { versionId } }),
     onSuccess: (r: any) => {
       toast.success(`Prompt restored from version ${r.restoredFrom}.`);
+      void logActivity("prompt.restored", { agent_id: agentId, version: r.restoredFrom });
       qc.invalidateQueries({ queryKey: ["agents"] });
       qc.invalidateQueries({ queryKey: ["prompt-versions"] });
     },
