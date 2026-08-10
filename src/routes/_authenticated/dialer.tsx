@@ -7,7 +7,7 @@ import { CallBanner, type CallMode } from "@/components/back-office/CallBanner";
 import { LiveAssistPanel, type AssistLine } from "@/components/back-office/LiveAssistPanel";
 import { EmptyState, Panel, StatusPill } from "@/components/back-office/ui";
 import {
-  AudioLines, Ban, Check, CreditCard, Megaphone, PhoneOff, PhoneOutgoing, SkipForward,
+  AudioLines, Ban, CalendarClock, Check, Clock, CreditCard, Megaphone, PhoneOff, PhoneOutgoing, SkipForward,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { setCallStatus } from "@/hooks/use-call-status";
@@ -26,6 +26,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { fetchObjectionLibrary } from "@/lib/objections";
+import { useCallingWindow } from "@/hooks/use-calling-window";
+import { nextOpenAt, timezoneLabel } from "@/lib/calling-window";
 
 
 
@@ -480,6 +482,34 @@ function DialerPage() {
 
 
 
+  /* Quiet hours are judged on the prospect's clock, never the caller's. */
+  const { window: callWindow, verdictFor } = useCallingWindow();
+  const windowVerdict = phone ? verdictFor({ phone }) : null;
+  const windowBlocked = !!windowVerdict && !windowVerdict.allowed && callWindow.enforce;
+
+  const scheduleOutsideWindow = async () => {
+    if (!windowVerdict) return;
+    const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+    if (!prof?.active_workspace_id) return;
+    const due = nextOpenAt({
+      lead: { phone },
+      window: callWindow,
+      workspaceDefaultTimezone: callWindow.default_timezone,
+    });
+    const { error } = await supabase.from("tasks").insert({
+      org_id: prof.org_id,
+      workspace_id: prof.active_workspace_id,
+      title: `Call ${contact?.name ?? phone} — outside calling window`,
+      due_at: due.toISOString(),
+      priority: "normal",
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Scheduled for the next open time in this lead's timezone.");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    }
+  };
+
   const required = isDisclosureRequired(jurisdiction);
   const blocked = mode === "copilot" && shouldBlockLiveSurface(jurisdiction, delivered);
 
@@ -496,6 +526,22 @@ function DialerPage() {
         const { data: dncRows } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
         const blocked = (dncRows ?? []).some((d: any) => (d.phone ?? "").replace(/\D/g, "") === target);
         if (blocked) throw new Error("This Number Is On The Do Not Call List.");
+      }
+
+      // Hard stop: quiet hours in the prospect's local time, logged either way.
+      const verdict = verdictFor({ phone });
+      if (!verdict.allowed) {
+        await supabase.from("calling_window_blocks").insert({
+          workspace_id: prof.active_workspace_id,
+          lead_id: null,
+          phone: phone || null,
+          lead_timezone: verdict.timezone,
+          timezone_source: verdict.timezoneSource,
+          local_time: verdict.localTime,
+          reason: verdict.reason,
+        });
+        if (callWindow.enforce) throw new Error(verdict.message);
+        toast.warning(verdict.message);
       }
 
 
@@ -962,6 +1008,26 @@ function DialerPage() {
 
                 </div>
                 <div className="lead-field">
+                  <span className="lead-k">Calling Window</span>
+                  <span
+                    className="font-num"
+                    style={{ fontSize: 13, color: windowVerdict && !windowVerdict.allowed ? "var(--signal)" : "var(--ink)" }}
+                  >
+                    <Clock size={13} style={{ display: "inline", marginRight: 6, verticalAlign: -2 }} />
+                    {windowVerdict
+                      ? `${windowVerdict.localTime} ${timezoneLabel(windowVerdict.timezone)}`
+                      : "Enter a number"}
+                  </span>
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {windowVerdict
+                      ? windowVerdict.message +
+                        (windowVerdict.timezoneSource === "workspace_default"
+                          ? " Timezone unknown for this number — using your default."
+                          : "")
+                      : "Quiet hours are checked in the prospect's local time."}
+                  </span>
+                </div>
+                <div className="lead-field">
                   <span className="lead-k">Simulation</span>
                   <div className="tabs" style={{ padding: 3, gap: 3 }}>
                     <button
@@ -991,10 +1057,21 @@ function DialerPage() {
               </div>
 
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <button type="button" className="btn-primary" onClick={startCall} disabled={busy}>
+                <button type="button" className="btn-primary" onClick={startCall} disabled={busy || windowBlocked}>
                   <PhoneOutgoing size={15} strokeWidth={2.2} />{" "}
-                  {dialing ? "Dialing…" : simulate ? "Start Simulated Call" : "Start Call"}
+                  {dialing
+                    ? "Dialing…"
+                    : windowBlocked
+                      ? "Outside Calling Window"
+                      : simulate
+                        ? "Start Simulated Call"
+                        : "Start Call"}
                 </button>
+                {windowBlocked && (
+                  <button type="button" className="tab" onClick={scheduleOutsideWindow}>
+                    <CalendarClock size={13} style={{ display: "inline", marginRight: 6 }} /> Schedule For Next Open Time
+                  </button>
+                )}
                 {campaign && contact && (
                   <button type="button" className="tab" onClick={() => loadNext(campaignId)}>
                     <SkipForward size={13} style={{ display: "inline", marginRight: 6 }} /> Skip Contact
