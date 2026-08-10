@@ -28,9 +28,7 @@ export function LinePerformancePanel() {
   return (
     <Panel
       title="Line Performance"
-      description="How each objection answer performs on live calls."
-      icon={BarChart3}
-      actions={
+      action={
         <div className="flex items-center gap-1">
           {RANGES.map((r) => (
             <Button
@@ -47,6 +45,10 @@ export function LinePerformancePanel() {
         </div>
       }
     >
+      <p className="mb-4 text-sm text-[#6B6B76]">
+        How Each Objection Answer Performs On Live Calls.
+      </p>
+
       {isLoading ? (
         <SkeletonRows rows={4} />
       ) : rows.length === 0 ? (
