@@ -259,11 +259,25 @@ export const sendWorklistFeedback = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { workspaceId } = await callerScope(context.supabase, context.userId);
+
+    /* Nominations are rebuilt from scratch every Scout run, so the feedback row
+       carries its own subject ids — that is what lets Scout stop re-nominating
+       someone a human already waved off. */
+    const { data: nom } = await context.supabase
+      .from("worklist_nominations")
+      .select("contact_id, lead_line_id, lead_id")
+      .eq("id", data.nomination_id)
+      .eq("workspace_id", workspaceId)
+      .maybeSingle();
+
     const { data: row, error } = await context.supabase
       .from("worklist_feedback")
       .insert({
         workspace_id: workspaceId,
         nomination_id: data.nomination_id,
+        contact_id: nom?.contact_id ?? null,
+        lead_line_id: nom?.lead_line_id ?? null,
+        lead_id: nom?.lead_id ?? null,
         action: data.action,
         score_at_action: data.score ?? null,
         user_id: context.userId,
