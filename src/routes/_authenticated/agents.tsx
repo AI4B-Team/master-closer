@@ -477,7 +477,10 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
                     <td>{p.agent_key}</td>
                     <td>{p.proposal_type.replace(/_/g, " ")}</td>
                     <td>
-                      <StatusPill label={p.status === "approved" ? "Approved" : "Rejected"} tone={p.status === "approved" ? "green" : "red"} />
+                      <StatusPill
+                        label={p.status === "approved" ? "Approved" : p.status === "expired" ? "Expired" : "Rejected"}
+                        tone={p.status === "approved" ? "green" : p.status === "expired" ? "neutral" : "red"}
+                      />
                     </td>
                     <td>{timeAgo(p.reviewed_at)}</td>
                     <td className="muted">{p.review_note ?? "—"}</td>
