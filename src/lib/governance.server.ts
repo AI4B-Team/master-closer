@@ -1,4 +1,4 @@
-// Background agents, learning & governance (server-only).
+// Intelligence agents, learning & governance (server-only).
 // Every agent is read-only unless its mode is 'active', and every behaviour
 // change leaves the agent as a proposal a human approves.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";

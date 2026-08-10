@@ -1040,7 +1040,7 @@
 .pm-sub-opt.on { color: var(--ink); font-weight: 600; }
 .pm-sub-opt svg { margin-left: auto; color: var(--signal); }
 
-/* Background agents: mode segmented control + evidence blocks */
+/* Intelligence agents: mode segmented control + evidence blocks */
 .segmented {
   display: inline-flex;
   border: 1px solid var(--bo-border, #E5E5EA);

@@ -95,7 +95,7 @@ export function useLiveWorkspace(extraKeys: string[] = []) {
         bump();
         const row = payload.new as any;
         toast("Agent Proposal Waiting", {
-          description: row?.title || row?.target_field || "A background agent drafted a change for review.",
+          description: row?.title || row?.target_field || "An intelligence agent drafted a change for review.",
         });
       })
       .on("postgres_changes", scope("agreements"), (payload) => {
