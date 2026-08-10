@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Cron entry point for the background-agent scheduler. The built-in database
+ * Cron entry point for the intelligence-agent scheduler. The built-in database
  * scheduler POSTs here every 5 minutes; each agent still only runs when its own
  * cadence is due.
  */

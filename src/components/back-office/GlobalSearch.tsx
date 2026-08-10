@@ -126,7 +126,7 @@ async function runSearch(raw: string, scope: SearchScope, wsId: string): Promise
         kind: "Agent",
         id: a.id,
         title: a.agent_key.replace(/_/g, " ").replace(/\b\w/g, (m: string) => m.toUpperCase()),
-        sub: `Background Agent · ${a.enabled ? a.mode.replace("_", " ") : "off"}`,
+        sub: `Intelligence Agent · ${a.enabled ? a.mode.replace("_", " ") : "off"}`,
         to: "/agents",
         params: { view: "registry" },
       });
