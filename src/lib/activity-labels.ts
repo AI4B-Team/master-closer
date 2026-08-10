@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  Check,
 
   DollarSign,
   FileSignature,
