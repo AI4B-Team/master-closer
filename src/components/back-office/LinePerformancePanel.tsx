@@ -10,6 +10,7 @@ import {
 import { linePerformance, promoteLineToProfile } from "@/lib/line-performance.functions";
 import { BarChart3, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
+import { logActivity } from "@/lib/activity";
 
 const RANGES = [7, 30, 90] as const;
 
