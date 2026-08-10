@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { History, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { listProfileVersions, restoreProfileVersion } from "@/lib/profile-versions.functions";
+import { logActivity } from "@/lib/activity";
 
 const SOURCE_LABEL: Record<string, string> = {
   manual: "Saved By A Human",
@@ -37,6 +38,7 @@ export function ProfileHistory({
     mutationFn: (versionId: string) => restoreFn({ data: { versionId } }),
     onSuccess: (r: any) => {
       toast.success(`Profile restored from version ${r.restoredFrom}.`);
+      void logActivity("profile.restored", { profile_id: profileId, version: r.restoredFrom });
       qc.invalidateQueries({ queryKey: ["closer-profiles"] });
       qc.invalidateQueries({ queryKey: ["closer-profile-versions"] });
       onRestored?.();

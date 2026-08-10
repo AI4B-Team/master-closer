@@ -17,6 +17,7 @@ import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
 import { helpSystemPrompt } from "@/lib/agents.functions";
 import { listPromptVersions, recordPromptVersion, revertPromptVersion } from "@/lib/prompt-versions.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { logActivity } from "@/lib/activity";
 
 type Agent = {
   id: string;
@@ -125,6 +126,7 @@ export function AgentDrawer({
     },
     onSuccess: () => {
       toast.success("Closer updated.");
+      void logActivity("prompt.updated", { agent_id: agent!.id, name: form.name ?? "" });
       qc.invalidateQueries({ queryKey: ["agents"] });
       qc.invalidateQueries({ queryKey: ["prompt-versions"] });
       onOpenChange(false);
@@ -377,6 +379,7 @@ function PromptHistory({ agentId }: { agentId: string }) {
     mutationFn: (versionId: string) => revertFn({ data: { versionId } }),
     onSuccess: (r: any) => {
       toast.success(`Prompt restored from version ${r.restoredFrom}.`);
+      void logActivity("prompt.restored", { agent_id: agentId, version: r.restoredFrom });
       qc.invalidateQueries({ queryKey: ["agents"] });
       qc.invalidateQueries({ queryKey: ["prompt-versions"] });
     },

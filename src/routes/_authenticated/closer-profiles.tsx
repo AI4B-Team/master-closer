@@ -17,6 +17,7 @@ import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-o
 import { ObjectionReviewQueue } from "@/components/back-office/ObjectionReviewQueue";
 import { LinePerformancePanel } from "@/components/back-office/LinePerformancePanel";
 import { ProfileHistory } from "@/components/back-office/ProfileHistory";
+import { logActivity } from "@/lib/activity";
 
 
 import {
@@ -210,8 +211,9 @@ function CloserProfilesPage() {
           dispositions: draft.dispositions,
         },
       }),
-    onSuccess: () => {
+    onSuccess: (_r, draft) => {
       toast.success("Closer profile saved.");
+      void logActivity("profile.updated", { name: draft.name, industry: draft.industry });
       setEditing(null);
       qc.invalidateQueries({ queryKey: ["closer-profiles"] });
     },
