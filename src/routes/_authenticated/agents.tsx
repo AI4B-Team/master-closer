@@ -360,19 +360,39 @@ const NEEDS_ATTESTATION = new Set(["profile_copy", "objection_response"]);
 function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] }) {
   const qc = useQueryClient();
   const reviewFn = useServerFn(reviewProposal);
+  const bulkFn = useServerFn(reviewProposalsBulk);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [attested, setAttested] = useState<Record<string, boolean>>({});
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [bulkAttested, setBulkAttested] = useState(false);
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["bg-proposals"] });
+    qc.invalidateQueries({ queryKey: ["bg-agents"] });
+  };
 
   const review = useMutation({
     mutationFn: (v: { id: string; decision: "approved" | "rejected"; note?: string; attested?: boolean }) =>
       reviewFn({ data: v }),
     onSuccess: () => {
       toast.success("Proposal Reviewed");
-      qc.invalidateQueries({ queryKey: ["bg-proposals"] });
-      qc.invalidateQueries({ queryKey: ["bg-agents"] });
+      refresh();
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const bulk = useMutation({
+    mutationFn: (v: { ids: string[]; decision: "approved" | "rejected"; attested?: boolean }) => bulkFn({ data: v }),
+    onSuccess: (res: any) => {
+      if (res.applied) toast.success(`${res.applied} Proposal${res.applied === 1 ? "" : "s"} Reviewed`);
+      if (res.failures?.length) toast.error(`${res.failures.length} Skipped — ${res.failures[0].reason}`);
+      setSelected({});
+      setBulkAttested(false);
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   if (loading) return <Panel title="Proposal Inbox"><SkeletonRows rows={5} /></Panel>;
 
