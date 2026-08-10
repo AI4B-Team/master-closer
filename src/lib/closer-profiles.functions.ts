@@ -62,6 +62,9 @@ export const saveCloserProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => ProfileInput.parse(data))
   .handler(async ({ data, context }) => {
+    const { appendProfileVersion, PROFILE_SNAPSHOT_SELECT, toSnapshot } = await import(
+      "./profile-versions.server"
+    );
     const workspaceId = await activeWorkspace(context.supabase, context.userId);
     const row = {
       workspace_id: workspaceId,
@@ -88,12 +91,39 @@ export const saveCloserProfile = createServerFn({ method: "POST" })
     }
 
     if (data.id) {
+      // Snapshot the copy being replaced first, so an edit is always reversible.
+      const { data: before } = await context.supabase
+        .from("closer_profiles")
+        .select(PROFILE_SNAPSHOT_SELECT)
+        .eq("id", data.id)
+        .eq("workspace_id", workspaceId)
+        .maybeSingle();
+      if (before) {
+        await appendProfileVersion(context.supabase, {
+          workspaceId,
+          profileId: data.id,
+          snapshot: toSnapshot(before),
+          source: "seed",
+          note: "Copy in use before this edit.",
+          userId: context.userId,
+        });
+      }
+
       const { error } = await context.supabase
         .from("closer_profiles")
         .update(row)
         .eq("id", data.id)
         .eq("workspace_id", workspaceId);
       if (error) throw new Error(error.message);
+
+      await appendProfileVersion(context.supabase, {
+        workspaceId,
+        profileId: data.id,
+        snapshot: toSnapshot(row),
+        source: "manual",
+        note: "Saved from the Closer Profiles editor.",
+        userId: context.userId,
+      });
       return { id: data.id };
     }
 
@@ -108,8 +138,19 @@ export const saveCloserProfile = createServerFn({ method: "POST" })
       }
       throw new Error(error.message);
     }
+    if (inserted?.id) {
+      await appendProfileVersion(context.supabase, {
+        workspaceId,
+        profileId: inserted.id,
+        snapshot: toSnapshot(row),
+        source: "manual",
+        note: "Profile created.",
+        userId: context.userId,
+      });
+    }
     return { id: inserted?.id as string };
   });
+
 
 export const deleteCloserProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
