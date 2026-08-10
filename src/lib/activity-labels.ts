@@ -87,6 +87,10 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: Check, label: "Objection Reopened", detail: join(p.trigger) };
     case "line.promoted":
       return { kind, icon: BarChart3, label: "Line Promoted Into Profile", detail: join(p.trigger) };
+    case "lead.released_dnc":
+      return { kind, icon: Check, label: "Released From Do Not Call", detail: join(p.phone) };
+    case "disclosure.updated":
+      return { kind, icon: History, label: "Disclosure Settings Updated", detail: join(p.jurisdiction) };
 
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
