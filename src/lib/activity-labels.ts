@@ -148,7 +148,8 @@ export function eventHref(e: EventRow): string | null {
   if (kind === "report.digest") return "/team";
   if (kind.startsWith("campaign.")) return "/campaigns";
 
-  if (kind.startsWith("agent.")) return "/ai-closers";
+  if (kind.startsWith("agent.proposal")) return "/agents?tab=proposals";
+  if (kind.startsWith("agent.")) return "/agents";
   if (kind.startsWith("prompt.")) return "/ai-closers";
   if (kind.startsWith("profile.")) return "/closer-profiles";
   if (kind.startsWith("objection.") || kind.startsWith("line.")) return "/closer-profiles";
