@@ -409,7 +409,7 @@ function CallDetail({ call }: { call: any }) {
     <div className="mt-5 space-y-5">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Mode" value={MODE_LABEL[call.mode] ?? call.mode} />
-        <Stat label="Outcome" value={String(call.outcome).replace(/_/g, " ")} />
+        <Stat label="Outcome" value={prettyOutcome(call.disposition ?? call.outcome)} />
         <Stat label="Duration" value={fmtDur(call.duration_sec)} />
         <Stat label="Close Probability" value={`${call.close_probability ?? 0}%`} />
         <Stat label="Agent" value={call.agents?.name ?? "No Agent"} />
