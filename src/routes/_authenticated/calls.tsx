@@ -45,7 +45,16 @@ function fmtDur(sec: number) {
   return `${Math.floor((sec ?? 0) / 60)}m ${(sec ?? 0) % 60}s`;
 }
 
+/** Human-readable disposition/outcome label: "in_progress" -> "In Progress". */
+function prettyOutcome(value?: string | null) {
+  if (!value) return "—";
+  return String(value)
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
 const OUTCOMES = ["scheduled", "in_progress", "completed", "no_answer", "voicemail", "failed"];
+
 const RANGES: Record<string, number> = { "7": 7, "30": 30, "90": 90 };
 
 function CallsPage() {
