@@ -259,12 +259,36 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
     byContact.set(l.contact_id, arr as any);
   }
 
+  /* Human feedback is a real signal: a line waved off as not hot stays out of the
+     worklist for two weeks, and a dismissal for a week, unless it was undone. */
+  const { data: fb } = await db()
+    .from("worklist_feedback")
+    .select("action, lead_line_id, lead_id, contact_id, created_at, undone")
+    .eq("workspace_id", ctx.workspaceId)
+    .eq("undone", false)
+    .gte("created_at", new Date(Date.now() - 14 * 864e5).toISOString())
+    .limit(2000);
+
+  const mutedLines = new Set<string>();
+  const mutedLeads = new Set<string>();
+  const mutedContacts = new Set<string>();
+  for (const f of fb ?? []) {
+    if (f.action === "worked") continue;
+    const ageDays = (Date.now() - new Date(f.created_at).getTime()) / 864e5;
+    const window = f.action === "not_hot" ? 14 : 7;
+    if (ageDays > window) continue;
+    if (f.lead_line_id) mutedLines.add(f.lead_line_id);
+    if (f.lead_id) mutedLeads.add(f.lead_id);
+    if (!f.lead_line_id && !f.lead_id && f.contact_id) mutedContacts.add(f.contact_id);
+  }
+
   const rows: any[] = [];
   const now = Date.now();
   const okContacts = new Set((contacts ?? []).map((c) => c.id));
 
   for (const line of lines ?? []) {
     if (!okContacts.has(line.contact_id)) continue;
+    if (mutedLines.has(line.id) || mutedContacts.has(line.contact_id)) continue;
     if (STOP_DISPOSITIONS.some((d) => (line.disposition ?? "").toLowerCase().includes(d))) continue;
 
     let score = 0;
@@ -314,6 +338,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
   // Leads that have no contact record yet still deserve a nomination.
   for (const lead of leads ?? []) {
     if ((lead.source ?? "").toLowerCase().includes("mock")) continue;
+    if (mutedLeads.has(lead.id)) continue;
     const hist = (outcomes ?? []).filter((o) => o.lead_id === lead.id);
     const engaged = hist.filter((o) => ["objection_raised", "price_question", "booked", "handed_off"].includes(o.outcome));
     if (!engaged.length) continue;
