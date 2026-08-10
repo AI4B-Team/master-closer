@@ -4,6 +4,7 @@ import {
 
   DollarSign,
   FileSignature,
+  History,
   Megaphone,
   PhoneCall,
   ShieldOff,
