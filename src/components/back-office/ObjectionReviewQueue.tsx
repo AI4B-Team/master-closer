@@ -64,6 +64,7 @@ export function ObjectionReviewQueue({ profiles }: { profiles: ProfileOption[] }
             ? "Dismissed."
             : "Back in the queue.",
       );
+      void logActivity(`objection.${v.action}d`, { trigger: v.trigger ?? "", candidate_id: v.id });
       qc.invalidateQueries({ queryKey: ["objection-candidates"] });
       qc.invalidateQueries({ queryKey: ["closer-profiles"] });
     },
