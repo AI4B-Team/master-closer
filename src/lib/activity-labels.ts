@@ -69,6 +69,14 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: BarChart3, label: p.name ? `Digest · ${p.name}` : "Report Digest", detail: String(p.message ?? "") };
     case "call.completed":
       return { kind, icon: PhoneCall, label: "Call Completed", detail: join(p.lead_name, p.disposition) };
+    case "prompt.updated":
+      return { kind, icon: History, label: "Closer Prompt Updated", detail: join(p.name) };
+    case "prompt.restored":
+      return { kind, icon: History, label: "Closer Prompt Restored", detail: p.version ? `Version ${p.version}` : "" };
+    case "profile.updated":
+      return { kind, icon: History, label: "Closer Profile Saved", detail: join(p.name, p.industry) };
+    case "profile.restored":
+      return { kind, icon: History, label: "Closer Profile Restored", detail: p.version ? `Version ${p.version}` : "" };
 
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
