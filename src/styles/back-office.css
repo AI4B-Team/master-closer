@@ -49,14 +49,17 @@
 }
 .side-collapsed { width: 70px; }
 .side-brand {
-  height: 60px; display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  height: 60px; display: flex; align-items: center; gap: 10px; padding: 0 14px;
   border-bottom: 1px solid var(--line); position: relative;
 }
 .side-mark {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px;
   background: var(--signal); color: #fff; flex-shrink: 0;
 }
-.side-word { font-weight: 800; font-size: 16px; white-space: nowrap; }
+.side-word {
+  font-weight: 800; font-size: 15.5px; white-space: nowrap;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
 .side-toggle {
   position: absolute; right: -12px; top: 30px; transform: translateY(-50%);
   margin: 0; padding: 0;
@@ -190,7 +193,8 @@
 .content { padding: 26px 28px; flex: 1; min-width: 0; }
 
 /* ------------------------------ page head ------------------------------ */
-.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; min-width: 0; }
+.page-head > div { min-width: 0; }
 .page-title { font-size: 1.7rem; font-weight: 800; margin: 0; }
 .page-sub { color: var(--muted); font-size: 13.5px; margin: 4px 0 0; }
 .btn-primary {
@@ -200,7 +204,8 @@
 }
 .btn-primary:hover { background: var(--signal-deep); }
 .btn-primary:disabled { opacity: 0.6; cursor: default; }
-.tabs { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.tabs { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
   border: none; background: none; padding: 7px 14px; border-radius: 7px; font: inherit;
   font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; text-decoration: none; white-space: nowrap;
@@ -259,8 +264,9 @@
 }
 .donut-hole span { font-size: 1.4rem; font-weight: 600; }
 .donut-hole small { font-size: 11px; color: var(--muted); }
-.legend { display: flex; flex-direction: column; gap: 9px; }
-.legend-row { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+.legend { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.legend-row { display: flex; align-items: center; gap: 9px; font-size: 13px; min-width: 0; }
+.legend-row > span:not(.legend-dot):not(.legend-v), .legend-link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .legend-link { color: inherit; text-decoration: none; border-radius: 8px; padding: 2px 6px; margin: -2px -6px; transition: background 0.15s ease; }
 .legend-link:hover { background: #F4F4F6; }
 .legend-dot { width: 9px; height: 9px; border-radius: 3px; }
