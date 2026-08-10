@@ -1,7 +1,9 @@
 import {
   Activity,
   BarChart3,
+  Bot,
   Check,
+  PauseCircle,
 
   DollarSign,
   FileSignature,
@@ -89,6 +91,38 @@ export function describeEvent(e: EventRow): EventDescription {
       return { kind, icon: BarChart3, label: "Line Promoted Into Profile", detail: join(p.trigger) };
     case "lead.released_dnc":
       return { kind, icon: Check, label: "Released From Do Not Call", detail: join(p.phone) };
+    case "agent.mode_changed":
+      return {
+        kind,
+        icon: Bot,
+        label: "Intelligence Agent Mode Changed",
+        detail: join(humanize(String(p.agent_key ?? "")), humanize(String(p.mode ?? ""))),
+      };
+    case "agent.paused_all":
+      return { kind, icon: PauseCircle, label: "Intelligence Agents Paused", detail: "" };
+    case "agent.resumed_all":
+      return { kind, icon: Bot, label: "Intelligence Agents Resumed", detail: "" };
+    case "agent.proposal_approved":
+      return {
+        kind,
+        icon: Check,
+        label: "Proposal Approved",
+        detail: join(humanize(String(p.agent_key ?? "")), humanize(String(p.proposal_type ?? ""))),
+      };
+    case "agent.proposal_rejected":
+      return {
+        kind,
+        icon: ShieldOff,
+        label: "Proposal Rejected",
+        detail: join(humanize(String(p.agent_key ?? "")), humanize(String(p.proposal_type ?? ""))),
+      };
+    case "agent.proposal_expired":
+      return {
+        kind,
+        icon: History,
+        label: "Proposal Expired",
+        detail: join(humanize(String(p.agent_key ?? "")), humanize(String(p.proposal_type ?? ""))),
+      };
     case "disclosure.updated":
       return { kind, icon: History, label: "Disclosure Settings Updated", detail: join(p.jurisdiction) };
 
