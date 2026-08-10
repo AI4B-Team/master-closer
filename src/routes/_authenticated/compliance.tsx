@@ -86,6 +86,7 @@ function CompliancePage() {
     },
     onSuccess: () => {
       toast.success("Disclosure Saved.");
+      void logActivity("disclosure.updated", { jurisdiction: jurisdiction.toUpperCase() });
       qc.invalidateQueries({ queryKey: ["disclosure_settings"] });
     },
     onError: (e: any) => toast.error(e.message),
