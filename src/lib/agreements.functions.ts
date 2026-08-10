@@ -82,7 +82,7 @@ export const getAgreementByToken = createServerFn({ method: "GET" })
       signatureData: row.signature_data,
       fileName: row.file_name,
       fileUrl,
-      orgName: org?.name ?? null,
+      orgName: ws?.name ?? org?.name ?? null,
     };
   });
 
