@@ -52,6 +52,7 @@ export const TAB_GROUPS: Record<string, { label: string; to: string }[]> = {
   ],
   studio: [
     { label: "Closers", to: "/ai-closers" },
+    { label: "Closer Profiles", to: "/closer-profiles" },
     { label: "Playbook", to: "/playbook" },
     { label: "Practice", to: "/practice" },
     { label: "Background Agents", to: "/agents" },

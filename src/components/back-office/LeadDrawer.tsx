@@ -14,6 +14,8 @@ import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus } f
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 import { LeadLines } from "@/components/back-office/LeadLines";
+import { ResolvedProfileBadge } from "@/components/back-office/ResolvedProfileBadge";
+import { INDUSTRIES } from "@/lib/closer-profiles";
 
 type Lead = {
   id: string;
@@ -23,6 +25,7 @@ type Lead = {
   company: string | null;
   title: string | null;
   source: string | null;
+  industry?: string | null;
   status: string;
   consent: string;
   notes: string | null;
@@ -34,6 +37,7 @@ type Lead = {
 const STATUSES = ["new", "contacted", "qualified", "unqualified", "customer"];
 const CONSENTS = ["unknown", "implied", "express_written", "opt_out"];
 const UNASSIGNED = "__unassigned__";
+const UNSET_INDUSTRY = "__none__";
 
 
 export function LeadDrawer({
@@ -173,6 +177,7 @@ export function LeadDrawer({
           company: form.company || null,
           title: form.title || null,
           source: form.source || null,
+          industry: form.industry || null,
           status: (form.status ?? "new") as never,
           consent: (form.consent ?? "unknown") as never,
           notes: form.notes || null,
@@ -226,6 +231,13 @@ export function LeadDrawer({
             </Badge>
           </div>
 
+          {lead ? (
+            <div className="rounded-xl border border-[#E7E7EC] p-3">
+              <p className="text-xs uppercase tracking-wider text-[#6B6B76] mb-2">Closer On This Lead</p>
+              <ResolvedProfileBadge leadId={lead.id} />
+            </div>
+          ) : null}
+
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <Label>Name</Label>
@@ -250,6 +262,19 @@ export function LeadDrawer({
             <div>
               <Label>Source</Label>
               <Input value={form.source ?? ""} onChange={(e) => setForm({ ...form, source: e.target.value })} />
+            </div>
+            <div>
+              <Label>Industry</Label>
+              <Select
+                value={form.industry ?? UNSET_INDUSTRY}
+                onValueChange={(v) => setForm({ ...form, industry: v === UNSET_INDUSTRY ? null : v })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={UNSET_INDUSTRY}>Not set</SelectItem>
+                  {INDUSTRIES.map((i) => <SelectItem key={i.key} value={i.key}>{i.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Status</Label>
