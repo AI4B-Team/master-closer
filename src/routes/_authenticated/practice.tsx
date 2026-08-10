@@ -92,18 +92,37 @@ function PracticePage() {
     },
   });
 
+  const { data: resolved } = useQuery({
+    queryKey: ["practice-profile", wsId, agent?.industry ?? null, mode],
+    enabled: !!wsId,
+    queryFn: async () =>
+      await assemble({
+        data: {
+          industry: (agent?.industry as string) ?? null,
+          source: null,
+          leadName: null,
+          mode: mode as "full_ai" | "hybrid" | "copilot",
+        },
+      }),
+  });
+
   const ask = useMutation({
     mutationFn: async () => {
+      const profilePrompt = resolved?.ok ? resolved.prompt : null;
+      const profileLines = resolved?.ok
+        ? resolved.objections.map((o) => ({ trigger: o.trigger, response: o.response }))
+        : [];
       const r = await run({
         data: {
           prospect,
           mode,
           agentName: agent?.name ?? null,
           industry: agent?.industry ?? null,
-          systemPrompt: agent?.system_prompt ? String(agent.system_prompt).slice(0, 4000) : null,
-          library: await fetchObjectionLibrary(wsId),
+          systemPrompt: String(profilePrompt ?? agent?.system_prompt ?? "").slice(0, 4000) || null,
+          library: [...profileLines, ...(await fetchObjectionLibrary(wsId))],
         },
       });
+
       const { data: prof } = await supabase.from("profiles").select("id, org_id, active_workspace_id").maybeSingle();
       if (prof?.active_workspace_id) {
         await supabase.from("practice_sessions").insert({
