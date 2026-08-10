@@ -1765,6 +1765,81 @@ export type Database = {
           },
         ]
       }
+      objection_candidates: {
+        Row: {
+          ai_response: string
+          call_id: string | null
+          created_at: string
+          first_seen_at: string
+          id: string
+          industry: string | null
+          label: string | null
+          last_seen_at: string
+          mode: string | null
+          occurrences: number
+          profile_id: string | null
+          prospect_text: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          ai_response: string
+          call_id?: string | null
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          industry?: string | null
+          label?: string | null
+          last_seen_at?: string
+          mode?: string | null
+          occurrences?: number
+          profile_id?: string | null
+          prospect_text: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          ai_response?: string
+          call_id?: string | null
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          industry?: string | null
+          label?: string | null
+          last_seen_at?: string
+          mode?: string | null
+          occurrences?: number
+          profile_id?: string | null
+          prospect_text?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objection_candidates_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "closer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objection_candidates_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objections: {
         Row: {
           category: string | null

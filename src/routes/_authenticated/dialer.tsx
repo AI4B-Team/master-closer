@@ -13,6 +13,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { setCallStatus } from "@/hooks/use-call-status";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { closeObjection } from "@/lib/demo.functions";
+import { captureObjectionCandidate } from "@/lib/objection-candidates.functions";
 import { summarizeCall } from "@/lib/calls.functions";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -190,6 +191,7 @@ function DialerPage() {
   const qc = useQueryClient();
   const emit = useServerFn(emitOrgEvent);
   const askCloser = useServerFn(closeObjection);
+  const captureCandidate = useServerFn(captureObjectionCandidate);
   const assemblePrompt = useServerFn(assemblePromptForCall);
 
   const [sendingAgreement, setSendingAgreement] = useState(false);
@@ -339,6 +341,22 @@ function DialerPage() {
       setLineUsed(mode === "full_ai");
       if (mode === "full_ai") {
         setTranscript((t) => [...t, { speaker: "Master Closer", text: res.line }]);
+      }
+      // The AI had to improvise — queue the moment for human review in Studio.
+      if (res.source !== "library" && res.line) {
+        captureCandidate({
+          data: {
+            prospectText: prospectLine,
+            aiResponse: res.line,
+            label: res.objection,
+            mode: MODE_KEY[mode],
+            industry: agent?.industry ?? null,
+            profileId: resolvedProfile?.profileId ?? null,
+            callId: activeCall ?? null,
+          },
+        }).catch(() => {
+          /* review capture is best-effort and must never interrupt a live call */
+        });
       }
       if (activeCall) {
         const { data: sugg } = await supabase
