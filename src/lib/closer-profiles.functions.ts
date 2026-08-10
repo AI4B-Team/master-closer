@@ -335,3 +335,72 @@ export const draftProfileFromUrl = createServerFn({ method: "POST" })
 
     return { draft, status: "pending_review" as const };
   });
+
+/**
+ * Call-time entry point for the horizontal engine: resolve the closer that owns
+ * this call, then hand back the assembled brief plus the approved objection
+ * lines so the live dialer speaks the same words the Studio previews.
+ */
+export const assemblePromptForCall = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        industry: z.string().trim().max(60).nullish(),
+        source: z.string().trim().max(60).nullish(),
+        leadName: z.string().trim().max(160).nullish(),
+        mode: z.enum(["full_ai", "hybrid", "copilot"]).default("hybrid"),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const engine = await import("./closer-profiles");
+    const workspaceId = await activeWorkspace(context.supabase, context.userId);
+
+    const [{ data: mine }, { data: platform }, { data: ws }, { data: disc }] = await Promise.all([
+      context.supabase.from("closer_profiles").select(SELECT).eq("workspace_id", workspaceId),
+      context.supabase.from("closer_profiles").select(SELECT).is("workspace_id", null),
+      context.supabase
+        .from("workspaces")
+        .select("name, legal_business_name, business_state")
+        .eq("id", workspaceId)
+        .maybeSingle(),
+      context.supabase
+        .from("disclosure_settings")
+        .select("script")
+        .eq("workspace_id", workspaceId)
+        .maybeSingle(),
+    ]);
+
+    try {
+      const { profile, matchedBy } = engine.resolveCloserProfile(
+        [...(mine ?? []), ...(platform ?? [])] as never,
+        { industry: data.industry ?? null, source: data.source ?? null },
+      );
+      return {
+        ok: true as const,
+        profileId: profile.id,
+        profileName: profile.name,
+        matchedBy,
+        matchedLabel: engine.RESOLUTION_LABEL[matchedBy],
+        isPlatformDefault: profile.workspace_id === null,
+        prompt: engine.assembleSystemPrompt({
+          profile: profile as never,
+          workspace: ws ?? undefined,
+          lead: {
+            name: data.leadName ?? undefined,
+            industry: data.industry ?? profile.industry,
+            source: data.source ?? profile.source,
+          } as never,
+          mode: data.mode,
+          disclosure: disc?.script ?? null,
+        }),
+        objections: (profile.objections ?? []).map((o: any) => ({
+          trigger: o.trigger,
+          response: o.approved_response,
+        })),
+      };
+    } catch (e) {
+      return { ok: false as const, error: (e as Error).message };
+    }
+  });
