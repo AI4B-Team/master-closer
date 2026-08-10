@@ -7,6 +7,18 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
+
+    // First run: send the user through setup before showing the back office.
+    const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+    if (prof?.active_workspace_id) {
+      const { data: ws } = await supabase
+        .from("workspaces")
+        .select("onboarded_at" as never)
+        .eq("id", prof.active_workspace_id)
+        .maybeSingle();
+      if (ws && !(ws as any).onboarded_at) throw redirect({ to: "/welcome" });
+    }
+
     return { user: data.user };
   },
   component: () => (
