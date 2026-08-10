@@ -49,14 +49,17 @@
 }
 .side-collapsed { width: 70px; }
 .side-brand {
-  height: 60px; display: flex; align-items: center; gap: 10px; padding: 0 16px;
-  border-bottom: 1px solid var(--line); position: relative;
+  height: 60px; display: flex; align-items: center; gap: 10px; padding: 0 14px;
+  border-bottom: 1px solid var(--line); position: relative; overflow: hidden;
 }
 .side-mark {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px;
   background: var(--signal); color: #fff; flex-shrink: 0;
 }
-.side-word { font-weight: 800; font-size: 16px; white-space: nowrap; }
+.side-word {
+  font-weight: 800; font-size: 15.5px; white-space: nowrap;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
 .side-toggle {
   position: absolute; right: -12px; top: 30px; transform: translateY(-50%);
   margin: 0; padding: 0;
