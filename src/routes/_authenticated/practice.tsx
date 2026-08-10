@@ -114,8 +114,12 @@ function PracticePage() {
     mutationFn: async () => {
       const profilePrompt = resolved?.ok ? resolved.prompt : null;
       const profileLines = resolved?.ok
-        ? resolved.objections.map((o) => ({ trigger: o.trigger, response: o.response }))
+        ? resolved.objections.map((o: { trigger: string; response: string }) => ({
+            trigger: o.trigger,
+            response: o.response,
+          }))
         : [];
+
       const r = await run({
         data: {
           prospect,
