@@ -15,7 +15,7 @@ import {
 
 import { toast } from "sonner";
 import {
-  listAgents, setAgentMode, pauseAllAgents, runAgentNow, listProposals, reviewProposal,
+  listAgents, setAgentMode, pauseAllAgents, runAgentNow, listProposals, reviewProposal, reviewProposalsBulk,
   listWorklist, sendWorklistFeedback, undoWorklistFeedback, conversationsReport,
 } from "@/lib/governance.functions";
 
@@ -360,19 +360,39 @@ const NEEDS_ATTESTATION = new Set(["profile_copy", "objection_response"]);
 function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] }) {
   const qc = useQueryClient();
   const reviewFn = useServerFn(reviewProposal);
+  const bulkFn = useServerFn(reviewProposalsBulk);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [attested, setAttested] = useState<Record<string, boolean>>({});
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [bulkAttested, setBulkAttested] = useState(false);
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["bg-proposals"] });
+    qc.invalidateQueries({ queryKey: ["bg-agents"] });
+  };
 
   const review = useMutation({
     mutationFn: (v: { id: string; decision: "approved" | "rejected"; note?: string; attested?: boolean }) =>
       reviewFn({ data: v }),
     onSuccess: () => {
       toast.success("Proposal Reviewed");
-      qc.invalidateQueries({ queryKey: ["bg-proposals"] });
-      qc.invalidateQueries({ queryKey: ["bg-agents"] });
+      refresh();
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const bulk = useMutation({
+    mutationFn: (v: { ids: string[]; decision: "approved" | "rejected"; attested?: boolean }) => bulkFn({ data: v }),
+    onSuccess: (res: any) => {
+      if (res.applied) toast.success(`${res.applied} Proposal${res.applied === 1 ? "" : "s"} Reviewed`);
+      if (res.failures?.length) toast.error(`${res.failures.length} Skipped — ${res.failures[0].reason}`);
+      setSelected({});
+      setBulkAttested(false);
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   if (loading) return <Panel title="Proposal Inbox"><SkeletonRows rows={5} /></Panel>;
 
@@ -400,19 +420,69 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
     );
   }
 
+  const selectedIds = pending.filter((p) => selected[p.id]).map((p) => p.id);
+  const selectedGuarded = pending.some((p) => selected[p.id] && NEEDS_ATTESTATION.has(p.proposal_type));
+  const allSelected = pending.length > 0 && selectedIds.length === pending.length;
+
   return (
     <div style={{ display: "grid", gap: 12 }}>
+      {pending.length > 1 && (
+        <Panel title="Bulk Review">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+            <label style={{ display: "inline-flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(v) =>
+                  setSelected(v ? Object.fromEntries(pending.map((p) => [p.id, true])) : {})
+                }
+              />
+              Select All {pending.length}
+            </label>
+            <span className="muted" style={{ fontSize: 13 }}>
+              {selectedIds.length} Selected
+            </span>
+            {selectedGuarded && (
+              <label style={{ display: "inline-flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+                <Checkbox checked={bulkAttested} onCheckedChange={(v) => setBulkAttested(!!v)} />
+                Re-affirm Lawful Basis For The Selected Copy
+              </label>
+            )}
+            <span style={{ display: "inline-flex", gap: 8, marginLeft: "auto" }}>
+              <Button
+                disabled={!selectedIds.length || bulk.isPending || (selectedGuarded && !bulkAttested)}
+                onClick={() => bulk.mutate({ ids: selectedIds, decision: "approved", attested: bulkAttested })}
+              >
+                <Check size={14} /> Approve Selected
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!selectedIds.length || bulk.isPending}
+                onClick={() => bulk.mutate({ ids: selectedIds, decision: "rejected" })}
+              >
+                <X size={14} /> Reject Selected
+              </Button>
+            </span>
+          </div>
+        </Panel>
+      )}
+
       {pending.map((p) => (
         <Panel
           key={p.id}
           title={`${p.agent_key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())} · ${p.proposal_type.replace(/_/g, " ")}`}
           action={
-            <span style={{ display: "inline-flex", gap: 6 }}>
+            <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+              <Checkbox
+                checked={!!selected[p.id]}
+                onCheckedChange={(v) => setSelected((s) => ({ ...s, [p.id]: !!v }))}
+                aria-label="Select this proposal for bulk review"
+              />
               <StatusPill label="Pending" tone="amber" />
               {p.expires_at && <StatusPill label={expiryLabel(p.expires_at)} tone={expirySoon(p.expires_at) ? "red" : "neutral"} />}
             </span>
           }
         >
+
           <p style={{ marginBottom: 10 }}>{p.rationale}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
             <div>

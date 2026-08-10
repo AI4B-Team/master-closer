@@ -170,8 +170,6 @@ export const listProposals = createServerFn({ method: "GET" })
     return { proposals: data ?? [] };
   });
 
-const GUARDED_TYPES = new Set(["profile_copy", "objection_response"]);
-
 export const reviewProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -185,124 +183,58 @@ export const reviewProposal = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { orgId, workspaceId } = await callerScope(context.supabase, context.userId);
-    const { data: p } = await context.supabase
-      .from("agent_proposals")
-      .select("id, agent_key, proposal_type, target_table, target_id, target_field, current_value, proposed_value, status, expires_at")
-      .eq("id", data.id)
-      .eq("workspace_id", workspaceId)
-      .maybeSingle();
-    if (!p) throw new Error("Proposal not found.");
-    if (p.status === "expired") throw new Error("This proposal expired and can no longer be applied.");
-    if (p.status !== "pending") throw new Error("This proposal was already reviewed.");
-    if (p.expires_at && new Date(p.expires_at) < new Date()) {
-      await context.supabase
-        .from("agent_proposals")
-        .update({ status: "expired", reviewed_at: new Date().toISOString(), review_note: "Expired before review." })
-        .eq("id", p.id)
-        .eq("workspace_id", workspaceId);
-      throw new Error("This proposal expired and can no longer be applied.");
-    }
-
-    if (data.decision === "approved" && GUARDED_TYPES.has(p.proposal_type) && !data.attested) {
-      throw new Error("Compliance-adjacent copy needs the lawful-basis attestation re-affirmed before approval.");
-    }
-
-    if (data.decision === "approved") {
-      if (p.proposal_type === "scorer_weights") {
-        await context.supabase
-          .from("scorer_weights")
-          .update({
-            weights: p.proposed_value as any,
-            is_default: false,
-            fitted_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("workspace_id", workspaceId)
-          .eq("product_line", "default");
-      } else if (p.proposal_type === "profile_copy" && p.target_id) {
-        // Version the profile: keep the prior copy and who approved the change.
-        const { appendPromptVersion } = await import("./prompt-versions.server");
-        const { data: agentRow } = await context.supabase
-          .from("agents")
-          .select("system_prompt")
-          .eq("id", p.target_id)
-          .eq("workspace_id", workspaceId)
-          .maybeSingle();
-
-        if (agentRow?.system_prompt) {
-          await appendPromptVersion(context.supabase, {
-            workspaceId,
-            agentId: p.target_id,
-            prompt: String(agentRow.system_prompt),
-            source: "seed",
-            note: "Copy in use before the agent proposal was approved.",
-            userId: context.userId,
-          });
-        }
-
-        const nextPrompt = String((p.proposed_value as any) ?? "");
-        await context.supabase
-          .from("agents")
-          .update({ system_prompt: nextPrompt })
-          .eq("id", p.target_id)
-          .eq("workspace_id", workspaceId);
-
-        await appendPromptVersion(context.supabase, {
-          workspaceId,
-          agentId: p.target_id,
-          prompt: nextPrompt,
-          source: "proposal",
-          note: `Approved from ${p.agent_key} proposal.`,
-          proposalId: p.id,
-          userId: context.userId,
-        });
-      } else if (p.proposal_type === "booking_correction" && p.target_id && p.proposed_value) {
-        await context.supabase
-          .from("tasks")
-          .update({ due_at: String(p.proposed_value) })
-          .eq("id", p.target_id)
-          .eq("workspace_id", workspaceId);
-      } else if (p.proposal_type === "objection_response") {
-        const v = p.proposed_value as any;
-        await context.supabase.from("objections").insert({
-          org_id: orgId,
-          workspace_id: workspaceId,
-          category: v?.category ?? p.target_field ?? "Uncategorised",
-          trigger: v?.category ?? p.target_field ?? "Objection",
-          response: String(v?.draft ?? ""),
-        });
-      }
-
-      if (GUARDED_TYPES.has(p.proposal_type)) {
-        await context.supabase.from("consent_logs").insert({
-          org_id: orgId,
-          workspace_id: workspaceId,
-          method: "attestation_reaffirmed",
-          notes: `Lawful-basis attestation re-affirmed to approve proposal ${p.id} (${p.proposal_type}) from ${p.agent_key}.`,
-        });
-      }
-    }
-
-    const { error } = await context.supabase
-      .from("agent_proposals")
-      .update({
-        status: data.decision,
-        reviewed_by: context.userId,
-        reviewed_at: new Date().toISOString(),
-        review_note: data.note ?? null,
-      })
-      .eq("id", p.id)
-      .eq("workspace_id", workspaceId);
-    if (error) throw new Error(error.message);
-    await logGovernance(
-      context.supabase,
-      { orgId, workspaceId },
-      data.decision === "approved" ? "agent.proposal_approved" : "agent.proposal_rejected",
-      { proposal_id: p.id, agent_key: p.agent_key, proposal_type: p.proposal_type, note: data.note ?? null },
-    );
+    const { applyProposalDecision } = await import("./governance.server");
+    const scope = await callerScope(context.supabase, context.userId);
+    await applyProposalDecision(context.supabase, scope, context.userId, data);
     return { ok: true };
   });
+
+/**
+ * Bulk review. Each proposal is decided independently so one guarded item
+ * (expired, or needing attestation) cannot block the rest of the batch.
+ */
+export const reviewProposalsBulk = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1).max(100),
+        decision: z.enum(["approved", "rejected"]),
+        note: z.string().max(1000).optional(),
+        attested: z.boolean().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { applyProposalDecision } = await import("./governance.server");
+    const scope = await callerScope(context.supabase, context.userId);
+
+    let applied = 0;
+    const failures: { id: string; reason: string }[] = [];
+    for (const id of data.ids) {
+      try {
+        await applyProposalDecision(context.supabase, scope, context.userId, {
+          id,
+          decision: data.decision,
+          note: data.note,
+          attested: data.attested,
+        });
+        applied += 1;
+      } catch (e) {
+        failures.push({ id, reason: e instanceof Error ? e.message : "Could not apply." });
+      }
+    }
+
+    await logGovernance(context.supabase, scope, "agent.proposals_bulk_reviewed", {
+      decision: data.decision,
+      requested: data.ids.length,
+      applied,
+      skipped: failures.length,
+    });
+
+    return { applied, failures };
+  });
+
 
 /* --------------------------------- Worklist ------------------------------------ */
 
