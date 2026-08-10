@@ -750,7 +750,48 @@ const RUNNERS: Record<AgentKey, (ctx: Ctx) => Promise<RunStats>> = {
 
 /* -------------------------------- Scheduler ------------------------------------ */
 
+/**
+ * Retires pending proposals whose evidence window has closed. Runs on the cron
+ * tick so stale proposals expire even if nobody opens the Intelligence page,
+ * and each retirement lands in the audit trail.
+ */
+async function sweepExpiredProposals(workspaceId?: string) {
+  let q = db()
+    .from("agent_proposals")
+    .update({ status: "expired", reviewed_at: new Date().toISOString(), review_note: "Expired before review." })
+    .eq("status", "pending")
+    .lt("expires_at", new Date().toISOString());
+  if (workspaceId) q = q.eq("workspace_id", workspaceId);
+
+  const { data: retired } = await q.select("id, workspace_id, agent_key, proposal_type");
+  const rows = retired ?? [];
+  if (rows.length === 0) return 0;
+
+  const wsIds = [...new Set(rows.map((r: any) => r.workspace_id).filter(Boolean))];
+  const { data: workspaces } = await db().from("workspaces").select("id, org_id").in("id", wsIds);
+  const orgOf = new Map((workspaces ?? []).map((w: any) => [w.id, w.org_id]));
+
+  const events = rows
+    .filter((r: any) => r.workspace_id && orgOf.get(r.workspace_id))
+    .map((r: any) => ({
+      org_id: orgOf.get(r.workspace_id),
+      workspace_id: r.workspace_id,
+      event_type: "job.completed",
+      payload: {
+        kind: "agent.proposal_expired",
+        proposal_id: r.id,
+        agent_key: r.agent_key,
+        proposal_type: r.proposal_type,
+      },
+    }));
+  if (events.length > 0) await db().from("events").insert(events);
+  return rows.length;
+}
+
 export async function tickAgents(opts: { workspaceId?: string; agentId?: string; force?: boolean } = {}) {
+  await sweepExpiredProposals(opts.workspaceId);
+
+
   let q = db()
     .from("background_agents")
     .select("id, workspace_id, agent_key, mode, enabled, interval_minutes, next_run_at, config, consecutive_failures");
