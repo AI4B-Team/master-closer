@@ -282,6 +282,10 @@ function CloserProfilesPage() {
         }
       />
 
+      <ObjectionReviewQueue
+        profiles={mine.map((p) => ({ id: p.id, name: p.name, industry: p.industry }))}
+      />
+
       <Panel title="Always On" className="mb-4">
         <p className="text-sm text-[#6B6B76]">
           Platform guardrails, the handoff patterns and the banned-output filter run on every call and cannot be
