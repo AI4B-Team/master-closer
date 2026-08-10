@@ -220,14 +220,31 @@ function PracticePage() {
               ))}
             </SelectContent>
           </Select>
-          {agent && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs text-[#6B6B76]">
-              <Bot className="h-3.5 w-3.5 text-[#CC0000]" />
-              {agent.system_prompt
-                ? "Using this agent's system prompt and industry knowledge."
-                : "This agent has no system prompt yet — add one for sharper drills."}
-            </p>
-          )}
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#6B6B76]">
+            <Bot className="h-3.5 w-3.5 text-[#CC0000]" />
+            {resolved?.ok ? (
+              <>
+                <span>
+                  Drilling On <strong className="text-[#111114]">{resolved.profileName}</strong> ·{" "}
+                  {resolved.matchedLabel}
+                </span>
+                {resolved.isPlatformDefault && (
+                  <Badge variant="secondary" className="rounded-full">
+                    Platform Default
+                  </Badge>
+                )}
+                <Badge variant="outline" className="rounded-full">
+                  {resolved.objections.length} Approved Lines
+                </Badge>
+              </>
+            ) : (
+              <span>
+                No Closer Profile Matched — Drilling On{" "}
+                {agent?.system_prompt ? "This Agent's Prompt." : "The Generic Closer."}
+              </span>
+            )}
+          </div>
+
 
           <div className="mt-5">
             <Label>Mode</Label>
