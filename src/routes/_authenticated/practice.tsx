@@ -55,6 +55,8 @@ type Rep = {
 
 function PracticePage() {
   const run = useServerFn(closeObjection);
+  const assemble = useServerFn(assemblePromptForCall);
+
   const qc = useQueryClient();
   const [mode, setMode] = useState<string>("copilot");
   const [agentId, setAgentId] = useState<string>("none");
