@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import { ObjectionReviewQueue } from "@/components/back-office/ObjectionReviewQueue";
+import { LinePerformancePanel } from "@/components/back-office/LinePerformancePanel";
+
 import {
   Plus, Copy, Eye, Trash2, Save, Sparkles, Link2, Layers, ShieldAlert, X,
 } from "lucide-react";
