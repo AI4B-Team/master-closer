@@ -227,6 +227,18 @@ function Welcome() {
                 {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
                 Continue <ArrowRight className="size-4" aria-hidden />
               </Button>
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  void (async () => {
+                    await finish();
+                    navigate({ to: "/dashboard" });
+                  })();
+                }}
+              >
+                Skip setup for now
+              </button>
             </form>
           ) : step === 2 ? (
             <div className="space-y-5">
