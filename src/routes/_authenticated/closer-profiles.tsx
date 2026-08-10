@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-office/ui";
 import { ObjectionReviewQueue } from "@/components/back-office/ObjectionReviewQueue";
+import { LinePerformancePanel } from "@/components/back-office/LinePerformancePanel";
+
 import {
   Plus, Copy, Eye, Trash2, Save, Sparkles, Link2, Layers, ShieldAlert, X,
 } from "lucide-react";
@@ -286,6 +288,11 @@ function CloserProfilesPage() {
       <ObjectionReviewQueue
         profiles={mine.map((p) => ({ id: p.id, name: p.name, industry: p.industry }))}
       />
+
+      <div className="mb-4">
+        <LinePerformancePanel />
+      </div>
+
 
       <Panel title="Always On" className="mb-4">
         <p className="text-sm text-[#6B6B76]">
