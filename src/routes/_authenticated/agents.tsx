@@ -128,26 +128,27 @@ function AgentsPage() {
     <div className="page">
       <PageHeader
         title="Intelligence Agents"
-        description="Six agents learn from finished calls. Every change arrives as a proposal a human approves — never a change that happens on its own."
+        description="Six specialized agents analyze completed calls, surface opportunities, and propose improvements for your approval. Nothing changes without you."
         tabs={TAB_GROUPS.studio}
         action={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Button variant="outline" onClick={() => runNow.mutate(undefined)} disabled={runNow.isPending}>
-              <Play size={14} /> Run Due Agents
+              <Play size={14} /> Run Due Tasks
             </Button>
             <Button variant={paused ? "default" : "outline"} onClick={() => pauseAll.mutate(!paused)}>
-              <Pause size={14} /> {paused ? "Resume All Agents" : "Pause All Agents"}
+              <Pause size={14} /> {paused ? "Resume All" : "Pause All"}
             </Button>
           </div>
         }
       />
 
       <div className="kpis">
-        <Kpi icon={Bot} label="Agents Enabled" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} {...KPI_TINTS.blue} />
-        <Kpi icon={Inbox} label="Proposals Waiting" value={String(pendingCount)} {...KPI_TINTS.lavender} />
-        <Kpi icon={Activity} label="Labeled Conversations" value={String(reportQ.data?.total ?? 0)} {...KPI_TINTS.mint} />
-        <Kpi icon={ShieldAlert} label="Flagged For Human Eyes" value={String(reportQ.data?.flagged ?? 0)} {...KPI_TINTS.red} />
+        <Kpi icon={Bot} label="Active Agents" value={String((agentsQ.data?.agents ?? []).filter((a: any) => a.enabled).length)} {...KPI_TINTS.blue} />
+        <Kpi icon={Inbox} label="Pending Proposals" value={String(pendingCount)} {...KPI_TINTS.lavender} />
+        <Kpi icon={Activity} label="Calls Analyzed" value={String(reportQ.data?.total ?? 0)} {...KPI_TINTS.mint} />
+        <Kpi icon={ShieldAlert} label="Needs Review" value={String(reportQ.data?.flagged ?? 0)} {...KPI_TINTS.red} />
       </div>
+
 
       <div className="tabs" style={{ margin: "4px 0 14px" }}>
         {VIEWS.map((v) => (
