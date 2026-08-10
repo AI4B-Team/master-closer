@@ -281,13 +281,13 @@ function DialerPage() {
    * comes from the resolved profile rather than the agent row alone.
    */
   const { data: resolved } = useQuery({
-    queryKey: ["resolved-closer", wsId, agent?.industry ?? null, campaign?.id ?? null, mode],
+    queryKey: ["resolved-closer", wsId, agent?.industry ?? null, campaignId || null, mode],
     enabled: !!wsId,
     queryFn: () =>
       assemblePrompt({
         data: {
           industry: agent?.industry ?? null,
-          source: campaign ? "campaign" : null,
+          source: campaignId ? "campaign" : null,
           leadName: contact?.name ?? null,
           mode,
         },
