@@ -210,8 +210,9 @@ function CloserProfilesPage() {
           dispositions: draft.dispositions,
         },
       }),
-    onSuccess: () => {
+    onSuccess: (_r, draft) => {
       toast.success("Closer profile saved.");
+      void logActivity("profile.updated", { name: draft.name, industry: draft.industry });
       setEditing(null);
       qc.invalidateQueries({ queryKey: ["closer-profiles"] });
     },
