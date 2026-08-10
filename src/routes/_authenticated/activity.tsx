@@ -135,7 +135,7 @@ function ActivityPage() {
       <PageHeader title="Activity Log" description="Every event emitted by this workspace." />
       <AccountShell current="activity">
         <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none max-w-4xl">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <Activity className="h-4 w-4 text-[#CC0000]" />
             <h3 className="font-semibold">Workspace Events</h3>
             <div className="ml-auto flex items-center gap-2">
@@ -198,10 +198,10 @@ function ActivityPage() {
                 const href = eventHref(e);
                 return (
                   <div key={e.id} className="border border-[#E7E7EC] rounded-xl px-3 py-2">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2.5">
                       <a.icon className="h-4 w-4 text-[#CC0000] shrink-0" />
-                      <span className="text-sm font-medium">{a.label}</span>
-                      {a.detail ? <span className="text-sm text-[#6B6B76] truncate">{a.detail}</span> : null}
+                      <span className="text-sm font-medium min-w-0 truncate">{a.label}</span>
+                      {a.detail ? <span className="text-sm text-[#6B6B76] min-w-0 truncate">{a.detail}</span> : null}
                       {href ? (
                         <Link to={href} className="text-xs text-[#CC0000] hover:underline shrink-0">
                           Open

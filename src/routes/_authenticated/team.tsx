@@ -679,45 +679,47 @@ function ReportsPage() {
         {agentPerf.length === 0 ? (
           <EmptyState icon={Bot} title="No Agent Calls Yet" hint="Assign an agent to a campaign to see results here." />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-[#6B6B76] border-b border-[#E7E7EC]">
-                <th className="py-2 font-medium">{t("Agent")}</th>
-                <th className="py-2 font-medium">{t("Mode")}</th>
-                <th className="py-2 font-medium text-right">{t("Calls")}</th>
-                <th className="py-2 font-medium text-right">{t("Connect Rate")}</th>
-                <th className="py-2 font-medium text-right">{t("Avg Talk")}</th>
-                <th className="py-2 font-medium text-right">{t("Avg Close Probability")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agentPerf.map((a) => (
-                <tr key={a.id} className="border-b border-[#F0F1F4] last:border-0">
-                  <td className="py-3">
-                    <div className="flex items-center gap-2">
-                      {a.isAgent ? (
-                        <Link to="/calls" search={{ agent: a.id } as any} className="font-medium hover:text-[#CC0000] underline-offset-2 hover:underline">
-                          {a.name}
-                        </Link>
-                      ) : (
-                        <span className="font-medium">{a.name}</span>
-                      )}
-                      {a.isAgent ? (
-                        <StatusPill tone={a.active ? "green" : "neutral"} label={a.active ? "Active" : "Paused"} />
-                      ) : null}
-                    </div>
-                  </td>
-                  <td className="py-3 text-[#6B6B76]">{a.mode}</td>
-                  <td className="py-3 text-right font-num">{a.calls}</td>
-                  <td className="py-3 text-right font-num">{a.connectRate}%</td>
-                  <td className="py-3 text-right font-num">
-                    {Math.floor(a.avgTalk / 60)}:{String(a.avgTalk % 60).padStart(2, "0")}
-                  </td>
-                  <td className="py-3 text-right font-num font-semibold">{a.avgProbability}%</td>
+          <div className="mc-tablewrap">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-[#6B6B76] border-b border-[#E7E7EC]">
+                  <th className="py-2 font-medium">{t("Agent")}</th>
+                  <th className="py-2 font-medium">{t("Mode")}</th>
+                  <th className="py-2 font-medium text-right">{t("Calls")}</th>
+                  <th className="py-2 font-medium text-right">{t("Connect Rate")}</th>
+                  <th className="py-2 font-medium text-right">{t("Avg Talk")}</th>
+                  <th className="py-2 font-medium text-right">{t("Avg Close Probability")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {agentPerf.map((a) => (
+                  <tr key={a.id} className="border-b border-[#F0F1F4] last:border-0">
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        {a.isAgent ? (
+                          <Link to="/calls" search={{ agent: a.id } as any} className="font-medium hover:text-[#CC0000] underline-offset-2 hover:underline">
+                            {a.name}
+                          </Link>
+                        ) : (
+                          <span className="font-medium">{a.name}</span>
+                        )}
+                        {a.isAgent ? (
+                          <StatusPill tone={a.active ? "green" : "neutral"} label={a.active ? "Active" : "Paused"} />
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="py-3 text-[#6B6B76]">{a.mode}</td>
+                    <td className="py-3 text-right font-num">{a.calls}</td>
+                    <td className="py-3 text-right font-num">{a.connectRate}%</td>
+                    <td className="py-3 text-right font-num">
+                      {Math.floor(a.avgTalk / 60)}:{String(a.avgTalk % 60).padStart(2, "0")}
+                    </td>
+                    <td className="py-3 text-right font-num font-semibold">{a.avgProbability}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 
@@ -779,45 +781,47 @@ function ReportsPage() {
         {leaderboard.length === 0 ? (
           <EmptyState icon={BarChart3} title="No Activity Yet" hint="Reports fill in as calls run and deals close." />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
-                <th className="py-2">{t("Rep")}</th>
-                <th className="py-2">{t("Calls")}</th>
-                <th className="py-2">{t("Connect Rate")}</th>
-                <th className="py-2">{t("Talk Time")}</th>
-                <th className="py-2">{t("Mode Usage")}</th>
-                <th className="py-2 text-right">{t("Closed Revenue")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboard.map((r) => {
-                const name = nameFor(r.repId === "unassigned" ? null : r.repId);
-                const rate = r.calls ? Math.round((r.connects / r.calls) * 100) : 0;
-                return (
-                  <tr key={r.repId} className="border-b border-[#E7E7EC] last:border-0">
-                    <td className="py-3">
-                      <span className="flex items-center gap-2.5 font-medium">
-                        <Avatar name={name} /> {name}
-                      </span>
-                    </td>
-                    <td className="py-3 font-num">{r.calls}</td>
-                    <td className="py-3 font-num">{rate}%</td>
-                    <td className="py-3 font-num">{Math.round(r.talkSec / 60)}m</td>
-                    <td className="py-3">
-                      <span className="flex flex-wrap gap-1">
-                        {MODE_KEYS.filter((k) => r.modes[k]).map((k) => (
-                          <StatusPill key={k} label={`${MODE_LABEL[k]} ${r.modes[k]}`} tone="neutral" />
-                        ))}
-                        {!MODE_KEYS.some((k) => r.modes[k]) && <span className="text-[#6B6B76]">—</span>}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right font-num font-semibold">{money(r.revenue)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="mc-tablewrap">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                  <th className="py-2">{t("Rep")}</th>
+                  <th className="py-2">{t("Calls")}</th>
+                  <th className="py-2">{t("Connect Rate")}</th>
+                  <th className="py-2">{t("Talk Time")}</th>
+                  <th className="py-2">{t("Mode Usage")}</th>
+                  <th className="py-2 text-right">{t("Closed Revenue")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboard.map((r) => {
+                  const name = nameFor(r.repId === "unassigned" ? null : r.repId);
+                  const rate = r.calls ? Math.round((r.connects / r.calls) * 100) : 0;
+                  return (
+                    <tr key={r.repId} className="border-b border-[#E7E7EC] last:border-0">
+                      <td className="py-3">
+                        <span className="flex items-center gap-2.5 font-medium">
+                          <Avatar name={name} /> {name}
+                        </span>
+                      </td>
+                      <td className="py-3 font-num">{r.calls}</td>
+                      <td className="py-3 font-num">{rate}%</td>
+                      <td className="py-3 font-num">{Math.round(r.talkSec / 60)}m</td>
+                      <td className="py-3">
+                        <span className="flex flex-wrap gap-1">
+                          {MODE_KEYS.filter((k) => r.modes[k]).map((k) => (
+                            <StatusPill key={k} label={`${MODE_LABEL[k]} ${r.modes[k]}`} tone="neutral" />
+                          ))}
+                          {!MODE_KEYS.some((k) => r.modes[k]) && <span className="text-[#6B6B76]">—</span>}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right font-num font-semibold">{money(r.revenue)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 

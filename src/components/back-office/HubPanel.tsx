@@ -126,7 +126,7 @@ export function HubPanel() {
       </Card>
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           <Radio className="h-5 w-5" />
           <h3 className="font-semibold">Recent Events</h3>
         </div>
@@ -147,7 +147,7 @@ export function HubPanel() {
       </Card>
 
       <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none lg:col-span-2">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           <Webhook className="h-5 w-5" />
           <h3 className="font-semibold">Event Webhooks</h3>
         </div>
