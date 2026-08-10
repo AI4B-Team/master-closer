@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { GraduationCap, Sparkles, Send, RotateCcw, Bot } from "lucide-react";
 import { closeObjection } from "@/lib/demo.functions";
+import { assemblePromptForCall } from "@/lib/closer-profiles.functions";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fetchObjectionLibrary } from "@/lib/objections";
