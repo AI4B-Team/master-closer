@@ -376,6 +376,17 @@ function Proposals({ loading, proposals }: { loading: boolean; proposals: any[] 
 
   if (loading) return <Panel title="Proposal Inbox"><SkeletonRows rows={5} /></Panel>;
 
+  // Proposals carry an evidence window; show how much of it is left.
+  const hoursLeft = (iso: string) => (new Date(iso).getTime() - Date.now()) / 3600000;
+  const expirySoon = (iso: string) => hoursLeft(iso) < 24;
+  const expiryLabel = (iso: string) => {
+    const h = hoursLeft(iso);
+    if (h <= 0) return "Expired";
+    if (h < 1) return "Expires In Under An Hour";
+    if (h < 48) return `Expires In ${Math.round(h)} Hours`;
+    return `Expires In ${Math.round(h / 24)} Days`;
+  };
+
   const pending = proposals.filter((p) => p.status === "pending");
   const reviewed = proposals.filter((p) => p.status !== "pending");
 
