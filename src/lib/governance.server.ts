@@ -356,6 +356,8 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
     });
   }
 
+  // Safe to wipe: worklist_feedback keeps its own subject ids and its FK is
+  // ON DELETE SET NULL, so human "not hot"/"dismiss" mutes survive the rebuild.
   await db().from("worklist_nominations").delete().eq("workspace_id", ctx.workspaceId);
   if (rows.length) await db().from("worklist_nominations").insert(rows);
 
