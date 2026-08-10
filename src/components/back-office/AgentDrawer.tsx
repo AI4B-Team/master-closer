@@ -17,6 +17,7 @@ import { AgentQuickDrill } from "@/components/back-office/AgentQuickDrill";
 import { helpSystemPrompt } from "@/lib/agents.functions";
 import { listPromptVersions, recordPromptVersion, revertPromptVersion } from "@/lib/prompt-versions.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { logActivity } from "@/lib/activity";
 
 type Agent = {
   id: string;
