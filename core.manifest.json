@@ -1,0 +1,39 @@
+{
+  "app_id": "master-closer",
+  "name": "Master Closer",
+  "description": "AI closer for live sales calls: AI runs the call, hybrid hands off to a human, or copilot whispers the next best response.",
+  "version": "1.0.0",
+  "base_url": "https://project--e4a2e757-f7bb-4f36-9841-e1842c896b80-dev.lovable.app",
+  "redirect_uris": [
+    "https://project--e4a2e757-f7bb-4f36-9841-e1842c896b80-dev.lovable.app/api/public/core/callback",
+    "https://project--e4a2e757-f7bb-4f36-9841-e1842c896b80.lovable.app/api/public/core/callback",
+    "http://localhost:8080/api/public/core/callback"
+  ],
+  "auth": {
+    "flow": "authorization_code",
+    "start_path": "/api/public/core/start",
+    "callback_path": "/api/public/core/callback",
+    "refresh_path": "/api/public/core/refresh",
+    "token_endpoint": "/api/public/v1/auth/token",
+    "refresh_endpoint": "/api/public/v1/auth/refresh"
+  },
+  "embed": {
+    "supported": true,
+    "query_param": "embed=1",
+    "note": "Chrome (sidebar, topbar) is suppressed so Core can frame Master Closer inside its console."
+  },
+  "core_dependencies": [
+    "POST /api/public/v1/policy/assert",
+    "POST /api/public/v1/policy/assert-bulk",
+    "POST /api/public/v1/policy/record",
+    "POST /api/public/v1/suppressions",
+    "GET /api/public/v1/suppressions",
+    "GET /api/public/v1/workspaces",
+    "GET /api/public/v1/me"
+  ],
+  "scopes": ["policy:assert", "suppressions:read", "suppressions:write", "workspaces:read"],
+  "webhooks": {
+    "supported": false,
+    "note": "Core does not currently emit webhooks and defines no signature header or HMAC scheme. No receiver is registered until Core exposes one."
+  }
+}
