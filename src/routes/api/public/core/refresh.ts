@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/public/core/refresh")({
 
         const requested = (await request.json().catch(() => null)) as { workspace_id?: string } | null;
 
-        const res = await fetch(`${apiUrl.replace(/\/$/, "")}/api/public/v1/auth/refresh`, {
+        const res = await fetch(`${apiUrl}/api/public/v1/auth/refresh`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({

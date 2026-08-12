@@ -14,7 +14,7 @@
  *   entitlement-check endpoint to call.
  */
 
-import { createCoreClient, type CoreClient } from "./sdk";
+import { createCoreClient, normalizeCoreBase, type CoreClient } from "./sdk";
 
 export const CORE_APP_ID_DEFAULT = "master-closer";
 
@@ -39,7 +39,8 @@ export class CoreUnavailableError extends Error {
 }
 
 export function coreConfig() {
-  const apiUrl = process.env["CORE_API_URL"];
+  const rawApiUrl = process.env["CORE_API_URL"];
+  const apiUrl = rawApiUrl ? normalizeCoreBase(rawApiUrl) : rawApiUrl;
   const authUrl = process.env["CORE_AUTH_URL"];
   const appId = process.env["CORE_APP_ID"] || CORE_APP_ID_DEFAULT;
   const serviceKey = process.env["CORE_SERVICE_KEY"];
