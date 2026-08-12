@@ -132,9 +132,15 @@ function PipelinePage() {
   });
 
   const { data: members } = useQuery({
-    queryKey: ["org-members"],
+    queryKey: ["workspace-members", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email");
+      // Scope owners to this workspace — an org can hold several workspaces.
+      const { data: rows } = await supabase
+        .from("workspace_members").select("user_id").eq("workspace_id", wsId!);
+      const ids = (rows ?? []).map((r) => r.user_id);
+      if (ids.length === 0) return [];
+      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
       return data ?? [];
     },
   });
