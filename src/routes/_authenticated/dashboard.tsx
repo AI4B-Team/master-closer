@@ -91,7 +91,8 @@ function Dashboard() {
   /* Lead Scout's picks for today, so the book gets worked, not just the recent end of it. */
   const fetchWorklist = useServerFn(listWorklist);
   const { data: worklist } = useQuery({
-    queryKey: ["dashboard-worklist"],
+    queryKey: ["dashboard-worklist", wsId],
+    enabled: !!wsId,
     queryFn: () => fetchWorklist(),
   });
 
