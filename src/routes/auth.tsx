@@ -8,6 +8,17 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import team1 from "@/assets/team-1.jpg";
+import team2 from "@/assets/team-2.jpg";
+import team3 from "@/assets/team-3.jpg";
+import team4 from "@/assets/team-4.jpg";
+
+const TEAM_AVATARS = [
+  { src: team1, alt: "Sales team member" },
+  { src: team2, alt: "Sales team member" },
+  { src: team3, alt: "Sales team member" },
+  { src: team4, alt: "Sales team member" },
+];
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -136,10 +147,15 @@ function AuthPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-10 w-10 rounded-full border-2 border-[#0B0B0E] bg-white/10"
+              {TEAM_AVATARS.map(({ src, alt }) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={alt}
+                  loading="lazy"
+                  width={512}
+                  height={512}
+                  className="h-10 w-10 rounded-full border-2 border-[#0B0B0E] object-cover"
                 />
               ))}
             </div>
