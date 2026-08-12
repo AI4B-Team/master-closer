@@ -85,11 +85,6 @@ function ResetPasswordPage() {
             Choose a strong password and you'll be right back in your workspace, ready to run calls.
           </p>
         </div>
-
-        <div
-          className="pointer-events-none absolute -bottom-32 -right-32 h-[520px] w-[520px] rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #CC0000 0%, transparent 70%)" }}
-        />
       </div>
 
       {/* Right panel — reset form */}
