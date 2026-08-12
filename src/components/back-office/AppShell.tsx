@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useFirstRunSetup } from "@/hooks/use-first-run";
 import { usePrefs, LANGUAGES } from "@/hooks/use-prefs";
+import { useEmbedMode } from "@/hooks/useEmbedMode";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
