@@ -8,6 +8,17 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import team1 from "@/assets/team-1.jpg";
+import team2 from "@/assets/team-2.jpg";
+import team3 from "@/assets/team-3.jpg";
+import team4 from "@/assets/team-4.jpg";
+
+const TEAM_AVATARS = [
+  { src: team1, alt: "Sales team member" },
+  { src: team2, alt: "Sales team member" },
+  { src: team3, alt: "Sales team member" },
+  { src: team4, alt: "Sales team member" },
+];
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
