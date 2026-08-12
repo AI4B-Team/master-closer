@@ -139,7 +139,7 @@ function AuthPage() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="h-10 w-10 rounded-full border-2 border-[#0B0B0E] bg-gradient-to-br from-white/20 to-white/5"
+                  className="h-10 w-10 rounded-full border-2 border-[#0B0B0E] bg-white/10"
                 />
               ))}
             </div>
@@ -149,11 +149,6 @@ function AuthPage() {
           </div>
         </div>
 
-        {/* subtle ambient orb */}
-        <div
-          className="pointer-events-none absolute -bottom-32 -right-32 h-[520px] w-[520px] rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #CC0000 0%, transparent 70%)" }}
-        />
       </div>
 
       {/* Right panel — auth form */}
