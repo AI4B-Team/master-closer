@@ -99,9 +99,16 @@ function LeadsPage() {
   });
 
   const { data: members } = useQuery({
-    queryKey: ["org-members"],
+    queryKey: ["workspace-members", wsId],
+    enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id, full_name, email");
+      // Scope owners to this workspace — an org can hold several workspaces.
+      const { data: rows, error: mErr } = await supabase
+        .from("workspace_members").select("user_id").eq("workspace_id", wsId!);
+      if (mErr) throw mErr;
+      const ids = (rows ?? []).map((r) => r.user_id);
+      if (ids.length === 0) return [];
+      const { data, error } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
       if (error) throw error;
       return data ?? [];
     },

@@ -11,6 +11,7 @@ import { linePerformance, promoteLineToProfile } from "@/lib/line-performance.fu
 import { BarChart3, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 const RANGES = [7, 30, 90] as const;
 
@@ -24,6 +25,8 @@ export function LinePerformancePanel({
 }: {
   profiles?: Array<{ id: string; name: string }>;
 }) {
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
   const run = useServerFn(linePerformance);
   const promote = useServerFn(promoteLineToProfile);
   const [days, setDays] = useState<number>(30);
@@ -44,7 +47,8 @@ export function LinePerformancePanel({
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["line-performance", days],
+    queryKey: ["line-performance", wsId, days],
+    enabled: !!wsId,
     queryFn: async () => await run({ data: { days } }),
   });
 

@@ -46,9 +46,8 @@ function Dashboard() {
       ]);
       const won = (deals ?? []).filter((d) => d.stage === "won");
       const revenue = won.reduce((s, d) => s + Number(d.value ?? 0), 0);
-      const closeRate = calls?.length
-        ? (calls.filter((c) => c.outcome === "completed").length / calls.length) * 100
-        : 0;
+      // Close rate is won deals over all deals — a finished call is not a close.
+      const closeRate = deals?.length ? (won.length / deals.length) * 100 : 0;
       const avgProb = calls?.length
         ? calls.reduce((s, c) => s + (c.close_probability ?? 0), 0) / calls.length
         : 0;
@@ -92,7 +91,8 @@ function Dashboard() {
   /* Lead Scout's picks for today, so the book gets worked, not just the recent end of it. */
   const fetchWorklist = useServerFn(listWorklist);
   const { data: worklist } = useQuery({
-    queryKey: ["dashboard-worklist"],
+    queryKey: ["dashboard-worklist", wsId],
+    enabled: !!wsId,
     queryFn: () => fetchWorklist(),
   });
 
@@ -158,7 +158,7 @@ function Dashboard() {
 
       <div className="kpis">
         <Kpi label="Calls Today" value={String(stats?.callsToday ?? 0)} icon={PhoneCall} {...KPI_TINTS.blue} delta="Today" to="/calls" />
-        <Kpi label="Close Rate" value={`${(stats?.closeRate ?? 0).toFixed(1)}%`} icon={Percent} {...KPI_TINTS.red} delta="Last 200" to="/team" />
+        <Kpi label="Close Rate" value={`${(stats?.closeRate ?? 0).toFixed(1)}%`} icon={Percent} {...KPI_TINTS.red} delta="Deals Won" to="/pipeline" />
         <Kpi label="Revenue Closed" value={`$${(stats?.revenue ?? 0).toLocaleString()}`} icon={DollarSign} {...KPI_TINTS.mint} delta="Won" to="/pipeline" />
         <Kpi label="Avg Close Probability" value={`${(stats?.avgProb ?? 0).toFixed(0)}%`} icon={TrendingUp} {...KPI_TINTS.lavender} delta="Live" to="/calls" />
       </div>
