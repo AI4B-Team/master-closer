@@ -82,6 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   useLiveWorkspace();
   useFirstRunSetup();
+  useEmbedMode();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
