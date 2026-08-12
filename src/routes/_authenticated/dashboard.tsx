@@ -46,9 +46,8 @@ function Dashboard() {
       ]);
       const won = (deals ?? []).filter((d) => d.stage === "won");
       const revenue = won.reduce((s, d) => s + Number(d.value ?? 0), 0);
-      const closeRate = calls?.length
-        ? (calls.filter((c) => c.outcome === "completed").length / calls.length) * 100
-        : 0;
+      // Close rate is won deals over all deals — a finished call is not a close.
+      const closeRate = deals?.length ? (won.length / deals.length) * 100 : 0;
       const avgProb = calls?.length
         ? calls.reduce((s, c) => s + (c.close_probability ?? 0), 0) / calls.length
         : 0;
