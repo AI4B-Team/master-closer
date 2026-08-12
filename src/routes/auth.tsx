@@ -147,10 +147,15 @@ function AuthPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-10 w-10 rounded-full border-2 border-[#0B0B0E] bg-white/10"
+              {TEAM_AVATARS.map(({ src, alt }) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={alt}
+                  loading="lazy"
+                  width={512}
+                  height={512}
+                  className="h-10 w-10 rounded-full border-2 border-[#0B0B0E] object-cover"
                 />
               ))}
             </div>
