@@ -135,9 +135,16 @@ export class CoreApiError extends Error {
   }
 }
 
+/** Accepts either the Core origin or an origin already ending in /api/public[/v1]. */
+export function normalizeCoreBase(input: string): string {
+  return input.replace(/\/+$/, "").replace(/\/api\/public(\/v1)?$/, "");
+}
+
 export function createCoreClient(options: CoreClientOptions) {
   const doFetch = options.fetchImpl ?? fetch;
-  const base = options.baseUrl.replace(/\/$/, "");
+  // CORE_API_URL may be given as the Core origin or already suffixed with the
+  // /api/public/v1 base path; normalize so paths are never doubled.
+  const base = normalizeCoreBase(options.baseUrl);
 
   function headers(): Record<string, string> {
     return {

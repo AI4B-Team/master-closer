@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/public/core/callback")({
 
         const redirectUri = new URL("/api/public/core/callback", url.origin).toString();
 
-        const res = await fetch(`${apiUrl.replace(/\/$/, "")}/api/public/v1/auth/token`, {
+        const res = await fetch(`${apiUrl}/api/public/v1/auth/token`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ code, redirect_uri: redirectUri, app_id: appId }),
