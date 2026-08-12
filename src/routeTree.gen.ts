@@ -54,6 +54,9 @@ import { Route as ApiV1CampaignsRouteImport } from './routes/api/v1/campaigns'
 import { Route as ApiV1CallsRouteImport } from './routes/api/v1/calls'
 import { Route as ApiPublicReportsDigestRouteImport } from './routes/api/public/reports/digest'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
+import { Route as ApiPublicCoreStartRouteImport } from './routes/api/public/core/start'
+import { Route as ApiPublicCoreRefreshRouteImport } from './routes/api/public/core/refresh'
+import { Route as ApiPublicCoreCallbackRouteImport } from './routes/api/public/core/callback'
 import { Route as ApiPublicAgentsTickRouteImport } from './routes/api/public/agents/tick'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -283,6 +286,21 @@ const ApiPublicHubDispatchRoute = ApiPublicHubDispatchRouteImport.update({
   path: '/api/public/hub/dispatch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCoreStartRoute = ApiPublicCoreStartRouteImport.update({
+  id: '/api/public/core/start',
+  path: '/api/public/core/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCoreRefreshRoute = ApiPublicCoreRefreshRouteImport.update({
+  id: '/api/public/core/refresh',
+  path: '/api/public/core/refresh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCoreCallbackRoute = ApiPublicCoreCallbackRouteImport.update({
+  id: '/api/public/core/callback',
+  path: '/api/public/core/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAgentsTickRoute = ApiPublicAgentsTickRouteImport.update({
   id: '/api/public/agents/tick',
   path: '/api/public/agents/tick',
@@ -333,6 +351,9 @@ export interface FileRoutesByFullPath {
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
+  '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
+  '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
+  '/api/public/core/start': typeof ApiPublicCoreStartRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
@@ -380,6 +401,9 @@ export interface FileRoutesByTo {
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
+  '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
+  '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
+  '/api/public/core/start': typeof ApiPublicCoreStartRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
@@ -429,6 +453,9 @@ export interface FileRoutesById {
   '/api/v1/leads': typeof ApiV1LeadsRoute
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
+  '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
+  '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
+  '/api/public/core/start': typeof ApiPublicCoreStartRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
@@ -478,6 +505,9 @@ export interface FileRouteTypes {
     | '/api/v1/leads'
     | '/api/v1/lists'
     | '/api/public/agents/tick'
+    | '/api/public/core/callback'
+    | '/api/public/core/refresh'
+    | '/api/public/core/start'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
   fileRoutesByTo: FileRoutesByTo
@@ -525,6 +555,9 @@ export interface FileRouteTypes {
     | '/api/v1/leads'
     | '/api/v1/lists'
     | '/api/public/agents/tick'
+    | '/api/public/core/callback'
+    | '/api/public/core/refresh'
+    | '/api/public/core/start'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
   id:
@@ -573,6 +606,9 @@ export interface FileRouteTypes {
     | '/api/v1/leads'
     | '/api/v1/lists'
     | '/api/public/agents/tick'
+    | '/api/public/core/callback'
+    | '/api/public/core/refresh'
+    | '/api/public/core/start'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
   fileRoutesById: FileRoutesById
@@ -595,6 +631,9 @@ export interface RootRouteChildren {
   ApiV1LeadsRoute: typeof ApiV1LeadsRoute
   ApiV1ListsRoute: typeof ApiV1ListsRoute
   ApiPublicAgentsTickRoute: typeof ApiPublicAgentsTickRoute
+  ApiPublicCoreCallbackRoute: typeof ApiPublicCoreCallbackRoute
+  ApiPublicCoreRefreshRoute: typeof ApiPublicCoreRefreshRoute
+  ApiPublicCoreStartRoute: typeof ApiPublicCoreStartRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
   ApiPublicReportsDigestRoute: typeof ApiPublicReportsDigestRoute
 }
@@ -916,6 +955,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHubDispatchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/core/start': {
+      id: '/api/public/core/start'
+      path: '/api/public/core/start'
+      fullPath: '/api/public/core/start'
+      preLoaderRoute: typeof ApiPublicCoreStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/core/refresh': {
+      id: '/api/public/core/refresh'
+      path: '/api/public/core/refresh'
+      fullPath: '/api/public/core/refresh'
+      preLoaderRoute: typeof ApiPublicCoreRefreshRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/core/callback': {
+      id: '/api/public/core/callback'
+      path: '/api/public/core/callback'
+      fullPath: '/api/public/core/callback'
+      preLoaderRoute: typeof ApiPublicCoreCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/agents/tick': {
       id: '/api/public/agents/tick'
       path: '/api/public/agents/tick'
@@ -1007,19 +1067,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1LeadsRoute: ApiV1LeadsRoute,
   ApiV1ListsRoute: ApiV1ListsRoute,
   ApiPublicAgentsTickRoute: ApiPublicAgentsTickRoute,
+  ApiPublicCoreCallbackRoute: ApiPublicCoreCallbackRoute,
+  ApiPublicCoreRefreshRoute: ApiPublicCoreRefreshRoute,
+  ApiPublicCoreStartRoute: ApiPublicCoreStartRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
   ApiPublicReportsDigestRoute: ApiPublicReportsDigestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
