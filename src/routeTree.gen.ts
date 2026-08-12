@@ -55,6 +55,7 @@ import { Route as ApiV1CallsRouteImport } from './routes/api/v1/calls'
 import { Route as ApiPublicReportsDigestRouteImport } from './routes/api/public/reports/digest'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
 import { Route as ApiPublicCoreStartRouteImport } from './routes/api/public/core/start'
+import { Route as ApiPublicCoreRefreshRouteImport } from './routes/api/public/core/refresh'
 import { Route as ApiPublicCoreCallbackRouteImport } from './routes/api/public/core/callback'
 import { Route as ApiPublicAgentsTickRouteImport } from './routes/api/public/agents/tick'
 
@@ -290,6 +291,11 @@ const ApiPublicCoreStartRoute = ApiPublicCoreStartRouteImport.update({
   path: '/api/public/core/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCoreRefreshRoute = ApiPublicCoreRefreshRouteImport.update({
+  id: '/api/public/core/refresh',
+  path: '/api/public/core/refresh',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCoreCallbackRoute = ApiPublicCoreCallbackRouteImport.update({
   id: '/api/public/core/callback',
   path: '/api/public/core/callback',
@@ -346,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
+  '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
   '/api/public/core/start': typeof ApiPublicCoreStartRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
@@ -395,6 +402,7 @@ export interface FileRoutesByTo {
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
+  '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
   '/api/public/core/start': typeof ApiPublicCoreStartRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
@@ -446,6 +454,7 @@ export interface FileRoutesById {
   '/api/v1/lists': typeof ApiV1ListsRoute
   '/api/public/agents/tick': typeof ApiPublicAgentsTickRoute
   '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
+  '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
   '/api/public/core/start': typeof ApiPublicCoreStartRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
@@ -497,6 +506,7 @@ export interface FileRouteTypes {
     | '/api/v1/lists'
     | '/api/public/agents/tick'
     | '/api/public/core/callback'
+    | '/api/public/core/refresh'
     | '/api/public/core/start'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
@@ -546,6 +556,7 @@ export interface FileRouteTypes {
     | '/api/v1/lists'
     | '/api/public/agents/tick'
     | '/api/public/core/callback'
+    | '/api/public/core/refresh'
     | '/api/public/core/start'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
@@ -596,6 +607,7 @@ export interface FileRouteTypes {
     | '/api/v1/lists'
     | '/api/public/agents/tick'
     | '/api/public/core/callback'
+    | '/api/public/core/refresh'
     | '/api/public/core/start'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
@@ -620,6 +632,7 @@ export interface RootRouteChildren {
   ApiV1ListsRoute: typeof ApiV1ListsRoute
   ApiPublicAgentsTickRoute: typeof ApiPublicAgentsTickRoute
   ApiPublicCoreCallbackRoute: typeof ApiPublicCoreCallbackRoute
+  ApiPublicCoreRefreshRoute: typeof ApiPublicCoreRefreshRoute
   ApiPublicCoreStartRoute: typeof ApiPublicCoreStartRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
   ApiPublicReportsDigestRoute: typeof ApiPublicReportsDigestRoute
@@ -949,6 +962,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCoreStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/core/refresh': {
+      id: '/api/public/core/refresh'
+      path: '/api/public/core/refresh'
+      fullPath: '/api/public/core/refresh'
+      preLoaderRoute: typeof ApiPublicCoreRefreshRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/core/callback': {
       id: '/api/public/core/callback'
       path: '/api/public/core/callback'
@@ -1048,6 +1068,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1ListsRoute: ApiV1ListsRoute,
   ApiPublicAgentsTickRoute: ApiPublicAgentsTickRoute,
   ApiPublicCoreCallbackRoute: ApiPublicCoreCallbackRoute,
+  ApiPublicCoreRefreshRoute: ApiPublicCoreRefreshRoute,
   ApiPublicCoreStartRoute: ApiPublicCoreStartRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
   ApiPublicReportsDigestRoute: ApiPublicReportsDigestRoute,
