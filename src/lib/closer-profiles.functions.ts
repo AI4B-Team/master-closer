@@ -185,6 +185,8 @@ export const duplicateCloserProfile = createServerFn({ method: "POST" })
       .from("closer_profiles")
       .select(SELECT)
       .eq("id", data.sourceId)
+      // Only this workspace's profiles or the platform defaults may be copied.
+      .or(`workspace_id.eq.${workspaceId},workspace_id.is.null`)
       .maybeSingle();
     if (!src) throw new Error("That profile is no longer available.");
 
@@ -230,6 +232,7 @@ export const resolveProfileForLead = createServerFn({ method: "GET" })
         .from("leads")
         .select("id, name, company, status, source, industry, timezone, notes, consent")
         .eq("id", data.leadId)
+        .eq("workspace_id", workspaceId)
         .maybeSingle(),
       context.supabase.from("closer_profiles").select(SELECT).eq("workspace_id", workspaceId),
       context.supabase.from("closer_profiles").select(SELECT).is("workspace_id", null),
@@ -271,7 +274,12 @@ export const previewAssembledPrompt = createServerFn({ method: "POST" })
     const workspaceId = await activeWorkspace(context.supabase, context.userId);
 
     const [{ data: profile }, { data: ws }] = await Promise.all([
-      context.supabase.from("closer_profiles").select(SELECT).eq("id", data.profileId).maybeSingle(),
+      context.supabase
+        .from("closer_profiles")
+        .select(SELECT)
+        .eq("id", data.profileId)
+        .or(`workspace_id.eq.${workspaceId},workspace_id.is.null`)
+        .maybeSingle(),
       context.supabase
         .from("workspaces")
         .select("name, legal_business_name, business_state")
