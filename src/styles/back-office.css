@@ -1392,3 +1392,11 @@ select option, select optgroup option, select optgroup { background-color: #ffff
     letter-spacing: 0.04em; color: var(--muted);
   }
 }
+
+/* ---------- Core embed mode (?embed=1): Core frames the app, so drop chrome ---------- */
+.mc-embed .side,
+.mc-embed .topbar,
+.mc-embed .side-scrim { display: none !important; }
+.mc-embed .main,
+.mc-embed .main-collapsed { margin-left: 0 !important; }
+.mc-embed .content { padding-top: 18px; }
