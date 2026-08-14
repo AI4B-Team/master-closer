@@ -1230,6 +1230,85 @@ export type Database = {
           },
         ]
       }
+      core_policy_checks: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_type: string
+          call_id: string | null
+          channel: string | null
+          core_workspace_id: string | null
+          created_at: string
+          decision: string
+          denied_by: string | null
+          id: string
+          identifier: string | null
+          lead_id: string | null
+          policy_check_id: string | null
+          reason: string | null
+          rules_evaluated: Json
+          workspace_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_type?: string
+          call_id?: string | null
+          channel?: string | null
+          core_workspace_id?: string | null
+          created_at?: string
+          decision: string
+          denied_by?: string | null
+          id?: string
+          identifier?: string | null
+          lead_id?: string | null
+          policy_check_id?: string | null
+          reason?: string | null
+          rules_evaluated?: Json
+          workspace_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_type?: string
+          call_id?: string | null
+          channel?: string | null
+          core_workspace_id?: string | null
+          created_at?: string
+          decision?: string
+          denied_by?: string | null
+          id?: string
+          identifier?: string | null
+          lead_id?: string | null
+          policy_check_id?: string | null
+          reason?: string | null
+          rules_evaluated?: Json
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_policy_checks_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "core_policy_checks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "core_policy_checks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_voices: {
         Row: {
           base_voice: string
@@ -2920,6 +2999,9 @@ export type Database = {
         Row: {
           brand_color: string
           business_state: string | null
+          core_legal_entity_id: string | null
+          core_linked_at: string | null
+          core_workspace_id: string | null
           created_at: string
           default_caller_id: string | null
           id: string
@@ -2936,6 +3018,9 @@ export type Database = {
         Insert: {
           brand_color?: string
           business_state?: string | null
+          core_legal_entity_id?: string | null
+          core_linked_at?: string | null
+          core_workspace_id?: string | null
           created_at?: string
           default_caller_id?: string | null
           id?: string
@@ -2952,6 +3037,9 @@ export type Database = {
         Update: {
           brand_color?: string
           business_state?: string | null
+          core_legal_entity_id?: string | null
+          core_linked_at?: string | null
+          core_workspace_id?: string | null
           created_at?: string
           default_caller_id?: string | null
           id?: string
