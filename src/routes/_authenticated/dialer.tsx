@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { fetchObjectionLibrary } from "@/lib/objections";
 import { assemblePromptForCall } from "@/lib/closer-profiles.functions";
+import { assertCanCall, createCoreSuppression } from "@/lib/core/policy.functions";
 import { useCallingWindow } from "@/hooks/use-calling-window";
 import { nextOpenAt, timezoneLabel } from "@/lib/calling-window";
 
@@ -193,6 +194,8 @@ function DialerPage() {
   const askCloser = useServerFn(closeObjection);
   const captureCandidate = useServerFn(captureObjectionCandidate);
   const assemblePrompt = useServerFn(assemblePromptForCall);
+  const corePolicyAssert = useServerFn(assertCanCall);
+  const coreSuppress = useServerFn(createCoreSuppression);
 
   const [sendingAgreement, setSendingAgreement] = useState(false);
 
@@ -568,6 +571,17 @@ function DialerPage() {
         const { data: dncRows } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
         const blocked = (dncRows ?? []).some((d: any) => (d.phone ?? "").replace(/\D/g, "") === target);
         if (blocked) throw new Error("This Number Is On The Do Not Call List.");
+
+        // Core is the authority once this workspace is linked: it decides at the
+        // moment of contact, and a Core failure denies the dial.
+        const verdictCore = await corePolicyAssert({ data: { phone, actorType: mode === "full_ai" ? "ai" : "user" } });
+        if (verdictCore.status === "decided" && verdictCore.decision === "deny") {
+          throw new Error(
+            verdictCore.deniedBy === "core_unavailable"
+              ? "Core Could Not Authorize This Call. Dial Blocked."
+              : `Core Denied This Call${verdictCore.deniedBy ? ` (${verdictCore.deniedBy})` : ""}.`,
+          );
+        }
       }
 
       // Hard stop: quiet hours in the prospect's local time, logged either way.
@@ -904,6 +918,13 @@ function DialerPage() {
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
       await supabase.from("dnc_list").insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone, reason: "Requested on call" });
+      // Push the opt-out to Core so every app in the family stops contacting them.
+      try {
+        const res = await coreSuppress({ data: { phone, reason: "opt_out", notes: "Requested on call", channel: "voice" } });
+        if (res.status === "error") toast.warning("Recorded Locally. Core Suppression Failed — Retry From Compliance.");
+      } catch {
+        toast.warning("Recorded Locally. Core Suppression Failed — Retry From Compliance.");
+      }
       try {
         await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, call_id: callId } } });
       } catch {
