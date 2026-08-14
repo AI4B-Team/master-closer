@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
 import { CallingWindowPanel } from "@/components/back-office/CallingWindowPanel";
+import { CoreGovernancePanel } from "@/components/back-office/CoreGovernancePanel";
 
 import { formatPhone } from "@/lib/phone";
 import {
@@ -267,6 +268,8 @@ function CompliancePage() {
       </Card>
 
       <CallingWindowPanel />
+
+      <CoreGovernancePanel />
 
       <DncRegistry />
 
