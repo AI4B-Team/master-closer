@@ -167,7 +167,7 @@ export const assertCanCall = createServerFn({ method: "POST" })
           actor_type: data.actorType,
           actor_id: context.userId,
           ...row,
-        });
+        } as never);
       } catch {
         /* audit write must never block the compliance decision */
       }
