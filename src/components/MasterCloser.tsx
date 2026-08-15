@@ -264,7 +264,8 @@ function AudioAtmosphere() {
           const rr = rBase * (1 + deform(ang, k));
           const x = cx + Math.cos(ang) * rr;
           const y = cy + Math.sin(ang) * rr;
-          d === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          if (d === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
         ctx.closePath();
         const edge = i / LINES;
