@@ -130,14 +130,31 @@ export async function mirrorSuppressions(args: {
     if (error) throw new Error(error.message);
   }
 
-  // Keep contacts in step so campaign builders skip them too.
-  const { data: touched } = await args.supabase
+  // Keep contacts in step so campaign builders skip them too. Local numbers are
+  // stored as typed, so match on the normalized form rather than raw text.
+  const suppressedSet = new Set(numbers);
+  const { data: candidates } = await args.supabase
     .from("contacts")
-    .update({ suppressed: true, suppressed_at: new Date().toISOString() })
+    .select("id, phone")
     .eq("workspace_id", args.workspaceId)
     .eq("suppressed", false)
-    .in("phone", numbers)
-    .select("id");
+    .not("phone", "is", null);
+  const hitIds = (candidates ?? [])
+    .filter((c: { phone: string | null }) => {
+      const e164 = c.phone ? toE164(c.phone) : null;
+      return !!e164 && suppressedSet.has(e164);
+    })
+    .map((c: { id: string }) => c.id);
+
+  let touched: { id: string }[] = [];
+  if (hitIds.length) {
+    const { data } = await args.supabase
+      .from("contacts")
+      .update({ suppressed: true, suppressed_at: new Date().toISOString() })
+      .in("id", hitIds)
+      .select("id");
+    touched = data ?? [];
+  }
 
   return {
     mirrored: numbers.length,
