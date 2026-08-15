@@ -162,7 +162,8 @@ function WorklistPage() {
                     type="button"
                     size="sm"
                     className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]"
-                    disabled={!r.phone}
+                    disabled={!r.phone || isDnc(r.phone)}
+                    title={isDnc(r.phone) ? "This number is on your Do Not Call list." : undefined}
                     onClick={() => {
                       act.mutate({ id: r.id, action: "worked", score: Number(r.score ?? 0) });
                       navigate({ to: "/dialer", search: { number: r.phone } });
