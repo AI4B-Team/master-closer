@@ -32,7 +32,8 @@ export function prefKeyFor(type: string): keyof NotifyPrefs | null {
     type.startsWith("consent.") ||
     type.startsWith("disclosure.") ||
     type.startsWith("core.") ||
-    type === "lead.flagged_dnc"
+    type === "lead.flagged_dnc" ||
+    type === "lead.released_dnc"
   )
     return "complianceFlags";
   if (type.includes("handoff") || type.includes("transfer")) return "handoffAlerts";
@@ -52,6 +53,8 @@ const LABELS: Record<string, string> = {
   "agreement.signed": "Agreement Signed",
   "campaign.started": "Campaign Started",
   "consent.logged": "Disclosure Logged",
+  "lead.flagged_dnc": "Added To Do Not Call",
+  "lead.released_dnc": "Opt-Out Released",
   "task.due": "Follow-Up Due",
   "task.overdue": "Follow-Up Overdue",
   "agent.proposal_pending": "Proposal Waiting On You",
@@ -127,6 +130,11 @@ function detailOf(payload: unknown) {
       (flagged ? ` · ${flagged} records opted out` : "") +
       (released ? ` · ${released} records released` : "")
     );
+  }
+  // Release rows carry the identifier and whether the lift was family-wide.
+  if (p.identifier || p.scope === "family_wide") {
+    const who = p.identifier || p.phone || "Contact";
+    return p.scope === "family_wide" ? `${who} · released family-wide` : String(who);
   }
   return (
     p.name || p.lead_name || p.title || p.signer_name || p.phone || p.outcome || p.message || "Workspace activity"

@@ -171,6 +171,12 @@ export function LeadDrawer({
       if (r.released?.linesPaused) {
         toast.warning(`${r.released.linesPaused} follow-up line(s) stay paused — reactivate them manually.`);
       }
+      void logActivity("lead.released_dnc", {
+        channel: r.channel === "email" ? "email" : "voice",
+        identifier: r.channel === "email" ? leadEmail : form.phone,
+        scope: "family_wide",
+        lead_id: lead?.id,
+      });
       qc.invalidateQueries({ queryKey: ["lead-core-suppressions"] });
       qc.invalidateQueries({ queryKey: ["lead-suppressed"] });
       qc.invalidateQueries({ queryKey: ["lead-email-screen"] });
