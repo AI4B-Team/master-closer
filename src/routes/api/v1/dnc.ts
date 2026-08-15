@@ -1,7 +1,52 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
+/**
+ * Mirrors an API-taken opt-out onto Core's family-wide suppression list.
+ * Never throws: the local Do Not Call entry already blocks the number, so a Core
+ * outage is reported back to the caller rather than failing the request.
+ */
+async function pushToCore(
+  supabase: any,
+  workspaceId: string,
+  phone: string,
+  reason?: string,
+): Promise<{ status: "ok" | "unlinked" | "error"; reason?: string }> {
+  try {
+    const { data: ws } = await supabase
+      .from("workspaces")
+      .select("core_workspace_id")
+      .eq("id", workspaceId)
+      .maybeSingle();
+    if (!ws?.core_workspace_id) return { status: "unlinked" };
+
+    const { toE164 } = await import("@/lib/core/tenancy.server");
+    const identifier = toE164(phone);
+    if (!identifier) return { status: "error", reason: "unrecognized_phone_format" };
+
+    const { coreService } = await import("@/lib/core/core.server");
+    const { CoreApiError } = await import("@/lib/core/sdk");
+    try {
+      await coreService().suppressions.create({
+        workspace_id: ws.core_workspace_id as string,
+        channel: "voice",
+        identifier,
+        reason: reason || "opt_out",
+      });
+      return { status: "ok" };
+    } catch (e) {
+      return {
+        status: "error",
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+  } catch {
+    return { status: "error", reason: "core_unreachable" };
+  }
+}
+
 /** Do-not-call: add a number and flag the matching lead, emitting the family event. */
+
 export const Route = createFileRoute("/api/v1/dnc")({
   server: {
     handlers: {
@@ -60,6 +105,11 @@ export const Route = createFileRoute("/api/v1/dnc")({
             [body.phone],
           );
 
+          // An opt-out taken over the API is the same promise as one taken in the
+          // UI, so it must reach Core's family-wide list too. Reported, not
+          // fatal: the local block already stands.
+          const core = await pushToCore(supabase, workspaceId, body.phone, body.reason ?? undefined);
+
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.flagged_dnc", {
             phone: body.phone,
@@ -67,9 +117,14 @@ export const Route = createFileRoute("/api/v1/dnc")({
             lead_id: leadIds[0] ?? null,
             leads_flagged: leadIds.length,
             contacts_suppressed: contactsSuppressed,
+            core: core.status,
           });
 
-          return Response.json({ dnc: data, leads_flagged: leadIds.length, contacts_suppressed: contactsSuppressed }, { status: 201 });
+          return Response.json(
+            { dnc: data, leads_flagged: leadIds.length, contacts_suppressed: contactsSuppressed, core },
+            { status: 201 },
+          );
+
 
         } catch (e) {
           return apiError(e);
