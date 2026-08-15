@@ -130,6 +130,77 @@ export const Route = createFileRoute("/api/v1/dnc")({
           return apiError(e);
         }
       },
+      /**
+       * Release a number. Core owns the family-wide list and has no release
+       * endpoint, so when Core still holds an opt-out the local contact stays
+       * suppressed and the response says so — never imply the number is dialable.
+       */
+      DELETE: async ({ request }) => {
+        const { apiClient, apiError } = await import("@/lib/api-auth.server");
+        try {
+          const { supabase, orgId, workspaceId } = await apiClient(request);
+          const url = new URL(request.url);
+          const body = z
+            .object({ id: z.string().uuid().optional(), phone: z.string().min(5).max(32).optional() })
+            .refine((b) => !!(b.id || b.phone), { message: "id or phone is required" })
+            .parse({
+              id: url.searchParams.get("id") ?? undefined,
+              phone: url.searchParams.get("phone") ?? undefined,
+            });
+
+          let q = supabase.from("dnc_list").select("id, phone").eq("workspace_id", workspaceId);
+          q = body.id ? q.eq("id", body.id) : q.eq("phone", body.phone!);
+          const { data: rows, error: findErr } = await q;
+          if (findErr) throw new Error(findErr.message);
+          if (!rows?.length) return Response.json({ error: "Not found" }, { status: 404 });
+
+          const { error: delErr } = await supabase
+            .from("dnc_list")
+            .delete()
+            .in("id", rows.map((r) => r.id));
+          if (delErr) throw new Error(delErr.message);
+
+          const coreStillBlocks = await coreBlocks(supabase, workspaceId, rows[0].phone);
+
+          const { phoneKey } = await import("@/lib/phone");
+          const key = phoneKey(rows[0].phone);
+          let contactsReleased = 0;
+          if (coreStillBlocks.status !== "blocked" && key) {
+            const { data: contacts } = await supabase
+              .from("contacts")
+              .select("id, phone")
+              .eq("workspace_id", workspaceId)
+              .eq("suppressed", true);
+            const ids = (contacts ?? [])
+              .filter((c: { phone: string | null }) => phoneKey(c.phone) === key)
+              .map((c: { id: string }) => c.id);
+            if (ids.length) {
+              const { error: upErr } = await supabase
+                .from("contacts")
+                .update({ suppressed: false, suppressed_at: null })
+                .in("id", ids);
+              if (!upErr) contactsReleased = ids.length;
+            }
+          }
+
+          const { emitEvent } = await import("@/lib/hub.server");
+          await emitEvent(orgId, "lead.released_dnc", {
+            phone: rows[0].phone,
+            entry_id: rows[0].id,
+            contacts_released: contactsReleased,
+            core: coreStillBlocks.status,
+          });
+
+          return Response.json({
+            released: rows.length,
+            contacts_released: contactsReleased,
+            core: coreStillBlocks,
+          });
+        } catch (e) {
+          return apiError(e);
+        }
+      },
     },
   },
 });
+
