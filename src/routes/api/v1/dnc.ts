@@ -323,14 +323,14 @@ export const Route = createFileRoute("/api/v1/dnc")({
 
           const { data, error } = await supabase
             .from("dnc_list")
-            .insert({ org_id: orgId, workspace_id: workspaceId, phone: body.phone, reason: body.reason ?? null })
+            .insert({ org_id: orgId, workspace_id: workspaceId, phone, reason: body.reason ?? null })
             .select("*")
             .single();
           if (error) throw new Error(error.message);
 
           // Match leads on their core digits so a stored +1 prefix never hides a hit.
           const { phoneKey } = await import("@/lib/phone");
-          const key = phoneKey(body.phone);
+          const key = phoneKey(phone);
           const { data: candidates } = await supabase
             .from("leads")
             .select("id, phone")
@@ -349,17 +349,17 @@ export const Route = createFileRoute("/api/v1/dnc")({
           const contactsSuppressed = await suppressContactsForPhonesServer(
             supabase,
             workspaceId,
-            [body.phone],
+            [phone],
           );
 
           // An opt-out taken over the API is the same promise as one taken in the
           // UI, so it must reach Core's family-wide list too. Reported, not
           // fatal: the local block already stands.
-          const core = await pushToCore(supabase, workspaceId, body.phone, body.reason ?? undefined);
+          const core = await pushToCore(supabase, workspaceId, phone, body.reason ?? undefined);
 
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.flagged_dnc", {
-            phone: body.phone,
+            phone,
             reason: data.reason,
             lead_id: leadIds[0] ?? null,
             leads_flagged: leadIds.length,
