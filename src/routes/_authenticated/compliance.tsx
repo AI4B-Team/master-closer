@@ -825,7 +825,7 @@ function EmailOptOuts() {
     },
     onSuccess: (res: any) => {
       toast.success(`${res.identifier} can be emailed again.`);
-      void logActivity("lead.dnc_released", { channel: "email", identifier: res.identifier });
+      void logActivity("lead.released_dnc", { channel: "email", identifier: res.identifier });
       qc.invalidateQueries({ queryKey: ["core-suppressions"] });
     },
     onError: (e: any) => toast.error(e.message),
