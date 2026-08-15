@@ -160,19 +160,44 @@ function LeadsPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       const workspaceId = prof?.active_workspace_id;
       if (!workspaceId) throw new Error("No active workspace");
+
+      // Imported addresses are screened against the family-wide email opt-out
+      // list so nothing here gets emailed after someone opted out.
+      const emails = rows.map((r: any) => (r.email ?? "") as string).filter(Boolean);
+      let emailOptOuts = 0;
+      let emailScreenUnavailable = false;
+      if (emails.length) {
+        const screen = await screenEmails({ data: { emails } });
+        const blocked = new Set(screen.suppressed);
+        emailScreenUnavailable = screen.unavailable;
+        emailOptOuts = emails.filter((e) => blocked.has(e.trim().toLowerCase())).length;
+      }
+
       const { error } = await supabase
         .from("leads")
         .insert(rows.map((r) => ({ ...r, status: "new" as never, org_id: prof!.org_id, workspace_id: workspaceId })));
       if (error) throw error;
       try {
-        await emit({ data: { event_type: "leads.imported", payload: { kind: "leads.imported", count: rows.length } } });
+        await emit({
+          data: {
+            event_type: "leads.imported",
+            payload: { kind: "leads.imported", count: rows.length, email_suppressed: emailOptOuts },
+          },
+        });
       } catch {
         // Never block the import on hub availability.
       }
-      return rows.length;
+      return { count: rows.length, emailOptOuts, emailScreenUnavailable };
     },
-    onSuccess: (n) => {
-      toast.success(`Imported ${n} lead${n === 1 ? "" : "s"}.`);
+    onSuccess: ({ count, emailOptOuts, emailScreenUnavailable }) => {
+      toast.success(`Imported ${count} lead${count === 1 ? "" : "s"}.`);
+      if (emailScreenUnavailable) {
+        toast.warning("Email opt-out check unavailable — treat every imported address as do not email.");
+      } else if (emailOptOuts > 0) {
+        toast.warning(
+          `${emailOptOuts} email address${emailOptOuts === 1 ? " is" : "es are"} on the family-wide opt-out list.`,
+        );
+      }
       setImportOpen(false);
       setCsv("");
       qc.invalidateQueries({ queryKey: ["leads"] });
