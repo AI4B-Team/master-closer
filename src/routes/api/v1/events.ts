@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/v1/events")({
       POST: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { orgId } = await apiClient(request);
+          const { orgId, workspaceId } = await apiClient(request);
           const body = z
             .object({
               event_type: z.enum(EVENT_TYPES),

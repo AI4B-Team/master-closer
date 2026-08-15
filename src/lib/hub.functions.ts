@@ -200,9 +200,9 @@ export const emitOrgEvent = createServerFn({ method: "POST" })
     const { emitEvent } = await import("./hub.server");
     const { data: prof } = await context.supabase
       .from("profiles")
-      .select("org_id")
+      .select("org_id, active_workspace_id")
       .eq("id", context.userId)
       .maybeSingle();
     if (!prof) throw new Error("No profile for the signed-in user.");
-    return emitEvent(prof.org_id, data.event_type, data.payload);
+    return emitEvent(prof.org_id, data.event_type, data.payload, prof.active_workspace_id ?? undefined);
   });

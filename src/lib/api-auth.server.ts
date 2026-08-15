@@ -35,6 +35,16 @@ export async function apiClient(request: Request) {
   if (!prof) throw new Response("No workspace for this user", { status: 403 });
   if (!prof.active_workspace_id) throw new Response("No active workspace", { status: 403 });
 
+  // The profile pointer can outlive the membership row, so re-check it here the
+  // same way the server-function path does before trusting the workspace.
+  const { data: member } = await supabase
+    .from("workspace_members")
+    .select("workspace_id")
+    .eq("workspace_id", prof.active_workspace_id)
+    .eq("user_id", data.claims.sub as string)
+    .maybeSingle();
+  if (!member) throw new Response("Not a member of the active workspace", { status: 403 });
+
   return { supabase, userId: data.claims.sub as string, orgId: prof.org_id, workspaceId: prof.active_workspace_id };
 }
 

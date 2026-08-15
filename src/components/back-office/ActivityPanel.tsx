@@ -32,7 +32,7 @@ function dayLabel(iso: string) {
  * Passive stream of everything that happened in the workspace. Distinct from
  * the bell: the bell is what needs you, this is the record of what occurred.
  */
-const SEEN_KEY = "mc:activity:seen";
+const seenKey = (wsId: string | null | undefined) => `mc:activity:seen:${wsId ?? "none"}`;
 
 const FILTERS = [
   { key: "all", label: "All" },
