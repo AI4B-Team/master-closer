@@ -17,6 +17,8 @@ import { Megaphone, Pause, Play, Plus, PhoneOutgoing, Target, Users, Pencil, Tra
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+import { phoneKey } from "@/lib/phone";
+
 
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -65,7 +67,7 @@ function CampaignsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaigns")
-        .select("*, agents(name), call_lists(name, list_contacts(id))")
+        .select("*, agents(name), call_lists(name, list_contacts(id, phone, consent))")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -86,10 +88,23 @@ function CampaignsPage() {
     queryFn: async () =>
       (await supabase
         .from("call_lists")
-        .select("id, name, list_contacts(id)")
+        .select("id, name, list_contacts(id, phone, consent)")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })).data ?? [],
   });
+
+  const { data: blocked } = useQuery({
+    queryKey: ["campaign-blocked-keys", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const [{ data: dnc }, { data: suppressed }] = await Promise.all([
+        supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+        supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
+      ]);
+      return [...(dnc ?? []), ...(suppressed ?? [])].map((r: any) => phoneKey(r.phone ?? "")).filter(Boolean);
+    },
+  });
+  const blockedKeys = new Set(blocked ?? []);
 
   const { data: callStats } = useQuery({
     queryKey: ["campaign-call-stats", wsId],
@@ -99,6 +114,7 @@ function CampaignsPage() {
       return data ?? [];
     },
   });
+
 
   const statsFor = (id: string) => {
     const rows = (callStats ?? []).filter((c: any) => c.campaign_id === id);
@@ -207,12 +223,18 @@ function CampaignsPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  /** Contacts a campaign can actually dial: excludes opt-outs, local DNC and Core suppressions. */
+  const dialableCount = (list: any) =>
+    ((list?.list_contacts ?? []) as any[]).filter((c) => {
+      if (c.consent === "opt_out") return false;
+      const k = phoneKey(c.phone ?? "");
+      return !(k && blockedKeys.has(k));
+    }).length;
+
   const all = campaigns ?? [];
   const active = all.filter((c: any) => c.status === "active").length;
-  const contactsQueued = all.reduce(
-    (n: number, c: any) => n + (c.call_lists?.list_contacts?.length ?? 0),
-    0,
-  );
+  const contactsQueued = all.reduce((n: number, c: any) => n + dialableCount(c.call_lists), 0);
+
   const totalDialed = (callStats ?? []).length;
 
   const term = search.trim().toLowerCase();
@@ -227,7 +249,7 @@ function CampaignsPage() {
 
   const exportCsv = () => {
     const csv = toCsv(
-      ["Campaign", "Goal", "Mode", "Closer", "List", "Contacts", "Dialed", "Connects", "Status", "Created"],
+      ["Campaign", "Goal", "Mode", "Closer", "List", "Dialable Contacts", "Dialed", "Connects", "Status", "Created"],
       visible.map((c: any) => {
         const s = statsFor(c.id);
         return [
@@ -236,7 +258,7 @@ function CampaignsPage() {
           MODE_LABEL[c.mode] ?? c.mode,
           c.agents?.name ?? "",
           c.call_lists?.name ?? "",
-          c.call_lists?.list_contacts?.length ?? 0,
+          c.call_lists ? dialableCount(c.call_lists) : 0,
           s.dialed,
           s.connects,
           c.status,
@@ -312,7 +334,7 @@ function CampaignsPage() {
                     <SelectContent>
                       {(lists ?? []).map((l: any) => (
                         <SelectItem key={l.id} value={l.id}>
-                          {l.name} · {l.list_contacts?.length ?? 0} contacts
+                          {l.name} · {dialableCount(l)} dialable
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -428,8 +450,9 @@ function CampaignsPage() {
                     <td className="py-3 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
                     <td className="py-3 text-[#6B6B76]">
                       {c.call_lists?.name
-                        ? `${c.call_lists.name} · ${c.call_lists.list_contacts?.length ?? 0}`
+                        ? `${c.call_lists.name} · ${dialableCount(c.call_lists)} dialable`
                         : "—"}
+
                     </td>
                     <td className="py-3 font-mono">{s.dialed} / {s.connects}</td>
                     <td className="py-3"><StatusPill label={c.status} tone={toneForStatus(c.status)} /></td>
