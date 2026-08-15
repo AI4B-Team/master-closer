@@ -131,6 +131,7 @@ export function CoreGovernancePanel() {
         q = q.eq("decision", "deny");
         if (denialAction !== "all") q = q.eq("action", denialAction);
       }
+      if (auditSince) q = q.gte("created_at", auditSince);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(5000);
       if (error) throw error;
       const rows = data ?? [];
