@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw, History, MailWarning } from "lucide-react";
+import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw, History, MailWarning, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/phone";
@@ -107,6 +107,54 @@ export function CoreGovernancePanel() {
     },
   });
 
+  // Compliance keeps its own records, so the filtered audit trail is exportable
+  // in full (not just the 25 rows shown) as a CSV.
+  const exportAudit = useMutation({
+    mutationFn: async () => {
+      let q = supabase
+        .from("core_policy_checks")
+        .select("created_at, identifier, action, channel, decision, denied_by, reason")
+        .eq("workspace_id", wsId!);
+      if (denialAction === "release") {
+        q = q.eq("action", "suppression.release").eq("decision", "allow");
+      } else if (denialAction === "created") {
+        q = q.eq("action", "suppression.create").eq("decision", "allow");
+      } else {
+        q = q.eq("decision", "deny");
+        if (denialAction !== "all") q = q.eq("action", denialAction);
+      }
+      const { data, error } = await q.order("created_at", { ascending: false }).limit(5000);
+      if (error) throw error;
+      const rows = data ?? [];
+      if (!rows.length) throw new Error("There is nothing to export in this view yet.");
+      const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const csv = [
+        ["When", "Identifier", "Channel", "Action", "Decision", "Source", "Reason"].join(","),
+        ...rows.map((r) =>
+          [
+            new Date(r.created_at as string).toISOString(),
+            r.identifier,
+            r.channel,
+            r.action,
+            r.decision,
+            r.denied_by,
+            r.reason,
+          ]
+            .map(cell)
+            .join(","),
+        ),
+      ].join("\n");
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `core-audit-${denialAction}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return rows.length;
+    },
+    onSuccess: (n) => toast.success(`Exported ${n} audit ${n === 1 ? "record" : "records"}.`),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not export the audit trail."),
+  });
 
 
   const doScreen = useMutation({
@@ -396,7 +444,17 @@ export function CoreGovernancePanel() {
                   {o.label}
                 </Button>
               ))}
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={exportAudit.isPending || (denials ?? []).length === 0}
+                onClick={() => exportAudit.mutate()}
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                {exportAudit.isPending ? "Exporting…" : "Export CSV"}
+              </Button>
             </div>
+
             {(denials ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">
                 {denialAction === "release"
