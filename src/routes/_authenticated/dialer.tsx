@@ -447,7 +447,7 @@ function DialerPage() {
       setContact(null);
       return;
     }
-    const [{ data }, { data: dncRows }] = await Promise.all([
+    const [{ data }, { data: dncRows }, { data: suppressedRows }] = await Promise.all([
       supabase
         .from("list_contacts")
         .select("id, name, phone, last_outcome, consent")
@@ -458,9 +458,13 @@ function DialerPage() {
         .order("attempts", { ascending: true })
         .limit(50),
       supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+      // Family-wide opt-outs mirrored from Core land on contacts, not the local DNC list.
+      supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
     ]);
     const onlyDigits = phoneKey;
-    const blocked = new Set((dncRows ?? []).map((d: any) => onlyDigits(d.phone)).filter(Boolean));
+    const blocked = new Set(
+      [...(dncRows ?? []), ...(suppressedRows ?? [])].map((d: any) => onlyDigits(d.phone)).filter(Boolean),
+    );
     const eligible = (data ?? []).filter((row: any) => !blocked.has(onlyDigits(row.phone)));
     const skipped = (data ?? []).length - eligible.length;
     const next = eligible[0];
@@ -581,9 +585,14 @@ function DialerPage() {
       // Hard stop: never dial a number on the Do Not Call list.
       const target = phoneKey(phone);
       if (target) {
-        const { data: dncRows } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
+        const [{ data: dncRows }, { data: suppRows }] = await Promise.all([
+          supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+          supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
+        ]);
         const blocked = (dncRows ?? []).some((d: any) => phoneKey(d.phone) === target);
         if (blocked) throw new Error("This Number Is On The Do Not Call List.");
+        const suppressed = (suppRows ?? []).some((d: any) => phoneKey(d.phone) === target);
+        if (suppressed) throw new Error("This Contact Is Suppressed Family-Wide. Dial Blocked.");
 
         // Core is the authority once this workspace is linked: it decides at the
         // moment of contact, and a Core failure denies the dial.
