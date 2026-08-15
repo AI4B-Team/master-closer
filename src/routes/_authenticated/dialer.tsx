@@ -572,6 +572,7 @@ function DialerPage() {
     setBusy(true);
     // State updates don't land within this tick, so the verdict travels locally too.
     let recBasis: { consentType: string; requiresAnnouncement: boolean } | null = null;
+    let recJurisdiction = jurisdiction;
     try {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
@@ -604,7 +605,10 @@ function DialerPage() {
             calledState: rec.calledState,
           });
           recBasis = { consentType: rec.consentType, requiresAnnouncement: rec.requiresAnnouncement };
-          if (rec.calledState) setJurisdiction(rec.calledState);
+          if (rec.calledState) {
+            recJurisdiction = rec.calledState;
+            setJurisdiction(rec.calledState);
+          }
           if (rec.decision === "deny") {
             throw new Error("Core Denied Recording For This Jurisdiction. Call Blocked.");
           }
@@ -659,7 +663,7 @@ function DialerPage() {
         setPreConnectPlaying(true);
         await logDisclosure({
           callId: call.id,
-          jurisdiction,
+          jurisdiction: recJurisdiction,
           line: script,
           method: "outbound_pre_connect_audio",
           consentBasis: recBasis,
@@ -679,7 +683,7 @@ function DialerPage() {
         setTranscript([{ speaker: "Master Closer", text: script, tone: "disclosure" }]);
         await logDisclosure({
           callId: call.id,
-          jurisdiction,
+          jurisdiction: recJurisdiction,
           line: script,
           method: "pre_call_disclosure",
           consentBasis: recBasis,
