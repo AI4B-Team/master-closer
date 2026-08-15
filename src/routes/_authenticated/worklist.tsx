@@ -85,9 +85,13 @@ function WorklistPage() {
       const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
       const ws = prof?.active_workspace_id;
       if (!ws) return new Set<string>();
-      const { data, error } = await supabase.from("dnc_list").select("phone").eq("workspace_id", ws);
+      const [{ data, error }, { data: supp, error: suppErr }] = await Promise.all([
+        supabase.from("dnc_list").select("phone").eq("workspace_id", ws),
+        supabase.from("contacts").select("phone").eq("workspace_id", ws).eq("suppressed", true),
+      ]);
       if (error) throw error;
-      return new Set((data ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+      if (suppErr) throw suppErr;
+      return new Set([...(data ?? []), ...(supp ?? [])].map((d: any) => phoneKey(d.phone)).filter(Boolean));
     },
   });
   const isDnc = (phone?: string | null) => {
