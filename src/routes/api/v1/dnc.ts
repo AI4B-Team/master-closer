@@ -78,6 +78,68 @@ async function coreBlocks(
   }
 }
 
+/**
+ * Lifts Core's family-wide voice opt-out for a number, so an API release can be
+ * as complete as the one in the Compliance Center. Audited in core_policy_checks
+ * exactly like the in-app release, and never fatal: the caller is told what
+ * happened so an outage is never read as "released".
+ */
+async function releaseCoreVoice(
+  supabase: any,
+  workspaceId: string,
+  phone: string,
+  notes?: string,
+): Promise<{ status: "released" | "none" | "unlinked" | "error"; reason?: string; released?: number }> {
+  try {
+    const { data: ws } = await supabase
+      .from("workspaces")
+      .select("core_workspace_id")
+      .eq("id", workspaceId)
+      .maybeSingle();
+    if (!ws?.core_workspace_id) return { status: "unlinked" };
+
+    const { toE164 } = await import("@/lib/core/tenancy.server");
+    const identifier = toE164(phone);
+    if (!identifier) return { status: "error", reason: "unrecognized_phone_format" };
+
+    const { coreService } = await import("@/lib/core/core.server");
+    const { CoreApiError } = await import("@/lib/core/sdk");
+    const svc = coreService();
+    try {
+      const { suppressions } = await svc.suppressions.list(
+        ws.core_workspace_id as string,
+        identifier,
+      );
+      const voice = suppressions.filter((s) => s.channel !== "email");
+      if (!voice.length) return { status: "none", released: 0 };
+
+      for (const s of voice) await svc.suppressions.remove(s.id);
+
+      for (const s of voice) {
+        await supabase.from("core_policy_checks").insert({
+          workspace_id: workspaceId,
+          core_workspace_id: ws.core_workspace_id,
+          action: "suppression.release",
+          channel: "dial",
+          identifier: s.identifier,
+          decision: "allow",
+          denied_by: null,
+          reason: `suppression_released${notes ? `: ${notes}` : ""}`,
+          actor_type: "automation",
+        });
+      }
+      return { status: "released", released: voice.length };
+    } catch (e) {
+      return {
+        status: "error",
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+  } catch {
+    return { status: "error", reason: "core_unreachable" };
+  }
+}
+
 /** Do-not-call: add a number and flag the matching lead, emitting the family event. */
 
 
@@ -165,9 +227,10 @@ export const Route = createFileRoute("/api/v1/dnc")({
         }
       },
       /**
-       * Release a number. Core owns the family-wide list and has no release
-       * endpoint, so when Core still holds an opt-out the local contact stays
-       * suppressed and the response says so — never imply the number is dialable.
+       * Release a number. By default only the local Do Not Call entry is lifted:
+       * if Core still holds the family-wide opt-out the contact stays suppressed
+       * and the response says so — never imply the number is dialable. Pass
+       * `family_wide=true` to also ask Core to lift its suppression (audited).
        */
       DELETE: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
@@ -175,11 +238,18 @@ export const Route = createFileRoute("/api/v1/dnc")({
           const { supabase, orgId, workspaceId } = await apiClient(request);
           const url = new URL(request.url);
           const body = z
-            .object({ id: z.string().uuid().optional(), phone: z.string().min(5).max(32).optional() })
+            .object({
+              id: z.string().uuid().optional(),
+              phone: z.string().min(5).max(32).optional(),
+              family_wide: z.boolean().default(false),
+              notes: z.string().max(500).optional(),
+            })
             .refine((b) => !!(b.id || b.phone), { message: "id or phone is required" })
             .parse({
               id: url.searchParams.get("id") ?? undefined,
               phone: url.searchParams.get("phone") ?? undefined,
+              family_wide: url.searchParams.get("family_wide") === "true",
+              notes: url.searchParams.get("notes") ?? undefined,
             });
 
           let q = supabase.from("dnc_list").select("id, phone").eq("workspace_id", workspaceId);
@@ -188,6 +258,18 @@ export const Route = createFileRoute("/api/v1/dnc")({
           if (findErr) throw new Error(findErr.message);
           if (!rows?.length) return Response.json({ error: "Not found" }, { status: 404 });
 
+          // Core first: if the caller asked for a family-wide release and Core
+          // refuses, the local entry stays put rather than half-releasing.
+          const coreRelease = body.family_wide
+            ? await releaseCoreVoice(supabase, workspaceId, rows[0].phone, body.notes)
+            : null;
+          if (coreRelease && coreRelease.status === "error") {
+            return Response.json(
+              { error: "Core could not lift the family-wide opt-out.", core: coreRelease, released: 0 },
+              { status: 502 },
+            );
+          }
+
           const { error: delErr } = await supabase
             .from("dnc_list")
             .delete()
@@ -195,6 +277,8 @@ export const Route = createFileRoute("/api/v1/dnc")({
           if (delErr) throw new Error(delErr.message);
 
           const coreStillBlocks = await coreBlocks(supabase, workspaceId, rows[0].phone);
+
+
 
           const { phoneKey } = await import("@/lib/phone");
           const key = phoneKey(rows[0].phone);
@@ -272,6 +356,8 @@ export const Route = createFileRoute("/api/v1/dnc")({
             leads_released: leadsReleased,
             lines_paused: linesPaused,
             core: coreStillBlocks.status,
+            family_wide: !!coreRelease && coreRelease.status === "released",
+            core_released: coreRelease?.released ?? 0,
           });
 
           return Response.json({
@@ -280,6 +366,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
             leads_released: leadsReleased,
             lines_still_paused: linesPaused,
             core: coreStillBlocks,
+            family_wide_release: coreRelease,
           });
 
 
