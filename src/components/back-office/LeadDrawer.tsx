@@ -100,6 +100,21 @@ export function LeadDrawer({
     },
   });
 
+  /* Family-wide opt-outs mirrored from Core live on contacts, not the local list. */
+  const { data: suppressed } = useQuery({
+    queryKey: ["lead-suppressed", leadKey, wsId],
+    enabled: !!leadKey && !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("id, phone, suppressed_at")
+        .eq("workspace_id", wsId!)
+        .eq("suppressed", true)
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []).find((r) => phoneKey(r.phone) === leadKey) ?? null;
+    },
+  });
 
   const { data: calls } = useQuery({
     queryKey: ["lead-calls", lead?.id, wsId],
@@ -245,12 +260,23 @@ export function LeadDrawer({
             </div>
           ) : null}
 
+          {!dnc && suppressed ? (
+            <div className="flex items-start gap-2 rounded-xl border border-[#CC0000]/30 bg-[#CC0000]/5 p-3 text-sm">
+              <ShieldOff className="mt-0.5 h-4 w-4 shrink-0 text-[#CC0000]" />
+              <p className="text-[#6B6B76]">
+                <span className="font-semibold text-[#CC0000]">Suppressed Family-Wide</span>
+                {suppressed.suppressed_at ? ` since ${new Date(suppressed.suppressed_at).toLocaleDateString()}` : ""}.
+                This number cannot be dialed.
+              </p>
+            </div>
+          ) : null}
+
           <div className="flex items-center gap-2">
             <Button
               type="button"
               className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
               onClick={() => navigate({ to: "/dialer" })}
-              disabled={!form.phone || !!dnc}
+              disabled={!form.phone || !!dnc || !!suppressed}
             >
               <Phone className="h-4 w-4 mr-1" /> Call In Dialer
             </Button>
