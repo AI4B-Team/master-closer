@@ -115,6 +115,17 @@ export const inviteMember = createServerFn({ method: "POST" })
       return { userId: existing.id, email, role: data.role, added: true };
     }
 
+    // An invite is a real email send: honour family-wide email opt-outs first.
+    const { assertEmailSendAllowed } = await import("./core/screening.server");
+    const gate = await assertEmailSendAllowed({ supabase: context.supabase, userId: context.userId, email });
+    if (!gate.allowed) {
+      throw new Error(
+        gate.reason === "core_unreachable" || gate.reason?.startsWith("core_")
+          ? "Compliance service is unreachable — invites are paused until it responds."
+          : "That email address has opted out of email. The invite was not sent.",
+      );
+    }
+
     const invited = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data: {
         full_name: data.fullName || email.split("@")[0],
