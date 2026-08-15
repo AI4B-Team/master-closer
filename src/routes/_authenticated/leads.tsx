@@ -133,9 +133,30 @@ function LeadsPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      const workspaceId = prof.active_workspace_id;
+
+      // A lead typed in by hand can already be on Do Not Call or suppressed
+      // family-wide by Core: record it opted out so no surface dials it, and
+      // warn when the address is on the family-wide email opt-out list.
+      const key = phoneKey(form.phone);
+      const phoneBlocked = key ? (await fetchBlockedPhoneKeys(workspaceId)).has(key) : false;
+      let emailBlocked = false;
+      let emailScreenUnavailable = false;
+      if (form.email.trim()) {
+        const screen = await screenEmails({ data: { emails: [form.email] } });
+        emailScreenUnavailable = screen.unavailable;
+        emailBlocked = screen.suppressed.includes(form.email.trim().toLowerCase());
+      }
+
       const { data: lead, error } = await supabase
         .from("leads")
-        .insert({ ...form, status: form.status as never, org_id: prof.org_id, workspace_id: prof.active_workspace_id })
+        .insert({
+          ...form,
+          status: form.status as never,
+          org_id: prof.org_id,
+          workspace_id: workspaceId,
+          ...(phoneBlocked ? { consent: "opt_out" as const } : {}),
+        })
         .select("id, name")
         .single();
       if (error) throw error;
@@ -145,15 +166,23 @@ function LeadsPage() {
       } catch {
         // Never block lead creation on hub availability.
       }
+      return { phoneBlocked, emailBlocked, emailScreenUnavailable };
     },
-    onSuccess: () => {
+    onSuccess: ({ phoneBlocked, emailBlocked, emailScreenUnavailable }) => {
       toast.success("Lead created.");
+      if (phoneBlocked) toast.warning("This number is suppressed — the lead was saved as opted out.");
+      if (emailScreenUnavailable) {
+        toast.warning("Email opt-out check unavailable — treat this address as do not email.");
+      } else if (emailBlocked) {
+        toast.warning("This email address is on the family-wide opt-out list.");
+      }
       setOpen(false);
       setForm({ name: "", email: "", phone: "", company: "", status: "new" });
       qc.invalidateQueries({ queryKey: ["leads"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const importLeads = useMutation({
     mutationFn: async () => {
