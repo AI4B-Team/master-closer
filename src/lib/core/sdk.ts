@@ -174,6 +174,13 @@ export function createCoreClient(options: CoreClientOptions) {
     return payload as T;
   }
 
+  async function del<T>(path: string): Promise<T> {
+    const res = await doFetch(`${base}${path}`, { method: "DELETE", headers: headers() });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) throw new CoreApiError(res.status, payload);
+    return payload as T;
+  }
+
   return {
     policy: {
       /** Point-of-contact authorization. The only call that may authorize outreach. */
@@ -205,6 +212,8 @@ export function createCoreClient(options: CoreClientOptions) {
           `/api/public/v1/suppressions?${params.toString()}`,
         );
       },
+      /** Lift a suppression family-wide. Every app stops treating it as opted out. */
+      remove: (id: string) => del<{ ok: boolean }>(`/api/public/v1/suppressions/${id}`),
     },
 
     /** Workspaces this credential (or user) may act inside. */
