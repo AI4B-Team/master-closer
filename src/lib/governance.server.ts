@@ -3,6 +3,7 @@
 // change leaves the agent as a proposal a human approves.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { localHourIn, resolveLeadTimezone, withLocalHour } from "./calling-window";
+import { phoneKey } from "./phone";
 
 export const LABELER_VERSION = "labeler-v1";
 
@@ -226,9 +227,22 @@ async function runLabeler(ctx: Ctx): Promise<RunStats> {
 async function runScout(ctx: Ctx): Promise<RunStats> {
   await db().from("worklist_nominations").delete().eq("workspace_id", ctx.workspaceId).lt("expires_at", new Date().toISOString());
 
+  /* Do Not Call is authoritative: a nominated number nobody may dial is noise,
+     so opted-out phones never reach the worklist in the first place. */
+  const { data: dnc } = await db()
+    .from("dnc_list")
+    .select("phone")
+    .eq("workspace_id", ctx.workspaceId)
+    .limit(5000);
+  const dncKeys = new Set((dnc ?? []).map((d) => phoneKey(d.phone)).filter(Boolean));
+  const onDnc = (phone?: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && dncKeys.has(k);
+  };
+
   const { data: contacts } = await db()
     .from("contacts")
-    .select("id, name, suppressed")
+    .select("id, name, phone, suppressed")
     .eq("workspace_id", ctx.workspaceId)
     .eq("suppressed", false)
     .limit(500);
@@ -241,7 +255,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
 
   const { data: leads } = await db()
     .from("leads")
-    .select("id, name, status, consent, source, updated_at")
+    .select("id, name, phone, status, consent, source, updated_at")
     .eq("workspace_id", ctx.workspaceId)
     .neq("consent", "opt_out")
     .limit(500);
@@ -285,7 +299,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
 
   const rows: any[] = [];
   const now = Date.now();
-  const okContacts = new Set((contacts ?? []).map((c) => c.id));
+  const okContacts = new Set((contacts ?? []).filter((c) => !onDnc(c.phone)).map((c) => c.id));
 
   for (const line of lines ?? []) {
     if (!okContacts.has(line.contact_id)) continue;
@@ -340,6 +354,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
   for (const lead of leads ?? []) {
     if ((lead.source ?? "").toLowerCase().includes("mock")) continue;
     if (mutedLeads.has(lead.id)) continue;
+    if (onDnc(lead.phone)) continue;
     const hist = (outcomes ?? []).filter((o) => o.lead_id === lead.id);
     const engaged = hist.filter((o) => ["objection_raised", "price_question", "booked", "handed_off"].includes(o.outcome));
     if (!engaged.length) continue;
