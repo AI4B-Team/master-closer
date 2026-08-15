@@ -75,7 +75,7 @@ export function CoreGovernancePanel() {
 
   const { data: denials } = useQuery({
     queryKey: ["core-policy-denials", wsId, linked, denialAction, auditDays],
-    enabled: !!wsId && linked,
+    enabled: !!wsId,
     queryFn: async () => {
       let q = supabase
         .from("core_policy_checks")
@@ -259,6 +259,127 @@ export function CoreGovernancePanel() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const auditTrail = (
+    <div>
+      <h4 className="flex items-center gap-2 text-sm font-semibold">
+        <History className="h-4 w-4" />{" "}
+        {denialAction === "release"
+          ? "Recent Family-Wide Releases"
+          : denialAction === "created"
+            ? "Recent Family-Wide Opt-Outs"
+            : "Recent Blocked Attempts"}
+      </h4>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {denialAction === "release"
+          ? "Every policy decision is recorded. These are the suppressions lifted family-wide, newest first."
+          : denialAction === "created"
+            ? "Every policy decision is recorded. These are the opt-outs added family-wide, newest first."
+            : "Every policy decision is recorded. These are the attempts that were refused, newest first."}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {([
+          { k: "all", label: "All Decisions" },
+          { k: "call", label: "Dial Blocks" },
+          { k: "record", label: "Recording Blocks" },
+          { k: "send", label: "Email Blocks" },
+          { k: "created", label: "Opt-Outs Added" },
+          { k: "release", label: "Releases" },
+        ] as const).map((o) => (
+          <Button
+            key={o.k}
+            size="sm"
+            variant={denialAction === o.k ? "default" : "outline"}
+            onClick={() => setDenialAction(o.k)}
+          >
+            {o.label}
+          </Button>
+        ))}
+        <Select value={auditDays} onValueChange={(v) => setAuditDays(v as typeof auditDays)}>
+          <SelectTrigger className="h-8 w-[150px] text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">Last 7 Days</SelectItem>
+            <SelectItem value="30">Last 30 Days</SelectItem>
+            <SelectItem value="90">Last 90 Days</SelectItem>
+            <SelectItem value="all">All Time</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={exportAudit.isPending || (denials ?? []).length === 0}
+          onClick={() => exportAudit.mutate()}
+        >
+          <Download className="mr-1.5 h-3.5 w-3.5" />
+          {exportAudit.isPending ? "Exporting…" : "Export CSV"}
+        </Button>
+      </div>
+
+      {(denials ?? []).length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {denialAction === "release"
+            ? "No family-wide suppression has been released yet."
+            : denialAction === "created"
+              ? "No family-wide opt-out has been added yet."
+              : denialAction === "record"
+                ? "No recording has been blocked yet."
+                : denialAction === "call"
+                  ? "No dial has been blocked yet."
+                  : denialAction === "send"
+                    ? "No email has been blocked yet."
+                    : "Nothing has been blocked yet."}
+        </p>
+      ) : (
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="py-2">When</th>
+                <th className="py-2">Identifier</th>
+                <th className="py-2">Channel</th>
+                <th className="py-2">Action</th>
+                <th className="py-2">
+                  {denialAction === "release"
+                    ? "Released By"
+                    : denialAction === "created"
+                      ? "Added By"
+                      : "Blocked By"}
+                </th>
+                <th className="py-2">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(denials ?? []).map((d) => (
+                <tr key={d.id} className="border-t">
+                  <td className="py-2 text-muted-foreground">{new Date(d.created_at).toLocaleString()}</td>
+                  <td className="py-2">
+                    {d.identifier ? (d.channel === "email" ? d.identifier : formatPhone(d.identifier)) : "—"}
+                  </td>
+                  <td className="py-2 capitalize">{d.channel ?? "—"}</td>
+                  <td className="py-2 capitalize">
+                    {d.action === "send"
+                      ? "Email"
+                      : d.action === "suppression.release"
+                        ? "Release"
+                        : d.action === "suppression.create"
+                          ? "Opt-Out"
+                          : d.action}
+                  </td>
+                  <td className="py-2">
+                    {d.denied_by ??
+                      (d.action === "suppression.release" || d.action === "suppression.create" ? "Core" : "—")}
+                  </td>
+                  <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <Card className="p-6">
       <div className="flex items-start justify-between gap-4">
@@ -419,127 +540,7 @@ export function CoreGovernancePanel() {
             )}
           </div>
 
-          <div>
-            <h4 className="flex items-center gap-2 text-sm font-semibold">
-              <History className="h-4 w-4" />{" "}
-              {denialAction === "release"
-                ? "Recent Family-Wide Releases"
-                : denialAction === "created"
-                  ? "Recent Family-Wide Opt-Outs"
-                  : "Recent Blocked Attempts"}
-            </h4>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {denialAction === "release"
-                ? "Every Core decision is recorded. These are the suppressions lifted family-wide, newest first."
-                : denialAction === "created"
-                  ? "Every Core decision is recorded. These are the opt-outs added family-wide, newest first."
-                  : "Every Core decision is recorded. These are the attempts Core refused, newest first."}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {([
-                { k: "all", label: "All Decisions" },
-                { k: "call", label: "Dial Blocks" },
-                { k: "record", label: "Recording Blocks" },
-                { k: "send", label: "Email Blocks" },
-                { k: "created", label: "Opt-Outs Added" },
-                { k: "release", label: "Releases" },
-              ] as const).map((o) => (
-                <Button
-                  key={o.k}
-                  size="sm"
-                  variant={denialAction === o.k ? "default" : "outline"}
-                  onClick={() => setDenialAction(o.k)}
-                >
-                  {o.label}
-                </Button>
-              ))}
-              <Select value={auditDays} onValueChange={(v) => setAuditDays(v as typeof auditDays)}>
-                <SelectTrigger className="h-8 w-[150px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Last 7 Days</SelectItem>
-                  <SelectItem value="30">Last 30 Days</SelectItem>
-                  <SelectItem value="90">Last 90 Days</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={exportAudit.isPending || (denials ?? []).length === 0}
-                onClick={() => exportAudit.mutate()}
-              >
-                <Download className="mr-1.5 h-3.5 w-3.5" />
-                {exportAudit.isPending ? "Exporting…" : "Export CSV"}
-              </Button>
-            </div>
-
-
-            {(denials ?? []).length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
-                {denialAction === "release"
-                  ? "No family-wide suppression has been released yet."
-                  : denialAction === "created"
-                  ? "No family-wide opt-out has been added yet."
-                  : denialAction === "record"
-                  ? "Core has not blocked any recording yet."
-                  : denialAction === "call"
-                    ? "Core has not blocked any dial yet."
-                    : denialAction === "send"
-                      ? "Core has not blocked any email yet."
-                      : "Core has not blocked anything yet."}
-              </p>
-
-            ) : (
-              <div className="mt-2 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="text-left text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="py-2">When</th>
-                      <th className="py-2">Identifier</th>
-                      <th className="py-2">Channel</th>
-                      <th className="py-2">Action</th>
-                      <th className="py-2">
-                        {denialAction === "release"
-                          ? "Released By"
-                          : denialAction === "created"
-                            ? "Added By"
-                            : "Blocked By"}
-                      </th>
-                      <th className="py-2">Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(denials ?? []).map((d) => (
-                      <tr key={d.id} className="border-t">
-                        <td className="py-2 text-muted-foreground">{new Date(d.created_at).toLocaleString()}</td>
-                        <td className="py-2">
-                          {d.identifier ? (d.channel === "email" ? d.identifier : formatPhone(d.identifier)) : "—"}
-                        </td>
-                        <td className="py-2 capitalize">{d.channel ?? "—"}</td>
-                        <td className="py-2 capitalize">
-                          {d.action === "send"
-                            ? "Email"
-                            : d.action === "suppression.release"
-                              ? "Release"
-                              : d.action === "suppression.create"
-                                ? "Opt-Out"
-                                : d.action}
-                        </td>
-                        <td className="py-2">
-                          {d.denied_by ??
-                            (d.action === "suppression.release" || d.action === "suppression.create" ? "Core" : "—")}
-                        </td>
-                        <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
-                      </tr>
-
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          {auditTrail}
 
           <Button variant="outline" onClick={() => doUnlink.mutate()} disabled={doUnlink.isPending}>
             <Unlink className="mr-2 h-4 w-4" /> Unlink From Core
@@ -568,6 +569,8 @@ export function CoreGovernancePanel() {
           <p className="text-sm text-muted-foreground">
             Until this workspace is linked, local Do Not Call and calling-window rules govern outreach.
           </p>
+
+          <div className="border-t pt-4">{auditTrail}</div>
         </div>
       )}
     </Card>
