@@ -299,7 +299,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
 
   const rows: any[] = [];
   const now = Date.now();
-  const okContacts = new Set((contacts ?? []).map((c) => c.id));
+  const okContacts = new Set((contacts ?? []).filter((c) => !onDnc(c.phone)).map((c) => c.id));
 
   for (const line of lines ?? []) {
     if (!okContacts.has(line.contact_id)) continue;
