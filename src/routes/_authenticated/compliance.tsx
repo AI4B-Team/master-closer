@@ -607,6 +607,7 @@ function DncRegistry() {
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
       qc.invalidateQueries({ queryKey: ["leads"] });
       qc.invalidateQueries({ queryKey: ["blocked-phone-keys"] });
+      qc.invalidateQueries({ queryKey: ["paused_lead_lines"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
