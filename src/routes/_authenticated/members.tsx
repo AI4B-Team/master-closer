@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -86,13 +87,16 @@ function MembersPage() {
   });
   const emailBlocked = emailIsValid && emailScreen?.status === "decided" && emailScreen.decision === "deny";
 
+  const { data: memWorkspace } = useWorkspace();
+  const memWsId = memWorkspace?.id ?? null;
+
   const { data, isLoading } = useQuery({
-    queryKey: ["members"],
+    queryKey: ["members", memWsId],
     queryFn: () => fetchMembers({}),
   });
 
   const { data: inviteData } = useQuery({
-    queryKey: ["workspace-invites"],
+    queryKey: ["workspace-invites", memWsId],
     queryFn: () => fetchInvites({}),
   });
   const pendingInvites = inviteData?.invites ?? [];

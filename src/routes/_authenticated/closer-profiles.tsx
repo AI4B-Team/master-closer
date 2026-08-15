@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -176,7 +177,8 @@ function CloserProfilesPage() {
   const [trainForm, setTrainForm] = useState({ url: "", industry: "saas" });
   const [trainBaseline, setTrainBaseline] = useState<Row | null>(null);
 
-  const q = useQuery({ queryKey: ["closer-profiles"], queryFn: () => fetchAll({}) });
+  const { data: cpWorkspace } = useWorkspace();
+  const q = useQuery({ queryKey: ["closer-profiles", cpWorkspace?.id ?? null], queryFn: () => fetchAll({}) });
   const mine = (q.data?.profiles ?? []) as unknown as Row[];
   const platform = (q.data?.platform ?? []) as unknown as Row[];
 

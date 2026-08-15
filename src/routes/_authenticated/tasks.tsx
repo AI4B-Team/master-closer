@@ -111,7 +111,7 @@ function TasksPage() {
   });
 
   const { data: team } = useQuery({
-    queryKey: ["tasks-team-options"],
+    queryKey: ["tasks-team-options", wsId],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("id, full_name, email").order("full_name");
       if (error) throw error;

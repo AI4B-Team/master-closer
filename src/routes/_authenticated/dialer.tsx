@@ -840,15 +840,10 @@ function DialerPage() {
         .eq("id", callId);
 
       if (contact) {
-        const { data: row } = await supabase
-          .from("list_contacts")
-          .select("attempts")
-          .eq("id", contact.id)
-          .maybeSingle();
-        await supabase
-          .from("list_contacts")
-          .update({ attempts: (row?.attempts ?? 0) + 1, last_outcome: dial })
-          .eq("id", contact.id);
+        await supabase.rpc("increment_contact_attempt", {
+          _contact_id: contact.id,
+          _outcome: dial,
+        });
       }
 
       try {

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
@@ -85,10 +86,13 @@ function AgentsPage() {
   const fetchWorklist = useServerFn(listWorklist);
   const fetchReport = useServerFn(conversationsReport);
 
-  const agentsQ = useQuery({ queryKey: ["bg-agents"], queryFn: () => fetchAgents({}) });
-  const proposalsQ = useQuery({ queryKey: ["bg-proposals"], queryFn: () => fetchProposals({}) });
-  const worklistQ = useQuery({ queryKey: ["bg-worklist"], queryFn: () => fetchWorklist({}) });
-  const reportQ = useQuery({ queryKey: ["bg-report"], queryFn: () => fetchReport({}) });
+  const { data: agentsWorkspace } = useWorkspace();
+  const agentsWsId = agentsWorkspace?.id ?? null;
+
+  const agentsQ = useQuery({ queryKey: ["bg-agents", agentsWsId], queryFn: () => fetchAgents({}) });
+  const proposalsQ = useQuery({ queryKey: ["bg-proposals", agentsWsId], queryFn: () => fetchProposals({}) });
+  const worklistQ = useQuery({ queryKey: ["bg-worklist", agentsWsId], queryFn: () => fetchWorklist({}) });
+  const reportQ = useQuery({ queryKey: ["bg-report", agentsWsId], queryFn: () => fetchReport({}) });
 
   const modeFn = useServerFn(setAgentMode);
   const pauseFn = useServerFn(pauseAllAgents);
