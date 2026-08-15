@@ -177,21 +177,28 @@ export async function mirrorSuppressions(args: {
     touched = data ?? [];
   }
 
-  // A contact only comes back when neither Core nor any remaining local Do Not
-  // Call entry covers the number. Follow-up lines stay paused: resuming outreach
-  // is a human decision, surfaced in the Compliance Center.
-  let contactsReleased = 0;
+  // Remaining local Do Not Call entries still cover a number even after Core
+  // lifts it, so both release passes below share one read.
+  let localKeys = new Set<string>();
   if (staleRows.length) {
     const { data: remaining } = await args.supabase
       .from("dnc_list")
       .select("phone")
       .eq("workspace_id", args.workspaceId);
-    const localKeys = new Set((remaining ?? []).map((r: { phone: string | null }) => phoneKey(r.phone)));
+    localKeys = new Set((remaining ?? []).map((r: { phone: string | null }) => phoneKey(r.phone)));
+  }
+  const isReleased = (phone: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && !coreKeys.has(k) && !localKeys.has(k);
+  };
+
+  // A contact only comes back when neither Core nor any remaining local Do Not
+  // Call entry covers the number. Follow-up lines stay paused: resuming outreach
+  // is a human decision, surfaced in the Compliance Center.
+  let contactsReleased = 0;
+  if (staleRows.length) {
     const releaseIds = (candidates ?? [])
-      .filter((c: { phone: string | null; suppressed: boolean }) => {
-        const k = phoneKey(c.phone);
-        return c.suppressed && !!k && !coreKeys.has(k) && !localKeys.has(k);
-      })
+      .filter((c: { phone: string | null; suppressed: boolean }) => c.suppressed && isReleased(c.phone))
       .map((c: { id: string }) => c.id);
     if (releaseIds.length) {
       const { data } = await args.supabase
@@ -227,16 +234,8 @@ export async function mirrorSuppressions(args: {
 
   let leadsReleased = 0;
   if (staleRows.length) {
-    const { data: remaining } = await args.supabase
-      .from("dnc_list")
-      .select("phone")
-      .eq("workspace_id", args.workspaceId);
-    const localKeys = new Set((remaining ?? []).map((r: { phone: string | null }) => phoneKey(r.phone)));
     const releaseIds = (leadRows ?? [])
-      .filter((l: { phone: string | null; consent: string }) => {
-        const k = phoneKey(l.phone);
-        return l.consent === "opt_out" && !!k && !coreKeys.has(k) && !localKeys.has(k);
-      })
+      .filter((l: { phone: string | null; consent: string }) => l.consent === "opt_out" && isReleased(l.phone))
       .map((l: { id: string }) => l.id);
     if (releaseIds.length) {
       const { data } = await args.supabase
@@ -248,6 +247,41 @@ export async function mirrorSuppressions(args: {
     }
   }
 
+  // Call-list rows are what the dialer and campaign counts read, so they need
+  // the same consent mirror as leads or a Core opt-out stays dialable in a list.
+  const { data: listRows } = await args.supabase
+    .from("list_contacts")
+    .select("id, phone, consent")
+    .eq("workspace_id", args.workspaceId);
+
+  const listHits = (listRows ?? [])
+    .filter((c: { phone: string | null; consent: string }) => c.consent !== "opt_out" && coreKeys.has(phoneKey(c.phone)))
+    .map((c: { id: string }) => c.id);
+  let listContactsFlagged = 0;
+  if (listHits.length) {
+    const { data } = await args.supabase
+      .from("list_contacts")
+      .update({ consent: "opt_out" })
+      .in("id", listHits)
+      .select("id");
+    listContactsFlagged = (data ?? []).length;
+  }
+
+  let listContactsReleased = 0;
+  if (staleRows.length) {
+    const releaseIds = (listRows ?? [])
+      .filter((c: { phone: string | null; consent: string }) => c.consent === "opt_out" && isReleased(c.phone))
+      .map((c: { id: string }) => c.id);
+    if (releaseIds.length) {
+      const { data } = await args.supabase
+        .from("list_contacts")
+        .update({ consent: "unknown" })
+        .in("id", releaseIds)
+        .select("id");
+      listContactsReleased = (data ?? []).length;
+    }
+  }
+
   return {
     mirrored: numbers.length,
     added,
@@ -256,6 +290,8 @@ export async function mirrorSuppressions(args: {
     contactsReleased,
     leadsFlagged,
     leadsReleased,
+    listContactsFlagged,
+    listContactsReleased,
   };
 }
 
