@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { Link } from "@tanstack/react-router";
+import { fetchBlockedPhoneKeys } from "@/lib/dnc";
 
 export const Route = createFileRoute("/_authenticated/campaigns")({
   head: () => ({
@@ -96,15 +97,9 @@ function CampaignsPage() {
   const { data: blocked } = useQuery({
     queryKey: ["campaign-blocked-keys", wsId],
     enabled: !!wsId,
-    queryFn: async () => {
-      const [{ data: dnc }, { data: suppressed }] = await Promise.all([
-        supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
-        supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
-      ]);
-      return [...(dnc ?? []), ...(suppressed ?? [])].map((r: any) => phoneKey(r.phone ?? "")).filter(Boolean);
-    },
+    queryFn: () => fetchBlockedPhoneKeys(wsId!),
   });
-  const blockedKeys = new Set(blocked ?? []);
+  const blockedKeys = blocked ?? new Set<string>();
 
   const { data: callStats } = useQuery({
     queryKey: ["campaign-call-stats", wsId],

@@ -25,6 +25,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
 import { formatPhone, phoneKey } from "@/lib/phone";
+import { fetchBlockedPhoneKeys } from "@/lib/dnc";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   validateSearch: (s: Record<string, unknown>): { q?: string; lead?: string } => ({
@@ -225,15 +226,7 @@ function LeadsPage() {
   const { data: dncKeys } = useQuery({
     queryKey: ["leads-dnc-keys", wsId],
     enabled: !!wsId,
-    queryFn: async () => {
-      const [{ data, error }, { data: supp, error: suppErr }] = await Promise.all([
-        supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
-        supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
-      ]);
-      if (error) throw error;
-      if (suppErr) throw suppErr;
-      return new Set([...(data ?? []), ...(supp ?? [])].map((d: any) => phoneKey(d.phone)).filter(Boolean));
-    },
+    queryFn: () => fetchBlockedPhoneKeys(wsId!),
   });
   const isDnc = (phone?: string | null) => {
     const k = phoneKey(phone);
