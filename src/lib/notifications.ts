@@ -115,11 +115,16 @@ function detailOf(payload: unknown) {
   if (p.kind === "report.digest" && p.message) return p.message;
   // Core sync rows carry counts or a failure reason, never a name.
   if (p.kind === "core.suppression_sync_failed") return p.reason || "Core was unreachable";
-  if (p.kind === "core.suppressions_synced")
+  if (p.kind === "core.suppressions_synced") {
+    const flagged = Number(p.leads_flagged ?? 0) + Number(p.list_contacts_flagged ?? 0);
+    const released = Number(p.leads_released ?? 0) + Number(p.list_contacts_released ?? 0);
     return (
       `${p.added ?? 0} added to Do Not Call · ${p.mirrored ?? 0} on Core list` +
-      (p.removed ? ` · ${p.removed} lifted by Core` : "")
+      (p.removed ? ` · ${p.removed} lifted by Core` : "") +
+      (flagged ? ` · ${flagged} records opted out` : "") +
+      (released ? ` · ${released} records released` : "")
     );
+  }
   return (
     p.name || p.lead_name || p.title || p.signer_name || p.phone || p.outcome || p.message || "Workspace activity"
   );
