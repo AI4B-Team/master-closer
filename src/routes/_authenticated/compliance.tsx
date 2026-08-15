@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
-import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText, Ban, Trash2 } from "lucide-react";
+import { Megaphone, Search, RotateCcw, ShieldCheck, ScrollText, Ban, Trash2, PauseCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
@@ -21,7 +21,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createCoreSuppression, listCoreSuppressions } from "@/lib/core/policy.functions";
 
 import { formatPhone, phoneKey } from "@/lib/phone";
-import { suppressContactsForPhones, releasePhoneLocally } from "@/lib/dnc";
+import { suppressContactsForPhones, releasePhoneLocally, fetchBlockedPhoneKeys } from "@/lib/dnc";
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
@@ -284,9 +284,131 @@ function CompliancePage() {
 
       <DncRegistry />
 
+      <PausedLinesPanel />
+
       <DisclosureLog />
       </AccountShell>
     </div>
+  );
+}
+
+/**
+ * Suppression pauses live follow-up lines through a database trigger, and
+ * releasing a number deliberately does not restart outreach. Without a surface
+ * to see and resume them, those lines are stranded — this is that surface.
+ */
+function PausedLinesPanel() {
+  const qc = useQueryClient();
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
+  const { data: lines } = useQuery({
+    queryKey: ["paused_lead_lines", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("lead_lines")
+        .select("id, product_line, stage, disposition, updated_at, contacts(id, name, phone, suppressed)")
+        .eq("workspace_id", wsId!)
+        .eq("status", "paused")
+        .order("updated_at", { ascending: false })
+        .limit(200);
+      return data ?? [];
+    },
+  });
+
+  const { data: blockedKeys } = useQuery({
+    queryKey: ["blocked-phone-keys", wsId],
+    enabled: !!wsId,
+    queryFn: () => fetchBlockedPhoneKeys(wsId!),
+  });
+
+  const resume = useMutation({
+    mutationFn: async (line: any) => {
+      const contact = line.contacts;
+      const key = phoneKey(contact?.phone);
+      if (contact?.suppressed) throw new Error("This contact is still suppressed.");
+      if (key && blockedKeys?.has(key)) {
+        throw new Error("This number is still on Do Not Call or suppressed family-wide.");
+      }
+      const { error } = await supabase
+        .from("lead_lines")
+        .update({ status: "live" })
+        .eq("id", line.id);
+      if (error) throw error;
+      return line;
+    },
+    onSuccess: (line) => {
+      toast.success("Follow-up line resumed.");
+      void logActivity("lead_line.resumed", { line_id: line.id, product_line: line.product_line });
+      qc.invalidateQueries({ queryKey: ["paused_lead_lines"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+      <div className="flex items-start gap-3 mb-5">
+        <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+          <PauseCircle className="h-5 w-5 text-[#CC0000]" />
+        </div>
+        <div>
+          <h3 className="text-[17px] font-semibold tracking-[-0.01em]">Paused Follow-Up Lines</h3>
+          <p className="text-[13px] text-[#6B6B76] mt-0.5">
+            Lines paused by an opt-out stay paused after a release. Resume them deliberately.
+          </p>
+        </div>
+      </div>
+
+      {!lines?.length ? (
+        <p className="text-[13px] text-[#6B6B76]">No paused follow-up lines.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="text-left text-[#6B6B76] border-b border-[#E7E7EC]">
+                <th className="py-2 font-medium">Contact</th>
+                <th className="py-2 font-medium">Product Line</th>
+                <th className="py-2 font-medium">Stage</th>
+                <th className="py-2 font-medium text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line: any) => {
+                const contact = line.contacts;
+                const key = phoneKey(contact?.phone);
+                const blocked = !!contact?.suppressed || (!!key && !!blockedKeys?.has(key));
+                return (
+                  <tr key={line.id} className="border-b border-[#E7E7EC] last:border-0">
+                    <td className="py-2.5">
+                      <div className="font-medium">{contact?.name ?? "Unknown Contact"}</div>
+                      <div className="text-xs text-[#6B6B76] font-mono">{formatPhone(contact?.phone ?? "")}</div>
+                    </td>
+                    <td className="py-2.5 text-[#6B6B76]">{line.product_line}</td>
+                    <td className="py-2.5 text-[#6B6B76]">{line.stage ?? line.disposition ?? "—"}</td>
+                    <td className="py-2.5 text-right">
+                      {blocked ? (
+                        <Badge variant="secondary">Still Suppressed</Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => resume.mutate(line)}
+                          disabled={resume.isPending}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                          Resume
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
   );
 }
 
