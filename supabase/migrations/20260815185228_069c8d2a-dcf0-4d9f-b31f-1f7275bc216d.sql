@@ -1,0 +1,1 @@
+delete from public.leads where name = 'Screen Test QA';
