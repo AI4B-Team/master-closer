@@ -236,7 +236,7 @@ function CampaignsPage() {
           MODE_LABEL[c.mode] ?? c.mode,
           c.agents?.name ?? "",
           c.call_lists?.name ?? "",
-          c.call_lists?.list_contacts?.length ?? 0,
+          c.call_lists ? dialableCount(c.call_lists) : 0,
           s.dialed,
           s.connects,
           c.status,
