@@ -46,7 +46,11 @@ export const Route = createFileRoute("/api/public/core/callback")({
           );
         }
 
-        const headers = new Headers({ location: next.startsWith("/") ? next : "/dashboard" });
+        // Only allow same-site paths: "//evil.com" and "/\\evil.com" are
+        // protocol-relative/backslash escapes that browsers treat as absolute.
+        const safeNext =
+          next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/dashboard";
+        const headers = new Headers({ location: safeNext });
         headers.append("set-cookie", setCookie(CORE_ACCESS_COOKIE, body.access_token, body.expires_in));
         headers.append("set-cookie", setCookie(CORE_REFRESH_COOKIE, body.refresh_token, 30 * 24 * 60 * 60));
         return new Response(null, { status: 302, headers });
