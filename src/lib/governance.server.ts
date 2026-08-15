@@ -227,9 +227,22 @@ async function runLabeler(ctx: Ctx): Promise<RunStats> {
 async function runScout(ctx: Ctx): Promise<RunStats> {
   await db().from("worklist_nominations").delete().eq("workspace_id", ctx.workspaceId).lt("expires_at", new Date().toISOString());
 
+  /* Do Not Call is authoritative: a nominated number nobody may dial is noise,
+     so opted-out phones never reach the worklist in the first place. */
+  const { data: dnc } = await db()
+    .from("dnc_list")
+    .select("phone")
+    .eq("workspace_id", ctx.workspaceId)
+    .limit(5000);
+  const dncKeys = new Set((dnc ?? []).map((d) => phoneKey(d.phone)).filter(Boolean));
+  const onDnc = (phone?: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && dncKeys.has(k);
+  };
+
   const { data: contacts } = await db()
     .from("contacts")
-    .select("id, name, suppressed")
+    .select("id, name, phone, suppressed")
     .eq("workspace_id", ctx.workspaceId)
     .eq("suppressed", false)
     .limit(500);
