@@ -545,7 +545,14 @@ function LeadsPage() {
                   <td className="py-3 font-medium">{l.name}</td>
                   <td className="py-3 text-[#6B6B76]">{l.company ?? "—"}</td>
                   <td className="py-3 text-[#6B6B76]">{l.email ?? "—"}</td>
-                  <td className="py-3 text-[#6B6B76]">{formatPhone(l.phone)}</td>
+                  <td className="py-3 text-[#6B6B76]">
+                    <span className="inline-flex items-center gap-2">
+                      {formatPhone(l.phone)}
+                      {isDnc(l.phone) ? (
+                        <Badge className="border-0 bg-[#FDECEC] text-[#A30000]">Do Not Call</Badge>
+                      ) : null}
+                    </span>
+                  </td>
                   <td className="py-3 text-[#6B6B76] capitalize">{(l.consent ?? "unknown").replace("_", " ")}</td>
                   <td className="py-3">
                     <Badge className={`${STATUS_COLORS[l.status] ?? ""} capitalize border-0`}>{l.status}</Badge>
