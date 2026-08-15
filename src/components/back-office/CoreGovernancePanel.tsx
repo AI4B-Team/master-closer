@@ -75,7 +75,7 @@ export function CoreGovernancePanel() {
 
   const { data: denials } = useQuery({
     queryKey: ["core-policy-denials", wsId, linked, denialAction, auditDays],
-    enabled: !!wsId && linked,
+    enabled: !!wsId,
     queryFn: async () => {
       let q = supabase
         .from("core_policy_checks")
