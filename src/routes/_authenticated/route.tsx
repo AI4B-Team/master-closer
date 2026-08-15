@@ -6,7 +6,10 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    if (error || !data.user) // reloadDocument: a soft redirect during SSR streams the sign-in page as a
+      // lazy placeholder and then hydrates it, which React reports as a
+      // hydration mismatch. A document redirect renders /auth cleanly.
+      throw redirect({ to: "/auth", reloadDocument: true });
     return { user: data.user };
   },
   component: () => (
