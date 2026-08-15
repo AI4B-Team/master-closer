@@ -66,7 +66,12 @@ export function describeEvent(e: EventRow): EventDescription {
         detail: p.count ? `${p.count} lead${Number(p.count) === 1 ? "" : "s"}` : "",
       };
     case "lead.flagged_dnc":
-      return { kind, icon: ShieldOff, label: "Flagged Do Not Call", detail: join(p.phone ?? p.name, p.reason) };
+      return {
+        kind,
+        icon: ShieldOff,
+        label: p.channel === "email" ? "Email Opted Out" : "Flagged Do Not Call",
+        detail: join(p.phone ?? p.email ?? p.name, p.reason),
+      };
     case "campaign.launched":
       return { kind, icon: Megaphone, label: "Campaign Launched", detail: join(p.name, p.mode) };
     case "report.digest":
@@ -90,7 +95,12 @@ export function describeEvent(e: EventRow): EventDescription {
     case "line.promoted":
       return { kind, icon: BarChart3, label: "Line Promoted Into Profile", detail: join(p.trigger) };
     case "lead.released_dnc":
-      return { kind, icon: Check, label: "Released From Do Not Call", detail: join(p.phone) };
+      return {
+        kind,
+        icon: Check,
+        label: p.channel === "email" ? "Email Opt-Out Released" : "Released From Do Not Call",
+        detail: join(p.phone ?? p.email, p.family_wide ? "Family-Wide" : ""),
+      };
     case "agent.mode_changed":
       return {
         kind,
