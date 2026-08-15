@@ -227,7 +227,7 @@ function CampaignsPage() {
 
   const exportCsv = () => {
     const csv = toCsv(
-      ["Campaign", "Goal", "Mode", "Closer", "List", "Contacts", "Dialed", "Connects", "Status", "Created"],
+      ["Campaign", "Goal", "Mode", "Closer", "List", "Dialable Contacts", "Dialed", "Connects", "Status", "Created"],
       visible.map((c: any) => {
         const s = statsFor(c.id);
         return [
