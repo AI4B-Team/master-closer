@@ -53,12 +53,24 @@ export const Route = createFileRoute("/api/v1/lists")({
           // and Core-suppressed numbers are flagged so nothing dials them.
           const { fetchBlockedPhoneKeysServer } = await import("@/lib/dnc.server");
           const { phoneKey } = await import("@/lib/phone");
+          const { screenInboundEmails } = await import("@/lib/core/screening.server");
           const blocked = await fetchBlockedPhoneKeysServer(supabase, workspaceId);
+          // Emails travel with the leads, so screen them against the family-wide
+          // opt-out list in one bulk call before anything can be mailed.
+          const emailScreen = await screenInboundEmails({
+            workspaceId,
+            emails: contacts.map((c) => c.email ?? "").filter(Boolean),
+            reasonPrefix: "api_list_push",
+          });
           let suppressed = 0;
+          let emailSuppressed = 0;
           const rows = contacts.map((c) => {
             const k = phoneKey(c.phone);
             const isBlocked = c.consent === "opt_out" || (!!k && blocked.has(k));
             if (isBlocked) suppressed += 1;
+            const emailKey = c.email?.trim().toLowerCase();
+            const emailBlocked = !!emailKey && emailScreen.suppressed.has(emailKey);
+            if (emailBlocked) emailSuppressed += 1;
             return {
               org_id: orgId,
               workspace_id: workspaceId,
@@ -77,6 +89,7 @@ export const Route = createFileRoute("/api/v1/lists")({
           await emitEvent(orgId, "leads.new", {
             count: inserted?.length ?? 0,
             suppressed,
+            email_suppressed: emailSuppressed,
             campaign_id: campaign.id,
             list_id: body.list_id,
           });
@@ -86,10 +99,13 @@ export const Route = createFileRoute("/api/v1/lists")({
               pushed: inserted?.length ?? 0,
               dialable: (inserted?.length ?? 0) - suppressed,
               suppressed,
+              email_suppressed: emailSuppressed,
+              email_screen_unavailable: emailScreen.coreUnavailable,
               campaign_id: campaign.id,
             },
             { status: 201 },
           );
+
 
         } catch (e) {
           return apiError(e);
