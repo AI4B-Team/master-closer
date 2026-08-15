@@ -82,6 +82,22 @@ export function LeadDrawer({
     },
   });
 
+  /* Do Not Call check: the lead's number is matched on its core digits so a
+     stored +1 prefix never hides an opt-out. Reps see this before dialing. */
+  const leadKey = phoneKey(lead?.phone);
+  const { data: dnc } = useQuery({
+    queryKey: ["lead-dnc", leadKey, wsId],
+    enabled: !!leadKey && !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dnc_list")
+        .select("id, phone, reason, added_at")
+        .eq("workspace_id", wsId!)
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []).find((r) => phoneKey(r.phone) === leadKey) ?? null;
+    },
+  });
 
 
   const { data: calls } = useQuery({
