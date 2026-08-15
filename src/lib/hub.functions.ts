@@ -1,15 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-
-const TokenInput = z.object({ token: z.string().min(10) });
+import { HubTokenInput } from "./server-schemas";
 
 /**
  * Standalone hub handoff: verify the Real Elite token, resolve or provision the
  * org + user, then hand the browser a one-time credential to start a local session.
  */
 export const hubSignIn = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => TokenInput.parse(data))
+  .inputValidator((data: unknown) => HubTokenInput.parse(data))
   .handler(async ({ data }) => {
     const { verifyHubToken } = await import("./hub.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -109,7 +108,7 @@ export const hubSignIn = createServerFn({ method: "POST" })
  */
 export const hubLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => TokenInput.parse(data))
+  .inputValidator((data: unknown) => HubTokenInput.parse(data))
   .handler(async ({ data, context }) => {
     const { verifyHubToken } = await import("./hub.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

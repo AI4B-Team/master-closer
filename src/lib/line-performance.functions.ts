@@ -1,24 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-const WIN_WORDS = ["won", "book", "appointment", "sale", "sold", "closed", "demo", "meeting"];
-
-async function activeWorkspace(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("active_workspace_id")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!data?.active_workspace_id) throw new Error("No active workspace for this user.");
-  return data.active_workspace_id as string;
-}
-
-function isWin(disposition: string | null) {
-  if (!disposition) return false;
-  const d = disposition.toLowerCase();
-  return WIN_WORDS.some((w) => d.includes(w));
-}
+import { activeWorkspace } from "./workspace-scope";
+import { isWin } from "./line-performance.shared";
 
 /**
  * Which objection lines actually move calls. Aggregated from live suggestions

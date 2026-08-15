@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { OrgRoleSchema, WsRoleSchema } from "./server-schemas";
 
-const RoleSchema = z.enum(["admin", "manager", "rep"]);
 
 export const listMembers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -55,7 +55,7 @@ export const listMembers = createServerFn({ method: "GET" })
 export const setMemberRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z.object({ userId: z.string().uuid(), role: RoleSchema }).parse(data),
+    z.object({ userId: z.string().uuid(), role: OrgRoleSchema }).parse(data),
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("./team.server");
@@ -81,7 +81,7 @@ export const setMemberRole = createServerFn({ method: "POST" })
 export const inviteMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z.object({ email: z.string().email(), role: RoleSchema, fullName: z.string().optional() }).parse(data),
+    z.object({ email: z.string().email(), role: OrgRoleSchema, fullName: z.string().optional() }).parse(data),
   )
   .handler(async ({ data, context }) => {
     const { assertWorkspaceAdmin } = await import("./team.server");
@@ -212,7 +212,6 @@ export const removeMember = createServerFn({ method: "POST" })
     return { userId: data.userId };
   });
 
-const WsRoleSchema = z.enum(["owner", "admin", "member"]);
 
 /** Changes a teammate's access level inside the caller's active workspace. */
 export const setWorkspaceRole = createServerFn({ method: "POST" })

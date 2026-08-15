@@ -2,16 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
-
-const SummarizeInput = z.object({
-  mode: z.enum(["full_ai", "hybrid", "copilot"]),
-  outcome: z.string().max(80).nullish(),
-  prospect: z.string().max(160).nullish(),
-  lines: z
-    .array(z.object({ speaker: z.string().max(60), text: z.string().max(2000) }))
-    .max(120)
-    .default([]),
-});
+import { SummarizeInput } from "./server-schemas";
 
 export const summarizeCall = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => SummarizeInput.parse(data))

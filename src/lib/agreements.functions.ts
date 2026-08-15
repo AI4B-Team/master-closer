@@ -1,13 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { TokenSchema } from "./server-schemas";
 
 /**
  * Public signing endpoints. The 48-char random token in the URL is the bearer:
  * it is unguessable, scoped to one agreement, and only ever exposes that row's
  * signing surface (never the workspace).
  */
-
-const TokenSchema = z.object({ token: z.string().min(20).max(120) });
 
 type PublicAgreement = {
   id: string;
