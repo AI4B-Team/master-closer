@@ -419,14 +419,38 @@ function DncRegistry() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  // Core holds the family-wide opt-out list and has no release endpoint, so a
+  // local release cannot lift a Core suppression. Say so plainly instead of
+  // implying the number is dialable again.
+  const { data: coreSupp } = useQuery({
+    queryKey: ["core-suppressions", wsId],
+    enabled: !!wsId,
+    queryFn: () => coreList(),
+  });
+
+  const coreKeys = useMemo(() => {
+    const keys = new Set<string>();
+    if (coreSupp?.status === "ok") {
+      for (const s of coreSupp.suppressions) {
+        const k = phoneKey(s.identifier);
+        if (k) keys.add(k);
+      }
+    }
+    return keys;
+  }, [coreSupp]);
+
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("dnc_list").delete().eq("id", id);
+    mutationFn: async (entry: { id: string; phone: string }) => {
+      const { error } = await supabase.from("dnc_list").delete().eq("id", entry.id);
       if (error) throw error;
+      return entry;
     },
-    onSuccess: (_d, id) => {
+    onSuccess: (entry) => {
       toast.success("Number released from Do Not Call.");
-      void logActivity("lead.released_dnc", { entry_id: id });
+      if (coreKeys.has(phoneKey(entry.phone) ?? "")) {
+        toast.warning("Core still holds a family-wide opt-out for this number — dials stay blocked.");
+      }
+      void logActivity("lead.released_dnc", { entry_id: entry.id });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
     },
     onError: (e: any) => toast.error(e.message),
