@@ -34,9 +34,23 @@ export const STATE_RULES: StateRule[] = Object.entries(STATE_NAMES).map(([code, 
   consent: ALL_PARTY.has(code) ? "all_party" : "one_party",
 }));
 
+/**
+ * Accepts a 2-letter code or a full state name (legacy free-text values) and
+ * returns the canonical 2-letter code, or null when it isn't a US state.
+ */
+export function normalizeStateCode(jurisdiction?: string | null): string | null {
+  const raw = String(jurisdiction ?? "").trim();
+  if (!raw) return null;
+  const upper = raw.toUpperCase();
+  if (STATE_NAMES[upper]) return upper;
+  const match = Object.entries(STATE_NAMES).find(([, name]) => name.toUpperCase() === upper);
+  return match ? match[0] : null;
+}
+
 export function isDisclosureRequired(jurisdiction?: string | null): boolean {
-  if (!jurisdiction) return true; // unknown jurisdiction → treat as Required
-  return ALL_PARTY.has(jurisdiction.toUpperCase());
+  const code = normalizeStateCode(jurisdiction);
+  if (!code) return true; // unknown jurisdiction → treat as Required
+  return ALL_PARTY.has(code);
 }
 
 export function disclosureStatus(jurisdiction?: string | null): "Required" | "Optional" {

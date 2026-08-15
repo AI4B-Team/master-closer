@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { parseCsvRows, downloadCsv } from "@/lib/csv";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,10 +36,8 @@ export const Route = createFileRoute("/_authenticated/lists")({
 
 /** Accepts "Name, Phone, Email" per line — the format reps already paste. */
 function parseContacts(raw: string) {
-  return raw
-    .split("\n")
-    .map((line) => line.split(",").map((p) => p.trim()))
-    .filter((parts) => parts[0] && parts[1])
+  return parseCsvRows(raw)
+    .filter((parts) => parts[0] && parts[1] && !/^(name|full ?name)$/i.test(parts[0]))
     .map((parts) => ({ name: parts[0]!, phone: parts[1]!, email: parts[2] || null }));
 }
 
@@ -200,12 +199,7 @@ function ListsPage() {
     const csv = [header, ...rows]
       .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
       .join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${active.name.replace(/\s+/g, "-").toLowerCase()}-contacts.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(`${active.name.replace(/\s+/g, "-").toLowerCase()}-contacts.csv`, csv);
   }
 
   const createList = useMutation({

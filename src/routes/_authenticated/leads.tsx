@@ -23,7 +23,7 @@ import { screenEmails } from "@/lib/core/policy.functions";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
-import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
+import { toCsv, downloadCsv, stampedName, parseCsvRows } from "@/lib/csv";
 import { formatPhone, phoneKey } from "@/lib/phone";
 import { fetchBlockedPhoneKeys } from "@/lib/dnc";
 
@@ -57,11 +57,8 @@ const STATUSES = ["new", "contacted", "qualified", "unqualified", "customer"];
 
 function parseCsv(raw: string) {
   const rows: { name: string; phone: string | null; email: string | null; company: string | null }[] = [];
-  for (const line of raw.split(/\r?\n/)) {
-    const t = line.trim();
-    if (!t) continue;
-    const cols = t.split(",").map((c) => c.trim());
-    if (/^name\b/i.test(cols[0] ?? "")) continue; // header row
+  for (const cols of parseCsvRows(raw)) {
+    if (/^(name|full ?name)$/i.test(cols[0] ?? "")) continue; // header row
     const [name, phone, email, company] = cols;
     if (!name) continue;
     rows.push({ name, phone: phone || null, email: email || null, company: company || null });
