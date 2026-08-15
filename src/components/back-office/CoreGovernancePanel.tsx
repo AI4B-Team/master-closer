@@ -258,8 +258,31 @@ export function CoreGovernancePanel() {
             <p className="mt-1 text-sm text-muted-foreground">
               Every Core decision is recorded. These are the attempts Core refused, newest first.
             </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {([
+                { k: "all", label: "All Decisions" },
+                { k: "call", label: "Dial Blocks" },
+                { k: "record", label: "Recording Blocks" },
+              ] as const).map((o) => (
+                <Button
+                  key={o.k}
+                  size="sm"
+                  variant={denialAction === o.k ? "default" : "outline"}
+                  onClick={() => setDenialAction(o.k)}
+                >
+                  {o.label}
+                </Button>
+              ))}
+            </div>
             {(denials ?? []).length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">Core has not blocked anything yet.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {denialAction === "record"
+                  ? "Core has not blocked any recording yet."
+                  : denialAction === "call"
+                    ? "Core has not blocked any dial yet."
+                    : "Core has not blocked anything yet."}
+              </p>
+
             ) : (
               <div className="mt-2 overflow-x-auto">
                 <table className="w-full text-sm">
