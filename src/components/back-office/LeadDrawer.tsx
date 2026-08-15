@@ -16,6 +16,7 @@ import { TaskPanel } from "@/components/back-office/TaskPanel";
 import { LeadLines } from "@/components/back-office/LeadLines";
 import { ResolvedProfileBadge } from "@/components/back-office/ResolvedProfileBadge";
 import { INDUSTRIES } from "@/lib/closer-profiles";
+import { phoneKey } from "@/lib/phone";
 
 type Lead = {
   id: string;
