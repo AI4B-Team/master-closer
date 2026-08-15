@@ -233,6 +233,43 @@ export function CoreGovernancePanel() {
             )}
           </div>
 
+          <div>
+            <h4 className="flex items-center gap-2 text-sm font-semibold">
+              <History className="h-4 w-4" /> Recent Blocked Attempts
+            </h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Every Core decision is recorded. These are the attempts Core refused, newest first.
+            </p>
+            {(denials ?? []).length === 0 ? (
+              <p className="mt-2 text-sm text-muted-foreground">Core has not blocked anything yet.</p>
+            ) : (
+              <div className="mt-2 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-xs uppercase text-muted-foreground">
+                    <tr>
+                      <th className="py-2">When</th>
+                      <th className="py-2">Number</th>
+                      <th className="py-2">Action</th>
+                      <th className="py-2">Blocked By</th>
+                      <th className="py-2">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(denials ?? []).map((d) => (
+                      <tr key={d.id} className="border-t">
+                        <td className="py-2 text-muted-foreground">{new Date(d.created_at).toLocaleString()}</td>
+                        <td className="py-2">{d.identifier ? formatPhone(d.identifier) : "—"}</td>
+                        <td className="py-2 capitalize">{d.action}</td>
+                        <td className="py-2">{d.denied_by ?? "—"}</td>
+                        <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           <Button variant="outline" onClick={() => doUnlink.mutate()} disabled={doUnlink.isPending}>
             <Unlink className="mr-2 h-4 w-4" /> Unlink From Core
           </Button>
