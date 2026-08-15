@@ -905,7 +905,19 @@ function AgreementDrawer({
     },
   });
 
+  // Surface an email opt-out up front instead of only failing on click.
+  // Must stay above the early return so hook order is stable when the drawer closes.
+  const emailCheck = useQuery({
+    queryKey: ["agreement-email-policy", agreement?.id, agreement?.signer_email],
+    enabled: !!agreement?.signer_email,
+    staleTime: 60_000,
+    queryFn: () =>
+      assertCanEmail({ data: { email: agreement.signer_email, leadId: agreement.lead_id ?? undefined } }),
+  });
+  const emailBlocked = emailCheck.data?.status === "decided" && emailCheck.data.decision === "deny";
+
   if (!agreement) return null;
+
   const link = signingUrl(agreement.token);
 
   // Same rule as creation: an opted-out or family-wide suppressed contact must
