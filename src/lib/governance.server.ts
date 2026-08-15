@@ -354,6 +354,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
   for (const lead of leads ?? []) {
     if ((lead.source ?? "").toLowerCase().includes("mock")) continue;
     if (mutedLeads.has(lead.id)) continue;
+    if (onDnc(lead.phone)) continue;
     const hist = (outcomes ?? []).filter((o) => o.lead_id === lead.id);
     const engaged = hist.filter((o) => ["objection_raised", "price_question", "booked", "handed_off"].includes(o.outcome));
     if (!engaged.length) continue;
