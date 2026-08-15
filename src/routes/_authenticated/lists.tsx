@@ -367,7 +367,11 @@ function ListsPage() {
                 }
               >
                 <div>{l.name}</div>
-                <div className="text-xs text-[#6B6B76]">{l.list_contacts?.length ?? 0} contacts</div>
+                <div className="text-xs text-[#6B6B76]">
+                  {dialableCount(l)} dialable
+                  {blockedCount(l) > 0 ? ` · ${blockedCount(l)} opted out` : ""}
+                </div>
+
               </button>
             ))
           )}
