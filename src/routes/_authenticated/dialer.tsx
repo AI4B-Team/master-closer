@@ -975,7 +975,7 @@ function DialerPage() {
         toast.warning("Recorded Locally. Core Suppression Failed — Retry From Compliance.");
       }
       try {
-        await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, call_id: callId } } });
+        await emit({ data: { event_type: "lead.flagged_dnc", payload: { phone, channel: "voice", call_id: callId, reason: "Requested on call" } } });
       } catch {
         // Hub delivery is best-effort.
       }

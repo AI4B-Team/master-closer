@@ -531,7 +531,11 @@ function DncRegistry() {
       // Keep contact records in step so nominations never resurface these numbers.
       if (workspaceId) await suppressContactsForPhones(workspaceId, numbers);
       // Surface suppression additions in the Activity Log / webhook fan-out.
-      for (const p of numbers) void logActivity("lead.flagged_dnc", { phone: p, reason: reason.trim() || "Added manually" });
+      for (const p of numbers) void logActivity("lead.flagged_dnc", {
+          phone: p,
+          channel: "voice",
+          reason: reason.trim() || "Added manually",
+        });
       // Push each opt-out to Core so every app in the family stops contacting them.
       let coreFailed = 0;
       for (const p of numbers) {
