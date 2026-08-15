@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { activeWorkspace } from "./workspace-scope";
-import { PROFILE_SELECT, ProfileInput } from "./closer-profiles.schema";
+import { PROFILE_SELECT, ProfileInput, ObjectionSchema } from "./closer-profiles.schema";
 
 /** Workspace profiles plus the platform defaults they inherit from. */
 export const listCloserProfiles = createServerFn({ method: "GET" })
