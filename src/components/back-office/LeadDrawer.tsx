@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
-import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus } from "lucide-react";
+import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus, ShieldOff } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 import { LeadLines } from "@/components/back-office/LeadLines";
