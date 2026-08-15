@@ -1,3 +1,14 @@
+/**
+ * Comparison key for two numbers that may be written differently, e.g. a typed
+ * "(305) 555-1234" and Core's E.164 "+13055551234". North American numbers
+ * compare on their 10 digits so the country code never hides a match.
+ */
+export function phoneKey(raw?: string | null): string {
+  const digits = String(raw ?? "").replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) return digits.slice(1);
+  return digits;
+}
+
 /** Format phone numbers with dashes by default: +1 917-555-0199 */
 export function formatPhone(raw?: string | null): string {
   if (!raw) return "—";
