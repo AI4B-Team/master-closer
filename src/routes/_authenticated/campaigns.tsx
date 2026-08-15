@@ -207,12 +207,18 @@ function CampaignsPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  /** Contacts a campaign can actually dial: excludes opt-outs, local DNC and Core suppressions. */
+  const dialableCount = (list: any) =>
+    ((list?.list_contacts ?? []) as any[]).filter((c) => {
+      if (c.consent === "opt_out") return false;
+      const k = phoneKey(c.phone ?? "");
+      return !(k && blockedKeys.has(k));
+    }).length;
+
   const all = campaigns ?? [];
   const active = all.filter((c: any) => c.status === "active").length;
-  const contactsQueued = all.reduce(
-    (n: number, c: any) => n + (c.call_lists?.list_contacts?.length ?? 0),
-    0,
-  );
+  const contactsQueued = all.reduce((n: number, c: any) => n + dialableCount(c.call_lists), 0);
+
   const totalDialed = (callStats ?? []).length;
 
   const term = search.trim().toLowerCase();
