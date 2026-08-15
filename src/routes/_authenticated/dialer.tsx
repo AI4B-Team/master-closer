@@ -462,11 +462,13 @@ function DialerPage() {
       // Family-wide opt-outs mirrored from Core land on contacts, not the local DNC list.
       supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
     ]);
-    const onlyDigits = phoneKey;
+    // phoneKey is the one normalization used everywhere else, so a number
+    // stored as +1 (555) 010-9999 still matches its Do Not Call row.
     const blocked = new Set(
-      [...(dncRows ?? []), ...(suppressedRows ?? [])].map((d: any) => onlyDigits(d.phone)).filter(Boolean),
+      [...(dncRows ?? []), ...(suppressedRows ?? [])].map((d: any) => phoneKey(d.phone)).filter(Boolean),
     );
-    const eligible = (data ?? []).filter((row: any) => !blocked.has(onlyDigits(row.phone)));
+    const eligible = (data ?? []).filter((row: any) => !blocked.has(phoneKey(row.phone)));
+
     const skipped = (data ?? []).length - eligible.length;
     const next = eligible[0];
     if (next) {
