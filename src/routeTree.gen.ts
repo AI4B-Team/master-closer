@@ -54,6 +54,7 @@ import { Route as ApiV1CampaignsRouteImport } from './routes/api/v1/campaigns'
 import { Route as ApiV1CallsRouteImport } from './routes/api/v1/calls'
 import { Route as ApiPublicReportsDigestRouteImport } from './routes/api/public/reports/digest'
 import { Route as ApiPublicHubDispatchRouteImport } from './routes/api/public/hub/dispatch'
+import { Route as ApiPublicCoreSyncSuppressionsRouteImport } from './routes/api/public/core/sync-suppressions'
 import { Route as ApiPublicCoreStartRouteImport } from './routes/api/public/core/start'
 import { Route as ApiPublicCoreRefreshRouteImport } from './routes/api/public/core/refresh'
 import { Route as ApiPublicCoreCallbackRouteImport } from './routes/api/public/core/callback'
@@ -286,6 +287,12 @@ const ApiPublicHubDispatchRoute = ApiPublicHubDispatchRouteImport.update({
   path: '/api/public/hub/dispatch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCoreSyncSuppressionsRoute =
+  ApiPublicCoreSyncSuppressionsRouteImport.update({
+    id: '/api/public/core/sync-suppressions',
+    path: '/api/public/core/sync-suppressions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCoreStartRoute = ApiPublicCoreStartRouteImport.update({
   id: '/api/public/core/start',
   path: '/api/public/core/start',
@@ -354,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
   '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
   '/api/public/core/start': typeof ApiPublicCoreStartRoute
+  '/api/public/core/sync-suppressions': typeof ApiPublicCoreSyncSuppressionsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
@@ -404,6 +412,7 @@ export interface FileRoutesByTo {
   '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
   '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
   '/api/public/core/start': typeof ApiPublicCoreStartRoute
+  '/api/public/core/sync-suppressions': typeof ApiPublicCoreSyncSuppressionsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
@@ -456,6 +465,7 @@ export interface FileRoutesById {
   '/api/public/core/callback': typeof ApiPublicCoreCallbackRoute
   '/api/public/core/refresh': typeof ApiPublicCoreRefreshRoute
   '/api/public/core/start': typeof ApiPublicCoreStartRoute
+  '/api/public/core/sync-suppressions': typeof ApiPublicCoreSyncSuppressionsRoute
   '/api/public/hub/dispatch': typeof ApiPublicHubDispatchRoute
   '/api/public/reports/digest': typeof ApiPublicReportsDigestRoute
 }
@@ -508,6 +518,7 @@ export interface FileRouteTypes {
     | '/api/public/core/callback'
     | '/api/public/core/refresh'
     | '/api/public/core/start'
+    | '/api/public/core/sync-suppressions'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
   fileRoutesByTo: FileRoutesByTo
@@ -558,6 +569,7 @@ export interface FileRouteTypes {
     | '/api/public/core/callback'
     | '/api/public/core/refresh'
     | '/api/public/core/start'
+    | '/api/public/core/sync-suppressions'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
   id:
@@ -609,6 +621,7 @@ export interface FileRouteTypes {
     | '/api/public/core/callback'
     | '/api/public/core/refresh'
     | '/api/public/core/start'
+    | '/api/public/core/sync-suppressions'
     | '/api/public/hub/dispatch'
     | '/api/public/reports/digest'
   fileRoutesById: FileRoutesById
@@ -634,6 +647,7 @@ export interface RootRouteChildren {
   ApiPublicCoreCallbackRoute: typeof ApiPublicCoreCallbackRoute
   ApiPublicCoreRefreshRoute: typeof ApiPublicCoreRefreshRoute
   ApiPublicCoreStartRoute: typeof ApiPublicCoreStartRoute
+  ApiPublicCoreSyncSuppressionsRoute: typeof ApiPublicCoreSyncSuppressionsRoute
   ApiPublicHubDispatchRoute: typeof ApiPublicHubDispatchRoute
   ApiPublicReportsDigestRoute: typeof ApiPublicReportsDigestRoute
 }
@@ -955,6 +969,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHubDispatchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/core/sync-suppressions': {
+      id: '/api/public/core/sync-suppressions'
+      path: '/api/public/core/sync-suppressions'
+      fullPath: '/api/public/core/sync-suppressions'
+      preLoaderRoute: typeof ApiPublicCoreSyncSuppressionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/core/start': {
       id: '/api/public/core/start'
       path: '/api/public/core/start'
@@ -1070,6 +1091,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCoreCallbackRoute: ApiPublicCoreCallbackRoute,
   ApiPublicCoreRefreshRoute: ApiPublicCoreRefreshRoute,
   ApiPublicCoreStartRoute: ApiPublicCoreStartRoute,
+  ApiPublicCoreSyncSuppressionsRoute: ApiPublicCoreSyncSuppressionsRoute,
   ApiPublicHubDispatchRoute: ApiPublicHubDispatchRoute,
   ApiPublicReportsDigestRoute: ApiPublicReportsDigestRoute,
 }
