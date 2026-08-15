@@ -475,6 +475,11 @@ function DncRegistry() {
         toast.info(
           `Cleared the opt-out on ${entry.released.leads} lead(s) and ${entry.released.contacts} contact(s).`,
         );
+        if (entry.released.linesPaused) {
+          toast.warning(
+            `${entry.released.linesPaused} follow-up line(s) stay paused — reactivate them manually.`,
+          );
+        }
       }
       void logActivity("lead.released_dnc", { entry_id: entry.id });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });

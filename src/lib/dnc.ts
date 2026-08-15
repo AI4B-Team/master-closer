@@ -66,7 +66,7 @@ export async function fetchBlockedPhoneKeys(wsId: string) {
  */
 export async function releasePhoneLocally(wsId: string, phone: string | null | undefined) {
   const key = phoneKey(phone);
-  if (!key) return { contacts: 0, leads: 0 };
+  if (!key) return { contacts: 0, leads: 0, linesPaused: 0 };
 
   const [contacts, leads] = await Promise.all([
     supabase.from("contacts").select("id, phone").eq("workspace_id", wsId).eq("suppressed", true),
@@ -82,5 +82,20 @@ export async function releasePhoneLocally(wsId: string, phone: string | null | u
   if (leadIds.length) {
     await supabase.from("leads").update({ consent: "unknown" }).in("id", leadIds);
   }
-  return { contacts: contactIds.length, leads: leadIds.length };
+
+  // Suppression pauses live follow-up lines through a database trigger.
+  // Resuming them is a human decision, so report the count instead of
+  // silently restarting outreach.
+  let linesPaused = 0;
+  if (contactIds.length) {
+    const { count } = await supabase
+      .from("lead_lines")
+      .select("id", { count: "exact", head: true })
+      .eq("workspace_id", wsId)
+      .eq("status", "paused")
+      .in("contact_id", contactIds);
+    linesPaused = count ?? 0;
+  }
+
+  return { contacts: contactIds.length, leads: leadIds.length, linesPaused };
 }
