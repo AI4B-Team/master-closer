@@ -956,16 +956,6 @@ function AgreementDrawer({
     return true;
   };
 
-  // Surface an email opt-out up front instead of only failing on click.
-  const emailCheck = useQuery({
-    queryKey: ["agreement-email-policy", agreement.id, agreement.signer_email],
-    enabled: !!agreement.signer_email,
-    staleTime: 60_000,
-    queryFn: () =>
-      assertCanEmail({ data: { email: agreement.signer_email, leadId: agreement.lead_id ?? undefined } }),
-  });
-  const emailBlocked =
-    emailCheck.data?.status === "decided" && emailCheck.data.decision === "deny";
 
   const send = async () => {
     if (!(await guardSuppression())) return;
