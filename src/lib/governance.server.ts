@@ -255,7 +255,7 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
 
   const { data: leads } = await db()
     .from("leads")
-    .select("id, name, status, consent, source, updated_at")
+    .select("id, name, phone, status, consent, source, updated_at")
     .eq("workspace_id", ctx.workspaceId)
     .neq("consent", "opt_out")
     .limit(500);
