@@ -36,3 +36,23 @@ export async function suppressContactsForPhones(wsId: string, phones: (string | 
   if (upErr) return 0;
   return ids.length;
 }
+
+/**
+ * Returns the set of normalized phone keys that must not receive outreach in a
+ * workspace: local Do Not Call entries plus contacts suppressed family-wide by
+ * Core. Shared by the leads, lists, campaign, worklist and agreement surfaces
+ * so every entry point applies the same rule.
+ */
+export async function fetchBlockedPhoneKeys(wsId: string) {
+  const [dnc, contacts] = await Promise.all([
+    supabase.from("dnc_list").select("phone").eq("workspace_id", wsId),
+    supabase.from("contacts").select("phone").eq("workspace_id", wsId).eq("suppressed", true),
+  ]);
+  const keys = new Set<string>();
+  for (const row of [...(dnc.data ?? []), ...(contacts.data ?? [])]) {
+    const k = phoneKey((row as any).phone);
+    if (k) keys.add(k);
+  }
+  return keys;
+}
+
