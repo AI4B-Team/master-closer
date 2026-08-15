@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatPhone, phoneKey } from "@/lib/phone";
 import { suppressContactsForPhones } from "@/lib/dnc";
+import { screenEmails } from "@/lib/core/policy.functions";
 
 export const Route = createFileRoute("/_authenticated/lists")({
   head: () => ({
@@ -231,6 +232,17 @@ function ListsPage() {
         if (k) blocked.add(k);
       }
 
+      // Imported email addresses are screened against the family-wide opt-out
+      // list too, so nothing in this list gets emailed after an opt-out.
+      const emails = rows.map((r) => r.email ?? "").filter(Boolean);
+      let emailBlocked = new Set<string>();
+      let emailScreenUnavailable = false;
+      if (emails.length) {
+        const screen = await screenEmails({ data: { emails } });
+        emailBlocked = new Set(screen.suppressed);
+        emailScreenUnavailable = screen.unavailable;
+      }
+
       const payload = rows.map((r) => {
         const k = phoneKey(r.phone);
         const isBlocked = !!k && blocked.has(k);
@@ -243,13 +255,28 @@ function ListsPage() {
       });
       const { error } = await supabase.from("list_contacts").insert(payload);
       if (error) throw error;
-      return { total: rows.length, blocked: payload.filter((p) => p.consent === "opt_out").length };
+      const emailOptOuts = rows.filter(
+        (r) => r.email && emailBlocked.has(r.email.trim().toLowerCase()),
+      ).length;
+      return {
+        total: rows.length,
+        blocked: payload.filter((p) => p.consent === "opt_out").length,
+        emailOptOuts,
+        emailScreenUnavailable,
+      };
     },
-    onSuccess: ({ total, blocked }) => {
+    onSuccess: ({ total, blocked, emailOptOuts, emailScreenUnavailable }) => {
       toast.success(`${total} Contacts Imported.`);
       if (blocked > 0) {
         toast.warning(
           `${blocked} ${blocked === 1 ? "Contact Is" : "Contacts Are"} Opted Out And Won't Be Dialed.`,
+        );
+      }
+      if (emailScreenUnavailable) {
+        toast.warning("Email Opt-Out Check Unavailable — Treat Every Imported Address As Do Not Email.");
+      } else if (emailOptOuts > 0) {
+        toast.warning(
+          `${emailOptOuts} Email ${emailOptOuts === 1 ? "Address Is" : "Addresses Are"} On The Family-Wide Opt-Out List.`,
         );
       }
       setImportOpen(false);

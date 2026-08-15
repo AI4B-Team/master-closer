@@ -573,3 +573,29 @@ export const assertCanEmail = createServerFn({ method: "POST" })
       return { status: "decided" as const, decision: "deny" as const, deniedBy: "core_unavailable", reason };
     }
   });
+
+/**
+ * Advisory bulk email screening for user-driven imports. Results flag addresses
+ * that must not be emailed; they never authorize a send on their own — the
+ * point-of-send check is still `assertCanEmail`.
+ */
+export const screenEmails = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ emails: z.array(z.string()).max(5000) }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { resolveCoreLink } = await import("./tenancy.server");
+    const { screenInboundEmails } = await import("./screening.server");
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
+    if (!link) return { status: "unlinked" as const, suppressed: [] as string[], unavailable: false };
+
+    const { suppressed, coreUnavailable } = await screenInboundEmails({
+      workspaceId,
+      emails: data.emails,
+      reasonPrefix: "import_screen",
+    });
+    return {
+      status: "decided" as const,
+      suppressed: Array.from(suppressed),
+      unavailable: coreUnavailable,
+    };
+  });
