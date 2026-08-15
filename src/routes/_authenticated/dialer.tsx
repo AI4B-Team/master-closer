@@ -453,7 +453,7 @@ function DialerPage() {
         .limit(50),
       supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
     ]);
-    const onlyDigits = (p?: string | null) => (p ?? "").replace(/\D/g, "");
+    const onlyDigits = phoneKey;
     const blocked = new Set((dncRows ?? []).map((d: any) => onlyDigits(d.phone)).filter(Boolean));
     const eligible = (data ?? []).filter((row: any) => !blocked.has(onlyDigits(row.phone)));
     const skipped = (data ?? []).length - eligible.length;
@@ -566,10 +566,10 @@ function DialerPage() {
       if (!prof.active_workspace_id) throw new Error("No active workspace");
 
       // Hard stop: never dial a number on the Do Not Call list.
-      const target = (phone ?? "").replace(/\D/g, "");
+      const target = phoneKey(phone);
       if (target) {
         const { data: dncRows } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
-        const blocked = (dncRows ?? []).some((d: any) => (d.phone ?? "").replace(/\D/g, "") === target);
+        const blocked = (dncRows ?? []).some((d: any) => phoneKey(d.phone) === target);
         if (blocked) throw new Error("This Number Is On The Do Not Call List.");
 
         // Core is the authority once this workspace is linked: it decides at the
