@@ -50,16 +50,18 @@ export function ActivityPanel() {
   const [filter, setFilter] = useState<string>("all");
   const [seen, setSeen] = useState<string>("");
 
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
+  // Per-workspace: the feed itself is workspace-scoped, so a shared marker made
+  // one workspace's timestamps decide another's "new activity" badge.
   useEffect(() => {
     try {
-      setSeen(localStorage.getItem(SEEN_KEY) ?? "");
+      setSeen(localStorage.getItem(seenKey(wsId)) ?? "");
     } catch {
       /* storage unavailable */
     }
-  }, []);
-
-  const { data: workspace } = useWorkspace();
-  const wsId = workspace?.id ?? null;
+  }, [wsId]);
 
   const { data: events = [], isFetching, refetch } = useQuery({
     queryKey: ["activity-panel", wsId],
@@ -115,7 +117,7 @@ export function ActivityPanel() {
     if (!iso) return;
     setSeen(iso);
     try {
-      localStorage.setItem(SEEN_KEY, iso);
+      localStorage.setItem(seenKey(wsId), iso);
     } catch {
       /* storage unavailable */
     }
