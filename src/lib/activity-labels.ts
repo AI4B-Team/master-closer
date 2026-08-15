@@ -149,6 +149,8 @@ export function describeEvent(e: EventRow): EventDescription {
           p.contacts_suppressed ? `${p.contacts_suppressed} contact${Number(p.contacts_suppressed) === 1 ? "" : "s"} suppressed` : null,
           p.removed ? `${p.removed} lifted by Core` : null,
           p.contacts_released ? `${p.contacts_released} contact${Number(p.contacts_released) === 1 ? "" : "s"} released` : null,
+          p.leads_flagged ? `${p.leads_flagged} lead${Number(p.leads_flagged) === 1 ? "" : "s"} opted out` : null,
+          p.leads_released ? `${p.leads_released} lead${Number(p.leads_released) === 1 ? "" : "s"} released` : null,
         ),
       };
     case "core.suppression_sync_failed":
