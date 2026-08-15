@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows } from "@/components/back-office/ui";
 import { listWorklist, sendWorklistFeedback, undoWorklistFeedback } from "@/lib/governance.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { phoneKey } from "@/lib/phone";
 import { Bot, Phone, ThumbsDown, X, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -76,6 +78,23 @@ function WorklistPage() {
     onError: (e: any) => toast.error(e?.message ?? "Could not record that."),
   });
 
+  /* Do Not Call keys — a nomination can go stale after an opt-out, so check before dialing. */
+  const { data: dncKeys } = useQuery({
+    queryKey: ["worklist-dnc-keys"],
+    queryFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      const ws = prof?.active_workspace_id;
+      if (!ws) return new Set<string>();
+      const { data, error } = await supabase.from("dnc_list").select("phone").eq("workspace_id", ws);
+      if (error) throw error;
+      return new Set((data ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+    },
+  });
+  const isDnc = (phone?: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && !!dncKeys?.has(k);
+  };
+
   const rows = (data?.rows ?? []).filter((r: any) => !hidden[r.id]);
 
   return (
@@ -121,6 +140,11 @@ function WorklistPage() {
                         Suggested
                       </Badge>
                     ) : null}
+                    {isDnc(r.phone) ? (
+                      <Badge className="rounded-full border-0 bg-[#FDECEC] text-xs text-[#A30000]">
+                        Do Not Call
+                      </Badge>
+                    ) : null}
                   </div>
                   <p className="mt-0.5 text-xs text-[#6B6B76]">
                     {r.reason_text || titleCase(String(r.reason_code ?? ""))}
@@ -138,7 +162,8 @@ function WorklistPage() {
                     type="button"
                     size="sm"
                     className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]"
-                    disabled={!r.phone}
+                    disabled={!r.phone || isDnc(r.phone)}
+                    title={isDnc(r.phone) ? "This number is on your Do Not Call list." : undefined}
                     onClick={() => {
                       act.mutate({ id: r.id, action: "worked", score: Number(r.score ?? 0) });
                       navigate({ to: "/dialer", search: { number: r.phone } });

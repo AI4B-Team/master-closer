@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
-import { formatPhone } from "@/lib/phone";
+import { formatPhone, phoneKey } from "@/lib/phone";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   validateSearch: (s: Record<string, unknown>): { q?: string; lead?: string } => ({
@@ -195,6 +195,24 @@ function LeadsPage() {
     },
   });
 
+  /* Do Not Call keys for this workspace — used to flag opted-out leads inline. */
+  const { data: dncKeys } = useQuery({
+    queryKey: ["leads-dnc-keys", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dnc_list")
+        .select("phone")
+        .eq("workspace_id", wsId!);
+      if (error) throw error;
+      return new Set((data ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+    },
+  });
+  const isDnc = (phone?: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && !!dncKeys?.has(k);
+  };
+
   const bulkStatus = useMutation({
     mutationFn: async (status: string) => {
       const { error } = await supabase.from("leads").update({ status: status as never }).in("id", picked);
@@ -227,8 +245,10 @@ function LeadsPage() {
       const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
       const workspaceId = prof?.active_workspace_id;
       if (!workspaceId) throw new Error("No active workspace");
-      const rows = (leads ?? [])
-        .filter((l: any) => picked.includes(l.id) && l.phone)
+      const pickedWithPhone = (leads ?? []).filter((l: any) => picked.includes(l.id) && l.phone);
+      const skipped = pickedWithPhone.filter((l: any) => isDnc(l.phone)).length;
+      const rows = pickedWithPhone
+        .filter((l: any) => !isDnc(l.phone))
         .map((l: any) => ({
           list_id: listTarget,
           workspace_id: workspaceId,
@@ -237,13 +257,21 @@ function LeadsPage() {
           email: l.email,
           consent: (l.consent ?? "unknown") as never,
         }));
-      if (rows.length === 0) throw new Error("None of the selected leads have a phone number.");
+      if (rows.length === 0)
+        throw new Error(
+          skipped > 0
+            ? "Every selected lead is on the Do Not Call list."
+            : "None of the selected leads have a phone number.",
+        );
       const { error } = await supabase.from("list_contacts").insert(rows);
       if (error) throw error;
-      return rows.length;
+      return { added: rows.length, skipped };
     },
-    onSuccess: (n) => {
-      toast.success(`Added ${n} contact${n === 1 ? "" : "s"} to the call list.`);
+    onSuccess: ({ added: n, skipped }) => {
+      toast.success(
+        `Added ${n} contact${n === 1 ? "" : "s"} to the call list.` +
+          (skipped > 0 ? ` ${skipped} skipped — on Do Not Call.` : ""),
+      );
       setPicked([]);
       setListTarget("");
       qc.invalidateQueries({ queryKey: ["list-contacts"] });
@@ -517,7 +545,14 @@ function LeadsPage() {
                   <td className="py-3 font-medium">{l.name}</td>
                   <td className="py-3 text-[#6B6B76]">{l.company ?? "—"}</td>
                   <td className="py-3 text-[#6B6B76]">{l.email ?? "—"}</td>
-                  <td className="py-3 text-[#6B6B76]">{formatPhone(l.phone)}</td>
+                  <td className="py-3 text-[#6B6B76]">
+                    <span className="inline-flex items-center gap-2">
+                      {formatPhone(l.phone)}
+                      {isDnc(l.phone) ? (
+                        <Badge className="border-0 bg-[#FDECEC] text-[#A30000]">Do Not Call</Badge>
+                      ) : null}
+                    </span>
+                  </td>
                   <td className="py-3 text-[#6B6B76] capitalize">{(l.consent ?? "unknown").replace("_", " ")}</td>
                   <td className="py-3">
                     <Badge className={`${STATUS_COLORS[l.status] ?? ""} capitalize border-0`}>{l.status}</Badge>
