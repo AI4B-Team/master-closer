@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw } from "lucide-react";
+import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw, History } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/phone";
@@ -58,6 +58,22 @@ export function CoreGovernancePanel() {
         .select("id, name")
         .eq("workspace_id", wsId!)
         .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: denials } = useQuery({
+    queryKey: ["core-policy-denials", wsId, linked],
+    enabled: !!wsId && linked,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("core_policy_checks")
+        .select("id, created_at, identifier, action, denied_by, reason")
+        .eq("workspace_id", wsId!)
+        .eq("decision", "deny")
+        .order("created_at", { ascending: false })
+        .limit(25);
       if (error) throw error;
       return data ?? [];
     },
@@ -225,6 +241,43 @@ export function CoreGovernancePanel() {
                         <td className="py-2">{s.reason}</td>
                         <td className="py-2 text-muted-foreground">{s.sourceAppId ?? "—"}</td>
                         <td className="py-2 text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h4 className="flex items-center gap-2 text-sm font-semibold">
+              <History className="h-4 w-4" /> Recent Blocked Attempts
+            </h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Every Core decision is recorded. These are the attempts Core refused, newest first.
+            </p>
+            {(denials ?? []).length === 0 ? (
+              <p className="mt-2 text-sm text-muted-foreground">Core has not blocked anything yet.</p>
+            ) : (
+              <div className="mt-2 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-xs uppercase text-muted-foreground">
+                    <tr>
+                      <th className="py-2">When</th>
+                      <th className="py-2">Number</th>
+                      <th className="py-2">Action</th>
+                      <th className="py-2">Blocked By</th>
+                      <th className="py-2">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(denials ?? []).map((d) => (
+                      <tr key={d.id} className="border-t">
+                        <td className="py-2 text-muted-foreground">{new Date(d.created_at).toLocaleString()}</td>
+                        <td className="py-2">{d.identifier ? formatPhone(d.identifier) : "—"}</td>
+                        <td className="py-2 capitalize">{d.action}</td>
+                        <td className="py-2">{d.denied_by ?? "—"}</td>
+                        <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
