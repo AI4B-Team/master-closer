@@ -259,9 +259,27 @@ export function CoreGovernancePanel() {
               </Select>
               <Button onClick={() => doScreen.mutate()} disabled={!listId || doScreen.isPending}>
                 <ListFilter className="mr-2 h-4 w-4" />
-                {doScreen.isPending ? "Screening…" : "Screen Against Core"}
+                {doScreen.isPending ? "Screening…" : "Screen Numbers"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => doScreenEmails.mutate()}
+                disabled={!listId || doScreenEmails.isPending}
+              >
+                <MailWarning className="mr-2 h-4 w-4" />
+                {doScreenEmails.isPending ? "Screening…" : "Screen Emails"}
               </Button>
             </div>
+            {doScreenEmails.data?.status === "decided" && doScreenEmails.data.suppressed.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm">
+                {doScreenEmails.data.suppressed.slice(0, 25).map((e) => (
+                  <li key={e} className="text-muted-foreground">
+                    <span className="font-medium text-foreground">{e}</span> blocked by Core
+                  </li>
+                ))}
+              </ul>
+            )}
+
             {doScreen.data?.status === "ok" && doScreen.data.denies.length > 0 && (
               <ul className="mt-3 space-y-1 text-sm">
                 {doScreen.data.denies.map((d) => (
