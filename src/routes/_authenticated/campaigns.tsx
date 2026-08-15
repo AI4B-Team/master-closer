@@ -91,6 +91,19 @@ function CampaignsPage() {
         .order("created_at", { ascending: false })).data ?? [],
   });
 
+  const { data: blocked } = useQuery({
+    queryKey: ["campaign-blocked-keys", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const [{ data: dnc }, { data: suppressed }] = await Promise.all([
+        supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+        supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
+      ]);
+      return [...(dnc ?? []), ...(suppressed ?? [])].map((r: any) => phoneKey(r.phone ?? "")).filter(Boolean);
+    },
+  });
+  const blockedKeys = new Set(blocked ?? []);
+
   const { data: callStats } = useQuery({
     queryKey: ["campaign-call-stats", wsId],
     enabled: !!wsId,
@@ -99,6 +112,7 @@ function CampaignsPage() {
       return data ?? [];
     },
   });
+
 
   const statsFor = (id: string) => {
     const rows = (callStats ?? []).filter((c: any) => c.campaign_id === id);
