@@ -9,11 +9,6 @@ export const Route = createFileRoute("/api/v1/leads")({
         try {
           const { supabase, workspaceId } = await apiClient(request);
           const limit = Math.min(Number(new URL(request.url).searchParams.get("limit") ?? 100), 500);
-          // Same for the email side of the family-wide opt-out list.
-          const { screenInboundEmail } = await import("@/lib/core/screening.server");
-          const emailScreen = body.email
-            ? await screenInboundEmail({ workspaceId, email: body.email })
-            : { suppressed: false, reason: null };
 
           const { data, error } = await supabase
             .from("leads")
