@@ -447,7 +447,7 @@ function DialerPage() {
       setContact(null);
       return;
     }
-    const [{ data }, { data: dncRows }] = await Promise.all([
+    const [{ data }, { data: dncRows }, { data: suppressedRows }] = await Promise.all([
       supabase
         .from("list_contacts")
         .select("id, name, phone, last_outcome, consent")
@@ -458,9 +458,13 @@ function DialerPage() {
         .order("attempts", { ascending: true })
         .limit(50),
       supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+      // Family-wide opt-outs mirrored from Core land on contacts, not the local DNC list.
+      supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
     ]);
     const onlyDigits = phoneKey;
-    const blocked = new Set((dncRows ?? []).map((d: any) => onlyDigits(d.phone)).filter(Boolean));
+    const blocked = new Set(
+      [...(dncRows ?? []), ...(suppressedRows ?? [])].map((d: any) => onlyDigits(d.phone)).filter(Boolean),
+    );
     const eligible = (data ?? []).filter((row: any) => !blocked.has(onlyDigits(row.phone)));
     const skipped = (data ?? []).length - eligible.length;
     const next = eligible[0];
