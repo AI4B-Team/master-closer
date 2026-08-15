@@ -3078,6 +3078,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_contact_attempt: {
+        Args: { _contact_id: string; _outcome: string }
+        Returns: undefined
+      }
       is_workspace_member: { Args: { ws: string }; Returns: boolean }
       seed_background_agents: { Args: { ws: string }; Returns: undefined }
       workspace_role: { Args: { ws: string }; Returns: string }
