@@ -400,7 +400,7 @@ function DialerPage() {
   };
 
   /** The rep delivered the suggested line — log it so the Playbook learns what works. */
-  const useSuggestedLine = async (line: string) => {
+  const applySuggestedLine = async (line: string) => {
     if (lineUsed) return;
     setLineUsed(true);
     setTranscript((t) => [...t, { speaker: "You", text: line }]);
@@ -1388,7 +1388,7 @@ function DialerPage() {
             locked={blocked}
             thinking={thinking}
             onAsk={(line) => runAssist(line)}
-            onUseLine={(line) => void useSuggestedLine(line)}
+            onUseLine={(line) => void applySuggestedLine(line)}
             usedLine={lineUsed}
           />
         ) : (
