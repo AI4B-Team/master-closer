@@ -31,6 +31,7 @@ import {
 import { emailSigningLink, printSignedCopy } from "@/lib/agreement-print";
 import { logActivity } from "@/lib/activity";
 import { fetchBlockedPhoneKeys } from "@/lib/dnc";
+import { assertCanEmail } from "@/lib/core/policy.functions";
 import { phoneKey } from "@/lib/phone";
 
 
@@ -698,6 +699,17 @@ function ComposeDialog({
         if (lead?.consent === "opt_out" || (key && blocked.has(key))) {
           throw new Error("This contact has opted out or is suppressed. Sending is blocked.");
         }
+        // Core also holds email-channel opt-outs; a signing link is outreach.
+        const emailCheck = await assertCanEmail({
+          data: { email: signerEmail.trim(), leadId: leadId || undefined },
+        });
+        if (emailCheck.status === "decided" && emailCheck.decision === "deny") {
+          throw new Error(
+            emailCheck.deniedBy === "core_unavailable"
+              ? "Compliance service is unreachable, so email sending is blocked."
+              : "This email address is suppressed. Sending is blocked.",
+          );
+        }
       }
       const { data: auth } = await supabase.auth.getUser();
 
@@ -915,8 +927,26 @@ function AgreementDrawer({
     return true;
   };
 
+  // Core email-channel suppressions gate the signing link the same way.
+  const guardEmail = async () => {
+    if (!agreement.signer_email) return true;
+    const check = await assertCanEmail({
+      data: { email: agreement.signer_email, leadId: agreement.lead_id ?? undefined },
+    });
+    if (check.status === "decided" && check.decision === "deny") {
+      toast.error(
+        check.deniedBy === "core_unavailable"
+          ? "Compliance service is unreachable, so email sending is blocked."
+          : "This email address is suppressed. Sending is blocked.",
+      );
+      return false;
+    }
+    return true;
+  };
+
   const send = async () => {
     if (!(await guardSuppression())) return;
+    if (!(await guardEmail())) return;
     const { error } = await supabase
       .from("agreements")
       .update({ status: "sent", sent_at: new Date().toISOString() })
@@ -999,6 +1029,7 @@ function AgreementDrawer({
                   className="rounded-xl"
                   onClick={async () => {
                     if (!(await guardSuppression())) return;
+    if (!(await guardEmail())) return;
                     emailSigningLink({
                       to: agreement.signer_email,
                       title: agreement.title,

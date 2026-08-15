@@ -489,3 +489,84 @@ export const syncCoreSuppressions = createServerFn({ method: "POST" })
       };
     }
   });
+
+/**
+ * Point-of-contact authorization for an email address. Agreements go out by
+ * email, so Core's email-channel suppressions must be honoured the same way
+ * voice suppressions gate a dial. Linked workspace + no Core answer = deny.
+ */
+export const assertCanEmail = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        email: z.string().email(),
+        leadId: z.string().uuid().optional(),
+        contactId: z.string().uuid().optional(),
+      })
+      .parse(d),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { resolveCoreLink } = await import("./tenancy.server");
+    const { coreService, CoreUnavailableError } = await import("./core.server");
+    const { CoreApiError } = await import("./sdk");
+
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
+    if (!link) return { status: "unlinked" as const };
+
+    const identifier = data.email.trim().toLowerCase();
+
+    const log = async (row: Record<string, unknown>) => {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      try {
+        await supabaseAdmin.from("core_policy_checks").insert({
+          workspace_id: workspaceId,
+          core_workspace_id: link.coreWorkspaceId,
+          action: "send",
+          channel: "email",
+          identifier,
+          lead_id: data.leadId ?? null,
+          actor_type: "user",
+          actor_id: context.userId,
+          rules_evaluated: [],
+          ...row,
+        } as never);
+      } catch {
+        /* audit write must never block the compliance decision */
+      }
+    };
+
+    try {
+      const result = await coreService().policy.assert({
+        workspace_id: link.coreWorkspaceId,
+        action: "send",
+        channel: "email",
+        identifier,
+        contact_id: data.contactId,
+        actor_type: "user",
+        actor_id: context.userId,
+      });
+      await log({
+        decision: result.decision,
+        denied_by: result.denied_by ?? null,
+        reason: result.reason ?? null,
+        policy_check_id: result.policy_check_id ?? null,
+        rules_evaluated: result.rules_evaluated ?? [],
+      });
+      return {
+        status: "decided" as const,
+        decision: result.decision,
+        deniedBy: result.denied_by ?? null,
+        reason: result.reason ?? null,
+      };
+    } catch (e) {
+      const reason =
+        e instanceof CoreUnavailableError
+          ? "core_not_configured"
+          : e instanceof CoreApiError
+            ? `core_${e.status}`
+            : "core_unreachable";
+      await log({ decision: "deny", denied_by: "core_unavailable", reason });
+      return { status: "decided" as const, decision: "deny" as const, deniedBy: "core_unavailable", reason };
+    }
+  });
