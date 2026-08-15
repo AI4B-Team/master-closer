@@ -17,7 +17,8 @@ import { LeadLines } from "@/components/back-office/LeadLines";
 import { ResolvedProfileBadge } from "@/components/back-office/ResolvedProfileBadge";
 import { INDUSTRIES } from "@/lib/closer-profiles";
 import { phoneKey } from "@/lib/phone";
-import { assertCanEmail } from "@/lib/core/policy.functions";
+import { assertCanEmail, listCoreSuppressions, releaseCoreSuppression } from "@/lib/core/policy.functions";
+import { releasePhoneLocally } from "@/lib/dnc";
 import { useServerFn } from "@tanstack/react-start";
 
 type Lead = {
@@ -128,6 +129,57 @@ export function LeadDrawer({
     queryFn: () => screenEmail({ data: { email: leadEmail, leadId: lead!.id } }),
   });
   const emailBlocked = emailScreen?.status === "decided" && emailScreen.decision === "deny";
+  const emailUnavailable = emailScreen?.status === "decided" && emailScreen.deniedBy === "core_unavailable";
+
+  /* Core owns the family-wide list, so a release needs the Core suppression id. */
+  const listSupp = useServerFn(listCoreSuppressions);
+  const { data: coreSupp } = useQuery({
+    queryKey: ["lead-core-suppressions", wsId],
+    enabled: !!wsId && (!!suppressed || (emailBlocked && !emailUnavailable)),
+    staleTime: 60_000,
+    queryFn: () => listSupp(),
+  });
+  const corePhoneId = (coreSupp?.suppressions ?? []).find(
+    (s) => s.channel !== "email" && phoneKey(s.identifier) === leadKey,
+  )?.id;
+  const coreEmailId = (coreSupp?.suppressions ?? []).find(
+    (s) => s.channel === "email" && s.identifier.trim().toLowerCase() === leadEmail,
+  )?.id;
+
+  const releaseCore = useServerFn(releaseCoreSuppression);
+  const releaseFamilyWide = useMutation({
+    mutationFn: async (input: { id: string; channel: "voice" | "email" }) => {
+      const res = await releaseCore({
+        data: { id: input.id, notes: `Released from lead record${lead?.name ? `: ${lead.name}` : ""}` },
+      });
+      if (res.status !== "ok") {
+        throw new Error(
+          res.status === "unlinked"
+            ? "This workspace is not linked to Core."
+            : "Core could not release that suppression. Try again shortly.",
+        );
+      }
+      const released =
+        input.channel === "voice" && wsId ? await releasePhoneLocally(wsId, form.phone) : null;
+      return { channel: input.channel, released };
+    },
+    onSuccess: (r) => {
+      toast.success(r.channel === "email" ? "Email released family-wide." : "Number released family-wide.");
+      if (r.released && (r.released.leads || r.released.contacts)) {
+        toast.info(`Cleared the opt-out on ${r.released.leads} lead(s) and ${r.released.contacts} contact(s).`);
+      }
+      if (r.released?.linesPaused) {
+        toast.warning(`${r.released.linesPaused} follow-up line(s) stay paused — reactivate them manually.`);
+      }
+      qc.invalidateQueries({ queryKey: ["lead-core-suppressions"] });
+      qc.invalidateQueries({ queryKey: ["lead-suppressed"] });
+      qc.invalidateQueries({ queryKey: ["lead-email-screen"] });
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["blocked-phone-keys"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const { data: calls } = useQuery({
     queryKey: ["lead-calls", lead?.id, wsId],
@@ -281,6 +333,18 @@ export function LeadDrawer({
                 {suppressed.suppressed_at ? ` since ${new Date(suppressed.suppressed_at).toLocaleDateString()}` : ""}.
                 This number cannot be dialed.
               </p>
+              {corePhoneId ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="ml-auto shrink-0 rounded-xl"
+                  disabled={releaseFamilyWide.isPending}
+                  onClick={() => releaseFamilyWide.mutate({ id: corePhoneId, channel: "voice" })}
+                >
+                  Release Family-Wide
+                </Button>
+              ) : null}
             </div>
           ) : null}
 
@@ -320,6 +384,18 @@ export function LeadDrawer({
                     ? "Compliance service unreachable — email is paused."
                     : "Email opted out family-wide. Do not send."}
                 </p>
+              ) : null}
+              {emailBlocked && !emailUnavailable && coreEmailId ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="mt-2 rounded-xl"
+                  disabled={releaseFamilyWide.isPending}
+                  onClick={() => releaseFamilyWide.mutate({ id: coreEmailId, channel: "email" })}
+                >
+                  Release Family-Wide
+                </Button>
               ) : null}
             </div>
             <div>
