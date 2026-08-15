@@ -300,13 +300,13 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
                   className={"ws-item " + (isActive ? "ws-item-active" : "")}
                   onClick={() => {
                     if (switchTo.isPending) return;
-                    isActive ? setOpen(false) : switchTo.mutate(w.id);
+                    if (isActive) setOpen(false); else switchTo.mutate(w.id);
                   }}
                   onKeyDown={(e) => {
                     if (e.key !== "Enter" && e.key !== " ") return;
                     e.preventDefault();
                     if (switchTo.isPending) return;
-                    isActive ? setOpen(false) : switchTo.mutate(w.id);
+                    if (isActive) setOpen(false); else switchTo.mutate(w.id);
                   }}
                 >
 
