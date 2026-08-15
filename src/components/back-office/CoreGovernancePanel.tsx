@@ -79,6 +79,24 @@ export function CoreGovernancePanel() {
       return data ?? [];
     },
   });
+  // Last unattended mirror run, read straight from the workspace event feed.
+  const { data: lastSync } = useQuery({
+    queryKey: ["core-last-sync", wsId, linked],
+    enabled: !!wsId && linked,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("id, created_at, payload")
+        .eq("workspace_id", wsId!)
+        .eq("event_type", "job.completed")
+        .in("payload->>kind", ["core.suppressions_synced", "core.suppression_sync_failed"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return (data ?? [])[0] ?? null;
+    },
+  });
+
 
 
   const doScreen = useMutation({
