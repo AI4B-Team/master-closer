@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw, History } from "lucide-react";
+import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw, History, MailWarning } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/phone";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
   getCoreTenancy, linkWorkspaceToCore, unlinkWorkspaceFromCore, listCoreSuppressions,
-  screenCallListWithCore, syncCoreSuppressions,
+  screenCallListWithCore, syncCoreSuppressions, screenEmails,
 } from "@/lib/core/policy.functions";
 
 /**
@@ -34,6 +34,7 @@ export function CoreGovernancePanel() {
   const unlink = useServerFn(unlinkWorkspaceFromCore);
   const suppressions = useServerFn(listCoreSuppressions);
   const screen = useServerFn(screenCallListWithCore);
+  const screenMail = useServerFn(screenEmails);
   const sync = useServerFn(syncCoreSuppressions);
 
   const { data: core, isLoading } = useQuery({
@@ -119,6 +120,38 @@ export function CoreGovernancePanel() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  // Email addresses on the same list, screened against Core's shared opt-out
+  // list. Advisory only: every send is still authorized at the moment of send.
+  const doScreenEmails = useMutation({
+    mutationFn: async () => {
+      if (!listId) throw new Error("Choose a list to screen first.");
+      const { data, error } = await supabase
+        .from("list_contacts")
+        .select("email")
+        .eq("workspace_id", wsId!)
+        .eq("list_id", listId)
+        .not("email", "is", null);
+      if (error) throw error;
+      const emails = Array.from(
+        new Set((data ?? []).map((r) => (r.email ?? "").trim().toLowerCase()).filter(Boolean)),
+      );
+      if (!emails.length) throw new Error("No email addresses on this list.");
+      const res = await screenMail({ data: { emails: emails.slice(0, 5000) } });
+      return { ...res, total: emails.length };
+    },
+    onSuccess: (r) => {
+      if (r.status === "unlinked") return toast.error("This workspace is not linked to Core.");
+      if (r.unavailable)
+        return toast.error("Core could not be reached — every address is treated as blocked.");
+      toast.success(
+        `${r.total} addresses checked — ${r.total - r.suppressed.length} clear, ${r.suppressed.length} blocked.`,
+      );
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
 
   const doSync = useMutation({
     mutationFn: () => sync(),
@@ -226,9 +259,27 @@ export function CoreGovernancePanel() {
               </Select>
               <Button onClick={() => doScreen.mutate()} disabled={!listId || doScreen.isPending}>
                 <ListFilter className="mr-2 h-4 w-4" />
-                {doScreen.isPending ? "Screening…" : "Screen Against Core"}
+                {doScreen.isPending ? "Screening…" : "Screen Numbers"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => doScreenEmails.mutate()}
+                disabled={!listId || doScreenEmails.isPending}
+              >
+                <MailWarning className="mr-2 h-4 w-4" />
+                {doScreenEmails.isPending ? "Screening…" : "Screen Emails"}
               </Button>
             </div>
+            {doScreenEmails.data?.status === "decided" && doScreenEmails.data.suppressed.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm">
+                {doScreenEmails.data.suppressed.slice(0, 25).map((e) => (
+                  <li key={e} className="text-muted-foreground">
+                    <span className="font-medium text-foreground">{e}</span> blocked by Core
+                  </li>
+                ))}
+              </ul>
+            )}
+
             {doScreen.data?.status === "ok" && doScreen.data.denies.length > 0 && (
               <ul className="mt-3 space-y-1 text-sm">
                 {doScreen.data.denies.map((d) => (
