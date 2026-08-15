@@ -6,7 +6,16 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    if (error || !data.user) {
+      if (typeof window !== "undefined") {
+        // Hard navigation: swapping in the sign-in page mid-hydration makes
+        // React report a hydration mismatch, since the server streamed the
+        // protected shell for this URL.
+        window.location.replace("/auth");
+        throw new Promise(() => {});
+      }
+      throw redirect({ to: "/auth" });
+    }
     return { user: data.user };
   },
   component: () => (

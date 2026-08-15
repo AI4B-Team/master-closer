@@ -19,7 +19,13 @@ export const Route = createFileRoute("/api/public/core/start")({
         }
 
         const url = new URL(request.url);
-        const next = url.searchParams.get("next") ?? "/dashboard";
+        const requestedNext = url.searchParams.get("next") ?? "/dashboard";
+        const next =
+          requestedNext.startsWith("/") &&
+          !requestedNext.startsWith("//") &&
+          !requestedNext.startsWith("/\\")
+            ? requestedNext
+            : "/dashboard";
         const redirectUri = new URL("/api/public/core/callback", url.origin).toString();
 
         const target = new URL("/authorize", authUrl.replace(/\/$/, ""));
