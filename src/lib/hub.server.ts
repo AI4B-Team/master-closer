@@ -85,7 +85,7 @@ export async function emitEvent(
       .select("real_elite_org_id")
       .eq("id", orgId)
       .maybeSingle(),
-    // Fallback only: events should carry the workspace that produced them, so
+    // Fallback only: events must carry the workspace that produced them, so
     // the workspace-scoped activity feeds show them in the right place.
     workspaceId
       ? Promise.resolve({ data: { id: workspaceId } })
@@ -93,10 +93,17 @@ export async function emitEvent(
           .from("workspaces")
           .select("id")
           .eq("org_id", orgId)
-          .order("is_default", { ascending: false })
+          .order("created_at", { ascending: true })
           .limit(1)
           .maybeSingle(),
   ]);
+
+  // Never fall back to the org id here: it isn't a workspace, so the event
+  // would be invisible to every workspace-scoped feed and report.
+  const resolvedWorkspaceId = workspace?.id;
+  if (!resolvedWorkspaceId) {
+    throw new Error("Cannot record this event: no workspace could be resolved.");
+  }
 
   const body = {
     ...payload,
@@ -107,7 +114,8 @@ export async function emitEvent(
     .from("events")
     .insert({
       org_id: orgId,
-      workspace_id: workspace?.id ?? orgId,
+      workspace_id: resolvedWorkspaceId,
+
       event_type: eventType,
       payload: body,
     })

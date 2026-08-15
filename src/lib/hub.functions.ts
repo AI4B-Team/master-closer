@@ -204,5 +204,7 @@ export const emitOrgEvent = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
     if (!prof) throw new Error("No profile for the signed-in user.");
-    return emitEvent(prof.org_id, data.event_type, data.payload, prof.active_workspace_id ?? undefined);
+    if (!prof.active_workspace_id) throw new Error("No active workspace for the signed-in user.");
+    return emitEvent(prof.org_id, data.event_type, data.payload, prof.active_workspace_id);
+
   });
