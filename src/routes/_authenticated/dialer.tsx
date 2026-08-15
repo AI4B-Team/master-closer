@@ -659,6 +659,7 @@ function DialerPage() {
           jurisdiction,
           line: script,
           method: "outbound_pre_connect_audio",
+          consentBasis: coreRec,
         });
         await new Promise((r) => setTimeout(r, 900));
         setPreConnectPlaying(false);
@@ -678,6 +679,7 @@ function DialerPage() {
           jurisdiction,
           line: script,
           method: "pre_call_disclosure",
+          consentBasis: coreRec,
         });
         await supabase.from("transcript_segments").insert({
           call_id: call.id,
@@ -699,7 +701,7 @@ function DialerPage() {
   const markDelivered = async () => {
     setBusy(true);
     try {
-      await logDisclosure({ callId, jurisdiction, line: script, method: "rep_delivered_disclosure" });
+      await logDisclosure({ callId, jurisdiction, line: script, method: "rep_delivered_disclosure", consentBasis: coreRec });
       setDelivered(true);
       toast.success("Disclosure Logged.");
     } catch (e: any) {
