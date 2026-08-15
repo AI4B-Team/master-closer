@@ -212,6 +212,8 @@ export function createCoreClient(options: CoreClientOptions) {
           `/api/public/v1/suppressions?${params.toString()}`,
         );
       },
+      /** Lift a suppression family-wide. Every app stops treating it as opted out. */
+      remove: (id: string) => del<{ ok: boolean }>(`/api/public/v1/suppressions/${id}`),
     },
 
     /** Workspaces this credential (or user) may act inside. */
