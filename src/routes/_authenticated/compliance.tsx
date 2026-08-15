@@ -18,9 +18,9 @@ import { logActivity } from "@/lib/activity";
 import { CallingWindowPanel } from "@/components/back-office/CallingWindowPanel";
 import { CoreGovernancePanel } from "@/components/back-office/CoreGovernancePanel";
 import { useServerFn } from "@tanstack/react-start";
-import { createCoreSuppression } from "@/lib/core/policy.functions";
+import { createCoreSuppression, listCoreSuppressions } from "@/lib/core/policy.functions";
 
-import { formatPhone } from "@/lib/phone";
+import { formatPhone, phoneKey } from "@/lib/phone";
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
@@ -354,6 +354,7 @@ function DncRegistry() {
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
   const coreSuppress = useServerFn(createCoreSuppression);
+  const coreList = useServerFn(listCoreSuppressions);
 
   const { data: entries } = useQuery({
     queryKey: ["dnc_list", wsId],
@@ -419,14 +420,38 @@ function DncRegistry() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  // Core holds the family-wide opt-out list and has no release endpoint, so a
+  // local release cannot lift a Core suppression. Say so plainly instead of
+  // implying the number is dialable again.
+  const { data: coreSupp } = useQuery({
+    queryKey: ["core-suppressions", wsId],
+    enabled: !!wsId,
+    queryFn: () => coreList(),
+  });
+
+  const coreKeys = useMemo(() => {
+    const keys = new Set<string>();
+    if (coreSupp?.status === "ok") {
+      for (const s of coreSupp.suppressions) {
+        const k = phoneKey(s.identifier);
+        if (k) keys.add(k);
+      }
+    }
+    return keys;
+  }, [coreSupp]);
+
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("dnc_list").delete().eq("id", id);
+    mutationFn: async (entry: { id: string; phone: string }) => {
+      const { error } = await supabase.from("dnc_list").delete().eq("id", entry.id);
       if (error) throw error;
+      return entry;
     },
-    onSuccess: (_d, id) => {
+    onSuccess: (entry) => {
       toast.success("Number released from Do Not Call.");
-      void logActivity("lead.released_dnc", { entry_id: id });
+      if (coreKeys.has(phoneKey(entry.phone) ?? "")) {
+        toast.warning("Core still holds a family-wide opt-out for this number — dials stay blocked.");
+      }
+      void logActivity("lead.released_dnc", { entry_id: entry.id });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -516,7 +541,12 @@ function DncRegistry() {
               <tbody>
                 {filtered.map((e: any) => (
                   <tr key={e.id} className="border-b border-[#E7E7EC] last:border-0">
-                    <td className="py-2.5 font-mono text-xs">{formatPhone(e.phone)}</td>
+                    <td className="py-2.5 font-mono text-xs">
+                      {formatPhone(e.phone)}
+                      {coreKeys.has(phoneKey(e.phone) ?? "") && (
+                        <Badge variant="secondary" className="ml-2 font-sans text-[10px]">Core</Badge>
+                      )}
+                    </td>
                     <td className="py-2.5 text-[#6B6B76]">{e.reason ?? "—"}</td>
                     <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
                       {new Date(e.added_at).toLocaleDateString()}
@@ -527,7 +557,7 @@ function DncRegistry() {
                         variant="ghost"
                         size="sm"
                         className="h-7 w-7 p-0"
-                        onClick={() => remove.mutate(e.id)}
+                        onClick={() => remove.mutate({ id: e.id, phone: e.phone })}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-[#6B6B76]" />
                       </Button>
