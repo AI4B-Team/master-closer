@@ -112,7 +112,10 @@ export type NotifyItem = {
 function detailOf(payload: unknown) {
   const p = (payload ?? {}) as Record<string, any>;
   // Digests carry the numbers in `message`; a bare schedule name says nothing.
-  if (p.kind === "report.digest" && p.message) return p.message;
+  if (p.kind === "report.digest" && p.message) {
+    const held = Array.isArray(p.suppressed_recipients) ? p.suppressed_recipients.length : 0;
+    return held ? `${p.message} · ${held} recipient${held === 1 ? "" : "s"} opted out` : p.message;
+  }
   // Core sync rows carry counts or a failure reason, never a name.
   if (p.kind === "core.suppression_sync_failed") return p.reason || "Core was unreachable";
   if (p.kind === "core.suppressions_synced") {
