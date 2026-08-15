@@ -28,7 +28,12 @@ export const DEFAULT_PREFS: NotifyPrefs = {
 export function prefKeyFor(type: string): keyof NotifyPrefs | null {
   if (type.startsWith("task.")) return "followUps";
   if (type.startsWith("deal.")) return "dealUpdates";
-  if (type.startsWith("consent.") || type.startsWith("disclosure.") || type === "lead.flagged_dnc")
+  if (
+    type.startsWith("consent.") ||
+    type.startsWith("disclosure.") ||
+    type.startsWith("core.") ||
+    type === "lead.flagged_dnc"
+  )
     return "complianceFlags";
   if (type.includes("handoff") || type.includes("transfer")) return "handoffAlerts";
   if (type.startsWith("call.")) return "callSummaries";
@@ -56,6 +61,8 @@ const LABELS: Record<string, string> = {
   "agent.mode_changed": "Agent Mode Changed",
   "agent.paused_all": "Intelligence Agents Paused",
   "agent.resumed_all": "Intelligence Agents Resumed",
+  "core.suppressions_synced": "Core Opt-Outs Mirrored",
+  "core.suppression_sync_failed": "Core Opt-Out Sync Failed",
 };
 
 export function notifyLabel(type: string) {
@@ -79,7 +86,7 @@ export function categoryFor(type: string): NotifyCategory {
   if (type.startsWith("deal.")) return "deals";
   if (type.startsWith("lead")) return "leads";
   if (type.startsWith("agreement")) return "agreements";
-  if (type.startsWith("consent.") || type.startsWith("disclosure.")) return "compliance";
+  if (type.startsWith("consent.") || type.startsWith("disclosure.") || type.startsWith("core.")) return "compliance";
   if (
     type.startsWith("agent.") ||
     type.startsWith("prompt.") ||
@@ -106,6 +113,10 @@ function detailOf(payload: unknown) {
   const p = (payload ?? {}) as Record<string, any>;
   // Digests carry the numbers in `message`; a bare schedule name says nothing.
   if (p.kind === "report.digest" && p.message) return p.message;
+  // Core sync rows carry counts or a failure reason, never a name.
+  if (p.kind === "core.suppression_sync_failed") return p.reason || "Core was unreachable";
+  if (p.kind === "core.suppressions_synced")
+    return `${p.added ?? 0} added to Do Not Call · ${p.mirrored ?? 0} on Core list`;
   return (
     p.name || p.lead_name || p.title || p.signer_name || p.phone || p.outcome || p.message || "Workspace activity"
   );
