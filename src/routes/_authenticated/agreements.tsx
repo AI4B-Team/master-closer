@@ -399,7 +399,8 @@ function TemplatesTab({
         const { error } = await supabase
           .from("agreement_templates")
           .update({ name: draft.name, body: draft.body })
-          .eq("id", draft.id);
+          .eq("id", draft.id)
+          .eq("workspace_id", wsId);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("agreement_templates").insert({
@@ -459,7 +460,11 @@ function TemplatesTab({
   const makeDefault = async (id: string) => {
     if (!wsId) return;
     await supabase.from("agreement_templates").update({ is_default: false }).eq("workspace_id", wsId);
-    const { error } = await supabase.from("agreement_templates").update({ is_default: true }).eq("id", id);
+    const { error } = await supabase
+      .from("agreement_templates")
+      .update({ is_default: true })
+      .eq("id", id)
+      .eq("workspace_id", wsId);
 
     if (error) return toast.error(error.message);
     toast.success("Default Template Set.");
@@ -467,8 +472,15 @@ function TemplatesTab({
   };
 
   const remove = async (row: any) => {
+    if (!wsId) return;
     if (row.file_path) await supabase.storage.from("agreements").remove([row.file_path]);
-    const { error } = await supabase.from("agreement_templates").delete().eq("id", row.id);
+    // Scoped to the active workspace so a shared org-level template can never be
+    // deleted from another workspace's template list.
+    const { error } = await supabase
+      .from("agreement_templates")
+      .delete()
+      .eq("id", row.id)
+      .eq("workspace_id", wsId);
     if (error) return toast.error(error.message);
     toast.success("Template Removed.");
     onChange();

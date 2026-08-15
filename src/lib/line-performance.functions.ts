@@ -127,7 +127,8 @@ export const promoteLineToProfile = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("closer_profiles")
       .update({ objections })
-      .eq("id", profile.id);
+      .eq("id", profile.id)
+      .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
 
     return { ok: true as const };
