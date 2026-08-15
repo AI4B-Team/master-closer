@@ -138,6 +138,19 @@ export function describeEvent(e: EventRow): EventDescription {
     case "disclosure.updated":
       return { kind, icon: History, label: "Disclosure Settings Updated", detail: join(p.jurisdiction) };
 
+    case "core.suppressions_synced":
+      return {
+        kind,
+        icon: ShieldOff,
+        label: "Core Opt-Outs Mirrored",
+        detail: join(
+          p.mirrored != null ? `${p.mirrored} on Core list` : null,
+          p.added ? `${p.added} added to Do Not Call` : null,
+          p.contacts_suppressed ? `${p.contacts_suppressed} contact${Number(p.contacts_suppressed) === 1 ? "" : "s"} suppressed` : null,
+        ),
+      };
+    case "core.suppression_sync_failed":
+      return { kind, icon: ShieldOff, label: "Core Opt-Out Sync Failed", detail: String(p.reason ?? "") };
     default:
       return { kind, icon: Activity, label: humanize(kind), detail: "" };
   }
@@ -156,6 +169,7 @@ export function eventHref(e: EventRow): string | null {
   if (kind.startsWith("leads.")) return "/leads";
   if (kind === "lead.released_dnc" || kind.startsWith("disclosure.")) return "/compliance";
   if (kind === "lead.flagged_dnc") return "/lists";
+  if (kind.startsWith("core.")) return "/compliance";
   if (kind.startsWith("lead.")) return p.lead_id ? `/leads?lead=${p.lead_id}` : "/leads";
   if (kind === "report.digest") return "/team";
   if (kind.startsWith("campaign.")) return "/campaigns";
