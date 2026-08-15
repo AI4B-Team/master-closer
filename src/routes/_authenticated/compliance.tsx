@@ -386,7 +386,19 @@ function DncRegistry() {
       if (error) throw error;
       // Surface suppression additions in the Activity Log / webhook fan-out.
       for (const p of numbers) void logActivity("lead.flagged_dnc", { phone: p, reason: reason.trim() || "Added manually" });
-      return numbers.length;
+      // Push each opt-out to Core so every app in the family stops contacting them.
+      let coreFailed = 0;
+      for (const p of numbers) {
+        try {
+          const res = await coreSuppress({
+            data: { phone: p, reason: "opt_out", notes: reason.trim() || "Added manually", channel: "voice" },
+          });
+          if (res.status === "error") coreFailed += 1;
+        } catch {
+          coreFailed += 1;
+        }
+      }
+      return { count: numbers.length, coreFailed };
 
     },
     onSuccess: (n) => {
