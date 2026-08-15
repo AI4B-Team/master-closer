@@ -45,7 +45,41 @@ async function pushToCore(
   }
 }
 
+/**
+ * Asks Core whether it still holds a family-wide opt-out for a number.
+ * Unknown (unlinked or Core unreachable) is reported as-is so callers never
+ * treat an outage as "released".
+ */
+async function coreBlocks(
+  supabase: any,
+  workspaceId: string,
+  phone: string,
+): Promise<{ status: "blocked" | "clear" | "unlinked" | "unknown"; reason?: string }> {
+  try {
+    const { data: ws } = await supabase
+      .from("workspaces")
+      .select("core_workspace_id")
+      .eq("id", workspaceId)
+      .maybeSingle();
+    if (!ws?.core_workspace_id) return { status: "unlinked" };
+
+    const { toE164 } = await import("@/lib/core/tenancy.server");
+    const identifier = toE164(phone);
+    if (!identifier) return { status: "unknown", reason: "unrecognized_phone_format" };
+
+    const { coreService } = await import("@/lib/core/core.server");
+    const { suppressions } = await coreService().suppressions.list(
+      ws.core_workspace_id as string,
+      identifier,
+    );
+    return { status: suppressions.length ? "blocked" : "clear" };
+  } catch {
+    return { status: "unknown", reason: "core_unreachable" };
+  }
+}
+
 /** Do-not-call: add a number and flag the matching lead, emitting the family event. */
+
 
 export const Route = createFileRoute("/api/v1/dnc")({
   server: {
