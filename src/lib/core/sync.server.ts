@@ -7,6 +7,28 @@
  * stop the rest.
  */
 
+/**
+ * Writes the mirror outcome into the workspace's own event feed so operators can
+ * see the unattended job in the Activity Log. Never throws: a logging failure
+ * must not abort the sweep.
+ */
+async function logSyncEvent(
+  supabase: any,
+  ws: { id: string; org_id: unknown },
+  payload: Record<string, unknown>,
+) {
+  try {
+    await supabase.from("events").insert({
+      org_id: ws.org_id as string,
+      workspace_id: ws.id,
+      event_type: "job.completed",
+      payload,
+    });
+  } catch {
+    /* non-blocking */
+  }
+}
+
 export type WorkspaceSyncResult = {
   workspaceId: string;
   name: string;
@@ -49,13 +71,16 @@ export async function syncAllCoreSuppressions(): Promise<{
       added += out.added;
       contactsSuppressed += out.contactsSuppressed;
       results.push({ workspaceId: ws.id, name: ws.name, status: "ok", ...out });
-    } catch (e) {
-      results.push({
-        workspaceId: ws.id,
-        name: ws.name,
-        status: "error",
-        reason: e instanceof Error ? e.message : "Core unavailable",
+      await logSyncEvent(supabaseAdmin, ws, {
+        kind: "core.suppressions_synced",
+        mirrored: out.mirrored,
+        added: out.added,
+        contacts_suppressed: out.contactsSuppressed,
       });
+    } catch (e) {
+      const reason = e instanceof Error ? e.message : "Core unavailable";
+      results.push({ workspaceId: ws.id, name: ws.name, status: "error", reason });
+      await logSyncEvent(supabaseAdmin, ws, { kind: "core.suppression_sync_failed", reason });
     }
   }
 
