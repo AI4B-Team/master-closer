@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows } from "@/components/back-office/ui";
 import { listWorklist, sendWorklistFeedback, undoWorklistFeedback } from "@/lib/governance.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { phoneKey } from "@/lib/phone";
 import { Bot, Phone, ThumbsDown, X, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { fetchBlockedPhoneKeys } from "@/lib/dnc";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export const Route = createFileRoute("/_authenticated/worklist")({
   head: () => ({
@@ -45,9 +45,13 @@ function WorklistPage() {
   const feedback = useServerFn(sendWorklistFeedback);
   const undo = useServerFn(undoWorklistFeedback);
   const [hidden, setHidden] = useState<Record<string, true>>({});
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
 
+  // Keyed by workspace: without it, switching workspaces showed the previous
+  // workspace's nominations from cache until the refetch landed.
   const { data, isLoading } = useQuery({
-    queryKey: ["worklist"],
+    queryKey: ["worklist", wsId],
     queryFn: () => fetchWorklist(),
   });
 
@@ -81,13 +85,9 @@ function WorklistPage() {
 
   /* Do Not Call keys — a nomination can go stale after an opt-out, so check before dialing. */
   const { data: dncKeys } = useQuery({
-    queryKey: ["worklist-dnc-keys"],
-    queryFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
-      const ws = prof?.active_workspace_id;
-      if (!ws) return new Set<string>();
-      return await fetchBlockedPhoneKeys(ws);
-    },
+    queryKey: ["worklist-dnc-keys", wsId],
+    enabled: !!wsId,
+    queryFn: async () => await fetchBlockedPhoneKeys(wsId!),
   });
   const isDnc = (phone?: string | null) => {
     const k = phoneKey(phone);

@@ -1,10 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { PromptHelpInput, SuggestObjectionsInput } from "./server-schemas";
 
 export const helpSystemPrompt = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => PromptHelpInput.parse(data))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
@@ -44,6 +46,7 @@ export const helpSystemPrompt = createServerFn({ method: "POST" })
   });
 
 export const suggestObjections = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => SuggestObjectionsInput.parse(data))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
