@@ -569,6 +569,8 @@ export function CoreGovernancePanel() {
           <p className="text-sm text-muted-foreground">
             Until this workspace is linked, local Do Not Call and calling-window rules govern outreach.
           </p>
+
+          <div className="border-t pt-4">{auditTrail}</div>
         </div>
       )}
     </Card>
