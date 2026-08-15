@@ -49,30 +49,48 @@ export const Route = createFileRoute("/api/v1/lists")({
           if (kErr) throw new Error(kErr.message);
           if (!campaign) return Response.json({ error: "Campaign not found" }, { status: 404 });
 
-          const { data: inserted, error: iErr } = await supabase
-            .from("leads")
-            .insert(
-              contacts.map((c) => ({
-                org_id: orgId,
-                workspace_id: workspaceId,
-                name: c.name,
-                phone: c.phone,
-                email: c.email,
-                consent: c.consent,
-                source: `campaign:${campaign.name}`,
-              })),
-            )
-            .select("id");
+          // Pushing a list into a campaign is outreach: opted-out, Do Not Call
+          // and Core-suppressed numbers are flagged so nothing dials them.
+          const { fetchBlockedPhoneKeysServer } = await import("@/lib/dnc.server");
+          const { phoneKey } = await import("@/lib/phone");
+          const blocked = await fetchBlockedPhoneKeysServer(supabase, workspaceId);
+          let suppressed = 0;
+          const rows = contacts.map((c) => {
+            const k = phoneKey(c.phone);
+            const isBlocked = c.consent === "opt_out" || (!!k && blocked.has(k));
+            if (isBlocked) suppressed += 1;
+            return {
+              org_id: orgId,
+              workspace_id: workspaceId,
+              name: c.name,
+              phone: c.phone,
+              email: c.email,
+              consent: isBlocked ? ("opt_out" as const) : c.consent,
+              source: `campaign:${campaign.name}`,
+            };
+          });
+
+          const { data: inserted, error: iErr } = await supabase.from("leads").insert(rows).select("id");
           if (iErr) throw new Error(iErr.message);
 
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "leads.new", {
             count: inserted?.length ?? 0,
+            suppressed,
             campaign_id: campaign.id,
             list_id: body.list_id,
           });
 
-          return Response.json({ pushed: inserted?.length ?? 0, campaign_id: campaign.id }, { status: 201 });
+          return Response.json(
+            {
+              pushed: inserted?.length ?? 0,
+              dialable: (inserted?.length ?? 0) - suppressed,
+              suppressed,
+              campaign_id: campaign.id,
+            },
+            { status: 201 },
+          );
+
         } catch (e) {
           return apiError(e);
         }
