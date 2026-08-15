@@ -249,7 +249,7 @@ export function CoreGovernancePanel() {
                     Last automatic mirror {ts.toLocaleString()} —{" "}
                     {failed
                       ? `failed (${String(p.reason ?? "unknown reason")})`
-                      : `${Number(p.mirrored ?? 0)} checked, ${Number(p.added ?? 0)} added to Do Not Call, ${Number(p.contactsSuppressed ?? 0)} contacts flagged`}
+                      : `${Number(p.mirrored ?? 0)} checked, ${Number(p.added ?? 0)} added to Do Not Call, ${Number(p.contacts_suppressed ?? 0)} contacts flagged${Number(p.removed ?? 0) ? `, ${Number(p.removed)} lifted by Core` : ""}${Number(p.contacts_released ?? 0) ? `, ${Number(p.contacts_released)} contacts released` : ""}`}
                     .{stale ? " The hourly sweep looks stalled — mirror manually to catch up." : ""}
                   </p>
                 );
