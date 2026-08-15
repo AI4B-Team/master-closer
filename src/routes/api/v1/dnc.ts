@@ -246,14 +246,17 @@ export const Route = createFileRoute("/api/v1/dnc")({
             phone: rows[0].phone,
             entry_id: rows[0].id,
             contacts_released: contactsReleased,
+            leads_released: leadsReleased,
             core: coreStillBlocks.status,
           });
 
           return Response.json({
             released: rows.length,
             contacts_released: contactsReleased,
+            leads_released: leadsReleased,
             core: coreStillBlocks,
           });
+
         } catch (e) {
           return apiError(e);
         }
