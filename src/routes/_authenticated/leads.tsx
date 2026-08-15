@@ -19,6 +19,7 @@ import { EmptyPanel, SkeletonRows } from "@/components/back-office/ui";
 import { usePrefs } from "@/hooks/use-prefs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { screenEmails } from "@/lib/core/policy.functions";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
