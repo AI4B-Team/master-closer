@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { closeObjection } from "@/lib/demo.functions";
