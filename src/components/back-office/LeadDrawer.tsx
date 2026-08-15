@@ -272,6 +272,23 @@ export function LeadDrawer({
 
   const save = useMutation({
     mutationFn: async () => {
+      // A changed phone or email must be re-screened: the new identifier can
+      // already be on Do Not Call or suppressed family-wide by Core.
+      const phoneChanged = (form.phone || null) !== (lead?.phone || null);
+      const emailChanged = (form.email || null) !== (lead?.email || null);
+      let phoneBlocked = false;
+      let emailBlocked = false;
+      let emailScreenUnavailable = false;
+      if (wsId && phoneChanged) {
+        const k = phoneKey(form.phone);
+        phoneBlocked = k ? (await fetchBlockedPhoneKeys(wsId)).has(k) : false;
+      }
+      if (emailChanged && (form.email ?? "").trim()) {
+        const screen = await screenEmails({ data: { emails: [form.email as string] } });
+        emailScreenUnavailable = screen.unavailable;
+        emailBlocked = screen.suppressed.includes((form.email as string).trim().toLowerCase());
+      }
+
       const { error } = await supabase
         .from("leads")
         .update({
@@ -283,21 +300,29 @@ export function LeadDrawer({
           source: form.source || null,
           industry: form.industry || null,
           status: (form.status ?? "new") as never,
-          consent: (form.consent ?? "unknown") as never,
+          consent: (phoneBlocked ? "opt_out" : (form.consent ?? "unknown")) as never,
           notes: form.notes || null,
           owner_id: form.owner_id || null,
           tags: form.tags && form.tags.length > 0 ? form.tags : null,
         })
         .eq("id", lead!.id);
       if (error) throw error;
+      return { phoneBlocked, emailBlocked, emailScreenUnavailable };
     },
-    onSuccess: () => {
+    onSuccess: ({ phoneBlocked, emailBlocked, emailScreenUnavailable }) => {
       toast.success("Lead updated.");
+      if (phoneBlocked) toast.warning("That number is suppressed — the lead was saved as opted out.");
+      if (emailScreenUnavailable) {
+        toast.warning("Email opt-out check unavailable — treat that address as do not email.");
+      } else if (emailBlocked) {
+        toast.warning("That email address is on the family-wide opt-out list.");
+      }
       qc.invalidateQueries({ queryKey: ["leads"] });
       onOpenChange(false);
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const remove = useMutation({
     mutationFn: async () => {
