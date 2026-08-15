@@ -37,9 +37,22 @@ export const Route = createFileRoute("/api/v1/leads")({
             })
             .parse(await request.json());
 
+          // A lead arriving through the API can already be on Do Not Call or
+          // suppressed family-wide by Core: record it opted out so no surface
+          // dials it.
+          const { fetchBlockedPhoneKeysServer } = await import("@/lib/dnc.server");
+          const { phoneKey } = await import("@/lib/phone");
+          const key = phoneKey(body.phone);
+          const blocked = key ? (await fetchBlockedPhoneKeysServer(supabase, workspaceId)).has(key) : false;
+
           const { data, error } = await supabase
             .from("leads")
-            .insert({ ...body, org_id: orgId, workspace_id: workspaceId })
+            .insert({
+              ...body,
+              org_id: orgId,
+              workspace_id: workspaceId,
+              ...(blocked ? { consent: "opt_out" as const } : {}),
+            })
             .select("*")
             .single();
           if (error) throw new Error(error.message);
@@ -47,7 +60,8 @@ export const Route = createFileRoute("/api/v1/leads")({
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "leads.new", { lead_id: data.id, name: data.name, source: data.source });
 
-          return Response.json({ lead: data }, { status: 201 });
+          return Response.json({ lead: data, suppressed: blocked }, { status: 201 });
+
         } catch (e) {
           return apiError(e);
         }
