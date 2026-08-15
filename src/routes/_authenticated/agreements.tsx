@@ -30,6 +30,8 @@ import {
 } from "@/lib/agreements";
 import { emailSigningLink, printSignedCopy } from "@/lib/agreement-print";
 import { logActivity } from "@/lib/activity";
+import { fetchBlockedPhoneKeys } from "@/lib/dnc";
+import { phoneKey } from "@/lib/phone";
 
 
 export const Route = createFileRoute("/_authenticated/agreements")({
@@ -107,7 +109,7 @@ function AgreementsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leads")
-        .select("id, name, company, email, phone")
+        .select("id, name, company, email, phone, consent")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(200);
@@ -688,7 +690,17 @@ function ComposeDialog({
       const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
       if (!prof?.active_workspace_id) throw new Error("No active workspace");
       if (!signerName.trim() || !signerEmail.trim()) throw new Error("Signer name and email are required.");
+      if (send) {
+        // A number on Do Not Call — or suppressed family-wide by Core — must not
+        // receive outreach through any channel, including a signing link.
+        const blocked = await fetchBlockedPhoneKeys(prof.active_workspace_id);
+        const key = phoneKey(lead?.phone);
+        if (lead?.consent === "opt_out" || (key && blocked.has(key))) {
+          throw new Error("This contact has opted out or is suppressed. Sending is blocked.");
+        }
+      }
       const { data: auth } = await supabase.auth.getUser();
+
       const { data, error } = await supabase
         .from("agreements")
         .insert({
