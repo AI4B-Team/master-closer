@@ -328,7 +328,7 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
     const { coreService } = await import("./core.server");
     const { CoreApiError } = await import("./sdk");
 
-    const { link } = await resolveCoreLink(context.supabase, context.userId);
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
     if (!link) return { status: "unlinked" as const };
 
     // Email-channel opt-outs are keyed by the address; every other channel by E.164.
