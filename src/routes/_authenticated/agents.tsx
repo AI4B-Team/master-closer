@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -578,6 +578,11 @@ function Worklist({ loading, rows }: { loading: boolean; rows: any[] }) {
   const [undo, setUndo] = useState<{ id: string; label: string } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hidden, setHidden] = useState<string[]>([]);
+
+  // Clear the pending undo timer on unmount so it can't fire into a gone component.
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
 
   const send = useMutation({
     mutationFn: (v: { nomination_id: string; action: "worked" | "not_hot" | "dismiss"; score?: number }) =>
