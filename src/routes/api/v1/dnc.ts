@@ -36,22 +36,41 @@ export const Route = createFileRoute("/api/v1/dnc")({
             .single();
           if (error) throw new Error(error.message);
 
-          const { data: lead } = await supabase
+          // Match leads on their core digits so a stored +1 prefix never hides a hit.
+          const { phoneKey } = await import("@/lib/phone");
+          const key = phoneKey(body.phone);
+          const { data: candidates } = await supabase
             .from("leads")
-            .update({ consent: "opt_out" })
-            .eq("phone", body.phone)
+            .select("id, phone")
             .eq("workspace_id", workspaceId)
-            .select("id")
-            .maybeSingle();
+            .not("phone", "is", null);
+          const leadIds = (candidates ?? [])
+            .filter((l) => !!key && phoneKey(l.phone) === key)
+            .map((l) => l.id);
+          if (leadIds.length) {
+            await supabase.from("leads").update({ consent: "opt_out" }).in("id", leadIds);
+          }
+
+          // Flagging the contact is what stops nominations and worklists from
+          // resurfacing the number (and pauses live lines via trigger).
+          const { suppressContactsForPhonesServer } = await import("@/lib/dnc.server");
+          const contactsSuppressed = await suppressContactsForPhonesServer(
+            supabase,
+            workspaceId,
+            [body.phone],
+          );
 
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.flagged_dnc", {
             phone: body.phone,
             reason: data.reason,
-            lead_id: lead?.id ?? null,
+            lead_id: leadIds[0] ?? null,
+            leads_flagged: leadIds.length,
+            contacts_suppressed: contactsSuppressed,
           });
 
-          return Response.json({ dnc: data }, { status: 201 });
+          return Response.json({ dnc: data, leads_flagged: leadIds.length, contacts_suppressed: contactsSuppressed }, { status: 201 });
+
         } catch (e) {
           return apiError(e);
         }
