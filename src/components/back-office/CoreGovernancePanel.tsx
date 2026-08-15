@@ -121,8 +121,12 @@ export function CoreGovernancePanel() {
       if (r.status === "unlinked") return toast.error("This workspace is not linked to Core.");
       if (r.status === "error") return toast.error(`Suppression sync failed (${r.reason}).`);
       toast.success(
-        `${r.mirrored} Core suppressions checked — ${r.added} added to Do Not Call, ${r.contactsSuppressed} contacts flagged.`,
+        `${r.mirrored} Core suppressions checked — ${r.added} added to Do Not Call, ${r.contactsSuppressed} contacts flagged` +
+          (r.removed ? `, ${r.removed} lifted by Core` : "") +
+          (r.contactsReleased ? `, ${r.contactsReleased} contacts released` : "") +
+          ".",
       );
+
       qc.invalidateQueries({ queryKey: ["core-suppressions"] });
       qc.invalidateQueries({ queryKey: ["dnc"] });
     },
