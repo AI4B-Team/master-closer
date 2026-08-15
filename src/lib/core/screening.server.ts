@@ -113,6 +113,63 @@ export async function screenInboundEmail(args: {
 }
 
 /**
+ * Bulk variant of {@link screenInboundEmail} for machine callers importing many
+ * contacts at once. Returns the set of suppressed addresses (lowercased).
+ * Unlinked workspaces suppress nothing; an unreachable Core fails closed by
+ * marking every screened address suppressed.
+ */
+export async function screenInboundEmails(args: {
+  workspaceId: string;
+  emails: string[];
+  reasonPrefix?: string;
+}): Promise<{ suppressed: Set<string>; coreUnavailable: boolean }> {
+  const identifiers = Array.from(
+    new Set(args.emails.map((e) => e?.trim().toLowerCase()).filter((e): e is string => !!e)),
+  );
+  if (!identifiers.length) return { suppressed: new Set(), coreUnavailable: false };
+
+  const link = await coreLinkForWorkspace(args.workspaceId);
+  if (!link) return { suppressed: new Set(), coreUnavailable: false };
+
+  const prefix = args.reasonPrefix ?? "api_intake";
+  try {
+    const { rows } = await assertBulkEmails({
+      coreWorkspaceId: link.coreWorkspaceId,
+      emails: identifiers,
+      actorId: args.workspaceId,
+    });
+    await logEmailScreenRows({
+      workspaceId: args.workspaceId,
+      coreWorkspaceId: link.coreWorkspaceId,
+      actorId: args.workspaceId,
+      rows,
+      reasonPrefix: prefix,
+    });
+    const seen = new Map(rows.map((r) => [r.identifier.trim().toLowerCase(), r] as const));
+    const suppressed = new Set<string>();
+    for (const id of identifiers) {
+      const row = seen.get(id);
+      if (!row || row.decision !== "allow") suppressed.add(id);
+    }
+    return { suppressed, coreUnavailable: false };
+  } catch {
+    await logEmailScreenRows({
+      workspaceId: args.workspaceId,
+      coreWorkspaceId: link.coreWorkspaceId,
+      actorId: args.workspaceId,
+      rows: identifiers.map((identifier) => ({
+        identifier,
+        decision: "deny" as const,
+        deniedBy: "core_unavailable",
+        reason: "core_unreachable",
+      })),
+      reasonPrefix: prefix,
+    });
+    return { suppressed: new Set(identifiers), coreUnavailable: true };
+  }
+}
+
+/**
  * Bulk-screens email addresses against Core's shared opt-out list. Used for
  * automated sends (digests, batch notifications) where there is no user to
  * react to a single denial. Errors surface as `deny` so automation fails closed.
