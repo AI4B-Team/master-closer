@@ -782,7 +782,7 @@ const STORIES = [
   {
     kicker: "02 · Hybrid Mode",
     icon: PhoneForwarded,
-    t: "AI Starts. Your Closer Finishes.",
+    t: "AI Starts.\nYour Closer Finishes.",
     d: "The AI opens, qualifies and warms the prospect, then hands your closer a live call with a short briefing already delivered.",
     bullets: [
       "Qualifies before a human ever picks up",
