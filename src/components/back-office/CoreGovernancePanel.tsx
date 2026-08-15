@@ -237,21 +237,29 @@ export function CoreGovernancePanel() {
                 {doSync.isPending ? "Syncing…" : "Mirror Into Do Not Call"}
               </Button>
             </div>
-            {lastSync &&
+            {lastSync ? (
               (() => {
                 const p = (lastSync.payload ?? {}) as Record<string, unknown>;
                 const failed = p.kind === "core.suppression_sync_failed";
-                const when = new Date(lastSync.created_at).toLocaleString();
+                const ts = new Date(lastSync.created_at);
+                // The sweep runs hourly; anything older than three hours is stale.
+                const stale = Date.now() - ts.getTime() > 3 * 60 * 60 * 1000;
                 return (
-                  <p className={"mt-2 text-sm " + (failed ? "text-[#CC0000]" : "text-muted-foreground")}>
-                    Last automatic mirror {when} —{" "}
+                  <p className={"mt-2 text-sm " + (failed || stale ? "text-[#CC0000]" : "text-muted-foreground")}>
+                    Last automatic mirror {ts.toLocaleString()} —{" "}
                     {failed
                       ? `failed (${String(p.reason ?? "unknown reason")})`
                       : `${Number(p.mirrored ?? 0)} checked, ${Number(p.added ?? 0)} added to Do Not Call, ${Number(p.contactsSuppressed ?? 0)} contacts flagged`}
-                    .
+                    .{stale ? " The hourly sweep looks stalled — mirror manually to catch up." : ""}
                   </p>
                 );
-              })()}
+              })()
+            ) : (
+              <p className="mt-2 text-sm text-[#CC0000]">
+                No automatic mirror has run for this workspace yet — mirror manually to bring Do Not
+                Call in line with Core.
+              </p>
+            )}
             {supp?.status === "error" ? (
               <p className="mt-2 text-sm text-[#CC0000]">Could not read suppressions ({supp.reason}).</p>
             ) : (supp?.suppressions ?? []).length === 0 ? (
