@@ -17,6 +17,8 @@ import { LeadLines } from "@/components/back-office/LeadLines";
 import { ResolvedProfileBadge } from "@/components/back-office/ResolvedProfileBadge";
 import { INDUSTRIES } from "@/lib/closer-profiles";
 import { phoneKey } from "@/lib/phone";
+import { assertCanEmail } from "@/lib/core/policy.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 type Lead = {
   id: string;
@@ -115,6 +117,17 @@ export function LeadDrawer({
       return (data ?? []).find((r) => phoneKey(r.phone) === leadKey) ?? null;
     },
   });
+
+  /* Email side of the same family-wide opt-out list, answered by Core. */
+  const screenEmail = useServerFn(assertCanEmail);
+  const leadEmail = (lead?.email ?? "").trim().toLowerCase();
+  const { data: emailScreen } = useQuery({
+    queryKey: ["lead-email-screen", leadEmail],
+    enabled: !!leadEmail && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(leadEmail),
+    staleTime: 60_000,
+    queryFn: () => screenEmail({ data: { email: leadEmail, leadId: lead!.id } }),
+  });
+  const emailBlocked = emailScreen?.status === "decided" && emailScreen.decision === "deny";
 
   const { data: calls } = useQuery({
     queryKey: ["lead-calls", lead?.id, wsId],
@@ -300,6 +313,14 @@ export function LeadDrawer({
             <div>
               <Label>Email</Label>
               <Input value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              {emailBlocked ? (
+                <p className="mt-1 flex items-center gap-1 text-xs text-[#CC0000]">
+                  <ShieldOff className="h-3 w-3" />
+                  {emailScreen?.status === "decided" && emailScreen.deniedBy === "core_unavailable"
+                    ? "Compliance service unreachable — email is paused."
+                    : "Email opted out family-wide. Do not send."}
+                </p>
+              ) : null}
             </div>
             <div>
               <Label>Phone</Label>
