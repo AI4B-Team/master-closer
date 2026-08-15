@@ -27,7 +27,9 @@ export function CoreGovernancePanel() {
   const wsId = workspace?.id ?? null;
   const [pick, setPick] = useState("");
   const [listId, setListId] = useState("");
-  const [denialAction, setDenialAction] = useState<"all" | "call" | "record" | "send" | "release">("all");
+  const [denialAction, setDenialAction] = useState<
+    "all" | "call" | "record" | "send" | "release" | "created"
+  >("all");
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
@@ -73,9 +75,11 @@ export function CoreGovernancePanel() {
         .from("core_policy_checks")
         .select("id, created_at, identifier, action, channel, denied_by, reason")
         .eq("workspace_id", wsId!);
-      // Releases are recorded as allowed decisions; every other view lists refusals.
+      // Suppression writes are recorded as allowed decisions; every other view lists refusals.
       if (denialAction === "release") {
         q = q.eq("action", "suppression.release").eq("decision", "allow");
+      } else if (denialAction === "created") {
+        q = q.eq("action", "suppression.create").eq("decision", "allow");
       } else {
         q = q.eq("decision", "deny");
         if (denialAction !== "all") q = q.eq("action", denialAction);
@@ -361,12 +365,18 @@ export function CoreGovernancePanel() {
           <div>
             <h4 className="flex items-center gap-2 text-sm font-semibold">
               <History className="h-4 w-4" />{" "}
-              {denialAction === "release" ? "Recent Family-Wide Releases" : "Recent Blocked Attempts"}
+              {denialAction === "release"
+                ? "Recent Family-Wide Releases"
+                : denialAction === "created"
+                  ? "Recent Family-Wide Opt-Outs"
+                  : "Recent Blocked Attempts"}
             </h4>
             <p className="mt-1 text-sm text-muted-foreground">
               {denialAction === "release"
                 ? "Every Core decision is recorded. These are the suppressions lifted family-wide, newest first."
-                : "Every Core decision is recorded. These are the attempts Core refused, newest first."}
+                : denialAction === "created"
+                  ? "Every Core decision is recorded. These are the opt-outs added family-wide, newest first."
+                  : "Every Core decision is recorded. These are the attempts Core refused, newest first."}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {([
@@ -374,6 +384,7 @@ export function CoreGovernancePanel() {
                 { k: "call", label: "Dial Blocks" },
                 { k: "record", label: "Recording Blocks" },
                 { k: "send", label: "Email Blocks" },
+                { k: "created", label: "Opt-Outs Added" },
                 { k: "release", label: "Releases" },
               ] as const).map((o) => (
                 <Button
@@ -390,6 +401,8 @@ export function CoreGovernancePanel() {
               <p className="mt-2 text-sm text-muted-foreground">
                 {denialAction === "release"
                   ? "No family-wide suppression has been released yet."
+                  : denialAction === "created"
+                  ? "No family-wide opt-out has been added yet."
                   : denialAction === "record"
                   ? "Core has not blocked any recording yet."
                   : denialAction === "call"
@@ -408,7 +421,13 @@ export function CoreGovernancePanel() {
                       <th className="py-2">Identifier</th>
                       <th className="py-2">Channel</th>
                       <th className="py-2">Action</th>
-                      <th className="py-2">{denialAction === "release" ? "Released By" : "Blocked By"}</th>
+                      <th className="py-2">
+                        {denialAction === "release"
+                          ? "Released By"
+                          : denialAction === "created"
+                            ? "Added By"
+                            : "Blocked By"}
+                      </th>
                       <th className="py-2">Reason</th>
                     </tr>
                   </thead>
@@ -421,11 +440,21 @@ export function CoreGovernancePanel() {
                         </td>
                         <td className="py-2 capitalize">{d.channel ?? "—"}</td>
                         <td className="py-2 capitalize">
-                          {d.action === "send" ? "Email" : d.action === "suppression.release" ? "Release" : d.action}
+                          {d.action === "send"
+                            ? "Email"
+                            : d.action === "suppression.release"
+                              ? "Release"
+                              : d.action === "suppression.create"
+                                ? "Opt-Out"
+                                : d.action}
                         </td>
-                        <td className="py-2">{d.denied_by ?? (d.action === "suppression.release" ? "Core" : "—")}</td>
+                        <td className="py-2">
+                          {d.denied_by ??
+                            (d.action === "suppression.release" || d.action === "suppression.create" ? "Core" : "—")}
+                        </td>
                         <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
                       </tr>
+
                     ))}
                   </tbody>
                 </table>

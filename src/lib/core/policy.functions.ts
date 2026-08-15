@@ -328,7 +328,7 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
     const { coreService } = await import("./core.server");
     const { CoreApiError } = await import("./sdk");
 
-    const { link } = await resolveCoreLink(context.supabase, context.userId);
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
     if (!link) return { status: "unlinked" as const };
 
     // Email-channel opt-outs are keyed by the address; every other channel by E.164.
@@ -343,6 +343,27 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
         reason: data.reason,
         notes: data.notes,
       });
+
+      // Releases were audited but creations were not, which left the trail
+      // half-complete: a compliance reviewer could see an opt-out lifted with
+      // no record of it ever being added. Never fatal — the suppression is
+      // already live on Core.
+      try {
+        await context.supabase.from("core_policy_checks").insert({
+          workspace_id: workspaceId,
+          core_workspace_id: link.coreWorkspaceId,
+          action: "suppression.create",
+          channel: data.channel === "email" ? "send" : "dial",
+          identifier,
+          decision: "allow",
+          denied_by: null,
+          reason: `suppression_created: ${data.reason}${data.notes ? ` — ${data.notes}` : ""}`,
+          actor_id: context.userId,
+        });
+      } catch {
+        /* the audit row must never fail the opt-out */
+      }
+
       return { status: "ok" as const, id: suppression.id, identifier };
     } catch (e) {
       return {
