@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CalendarClock, Mail, Play, Plus, Trash2 } from "lucide-react";
+import { CalendarClock, Mail, Play, Plus, ShieldAlert, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,10 +84,35 @@ export function DigestSchedules() {
     },
   });
 
+  // Latest digest run per schedule, so the card can show which recipients were
+  // held back by a family-wide email opt-out on the last send.
+  const { data: suppressedBySchedule } = useQuery({
+    queryKey: ["digest_suppressed", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("payload, created_at")
+        .eq("workspace_id", wsId!)
+        .eq("event_type", "report.digest")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      const map: Record<string, string[]> = {};
+      for (const row of data ?? []) {
+        const p = (row.payload ?? {}) as Record<string, any>;
+        if (!p.schedule_id || p.schedule_id in map) continue;
+        map[p.schedule_id] = Array.isArray(p.suppressed_recipients) ? p.suppressed_recipients : [];
+      }
+      return map;
+    },
+  });
+
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["report_schedules", wsId] });
     qc.invalidateQueries({ queryKey: ["notifications"] });
     qc.invalidateQueries({ queryKey: ["activity"] });
+    qc.invalidateQueries({ queryKey: ["digest_suppressed", wsId] });
   };
 
   const create = useMutation({
@@ -143,7 +168,13 @@ export function DigestSchedules() {
   const send = useMutation({
     mutationFn: async (id: string) => runNow({ data: { scheduleId: id } }),
     onSuccess: (res) => {
-      toast.success(res?.digests?.[0]?.headline ?? "Digest sent to your activity feed");
+      const run = res?.digests?.[0];
+      toast.success(run?.headline ?? "Digest sent to your activity feed");
+      if (run?.suppressed) {
+        toast.warning(
+          `${run.suppressed} recipient${run.suppressed === 1 ? "" : "s"} skipped — opted out of email family-wide.`,
+        );
+      }
       refresh();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -261,6 +292,16 @@ export function DigestSchedules() {
                     </span>
                   )}
                 </div>
+                {(suppressedBySchedule?.[s.id]?.length ?? 0) > 0 && (
+                  <div
+                    className="mt-1 inline-flex items-center gap-1 text-xs text-[#CC0000]"
+                    title={suppressedBySchedule![s.id].join(", ")}
+                  >
+                    <ShieldAlert className="h-3 w-3" />
+                    {suppressedBySchedule![s.id].length} recipient
+                    {suppressedBySchedule![s.id].length === 1 ? "" : "s"} opted out — not emailed
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Switch
