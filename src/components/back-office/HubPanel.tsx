@@ -21,10 +21,10 @@ export function HubPanel() {
   const [url, setUrl] = useState("");
   const [secret, setSecret] = useState("");
 
-  const { data: hub } = useQuery({ queryKey: ["hub-status"], queryFn: () => status({}) });
-
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
+
+  const { data: hub } = useQuery({ queryKey: ["hub-status", wsId], queryFn: () => status({}) });
 
   const { data: hooks } = useQuery({
     queryKey: ["org-webhooks", wsId],

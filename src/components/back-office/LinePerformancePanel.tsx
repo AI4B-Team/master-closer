@@ -30,18 +30,19 @@ export function LinePerformancePanel({
   const run = useServerFn(linePerformance);
   const promote = useServerFn(promoteLineToProfile);
   const [days, setDays] = useState<number>(30);
-  const [target, setTarget] = useState<string>(profiles[0]?.id ?? "");
+  const [target, setTarget] = useState<string>("");
+  const effectiveTarget = target || profiles[0]?.id || "";
 
   const promoting = useMutation({
     mutationFn: async (row: { objection: string; topLine: string }) => {
-      if (!target) throw new Error("Pick a workspace profile to promote into.");
+      if (!effectiveTarget) throw new Error("Pick a workspace profile to promote into.");
       return await promote({
-        data: { profileId: target, trigger: row.objection, response: row.topLine },
+        data: { profileId: effectiveTarget, trigger: row.objection, response: row.topLine },
       });
     },
     onSuccess: (_r, row) => {
       toast.success("Line Promoted Into Profile.");
-      void logActivity("line.promoted", { trigger: row.objection, profile_id: target });
+      void logActivity("line.promoted", { trigger: row.objection, profile_id: effectiveTarget });
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not promote that line."),
   });
