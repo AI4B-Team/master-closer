@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { emitOrgEvent } from "@/lib/hub.functions";
 import { toCsv, downloadCsv, stampedName } from "@/lib/csv";
-import { formatPhone } from "@/lib/phone";
+import { formatPhone, phoneKey } from "@/lib/phone";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   validateSearch: (s: Record<string, unknown>): { q?: string; lead?: string } => ({
