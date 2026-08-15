@@ -257,13 +257,21 @@ function LeadsPage() {
           email: l.email,
           consent: (l.consent ?? "unknown") as never,
         }));
-      if (rows.length === 0) throw new Error("None of the selected leads have a phone number.");
+      if (rows.length === 0)
+        throw new Error(
+          skipped > 0
+            ? "Every selected lead is on the Do Not Call list."
+            : "None of the selected leads have a phone number.",
+        );
       const { error } = await supabase.from("list_contacts").insert(rows);
       if (error) throw error;
-      return rows.length;
+      return { added: rows.length, skipped };
     },
-    onSuccess: (n) => {
-      toast.success(`Added ${n} contact${n === 1 ? "" : "s"} to the call list.`);
+    onSuccess: ({ added: n, skipped }) => {
+      toast.success(
+        `Added ${n} contact${n === 1 ? "" : "s"} to the call list.` +
+          (skipped > 0 ? ` ${skipped} skipped — on Do Not Call.` : ""),
+      );
       setPicked([]);
       setListTarget("");
       qc.invalidateQueries({ queryKey: ["list-contacts"] });
