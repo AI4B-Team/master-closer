@@ -350,7 +350,7 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
       // already live on Core.
       try {
         await context.supabase.from("core_policy_checks").insert({
-          workspace_id: link.workspaceId ?? null,
+          workspace_id: workspaceId,
           core_workspace_id: link.coreWorkspaceId,
           action: "suppression.create",
           channel: data.channel === "email" ? "send" : "dial",
