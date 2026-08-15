@@ -266,7 +266,7 @@ export async function runDueDigests(opts: { workspaceId?: string; scheduleId?: s
   const { data, error } = await q.limit(200);
   if (error) throw new Error(error.message);
 
-  const ran: { schedule_id: string; name: string; headline: string }[] = [];
+  const ran: { schedule_id: string; name: string; headline: string; recipients: number; suppressed: number }[] = [];
   const failed: { schedule_id: string; reason: string }[] = [];
   // One broken schedule used to abort the whole cron tick, silently starving every
   // other workspace's digest. Each schedule now succeeds or fails on its own.
