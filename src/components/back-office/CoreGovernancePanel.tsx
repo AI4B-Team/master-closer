@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Network, Link2, Unlink, ShieldOff } from "lucide-react";
+import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/phone";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
   getCoreTenancy, linkWorkspaceToCore, unlinkWorkspaceFromCore, listCoreSuppressions,
+  screenCallListWithCore, syncCoreSuppressions,
 } from "@/lib/core/policy.functions";
 
 /**
@@ -24,11 +26,14 @@ export function CoreGovernancePanel() {
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
   const [pick, setPick] = useState("");
+  const [listId, setListId] = useState("");
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
   const unlink = useServerFn(unlinkWorkspaceFromCore);
   const suppressions = useServerFn(listCoreSuppressions);
+  const screen = useServerFn(screenCallListWithCore);
+  const sync = useServerFn(syncCoreSuppressions);
 
   const { data: core, isLoading } = useQuery({
     queryKey: ["core-tenancy", wsId],
@@ -42,6 +47,50 @@ export function CoreGovernancePanel() {
     queryKey: ["core-suppressions", wsId, linked],
     enabled: !!wsId && linked,
     queryFn: () => suppressions(),
+  });
+
+  const { data: lists } = useQuery({
+    queryKey: ["core-screen-lists", wsId],
+    enabled: !!wsId && linked,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("call_lists")
+        .select("id, name")
+        .eq("workspace_id", wsId!)
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const doScreen = useMutation({
+    mutationFn: () => {
+      if (!listId) throw new Error("Choose a list to screen first.");
+      return screen({ data: { listId } });
+    },
+    onSuccess: (r) => {
+      if (r.status === "unlinked") return toast.error("This workspace is not linked to Core.");
+      if (r.status === "error") return toast.error(`Core could not screen this list (${r.reason}).`);
+      toast.success(
+        `${r.listName}: ${r.allowed} clear, ${r.denied} blocked${r.marked ? `, ${r.marked} marked opted out` : ""}.`,
+      );
+      qc.invalidateQueries({ queryKey: ["lists"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const doSync = useMutation({
+    mutationFn: () => sync(),
+    onSuccess: (r) => {
+      if (r.status === "unlinked") return toast.error("This workspace is not linked to Core.");
+      if (r.status === "error") return toast.error(`Suppression sync failed (${r.reason}).`);
+      toast.success(
+        `${r.mirrored} Core suppressions checked — ${r.added} added to Do Not Call, ${r.contactsSuppressed} contacts flagged.`,
+      );
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
+      qc.invalidateQueries({ queryKey: ["dnc"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const doLink = useMutation({
@@ -105,10 +154,53 @@ export function CoreGovernancePanel() {
             </div>
           </dl>
 
-          <div>
+          <div className="rounded-md border p-4">
             <h4 className="flex items-center gap-2 text-sm font-semibold">
-              <ShieldOff className="h-4 w-4" /> Core Suppressions
+              <ListFilter className="h-4 w-4" /> Pre-Screen A List
             </h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Checks every number on a list against Core in one pass and marks blocked numbers as
+              opted out. Advisory only — each dial is still authorized at the moment of contact.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Select value={listId} onValueChange={setListId}>
+                <SelectTrigger className="w-[280px] bg-white">
+                  <SelectValue placeholder={(lists ?? []).length ? "Choose a list" : "No lists yet"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  {(lists ?? []).map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={() => doScreen.mutate()} disabled={!listId || doScreen.isPending}>
+                <ListFilter className="mr-2 h-4 w-4" />
+                {doScreen.isPending ? "Screening…" : "Screen Against Core"}
+              </Button>
+            </div>
+            {doScreen.data?.status === "ok" && doScreen.data.denies.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm">
+                {doScreen.data.denies.map((d) => (
+                  <li key={d.identifier} className="text-muted-foreground">
+                    <span className="font-medium text-foreground">{formatPhone(d.identifier)}</span>{" "}
+                    blocked{d.deniedBy ? ` by ${d.deniedBy}` : ""}
+                    {d.reason ? ` — ${d.reason}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h4 className="flex items-center gap-2 text-sm font-semibold">
+                <ShieldOff className="h-4 w-4" /> Core Suppressions
+              </h4>
+              <Button variant="outline" size="sm" onClick={() => doSync.mutate()} disabled={doSync.isPending}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {doSync.isPending ? "Syncing…" : "Mirror Into Do Not Call"}
+              </Button>
+            </div>
             {supp?.status === "error" ? (
               <p className="mt-2 text-sm text-[#CC0000]">Could not read suppressions ({supp.reason}).</p>
             ) : (supp?.suppressions ?? []).length === 0 ? (
