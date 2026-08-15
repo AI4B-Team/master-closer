@@ -585,9 +585,14 @@ function DialerPage() {
       // Hard stop: never dial a number on the Do Not Call list.
       const target = phoneKey(phone);
       if (target) {
-        const { data: dncRows } = await supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!);
+        const [{ data: dncRows }, { data: suppRows }] = await Promise.all([
+          supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+          supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
+        ]);
         const blocked = (dncRows ?? []).some((d: any) => phoneKey(d.phone) === target);
         if (blocked) throw new Error("This Number Is On The Do Not Call List.");
+        const suppressed = (suppRows ?? []).some((d: any) => phoneKey(d.phone) === target);
+        if (suppressed) throw new Error("This Contact Is Suppressed Family-Wide. Dial Blocked.");
 
         // Core is the authority once this workspace is linked: it decides at the
         // moment of contact, and a Core failure denies the dial.
