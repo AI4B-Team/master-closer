@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/activity")({
 });
 
 // Change-control events: closer copy, objection libraries and compliance settings.
-const GOVERNANCE_PREFIXES: string[] = ["prompt.", "profile.", "objection.", "line.", "disclosure.", "agent."];
+const GOVERNANCE_PREFIXES: string[] = ["prompt.", "profile.", "objection.", "line.", "disclosure.", "agent.", "core."];
 const GOVERNANCE_KINDS: string[] = ["lead.flagged_dnc", "lead.released_dnc"];
 
 const RANGES = [
