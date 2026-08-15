@@ -17,7 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatPhone, phoneKey } from "@/lib/phone";
 import { suppressContactsForPhones, fetchBlockedPhoneKeys } from "@/lib/dnc";
-import { screenEmails } from "@/lib/core/policy.functions";
+import { screenEmails, createCoreSuppression } from "@/lib/core/policy.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_authenticated/lists")({
   head: () => ({
