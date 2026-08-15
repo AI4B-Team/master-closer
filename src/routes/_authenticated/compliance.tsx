@@ -93,7 +93,7 @@ function CompliancePage() {
       };
       const { error } = await supabase
         .from("disclosure_settings")
-        .upsert(payload, { onConflict: "org_id" });
+        .upsert(payload, { onConflict: "workspace_id" });
       if (error) throw error;
     },
     onSuccess: () => {
