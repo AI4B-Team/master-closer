@@ -95,7 +95,7 @@ function AgreementsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agreements")
-        .select("*, leads(name, company)")
+        .select("*, leads(name, company, phone, consent)")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
