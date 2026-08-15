@@ -541,7 +541,12 @@ function DncRegistry() {
               <tbody>
                 {filtered.map((e: any) => (
                   <tr key={e.id} className="border-b border-[#E7E7EC] last:border-0">
-                    <td className="py-2.5 font-mono text-xs">{formatPhone(e.phone)}</td>
+                    <td className="py-2.5 font-mono text-xs">
+                      {formatPhone(e.phone)}
+                      {coreKeys.has(phoneKey(e.phone) ?? "") && (
+                        <Badge variant="secondary" className="ml-2 font-sans text-[10px]">Core</Badge>
+                      )}
+                    </td>
                     <td className="py-2.5 text-[#6B6B76]">{e.reason ?? "—"}</td>
                     <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
                       {new Date(e.added_at).toLocaleDateString()}
@@ -552,7 +557,7 @@ function DncRegistry() {
                         variant="ghost"
                         size="sm"
                         className="h-7 w-7 p-0"
-                        onClick={() => remove.mutate(e.id)}
+                        onClick={() => remove.mutate({ id: e.id, phone: e.phone })}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-[#6B6B76]" />
                       </Button>
