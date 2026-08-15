@@ -35,9 +35,12 @@ export type WorkspaceSyncResult = {
   status: "ok" | "error";
   mirrored?: number;
   added?: number;
+  removed?: number;
   contactsSuppressed?: number;
+  contactsReleased?: number;
   reason?: string;
 };
+
 
 export async function syncAllCoreSuppressions(): Promise<{
   workspaces: number;
