@@ -30,6 +30,12 @@ export function CoreGovernancePanel() {
   const [denialAction, setDenialAction] = useState<
     "all" | "call" | "record" | "send" | "release" | "created"
   >("all");
+  // Compliance reviews are usually period-based, so the audit views are time-bounded.
+  const [auditDays, setAuditDays] = useState<"7" | "30" | "90" | "all">("30");
+  const auditSince = auditDays === "all"
+    ? null
+    : new Date(Date.now() - Number(auditDays) * 86400000).toISOString();
+
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
