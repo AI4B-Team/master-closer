@@ -453,6 +453,17 @@ export function CoreGovernancePanel() {
                   {o.label}
                 </Button>
               ))}
+              <Select value={auditDays} onValueChange={(v) => setAuditDays(v as typeof auditDays)}>
+                <SelectTrigger className="h-8 w-[150px] text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 Days</SelectItem>
+                  <SelectItem value="30">Last 30 Days</SelectItem>
+                  <SelectItem value="90">Last 90 Days</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
                 size="sm"
                 variant="outline"
@@ -463,6 +474,7 @@ export function CoreGovernancePanel() {
                 {exportAudit.isPending ? "Exporting…" : "Export CSV"}
               </Button>
             </div>
+
 
             {(denials ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">
