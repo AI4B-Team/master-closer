@@ -55,6 +55,7 @@ function ListsPage() {
 
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
+  const coreSuppress = useServerFn(createCoreSuppression);
 
   const { data: lists, isLoading: listsLoading } = useQuery({
     queryKey: ["call_lists", wsId],
