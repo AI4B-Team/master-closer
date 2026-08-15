@@ -15,7 +15,7 @@ import { EmptyPanel, SkeletonRows, StatusPill, titleCase, toneForStatus } from "
 import { Download, ListOrdered, Pencil, Plus, Search, ShieldOff, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { formatPhone } from "@/lib/phone";
+import { formatPhone, phoneKey } from "@/lib/phone";
 
 export const Route = createFileRoute("/_authenticated/lists")({
   head: () => ({
@@ -77,8 +77,8 @@ function ListsPage() {
   });
 
   const active = (lists ?? []).find((l: any) => l.id === selected) ?? (lists ?? [])[0];
-  const digits = (p?: string | null) => (p ?? "").replace(/\D/g, "");
-  const dncSet = new Set((dnc ?? []).map((d: any) => digits(d.phone)).filter(Boolean));
+  const digits = phoneKey;
+  const dncSet = new Set((dnc ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
 
   const contacts = ((active?.list_contacts ?? []) as any[]).filter((c) => {
     const q = search.trim().toLowerCase();
