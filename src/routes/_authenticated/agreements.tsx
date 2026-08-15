@@ -109,7 +109,7 @@ function AgreementsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("leads")
-        .select("id, name, company, email, phone")
+        .select("id, name, company, email, phone, consent")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })
         .limit(200);
