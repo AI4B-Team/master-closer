@@ -142,7 +142,7 @@ export function describeEvent(e: EventRow): EventDescription {
       return {
         kind,
         icon: ShieldOff,
-        label: "Core Opt-Outs Mirrored",
+        label: p.manual ? "Core Opt-Outs Mirrored (Manual)" : "Core Opt-Outs Mirrored",
         detail: join(
           p.mirrored != null ? `${p.mirrored} on Core list` : null,
           p.added ? `${p.added} added to Do Not Call` : null,
