@@ -323,3 +323,119 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
       };
     }
   });
+
+/**
+ * Advisory pre-screen of a call list against Core. Cleans the queue before
+ * dialing; it never authorizes a dial on its own.
+ */
+export const screenCallListWithCore = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ listId: z.string().uuid() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { resolveCoreLink, toE164 } = await import("./tenancy.server");
+    const { assertBulkAll, logScreenRows } = await import("./screening.server");
+    const { CoreApiError } = await import("./sdk");
+
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
+    if (!link) return { status: "unlinked" as const };
+
+    const { data: list } = await context.supabase
+      .from("call_lists")
+      .select("id, name")
+      .eq("id", data.listId)
+      .eq("workspace_id", workspaceId)
+      .maybeSingle();
+    if (!list) throw new Error("That list is not in this workspace.");
+
+    const { data: rows } = await context.supabase
+      .from("list_contacts")
+      .select("id, phone")
+      .eq("list_id", data.listId)
+      .eq("workspace_id", workspaceId);
+
+    const map = new Map<string, string[]>();
+    for (const r of rows ?? []) {
+      const e164 = r.phone ? toE164(r.phone) : null;
+      if (!e164) continue;
+      map.set(e164, [...(map.get(e164) ?? []), r.id]);
+    }
+    const identifiers = [...map.keys()];
+    if (identifiers.length === 0) {
+      return { status: "ok" as const, listName: list.name, total: 0, allowed: 0, denied: 0, errors: 0, marked: 0, denies: [] };
+    }
+
+    let screened;
+    try {
+      screened = await assertBulkAll({
+        coreWorkspaceId: link.coreWorkspaceId,
+        identifiers,
+        actorId: context.userId,
+      });
+    } catch (e) {
+      return {
+        status: "error" as const,
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+
+    await logScreenRows({
+      workspaceId,
+      coreWorkspaceId: link.coreWorkspaceId,
+      actorId: context.userId,
+      rows: screened.rows,
+    });
+
+    const denies = screened.rows.filter((r) => r.decision === "deny");
+    const deniedIds = denies.flatMap((r) => map.get(r.identifier) ?? []);
+    let marked = 0;
+    if (deniedIds.length) {
+      const { data: updated } = await context.supabase
+        .from("list_contacts")
+        .update({ consent: "opt_out" })
+        .in("id", deniedIds)
+        .select("id");
+      marked = (updated ?? []).length;
+    }
+
+    return {
+      status: "ok" as const,
+      listName: list.name as string,
+      total: screened.rows.length,
+      allowed: screened.rows.filter((r) => r.decision === "allow").length,
+      denied: denies.length,
+      errors: screened.rows.filter((r) => r.decision === "error").length,
+      marked,
+      denies: denies.slice(0, 25).map((r) => ({
+        identifier: r.identifier,
+        deniedBy: r.deniedBy,
+        reason: r.reason,
+      })),
+    };
+  });
+
+/** Mirrors Core's shared opt-out list into local Do Not Call and contacts. */
+export const syncCoreSuppressions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { resolveCoreLink } = await import("./tenancy.server");
+    const { mirrorSuppressions } = await import("./screening.server");
+    const { CoreApiError } = await import("./sdk");
+
+    const { workspaceId, orgId, link } = await resolveCoreLink(context.supabase, context.userId);
+    if (!link) return { status: "unlinked" as const };
+
+    try {
+      const result = await mirrorSuppressions({
+        supabase: context.supabase,
+        workspaceId,
+        orgId,
+        coreWorkspaceId: link.coreWorkspaceId,
+      });
+      return { status: "ok" as const, ...result };
+    } catch (e) {
+      return {
+        status: "error" as const,
+        reason: e instanceof CoreApiError ? `core_${e.status}` : e instanceof Error ? e.message : "core_unreachable",
+      };
+    }
+  });
