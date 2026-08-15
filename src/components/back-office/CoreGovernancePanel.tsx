@@ -27,6 +27,7 @@ export function CoreGovernancePanel() {
   const wsId = workspace?.id ?? null;
   const [pick, setPick] = useState("");
   const [listId, setListId] = useState("");
+  const [denialAction, setDenialAction] = useState<"all" | "call" | "record">("all");
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
@@ -64,20 +65,21 @@ export function CoreGovernancePanel() {
   });
 
   const { data: denials } = useQuery({
-    queryKey: ["core-policy-denials", wsId, linked],
+    queryKey: ["core-policy-denials", wsId, linked, denialAction],
     enabled: !!wsId && linked,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("core_policy_checks")
         .select("id, created_at, identifier, action, denied_by, reason")
         .eq("workspace_id", wsId!)
-        .eq("decision", "deny")
-        .order("created_at", { ascending: false })
-        .limit(25);
+        .eq("decision", "deny");
+      if (denialAction !== "all") q = q.eq("action", denialAction);
+      const { data, error } = await q.order("created_at", { ascending: false }).limit(25);
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const doScreen = useMutation({
     mutationFn: () => {
@@ -256,8 +258,31 @@ export function CoreGovernancePanel() {
             <p className="mt-1 text-sm text-muted-foreground">
               Every Core decision is recorded. These are the attempts Core refused, newest first.
             </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {([
+                { k: "all", label: "All Decisions" },
+                { k: "call", label: "Dial Blocks" },
+                { k: "record", label: "Recording Blocks" },
+              ] as const).map((o) => (
+                <Button
+                  key={o.k}
+                  size="sm"
+                  variant={denialAction === o.k ? "default" : "outline"}
+                  onClick={() => setDenialAction(o.k)}
+                >
+                  {o.label}
+                </Button>
+              ))}
+            </div>
             {(denials ?? []).length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">Core has not blocked anything yet.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {denialAction === "record"
+                  ? "Core has not blocked any recording yet."
+                  : denialAction === "call"
+                    ? "Core has not blocked any dial yet."
+                    : "Core has not blocked anything yet."}
+              </p>
+
             ) : (
               <div className="mt-2 overflow-x-auto">
                 <table className="w-full text-sm">
