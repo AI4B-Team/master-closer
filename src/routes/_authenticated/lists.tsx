@@ -199,12 +199,7 @@ function ListsPage() {
     const csv = [header, ...rows]
       .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
       .join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${active.name.replace(/\s+/g, "-").toLowerCase()}-contacts.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(`${active.name.replace(/\s+/g, "-").toLowerCase()}-contacts.csv`, csv);
   }
 
   const createList = useMutation({
