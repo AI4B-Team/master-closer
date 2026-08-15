@@ -1,10 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { SummarizeInput } from "./server-schemas";
 
 export const summarizeCall = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => SummarizeInput.parse(data))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;

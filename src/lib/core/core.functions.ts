@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getRequest } from "@tanstack/react-start/server";
 
 /**
@@ -35,7 +36,9 @@ export const getCoreSession = createServerFn({ method: "GET" }).handler(async ()
  * app's service credential. Returns exactly what Core said — no optimistic
  * assumptions, no local fallback.
  */
-export const checkCoreConnectivity = createServerFn({ method: "POST" }).handler(async () => {
+export const checkCoreConnectivity = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
   const { coreConfig, coreService, CoreUnavailableError } = await import("@/lib/core/core.server");
   const { CoreApiError } = await import("@/lib/core/sdk");
   const { appId } = coreConfig();
