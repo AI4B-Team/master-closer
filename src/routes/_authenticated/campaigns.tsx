@@ -312,7 +312,7 @@ function CampaignsPage() {
                     <SelectContent>
                       {(lists ?? []).map((l: any) => (
                         <SelectItem key={l.id} value={l.id}>
-                          {l.name} · {l.list_contacts?.length ?? 0} contacts
+                          {l.name} · {dialableCount(l)} dialable
                         </SelectItem>
                       ))}
                     </SelectContent>
