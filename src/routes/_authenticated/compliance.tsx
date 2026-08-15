@@ -18,7 +18,7 @@ import { logActivity } from "@/lib/activity";
 import { CallingWindowPanel } from "@/components/back-office/CallingWindowPanel";
 import { CoreGovernancePanel } from "@/components/back-office/CoreGovernancePanel";
 import { useServerFn } from "@tanstack/react-start";
-import { createCoreSuppression, listCoreSuppressions } from "@/lib/core/policy.functions";
+import { createCoreSuppression, listCoreSuppressions, releaseCoreSuppression } from "@/lib/core/policy.functions";
 
 import { formatPhone, phoneKey } from "@/lib/phone";
 import { suppressContactsForPhones, releasePhoneLocally, fetchBlockedPhoneKeys } from "@/lib/dnc";
@@ -693,6 +693,7 @@ function DncRegistry() {
                   <th className="py-2">Number</th>
                   <th className="py-2">Reason</th>
                   <th className="py-2 text-right">Added</th>
+                  <th className="py-2 text-right">Action</th>
                   <th className="py-2" />
                 </tr>
               </thead>
@@ -744,11 +745,34 @@ function EmailOptOuts() {
   const wsId = workspace?.id ?? null;
   const coreSuppress = useServerFn(createCoreSuppression);
   const coreList = useServerFn(listCoreSuppressions);
+  const coreRelease = useServerFn(releaseCoreSuppression);
 
   const { data: coreSupp } = useQuery({
     queryKey: ["core-suppressions", wsId],
     enabled: !!wsId,
     queryFn: () => coreList(),
+  });
+
+  // Opting out is one-way without a release path: a re-consenting address would
+  // stay blocked family-wide with no way back.
+  const release = useMutation({
+    mutationFn: async (row: any) => {
+      const res = await coreRelease({ data: { id: row.id, notes: "Released from Compliance Center" } });
+      if (res.status !== "ok") {
+        throw new Error(
+          res.status === "unlinked"
+            ? "This workspace is not linked to Core."
+            : "Core could not release that address. Try again shortly.",
+        );
+      }
+      return res;
+    },
+    onSuccess: (res: any) => {
+      toast.success(`${res.identifier} can be emailed again.`);
+      void logActivity("lead.dnc_released", { channel: "email", identifier: res.identifier });
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const emails =
@@ -854,7 +878,20 @@ function EmailOptOuts() {
                     </td>
                     <td className="py-2.5 text-[#6B6B76]">{s.reason ?? "—"}</td>
                     <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
-                      {s.created_at ? new Date(s.created_at).toLocaleDateString() : "—"}
+                      {s.createdAt ?? s.created_at
+                        ? new Date(s.createdAt ?? s.created_at).toLocaleDateString()
+                        : "—"}
+                    </td>
+                    <td className="py-2.5 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 rounded-lg text-xs"
+                        disabled={!s.id || release.isPending}
+                        onClick={() => release.mutate(s)}
+                      >
+                        Release
+                      </Button>
                     </td>
                   </tr>
                 ))}
