@@ -526,7 +526,11 @@ function DialerPage() {
   useEffect(() => {
     if (!connected || !simulate) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
+    // Hold-retries schedule new timers after the effect ran, so a plain timer
+    // list can leak an assist call into a call that already ended.
+    let cancelled = false;
     const fire = (text: string) => {
+      if (cancelled) return;
       // While the prospect is on hold nothing is heard — retry once the line resumes.
       if (holdRef.current) {
         timers.push(setTimeout(() => fire(text), 1500));
@@ -535,7 +539,10 @@ function DialerPage() {
       void assistRef.current(text);
     };
     SIM_SCRIPT.forEach((s) => timers.push(setTimeout(() => fire(s.text), s.at * 1000)));
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
   }, [connected, simulate, callId]);
 
 
