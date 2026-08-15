@@ -73,9 +73,9 @@ function NotificationsPage() {
   });
 
   const { data: readKeys } = useQuery({
-    queryKey: ["notification-reads", wsId],
-    enabled: !!wsId,
-    queryFn: () => fetchReadKeys(wsId!),
+    queryKey: ["notification-reads", wsId, user?.id],
+    enabled: !!wsId && !!user?.id,
+    queryFn: () => fetchReadKeys(wsId!, user!.id),
   });
 
   const visible = useMemo(() => applyPrefs(items ?? [], prefs), [
@@ -97,7 +97,7 @@ function NotificationsPage() {
   });
 
   const refresh = () => {
-    qc.invalidateQueries({ queryKey: ["notification-reads", wsId] });
+    qc.invalidateQueries({ queryKey: ["notification-reads", wsId, user?.id] });
     qc.invalidateQueries({ queryKey: ["notifications"] });
   };
 
@@ -105,7 +105,7 @@ function NotificationsPage() {
     mutationFn: async ({ keys, read }: { keys: string[]; read: boolean }) => {
       if (!wsId || !user?.id) return;
       if (read) await markNotificationsRead(wsId, user.id, keys);
-      else await markNotificationsUnread(wsId, keys);
+      else await markNotificationsUnread(wsId, user.id, keys);
     },
     onSuccess: refresh,
   });
