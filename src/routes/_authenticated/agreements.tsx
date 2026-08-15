@@ -944,6 +944,17 @@ function AgreementDrawer({
     return true;
   };
 
+  // Surface an email opt-out up front instead of only failing on click.
+  const emailCheck = useQuery({
+    queryKey: ["agreement-email-policy", agreement.id, agreement.signer_email],
+    enabled: !!agreement.signer_email,
+    staleTime: 60_000,
+    queryFn: () =>
+      assertCanEmail({ data: { email: agreement.signer_email, leadId: agreement.lead_id ?? undefined } }),
+  });
+  const emailBlocked =
+    emailCheck.data?.status === "decided" && emailCheck.data.decision === "deny";
+
   const send = async () => {
     if (!(await guardSuppression())) return;
     if (!(await guardEmail())) return;
@@ -1017,9 +1028,16 @@ function AgreementDrawer({
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
+            {emailBlocked && (
+              <p className="mt-3 text-xs text-[#CC0000]">
+                {emailCheck.data?.status === "decided" && emailCheck.data.deniedBy === "core_unavailable"
+                  ? "Compliance service is unreachable — email sending is blocked until it responds."
+                  : "This email address is on the family-wide opt-out list. Email sending is blocked."}
+              </p>
+            )}
             <div className="flex gap-2 mt-3 flex-wrap">
               {agreement.status === "draft" && (
-                <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl" onClick={send}>
+                <Button className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl" onClick={send} disabled={emailBlocked}>
                   <Send className="h-4 w-4 mr-1" /> Send For Signature
                 </Button>
               )}
@@ -1027,9 +1045,10 @@ function AgreementDrawer({
                 <Button
                   variant="outline"
                   className="rounded-xl"
+                  disabled={emailBlocked}
                   onClick={async () => {
                     if (!(await guardSuppression())) return;
-    if (!(await guardEmail())) return;
+                    if (!(await guardEmail())) return;
                     emailSigningLink({
                       to: agreement.signer_email,
                       title: agreement.title,
