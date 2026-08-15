@@ -33,7 +33,19 @@ async function pushToCore(
         identifier,
         reason: reason || "opt_out",
       });
+      // Same audit trail the email path writes, so API-taken voice opt-outs show
+      // up in the governance panel's "Opt-Outs Added" view.
+      await auditSuppressionWrite(
+        supabase,
+        workspaceId,
+        ws.core_workspace_id as string,
+        "suppression.create",
+        identifier,
+        "dial",
+        reason || undefined,
+      );
       return { status: "ok" };
+
     } catch (e) {
       return {
         status: "error",
