@@ -77,15 +77,36 @@ function ListsPage() {
     },
   });
 
+  const { data: suppressed } = useQuery({
+    queryKey: ["suppressed-phones", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("phone")
+        .eq("workspace_id", wsId!)
+        .eq("suppressed", true);
+      if (error) return [];
+      return data ?? [];
+    },
+  });
+
   const active = (lists ?? []).find((l: any) => l.id === selected) ?? (lists ?? [])[0];
   const digits = phoneKey;
-  const dncSet = new Set((dnc ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+  const dncSet = new Set(
+    [...(dnc ?? []), ...(suppressed ?? [])].map((d: any) => phoneKey(d.phone)).filter(Boolean),
+  );
+
+  const isBlocked = (c: any) => c?.consent === "opt_out" || dncSet.has(phoneKey(c?.phone) as any);
+  const dialableCount = (l: any) => ((l?.list_contacts ?? []) as any[]).filter((c) => !isBlocked(c)).length;
+  const blockedCount = (l: any) => ((l?.list_contacts ?? []) as any[]).filter((c) => isBlocked(c)).length;
 
   const contacts = ((active?.list_contacts ?? []) as any[]).filter((c) => {
     const q = search.trim().toLowerCase();
     if (!q) return true;
     return [c.name, c.phone, c.email].some((v: string | null) => (v ?? "").toLowerCase().includes(q));
   });
+
 
   const renameList = useMutation({
     mutationFn: async () => {
