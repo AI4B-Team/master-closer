@@ -116,7 +116,10 @@ function detailOf(payload: unknown) {
   // Core sync rows carry counts or a failure reason, never a name.
   if (p.kind === "core.suppression_sync_failed") return p.reason || "Core was unreachable";
   if (p.kind === "core.suppressions_synced")
-    return `${p.added ?? 0} added to Do Not Call · ${p.mirrored ?? 0} on Core list`;
+    return (
+      `${p.added ?? 0} added to Do Not Call · ${p.mirrored ?? 0} on Core list` +
+      (p.removed ? ` · ${p.removed} lifted by Core` : "")
+    );
   return (
     p.name || p.lead_name || p.title || p.signer_name || p.phone || p.outcome || p.message || "Workspace activity"
   );
