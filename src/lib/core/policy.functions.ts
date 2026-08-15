@@ -397,6 +397,7 @@ export const releaseCoreSuppression = createServerFn({ method: "POST" })
     await context.supabase.from("core_policy_checks").insert({
       workspace_id: workspaceId,
       core_workspace_id: link.coreWorkspaceId,
+      action: "suppression.release",
       channel: target.channel === "email" ? "send" : "dial",
       identifier: target.identifier,
       decision: "allow",
