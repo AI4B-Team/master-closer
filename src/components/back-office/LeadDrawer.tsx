@@ -100,6 +100,21 @@ export function LeadDrawer({
     },
   });
 
+  /* Family-wide opt-outs mirrored from Core live on contacts, not the local list. */
+  const { data: suppressed } = useQuery({
+    queryKey: ["lead-suppressed", leadKey, wsId],
+    enabled: !!leadKey && !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("id, phone, suppressed_at")
+        .eq("workspace_id", wsId!)
+        .eq("suppressed", true)
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []).find((r) => phoneKey(r.phone) === leadKey) ?? null;
+    },
+  });
 
   const { data: calls } = useQuery({
     queryKey: ["lead-calls", lead?.id, wsId],
