@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { fetchObjectionLibrary } from "@/lib/objections";
 import { assemblePromptForCall } from "@/lib/closer-profiles.functions";
-import { assertCanCall, createCoreSuppression } from "@/lib/core/policy.functions";
+import { assertCanCall, assertCanRecord, createCoreSuppression } from "@/lib/core/policy.functions";
 import { phoneKey } from "@/lib/phone";
 import { useCallingWindow } from "@/hooks/use-calling-window";
 import { nextOpenAt, timezoneLabel } from "@/lib/calling-window";
@@ -80,6 +80,10 @@ function DialerPage() {
   const [mode, setMode] = useState<Mode>("full_ai");
   const [phone, setPhone] = useState(prefill ?? "+1 555 0142");
   const [jurisdiction, setJurisdiction] = useState("FL");
+  /** Core's recording verdict for the called party's jurisdiction, once it answers. */
+  const [coreRec, setCoreRec] = useState<{
+    consentType: string; requiresAnnouncement: boolean; calledState: string | null;
+  } | null>(null);
   const [connected, setConnected] = useState(false);
   const [callId, setCallId] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<AssistLine[]>([]);
@@ -197,6 +201,7 @@ function DialerPage() {
   const assemblePrompt = useServerFn(assemblePromptForCall);
   const corePolicyAssert = useServerFn(assertCanCall);
   const coreSuppress = useServerFn(createCoreSuppression);
+  const coreRecordAssert = useServerFn(assertCanRecord);
 
   const [sendingAgreement, setSendingAgreement] = useState(false);
 
@@ -556,8 +561,12 @@ function DialerPage() {
     }
   };
 
-  const required = isDisclosureRequired(jurisdiction);
-  const blocked = mode === "copilot" && shouldBlockLiveSurface(jurisdiction, delivered);
+  // Core's jurisdiction verdict is authoritative; local state rules are the floor.
+  const required = isDisclosureRequired(jurisdiction) || coreRec?.requiresAnnouncement === true;
+  const blocked =
+    mode === "copilot" &&
+    (shouldBlockLiveSurface(jurisdiction, delivered) ||
+      (coreRec?.requiresAnnouncement === true && !delivered));
 
   const startCall = async () => {
     setBusy(true);
@@ -582,6 +591,22 @@ function DialerPage() {
               ? "Core Could Not Authorize This Call. Dial Blocked."
               : `Core Denied This Call${verdictCore.deniedBy ? ` (${verdictCore.deniedBy})` : ""}.`,
           );
+        }
+
+        // Recording consent is evaluated where the called party sits, not where we do.
+        const rec = await coreRecordAssert({ data: { phone } });
+        if (rec.status === "decided") {
+          setCoreRec({
+            consentType: rec.consentType,
+            requiresAnnouncement: rec.requiresAnnouncement,
+            calledState: rec.calledState,
+          });
+          if (rec.calledState) setJurisdiction(rec.calledState);
+          if (rec.decision === "deny") {
+            throw new Error("Core Denied Recording For This Jurisdiction. Call Blocked.");
+          }
+        } else {
+          setCoreRec(null);
         }
       }
 
@@ -1187,7 +1212,8 @@ function DialerPage() {
                   ["Phone", phone],
                   ["Mode", mode === "full_ai" ? "AI" : mode === "hybrid" ? "Hybrid" : "Copilot"],
                   ["Jurisdiction", jurisdiction],
-                  ["Disclosure", disclosureStatus(jurisdiction)],
+                  ["Disclosure", required ? "Required In This State" : disclosureStatus(jurisdiction)],
+                  ["Recording Consent", coreRec ? coreRec.consentType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Local Rules"],
                   ["Consent Log", delivered ? "Written" : "Pending"],
                   ["Call Timer", fmt(elapsed)],
                 ].map(([k, v]) => (
