@@ -221,10 +221,30 @@ export const assertCanRecord = createServerFn({ method: "POST" })
     const { resolveCoreLink, toE164 } = await import("./tenancy.server");
     const { coreService } = await import("./core.server");
 
-    const { link } = await resolveCoreLink(context.supabase, context.userId);
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
     if (!link) return { status: "unlinked" as const };
     const identifier = toE164(data.phone);
     if (!identifier) return { status: "unavailable" as const, reason: "unrecognized_phone_format" };
+
+    // Recording verdicts are auditable evidence, so they land in the same log.
+    const log = async (row: Record<string, unknown>) => {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      try {
+        await supabaseAdmin.from("core_policy_checks").insert({
+          workspace_id: workspaceId,
+          core_workspace_id: link.coreWorkspaceId,
+          action: "record",
+          channel: "voice",
+          identifier,
+          actor_type: "user",
+          actor_id: context.userId,
+          rules_evaluated: [],
+          ...row,
+        } as never);
+      } catch {
+        /* audit write must never block the compliance decision */
+      }
+    };
 
     try {
       const r = await coreService().policy.assertCanRecord({
@@ -232,6 +252,10 @@ export const assertCanRecord = createServerFn({ method: "POST" })
         called_e164: identifier,
         actor_type: "user",
         actor_id: context.userId,
+      });
+      await log({
+        decision: r.decision,
+        reason: `${r.consent_type} consent${r.called_state ? ` (${r.called_state})` : ""}${r.requires_announcement ? ", announcement required" : ""}`,
       });
       return {
         status: "decided" as const,
@@ -242,6 +266,7 @@ export const assertCanRecord = createServerFn({ method: "POST" })
       };
     } catch {
       // Fail closed: assume the strictest posture when Core cannot answer.
+      await log({ decision: "deny", denied_by: "core_unavailable", reason: "core_unreachable" });
       return { status: "decided" as const, decision: "deny" as const, consentType: "unknown" as const, requiresAnnouncement: true, calledState: null };
     }
   });
