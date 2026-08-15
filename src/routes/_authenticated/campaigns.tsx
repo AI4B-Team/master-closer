@@ -67,7 +67,7 @@ function CampaignsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("campaigns")
-        .select("*, agents(name), call_lists(name, list_contacts(id))")
+        .select("*, agents(name), call_lists(name, list_contacts(id, phone, consent))")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -88,7 +88,7 @@ function CampaignsPage() {
     queryFn: async () =>
       (await supabase
         .from("call_lists")
-        .select("id, name, list_contacts(id)")
+        .select("id, name, list_contacts(id, phone, consent)")
         .eq("workspace_id", wsId!)
         .order("created_at", { ascending: false })).data ?? [],
   });
