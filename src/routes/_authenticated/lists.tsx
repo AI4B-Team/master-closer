@@ -198,19 +198,45 @@ function ListsPage() {
       const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
       const workspaceId = prof?.active_workspace_id;
       if (!workspaceId) throw new Error("No active workspace");
-      const { error } = await supabase
-        .from("list_contacts")
-        .insert(rows.map((r) => ({ ...r, workspace_id: workspaceId, list_id: active.id })));
+
+      // Screen the import against local Do Not Call and Core family-wide suppressions.
+      const [{ data: dnc }, { data: suppressed }] = await Promise.all([
+        supabase.from("dnc_list").select("phone").eq("workspace_id", workspaceId),
+        supabase.from("contacts").select("phone").eq("workspace_id", workspaceId).eq("suppressed", true),
+      ]);
+      const blocked = new Set<string>();
+      for (const r of [...(dnc ?? []), ...(suppressed ?? [])]) {
+        const k = phoneKey(r.phone ?? "");
+        if (k) blocked.add(k);
+      }
+
+      const payload = rows.map((r) => {
+        const k = phoneKey(r.phone);
+        const isBlocked = !!k && blocked.has(k);
+        return {
+          ...r,
+          workspace_id: workspaceId,
+          list_id: active.id,
+          consent: (isBlocked ? "opt_out" : "unknown") as "opt_out" | "unknown",
+        };
+      });
+      const { error } = await supabase.from("list_contacts").insert(payload);
       if (error) throw error;
-      return rows.length;
+      return { total: rows.length, blocked: payload.filter((p) => p.consent === "opt_out").length };
     },
-    onSuccess: (n) => {
-      toast.success(`${n} Contacts Imported.`);
+    onSuccess: ({ total, blocked }) => {
+      toast.success(`${total} Contacts Imported.`);
+      if (blocked > 0) {
+        toast.warning(
+          `${blocked} ${blocked === 1 ? "Contact Is" : "Contacts Are"} Opted Out And Won't Be Dialed.`,
+        );
+      }
       setImportOpen(false);
       setRaw("");
       qc.invalidateQueries({ queryKey: ["call_lists"] });
     },
     onError: (e: any) => toast.error(e.message),
+
   });
 
   return (
