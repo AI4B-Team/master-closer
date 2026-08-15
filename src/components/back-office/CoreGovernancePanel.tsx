@@ -129,8 +129,10 @@ export function CoreGovernancePanel() {
           ".",
       );
 
-      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
-      qc.invalidateQueries({ queryKey: ["dnc"] });
+      // The mirror touches Do Not Call, contacts, leads, paused lines and the audit trail.
+      for (const key of ["core-suppressions", "dnc", "leads", "contacts", "paused-lines", "activity", "events", "notifications"]) {
+        qc.invalidateQueries({ queryKey: [key] });
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
