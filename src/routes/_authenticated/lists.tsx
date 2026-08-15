@@ -17,7 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatPhone, phoneKey } from "@/lib/phone";
 import { suppressContactsForPhones, fetchBlockedPhoneKeys } from "@/lib/dnc";
-import { screenEmails } from "@/lib/core/policy.functions";
+import { screenEmails, createCoreSuppression } from "@/lib/core/policy.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_authenticated/lists")({
   head: () => ({
@@ -53,6 +55,7 @@ function ListsPage() {
 
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
+  const coreSuppress = useServerFn(createCoreSuppression);
 
   const { data: lists, isLoading: listsLoading } = useQuery({
     queryKey: ["call_lists", wsId],
@@ -157,16 +160,33 @@ function ListsPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      const reason = `Added from list ${active?.name ?? ""}`.trim();
       const { error } = await supabase
         .from("dnc_list")
-        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
+        .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone: contact.phone, reason });
       if (error) throw error;
       await supabase.from("list_contacts").update({ consent: "opt_out" }).eq("id", contact.id);
       // Keep the contact record in step so nominations never resurface this number.
       await suppressContactsForPhones(prof.active_workspace_id, [contact.phone]);
+      // Surface the opt-out in the Activity Log / webhook fan-out like every other path.
+      void logActivity("lead.flagged_dnc", { phone: contact.phone, channel: "voice", reason });
+      // Push it to Core so every app in the family stops contacting this number.
+      let coreFailed = false;
+      try {
+        const res = await coreSuppress({
+          data: { phone: contact.phone, reason: "opt_out", notes: reason, channel: "voice" },
+        });
+        coreFailed = res.status === "error";
+      } catch {
+        coreFailed = true;
+      }
+      return { coreFailed };
     },
-    onSuccess: () => {
+    onSuccess: ({ coreFailed }) => {
       toast.success("Added To Do Not Call.");
+      if (coreFailed) {
+        toast.warning("Could not send this opt-out to Core — other apps in the family may still contact them.");
+      }
       qc.invalidateQueries({ queryKey: ["dnc-phones"] });
       qc.invalidateQueries({ queryKey: ["call_lists"] });
     },
