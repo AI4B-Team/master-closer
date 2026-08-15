@@ -79,6 +79,24 @@ export function CoreGovernancePanel() {
       return data ?? [];
     },
   });
+  // Last unattended mirror run, read straight from the workspace event feed.
+  const { data: lastSync } = useQuery({
+    queryKey: ["core-last-sync", wsId, linked],
+    enabled: !!wsId && linked,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("id, created_at, payload")
+        .eq("workspace_id", wsId!)
+        .eq("event_type", "job.completed")
+        .in("payload->>kind", ["core.suppressions_synced", "core.suppression_sync_failed"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return (data ?? [])[0] ?? null;
+    },
+  });
+
 
 
   const doScreen = useMutation({
@@ -219,6 +237,21 @@ export function CoreGovernancePanel() {
                 {doSync.isPending ? "Syncing…" : "Mirror Into Do Not Call"}
               </Button>
             </div>
+            {lastSync &&
+              (() => {
+                const p = (lastSync.payload ?? {}) as Record<string, unknown>;
+                const failed = p.kind === "core.suppression_sync_failed";
+                const when = new Date(lastSync.created_at).toLocaleString();
+                return (
+                  <p className={"mt-2 text-sm " + (failed ? "text-[#CC0000]" : "text-muted-foreground")}>
+                    Last automatic mirror {when} —{" "}
+                    {failed
+                      ? `failed (${String(p.reason ?? "unknown reason")})`
+                      : `${Number(p.mirrored ?? 0)} checked, ${Number(p.added ?? 0)} added to Do Not Call, ${Number(p.contactsSuppressed ?? 0)} contacts flagged`}
+                    .
+                  </p>
+                );
+              })()}
             {supp?.status === "error" ? (
               <p className="mt-2 text-sm text-[#CC0000]">Could not read suppressions ({supp.reason}).</p>
             ) : (supp?.suppressions ?? []).length === 0 ? (
