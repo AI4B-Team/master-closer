@@ -401,11 +401,17 @@ function DncRegistry() {
       return { count: numbers.length, coreFailed };
 
     },
-    onSuccess: (n) => {
-      toast.success(`${n} number${n === 1 ? "" : "s"} added to Do Not Call.`);
+    onSuccess: ({ count, coreFailed }) => {
+      toast.success(`${count} number${count === 1 ? "" : "s"} added to Do Not Call.`);
+      if (coreFailed) {
+        toast.warning(
+          `${coreFailed} could not be sent to Core — other apps in the family may still contact them.`,
+        );
+      }
       setPhone("");
       setReason("");
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
