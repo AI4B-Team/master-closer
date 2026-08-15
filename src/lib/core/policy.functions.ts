@@ -456,7 +456,30 @@ export const syncCoreSuppressions = createServerFn({ method: "POST" })
         orgId,
         coreWorkspaceId: link.coreWorkspaceId,
       });
+      // A manual mirror belongs in the audit trail alongside the hourly sweep,
+      // so the Compliance Center's "last mirror" line reflects it too.
+      try {
+        await context.supabase.from("events").insert({
+          org_id: orgId,
+          workspace_id: workspaceId,
+          event_type: "job.completed",
+          payload: {
+            kind: "core.suppressions_synced",
+            manual: true,
+            mirrored: result.mirrored,
+            added: result.added,
+            removed: result.removed,
+            contacts_suppressed: result.contactsSuppressed,
+            contacts_released: result.contactsReleased,
+            leads_flagged: result.leadsFlagged,
+            leads_released: result.leadsReleased,
+          },
+        });
+      } catch {
+        /* the audit write must never fail the mirror */
+      }
       return { status: "ok" as const, ...result };
+
     } catch (e) {
       return {
         status: "error" as const,
