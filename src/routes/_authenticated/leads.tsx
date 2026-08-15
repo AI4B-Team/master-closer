@@ -195,17 +195,18 @@ function LeadsPage() {
     },
   });
 
-  /* Do Not Call keys for this workspace — used to flag opted-out leads inline. */
+  /* Blocked keys: local Do Not Call plus family-wide suppressions mirrored from Core. */
   const { data: dncKeys } = useQuery({
     queryKey: ["leads-dnc-keys", wsId],
     enabled: !!wsId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dnc_list")
-        .select("phone")
-        .eq("workspace_id", wsId!);
+      const [{ data, error }, { data: supp, error: suppErr }] = await Promise.all([
+        supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
+        supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
+      ]);
       if (error) throw error;
-      return new Set((data ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+      if (suppErr) throw suppErr;
+      return new Set([...(data ?? []), ...(supp ?? [])].map((d: any) => phoneKey(d.phone)).filter(Boolean));
     },
   });
   const isDnc = (phone?: string | null) => {
