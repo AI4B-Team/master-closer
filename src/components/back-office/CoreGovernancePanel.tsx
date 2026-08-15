@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Network, Link2, Unlink, ShieldOff } from "lucide-react";
+import { Network, Link2, Unlink, ShieldOff, ListFilter, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { formatPhone } from "@/lib/phone";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
   getCoreTenancy, linkWorkspaceToCore, unlinkWorkspaceFromCore, listCoreSuppressions,
+  screenCallListWithCore, syncCoreSuppressions,
 } from "@/lib/core/policy.functions";
 
 /**
