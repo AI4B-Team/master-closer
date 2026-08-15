@@ -245,8 +245,10 @@ function LeadsPage() {
       const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
       const workspaceId = prof?.active_workspace_id;
       if (!workspaceId) throw new Error("No active workspace");
-      const rows = (leads ?? [])
-        .filter((l: any) => picked.includes(l.id) && l.phone)
+      const pickedWithPhone = (leads ?? []).filter((l: any) => picked.includes(l.id) && l.phone);
+      const skipped = pickedWithPhone.filter((l: any) => isDnc(l.phone)).length;
+      const rows = pickedWithPhone
+        .filter((l: any) => !isDnc(l.phone))
         .map((l: any) => ({
           list_id: listTarget,
           workspace_id: workspaceId,
