@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
 import { CallingWindowPanel } from "@/components/back-office/CallingWindowPanel";
 import { CoreGovernancePanel } from "@/components/back-office/CoreGovernancePanel";
+import { useServerFn } from "@tanstack/react-start";
+import { createCoreSuppression } from "@/lib/core/policy.functions";
 
 import { formatPhone } from "@/lib/phone";
 import {
@@ -351,6 +353,7 @@ function DncRegistry() {
 
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
+  const coreSuppress = useServerFn(createCoreSuppression);
 
   const { data: entries } = useQuery({
     queryKey: ["dnc_list", wsId],
@@ -386,14 +389,32 @@ function DncRegistry() {
       if (error) throw error;
       // Surface suppression additions in the Activity Log / webhook fan-out.
       for (const p of numbers) void logActivity("lead.flagged_dnc", { phone: p, reason: reason.trim() || "Added manually" });
-      return numbers.length;
+      // Push each opt-out to Core so every app in the family stops contacting them.
+      let coreFailed = 0;
+      for (const p of numbers) {
+        try {
+          const res = await coreSuppress({
+            data: { phone: p, reason: "opt_out", notes: reason.trim() || "Added manually", channel: "voice" },
+          });
+          if (res.status === "error") coreFailed += 1;
+        } catch {
+          coreFailed += 1;
+        }
+      }
+      return { count: numbers.length, coreFailed };
 
     },
-    onSuccess: (n) => {
-      toast.success(`${n} number${n === 1 ? "" : "s"} added to Do Not Call.`);
+    onSuccess: ({ count, coreFailed }) => {
+      toast.success(`${count} number${count === 1 ? "" : "s"} added to Do Not Call.`);
+      if (coreFailed) {
+        toast.warning(
+          `${coreFailed} could not be sent to Core — other apps in the family may still contact them.`,
+        );
+      }
       setPhone("");
       setReason("");
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
