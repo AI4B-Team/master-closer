@@ -47,7 +47,9 @@ export async function syncAllCoreSuppressions(): Promise<{
   synced: number;
   failed: number;
   added: number;
+  removed: number;
   contactsSuppressed: number;
+  contactsReleased: number;
   results: WorkspaceSyncResult[];
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -61,7 +63,9 @@ export async function syncAllCoreSuppressions(): Promise<{
 
   const results: WorkspaceSyncResult[] = [];
   let added = 0;
+  let removed = 0;
   let contactsSuppressed = 0;
+  let contactsReleased = 0;
 
   for (const ws of linked ?? []) {
     try {
@@ -72,13 +76,17 @@ export async function syncAllCoreSuppressions(): Promise<{
         coreWorkspaceId: ws.core_workspace_id as string,
       });
       added += out.added;
+      removed += out.removed;
       contactsSuppressed += out.contactsSuppressed;
+      contactsReleased += out.contactsReleased;
       results.push({ workspaceId: ws.id, name: ws.name, status: "ok", ...out });
       await logSyncEvent(supabaseAdmin, ws, {
         kind: "core.suppressions_synced",
         mirrored: out.mirrored,
         added: out.added,
+        removed: out.removed,
         contacts_suppressed: out.contactsSuppressed,
+        contacts_released: out.contactsReleased,
       });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "Core unavailable";
@@ -92,7 +100,10 @@ export async function syncAllCoreSuppressions(): Promise<{
     synced: results.filter((r) => r.status === "ok").length,
     failed: results.filter((r) => r.status === "error").length,
     added,
+    removed,
     contactsSuppressed,
+    contactsReleased,
     results,
   };
+
 }
