@@ -9,6 +9,12 @@ export const Route = createFileRoute("/api/v1/leads")({
         try {
           const { supabase, workspaceId } = await apiClient(request);
           const limit = Math.min(Number(new URL(request.url).searchParams.get("limit") ?? 100), 500);
+          // Same for the email side of the family-wide opt-out list.
+          const { screenInboundEmail } = await import("@/lib/core/screening.server");
+          const emailScreen = body.email
+            ? await screenInboundEmail({ workspaceId, email: body.email })
+            : { suppressed: false, reason: null };
+
           const { data, error } = await supabase
             .from("leads")
             .select("*")
@@ -45,6 +51,12 @@ export const Route = createFileRoute("/api/v1/leads")({
           const key = phoneKey(body.phone);
           const blocked = key ? (await fetchBlockedPhoneKeysServer(supabase, workspaceId)).has(key) : false;
 
+          // Same for the email side of the family-wide opt-out list.
+          const { screenInboundEmail } = await import("@/lib/core/screening.server");
+          const emailScreen = body.email
+            ? await screenInboundEmail({ workspaceId, email: body.email })
+            : { suppressed: false, reason: null };
+
           const { data, error } = await supabase
             .from("leads")
             .insert({
@@ -60,7 +72,10 @@ export const Route = createFileRoute("/api/v1/leads")({
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "leads.new", { lead_id: data.id, name: data.name, source: data.source });
 
-          return Response.json({ lead: data, suppressed: blocked }, { status: 201 });
+          return Response.json(
+            { lead: data, suppressed: blocked, email_suppressed: emailScreen.suppressed },
+            { status: 201 },
+          );
 
         } catch (e) {
           return apiError(e);
