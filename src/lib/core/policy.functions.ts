@@ -473,6 +473,8 @@ export const syncCoreSuppressions = createServerFn({ method: "POST" })
             contacts_released: result.contactsReleased,
             leads_flagged: result.leadsFlagged,
             leads_released: result.leadsReleased,
+            list_contacts_flagged: result.listContactsFlagged,
+            list_contacts_released: result.listContactsReleased,
           },
         });
       } catch {
