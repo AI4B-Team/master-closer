@@ -40,6 +40,8 @@ export type WorkspaceSyncResult = {
   contactsReleased?: number;
   leadsFlagged?: number;
   leadsReleased?: number;
+  listContactsFlagged?: number;
+  listContactsReleased?: number;
   reason?: string;
 };
 
@@ -54,6 +56,8 @@ export async function syncAllCoreSuppressions(): Promise<{
   contactsReleased: number;
   leadsFlagged: number;
   leadsReleased: number;
+  listContactsFlagged: number;
+  listContactsReleased: number;
   results: WorkspaceSyncResult[];
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -72,6 +76,8 @@ export async function syncAllCoreSuppressions(): Promise<{
   let contactsReleased = 0;
   let leadsFlagged = 0;
   let leadsReleased = 0;
+  let listContactsFlagged = 0;
+  let listContactsReleased = 0;
 
   for (const ws of linked ?? []) {
     try {
@@ -87,6 +93,8 @@ export async function syncAllCoreSuppressions(): Promise<{
       contactsReleased += out.contactsReleased;
       leadsFlagged += out.leadsFlagged;
       leadsReleased += out.leadsReleased;
+      listContactsFlagged += out.listContactsFlagged;
+      listContactsReleased += out.listContactsReleased;
       results.push({ workspaceId: ws.id, name: ws.name, status: "ok", ...out });
       await logSyncEvent(supabaseAdmin, ws, {
         kind: "core.suppressions_synced",
@@ -97,6 +105,8 @@ export async function syncAllCoreSuppressions(): Promise<{
         contacts_released: out.contactsReleased,
         leads_flagged: out.leadsFlagged,
         leads_released: out.leadsReleased,
+        list_contacts_flagged: out.listContactsFlagged,
+        list_contacts_released: out.listContactsReleased,
       });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "Core unavailable";
@@ -115,6 +125,8 @@ export async function syncAllCoreSuppressions(): Promise<{
     contactsReleased,
     leadsFlagged,
     leadsReleased,
+    listContactsFlagged,
+    listContactsReleased,
     results,
   };
 

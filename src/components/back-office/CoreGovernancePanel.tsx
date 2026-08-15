@@ -126,6 +126,8 @@ export function CoreGovernancePanel() {
           (r.contactsReleased ? `, ${r.contactsReleased} contacts released` : "") +
           (r.leadsFlagged ? `, ${r.leadsFlagged} leads opted out` : "") +
           (r.leadsReleased ? `, ${r.leadsReleased} leads released` : "") +
+          (r.listContactsFlagged ? `, ${r.listContactsFlagged} list contacts opted out` : "") +
+          (r.listContactsReleased ? `, ${r.listContactsReleased} list contacts released` : "") +
           ".",
       );
 
