@@ -76,6 +76,23 @@ function WorklistPage() {
     onError: (e: any) => toast.error(e?.message ?? "Could not record that."),
   });
 
+  /* Do Not Call keys — a nomination can go stale after an opt-out, so check before dialing. */
+  const { data: dncKeys } = useQuery({
+    queryKey: ["worklist-dnc-keys"],
+    queryFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+      const ws = prof?.active_workspace_id;
+      if (!ws) return new Set<string>();
+      const { data, error } = await supabase.from("dnc_list").select("phone").eq("workspace_id", ws);
+      if (error) throw error;
+      return new Set((data ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+    },
+  });
+  const isDnc = (phone?: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && !!dncKeys?.has(k);
+  };
+
   const rows = (data?.rows ?? []).filter((r: any) => !hidden[r.id]);
 
   return (
