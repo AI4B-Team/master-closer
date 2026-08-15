@@ -57,6 +57,76 @@ export async function assertBulkAll(args: {
   return { rows, evaluatedAt };
 }
 
+/**
+ * Bulk-screens email addresses against Core's shared opt-out list. Used for
+ * automated sends (digests, batch notifications) where there is no user to
+ * react to a single denial. Errors surface as `deny` so automation fails closed.
+ */
+export async function assertBulkEmails(args: {
+  coreWorkspaceId: string;
+  emails: string[];
+  actorId: string;
+}): Promise<{ rows: ScreenRow[]; evaluatedAt: string }> {
+  const { coreService } = await import("./core.server");
+  const core = coreService();
+  const rows: ScreenRow[] = [];
+  let evaluatedAt = new Date().toISOString();
+
+  for (const batch of chunk(args.emails, MAX_BULK_IDENTIFIERS)) {
+    const result: AssertBulkResult = await core.policy.assertBulk({
+      workspace_id: args.coreWorkspaceId,
+      action: "send",
+      channel: "email",
+      identifiers: batch,
+      actor_type: "automation",
+      actor_id: args.actorId,
+    });
+    evaluatedAt = result.evaluated_at ?? evaluatedAt;
+    for (const r of result.results) {
+      rows.push({
+        identifier: r.identifier,
+        decision: r.decision,
+        deniedBy: r.denied_by ?? null,
+        reason: r.reason ?? r.error ?? null,
+      });
+    }
+  }
+
+  return { rows, evaluatedAt };
+}
+
+/** Records advisory bulk email outcomes in the policy-check audit log. */
+export async function logEmailScreenRows(args: {
+  workspaceId: string;
+  coreWorkspaceId: string;
+  actorId: string;
+  rows: ScreenRow[];
+  reasonPrefix?: string;
+}) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const prefix = args.reasonPrefix ?? "email_screen";
+  const payload = args.rows.map((r) => ({
+    workspace_id: args.workspaceId,
+    core_workspace_id: args.coreWorkspaceId,
+    action: "send",
+    channel: "email",
+    identifier: r.identifier,
+    decision: r.decision === "error" ? "deny" : r.decision,
+    denied_by: r.deniedBy,
+    reason: r.reason ? `${prefix}:${r.reason}` : prefix,
+    actor_type: "automation",
+    actor_id: args.actorId,
+    rules_evaluated: [],
+  }));
+  try {
+    for (const batch of chunk(payload, 500)) {
+      await supabaseAdmin.from("core_policy_checks").insert(batch as never);
+    }
+  } catch {
+    /* the audit write must never fail the screening result */
+  }
+}
+
 /** Records advisory bulk outcomes in the policy-check audit log. */
 export async function logScreenRows(args: {
   workspaceId: string;

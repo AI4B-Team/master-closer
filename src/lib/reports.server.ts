@@ -162,11 +162,59 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
 
 }
 
+/**
+ * Splits a schedule's recipients into deliverable and suppressed addresses.
+ * When the workspace is linked to Core, every address is screened against the
+ * shared email opt-out list; if Core is unreachable we fail closed and treat
+ * all addresses as undeliverable, so an automated digest can never reach
+ * someone who opted out family-wide.
+ */
+async function screenRecipients(schedule: DigestSchedule): Promise<{
+  deliverable: string[];
+  suppressed: string[];
+  screened: boolean;
+}> {
+  const emails = Array.from(
+    new Set((schedule.recipients ?? []).map((e) => String(e).trim().toLowerCase()).filter(Boolean)),
+  );
+  if (!emails.length) return { deliverable: [], suppressed: [], screened: false };
+
+  const { data: ws } = await db()
+    .from("workspaces")
+    .select("core_workspace_id")
+    .eq("id", schedule.workspace_id)
+    .maybeSingle();
+  const coreWorkspaceId = (ws as { core_workspace_id?: string | null } | null)?.core_workspace_id;
+  if (!coreWorkspaceId) return { deliverable: emails, suppressed: [], screened: false };
+
+  const { assertBulkEmails, logEmailScreenRows } = await import("./core/screening.server");
+  try {
+    const { rows } = await assertBulkEmails({ coreWorkspaceId, emails, actorId: schedule.workspace_id });
+    void logEmailScreenRows({
+      workspaceId: schedule.workspace_id,
+      coreWorkspaceId,
+      actorId: schedule.workspace_id,
+      rows,
+      reasonPrefix: "digest_screen",
+    });
+    const denied = new Set(rows.filter((r) => r.decision !== "allow").map((r) => r.identifier.toLowerCase()));
+    return {
+      deliverable: emails.filter((e) => !denied.has(e)),
+      suppressed: emails.filter((e) => denied.has(e)),
+      screened: true,
+    };
+  } catch {
+    // Fail closed: no delivery list when the compliance service cannot answer.
+    return { deliverable: [], suppressed: emails, screened: true };
+  }
+}
+
 /** Builds and delivers one digest, then advances the schedule. */
 export async function runSchedule(schedule: DigestSchedule) {
   const cadence: Cadence = schedule.cadence === "daily" ? "daily" : "weekly";
   const digest = await buildDigest(schedule.workspace_id, cadence);
   const now = new Date();
+  const audience = await screenRecipients(schedule);
 
   await db().from("events").insert({
     org_id: schedule.org_id,
@@ -180,7 +228,9 @@ export async function runSchedule(schedule: DigestSchedule) {
       message: digest.headline,
       lines: digest.lines,
       metrics: digest.metrics,
-      recipients: schedule.recipients,
+      recipients: audience.deliverable,
+      suppressed_recipients: audience.suppressed,
+      recipients_screened: audience.screened,
     },
   });
 
@@ -189,7 +239,13 @@ export async function runSchedule(schedule: DigestSchedule) {
     .update({ last_run_at: now.toISOString(), next_run_at: nextRunAt(schedule, now) })
     .eq("id", schedule.id);
 
-  return { schedule_id: schedule.id, name: schedule.name, headline: digest.headline };
+  return {
+    schedule_id: schedule.id,
+    name: schedule.name,
+    headline: digest.headline,
+    recipients: audience.deliverable.length,
+    suppressed: audience.suppressed.length,
+  };
 }
 
 /**
@@ -210,7 +266,7 @@ export async function runDueDigests(opts: { workspaceId?: string; scheduleId?: s
   const { data, error } = await q.limit(200);
   if (error) throw new Error(error.message);
 
-  const ran: { schedule_id: string; name: string; headline: string }[] = [];
+  const ran: { schedule_id: string; name: string; headline: string; recipients: number; suppressed: number }[] = [];
   const failed: { schedule_id: string; reason: string }[] = [];
   // One broken schedule used to abort the whole cron tick, silently starving every
   // other workspace's digest. Each schedule now succeeds or fails on its own.
