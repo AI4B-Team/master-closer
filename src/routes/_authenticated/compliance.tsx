@@ -461,18 +461,29 @@ function DncRegistry() {
     mutationFn: async (entry: { id: string; phone: string }) => {
       const { error } = await supabase.from("dnc_list").delete().eq("id", entry.id);
       if (error) throw error;
-      return entry;
+      const coreBlocked = coreKeys.has(phoneKey(entry.phone) ?? "");
+      // Only lift the local opt-out side-effects when Core no longer suppresses
+      // the number; Core owns the family-wide list.
+      const released = !coreBlocked && wsId ? await releasePhoneLocally(wsId, entry.phone) : null;
+      return { ...entry, coreBlocked, released };
     },
     onSuccess: (entry) => {
       toast.success("Number released from Do Not Call.");
-      if (coreKeys.has(phoneKey(entry.phone) ?? "")) {
+      if (entry.coreBlocked) {
         toast.warning("Core still holds a family-wide opt-out for this number — dials stay blocked.");
+      } else if (entry.released && (entry.released.leads || entry.released.contacts)) {
+        toast.info(
+          `Cleared the opt-out on ${entry.released.leads} lead(s) and ${entry.released.contacts} contact(s).`,
+        );
       }
       void logActivity("lead.released_dnc", { entry_id: entry.id });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["blocked-phone-keys"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
