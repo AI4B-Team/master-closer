@@ -19,6 +19,7 @@ import { INDUSTRIES } from "@/lib/closer-profiles";
 import { phoneKey } from "@/lib/phone";
 import { assertCanEmail, listCoreSuppressions, releaseCoreSuppression } from "@/lib/core/policy.functions";
 import { releasePhoneLocally } from "@/lib/dnc";
+import { logActivity } from "@/lib/activity";
 import { useServerFn } from "@tanstack/react-start";
 
 type Lead = {
