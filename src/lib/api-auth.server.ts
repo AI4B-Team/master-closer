@@ -52,3 +52,13 @@ export function apiError(e: unknown) {
   if (e instanceof Response) return e;
   return Response.json({ error: e instanceof Error ? e.message : "Unexpected error" }, { status: 500 });
 }
+
+/**
+ * Parses a `limit` query param defensively: junk, empty, zero, and negative
+ * values fall back to the default instead of producing a NaN row limit.
+ */
+export function parseLimit(raw: string | null, fallback = 100, max = 500) {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 1) return fallback;
+  return Math.min(Math.floor(n), max);
+}
