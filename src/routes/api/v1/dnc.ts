@@ -78,6 +78,68 @@ async function coreBlocks(
   }
 }
 
+/**
+ * Lifts Core's family-wide voice opt-out for a number, so an API release can be
+ * as complete as the one in the Compliance Center. Audited in core_policy_checks
+ * exactly like the in-app release, and never fatal: the caller is told what
+ * happened so an outage is never read as "released".
+ */
+async function releaseCoreVoice(
+  supabase: any,
+  workspaceId: string,
+  phone: string,
+  notes?: string,
+): Promise<{ status: "released" | "none" | "unlinked" | "error"; reason?: string; released?: number }> {
+  try {
+    const { data: ws } = await supabase
+      .from("workspaces")
+      .select("core_workspace_id")
+      .eq("id", workspaceId)
+      .maybeSingle();
+    if (!ws?.core_workspace_id) return { status: "unlinked" };
+
+    const { toE164 } = await import("@/lib/core/tenancy.server");
+    const identifier = toE164(phone);
+    if (!identifier) return { status: "error", reason: "unrecognized_phone_format" };
+
+    const { coreService } = await import("@/lib/core/core.server");
+    const { CoreApiError } = await import("@/lib/core/sdk");
+    const svc = coreService();
+    try {
+      const { suppressions } = await svc.suppressions.list(
+        ws.core_workspace_id as string,
+        identifier,
+      );
+      const voice = suppressions.filter((s) => s.channel !== "email");
+      if (!voice.length) return { status: "none", released: 0 };
+
+      for (const s of voice) await svc.suppressions.remove(s.id);
+
+      for (const s of voice) {
+        await supabase.from("core_policy_checks").insert({
+          workspace_id: workspaceId,
+          core_workspace_id: ws.core_workspace_id,
+          action: "suppression.release",
+          channel: "dial",
+          identifier: s.identifier,
+          decision: "allow",
+          denied_by: null,
+          reason: `suppression_released${notes ? `: ${notes}` : ""}`,
+          actor_type: "automation",
+        });
+      }
+      return { status: "released", released: voice.length };
+    } catch (e) {
+      return {
+        status: "error",
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+  } catch {
+    return { status: "error", reason: "core_unreachable" };
+  }
+}
+
 /** Do-not-call: add a number and flag the matching lead, emitting the family event. */
 
 
