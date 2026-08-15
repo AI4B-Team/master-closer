@@ -140,7 +140,80 @@ async function releaseCoreVoice(
   }
 }
 
-/** Do-not-call: add a number and flag the matching lead, emitting the family event. */
+/**
+ * Email-channel opt-outs have no local table: Core holds the family-wide list
+ * and every surface screens against it. These helpers keep the API's email
+ * behaviour identical to the Compliance Center's Email Opt-Outs panel.
+ */
+async function coreWorkspaceOf(supabase: any, workspaceId: string): Promise<string | null> {
+  const { data: ws } = await supabase
+    .from("workspaces")
+    .select("core_workspace_id")
+    .eq("id", workspaceId)
+    .maybeSingle();
+  return (ws?.core_workspace_id as string | null) ?? null;
+}
+
+async function auditSuppressionWrite(
+  supabase: any,
+  workspaceId: string,
+  coreWorkspaceId: string,
+  action: "suppression.create" | "suppression.release",
+  identifier: string,
+  channel: "send" | "dial",
+  notes?: string,
+) {
+  try {
+    await supabase.from("core_policy_checks").insert({
+      workspace_id: workspaceId,
+      core_workspace_id: coreWorkspaceId,
+      action,
+      channel,
+      identifier,
+      decision: "allow",
+      denied_by: null,
+      reason: `${action === "suppression.create" ? "suppression_created" : "suppression_released"}${notes ? `: ${notes}` : ""}`,
+      actor_type: "automation",
+    });
+  } catch {
+    /* the audit row must never fail the compliance action */
+  }
+}
+
+async function emailSuppressions(
+  supabase: any,
+  workspaceId: string,
+  email?: string,
+): Promise<
+  | { status: "ok"; coreWorkspaceId: string; rows: { id: string; identifier: string; reason: string | null; created_at?: string }[] }
+  | { status: "unlinked" }
+  | { status: "error"; reason: string }
+> {
+  const coreWorkspaceId = await coreWorkspaceOf(supabase, workspaceId);
+  if (!coreWorkspaceId) return { status: "unlinked" };
+  const { coreService } = await import("@/lib/core/core.server");
+  const { CoreApiError } = await import("@/lib/core/sdk");
+  try {
+    const { suppressions } = await coreService().suppressions.list(
+      coreWorkspaceId,
+      email ? email.trim().toLowerCase() : undefined,
+    );
+    return {
+      status: "ok",
+      coreWorkspaceId,
+      rows: suppressions
+        .filter((s) => s.channel === "email")
+        .map((s) => ({ id: s.id, identifier: s.identifier, reason: s.reason ?? null, created_at: s.created_at })),
+    };
+  } catch (e) {
+    return {
+      status: "error",
+      reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+    };
+  }
+}
+
+
 
 
 export const Route = createFileRoute("/api/v1/dnc")({
