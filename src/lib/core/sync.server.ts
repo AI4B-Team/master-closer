@@ -56,6 +56,8 @@ export async function syncAllCoreSuppressions(): Promise<{
   contactsReleased: number;
   leadsFlagged: number;
   leadsReleased: number;
+  listContactsFlagged: number;
+  listContactsReleased: number;
   results: WorkspaceSyncResult[];
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
