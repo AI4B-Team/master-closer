@@ -147,6 +147,8 @@ export function describeEvent(e: EventRow): EventDescription {
           p.mirrored != null ? `${p.mirrored} on Core list` : null,
           p.added ? `${p.added} added to Do Not Call` : null,
           p.contacts_suppressed ? `${p.contacts_suppressed} contact${Number(p.contacts_suppressed) === 1 ? "" : "s"} suppressed` : null,
+          p.removed ? `${p.removed} lifted by Core` : null,
+          p.contacts_released ? `${p.contacts_released} contact${Number(p.contacts_released) === 1 ? "" : "s"} released` : null,
         ),
       };
     case "core.suppression_sync_failed":
