@@ -70,7 +70,7 @@ export function describeEvent(e: EventRow): EventDescription {
         kind,
         icon: ShieldOff,
         label: p.channel === "email" ? "Email Opted Out" : "Flagged Do Not Call",
-        detail: join(p.phone ?? p.email ?? p.name, p.reason),
+        detail: join(p.phone ?? p.email ?? p.identifier ?? p.name, p.reason),
       };
     case "campaign.launched":
       return { kind, icon: Megaphone, label: "Campaign Launched", detail: join(p.name, p.mode) };
@@ -99,7 +99,10 @@ export function describeEvent(e: EventRow): EventDescription {
         kind,
         icon: Check,
         label: p.channel === "email" ? "Email Opt-Out Released" : "Released From Do Not Call",
-        detail: join(p.phone ?? p.email, p.family_wide ? "Family-Wide" : ""),
+        detail: join(
+          p.phone ?? p.email ?? p.identifier,
+          p.family_wide || p.scope === "family_wide" ? "Family-Wide" : "",
+        ),
       };
     case "agent.mode_changed":
       return {

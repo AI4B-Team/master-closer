@@ -619,7 +619,12 @@ function DncRegistry() {
           `${entry.released.linesPaused} follow-up line(s) stay paused — reactivate them manually.`,
         );
       }
-      void logActivity("lead.released_dnc", { entry_id: entry.id, scope: "family_wide" });
+      void logActivity("lead.released_dnc", {
+        entry_id: entry.id,
+        phone: entry.phone,
+        channel: "voice",
+        scope: "family_wide",
+      });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
       qc.invalidateQueries({ queryKey: ["core-suppressions"] });
       qc.invalidateQueries({ queryKey: ["leads"] });
@@ -653,7 +658,7 @@ function DncRegistry() {
           );
         }
       }
-      void logActivity("lead.released_dnc", { entry_id: entry.id });
+      void logActivity("lead.released_dnc", { entry_id: entry.id, phone: entry.phone, channel: "voice" });
       qc.invalidateQueries({ queryKey: ["dnc_list"] });
       qc.invalidateQueries({ queryKey: ["leads"] });
       qc.invalidateQueries({ queryKey: ["blocked-phone-keys"] });
