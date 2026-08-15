@@ -60,6 +60,11 @@ export const Route = createFileRoute("/api/v1/dnc")({
             [body.phone],
           );
 
+          // An opt-out taken over the API is the same promise as one taken in the
+          // UI, so it must reach Core's family-wide list too. Reported, not
+          // fatal: the local block already stands.
+          const core = await pushToCore(supabase, workspaceId, body.phone, body.reason ?? undefined);
+
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.flagged_dnc", {
             phone: body.phone,
@@ -67,9 +72,14 @@ export const Route = createFileRoute("/api/v1/dnc")({
             lead_id: leadIds[0] ?? null,
             leads_flagged: leadIds.length,
             contacts_suppressed: contactsSuppressed,
+            core: core.status,
           });
 
-          return Response.json({ dnc: data, leads_flagged: leadIds.length, contacts_suppressed: contactsSuppressed }, { status: 201 });
+          return Response.json(
+            { dnc: data, leads_flagged: leadIds.length, contacts_suppressed: contactsSuppressed, core },
+            { status: 201 },
+          );
+
 
         } catch (e) {
           return apiError(e);
