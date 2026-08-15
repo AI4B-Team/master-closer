@@ -353,6 +353,63 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
   });
 
 /**
+ * Lift a Core suppression. Adding an opt-out is one-way without this: a person
+ * who re-consents stays blocked family-wide with no surface to release them.
+ * Scoped to the caller's linked Core workspace so one tenant cannot release
+ * another tenant's suppression, and always written to the audit trail.
+ */
+export const releaseCoreSuppression = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ id: z.string().min(1), notes: z.string().max(500).optional() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { resolveCoreLink } = await import("./tenancy.server");
+    const { coreService } = await import("./core.server");
+    const { CoreApiError } = await import("./sdk");
+
+    const { workspaceId, link } = await resolveCoreLink(context.supabase, context.userId);
+    if (!link) return { status: "unlinked" as const };
+
+    const svc = coreService();
+
+    // Confirm the suppression belongs to this tenant's Core workspace.
+    let target: { id: string; channel: string; identifier: string } | null = null;
+    try {
+      const { suppressions } = await svc.suppressions.list(link.coreWorkspaceId);
+      const found = suppressions.find((s) => s.id === data.id);
+      if (found) target = { id: found.id, channel: found.channel, identifier: found.identifier };
+    } catch (e) {
+      return {
+        status: "error" as const,
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+    if (!target) return { status: "error" as const, reason: "not_in_workspace" };
+
+    try {
+      await svc.suppressions.remove(target.id);
+    } catch (e) {
+      return {
+        status: "error" as const,
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+
+    await context.supabase.from("core_policy_checks").insert({
+      workspace_id: workspaceId,
+      core_workspace_id: link.coreWorkspaceId,
+      channel: target.channel === "email" ? "send" : "dial",
+      identifier: target.identifier,
+      decision: "allow",
+      denied_by: null,
+      reason: `suppression_released${data.notes ? `: ${data.notes}` : ""}`,
+      actor_id: context.userId,
+    });
+
+    return { status: "ok" as const, identifier: target.identifier, channel: target.channel };
+  });
+
+
+/**
  * Advisory pre-screen of a call list against Core. Cleans the queue before
  * dialing; it never authorizes a dial on its own.
  */
