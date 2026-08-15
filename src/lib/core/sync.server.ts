@@ -76,6 +76,8 @@ export async function syncAllCoreSuppressions(): Promise<{
   let contactsReleased = 0;
   let leadsFlagged = 0;
   let leadsReleased = 0;
+  let listContactsFlagged = 0;
+  let listContactsReleased = 0;
 
   for (const ws of linked ?? []) {
     try {
