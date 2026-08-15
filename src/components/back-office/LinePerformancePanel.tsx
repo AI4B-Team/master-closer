@@ -81,7 +81,7 @@ export function LinePerformancePanel({
         </p>
         {profiles.length > 0 && (
           <div className="w-56">
-            <Select value={target} onValueChange={setTarget}>
+            <Select value={effectiveTarget} onValueChange={setTarget}>
               <SelectTrigger className="h-8 rounded-xl text-xs">
                 <SelectValue placeholder="Promote Into…" />
               </SelectTrigger>
