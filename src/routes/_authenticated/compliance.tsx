@@ -21,7 +21,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createCoreSuppression, listCoreSuppressions } from "@/lib/core/policy.functions";
 
 import { formatPhone, phoneKey } from "@/lib/phone";
-import { suppressContactsForPhones } from "@/lib/dnc";
+import { suppressContactsForPhones, releasePhoneLocally } from "@/lib/dnc";
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
