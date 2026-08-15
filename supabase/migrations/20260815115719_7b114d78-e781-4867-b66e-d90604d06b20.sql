@@ -1,0 +1,1 @@
+revoke execute on function public.pause_lines_on_suppression() from authenticated;
