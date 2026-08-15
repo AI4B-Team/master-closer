@@ -140,7 +140,80 @@ async function releaseCoreVoice(
   }
 }
 
-/** Do-not-call: add a number and flag the matching lead, emitting the family event. */
+/**
+ * Email-channel opt-outs have no local table: Core holds the family-wide list
+ * and every surface screens against it. These helpers keep the API's email
+ * behaviour identical to the Compliance Center's Email Opt-Outs panel.
+ */
+async function coreWorkspaceOf(supabase: any, workspaceId: string): Promise<string | null> {
+  const { data: ws } = await supabase
+    .from("workspaces")
+    .select("core_workspace_id")
+    .eq("id", workspaceId)
+    .maybeSingle();
+  return (ws?.core_workspace_id as string | null) ?? null;
+}
+
+async function auditSuppressionWrite(
+  supabase: any,
+  workspaceId: string,
+  coreWorkspaceId: string,
+  action: "suppression.create" | "suppression.release",
+  identifier: string,
+  channel: "send" | "dial",
+  notes?: string,
+) {
+  try {
+    await supabase.from("core_policy_checks").insert({
+      workspace_id: workspaceId,
+      core_workspace_id: coreWorkspaceId,
+      action,
+      channel,
+      identifier,
+      decision: "allow",
+      denied_by: null,
+      reason: `${action === "suppression.create" ? "suppression_created" : "suppression_released"}${notes ? `: ${notes}` : ""}`,
+      actor_type: "automation",
+    });
+  } catch {
+    /* the audit row must never fail the compliance action */
+  }
+}
+
+async function emailSuppressions(
+  supabase: any,
+  workspaceId: string,
+  email?: string,
+): Promise<
+  | { status: "ok"; coreWorkspaceId: string; rows: { id: string; identifier: string; reason: string | null; created_at?: string }[] }
+  | { status: "unlinked" }
+  | { status: "error"; reason: string }
+> {
+  const coreWorkspaceId = await coreWorkspaceOf(supabase, workspaceId);
+  if (!coreWorkspaceId) return { status: "unlinked" };
+  const { coreService } = await import("@/lib/core/core.server");
+  const { CoreApiError } = await import("@/lib/core/sdk");
+  try {
+    const { suppressions } = await coreService().suppressions.list(
+      coreWorkspaceId,
+      email ? email.trim().toLowerCase() : undefined,
+    );
+    return {
+      status: "ok",
+      coreWorkspaceId,
+      rows: suppressions
+        .filter((s) => s.channel === "email")
+        .map((s) => ({ id: s.id, identifier: s.identifier, reason: s.reason ?? null, created_at: s.created_at })),
+    };
+  } catch (e) {
+    return {
+      status: "error",
+      reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+    };
+  }
+}
+
+
 
 
 export const Route = createFileRoute("/api/v1/dnc")({
@@ -150,6 +223,23 @@ export const Route = createFileRoute("/api/v1/dnc")({
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
           const { supabase, workspaceId } = await apiClient(request);
+          const channel = new URL(request.url).searchParams.get("channel") ?? "voice";
+
+          // Email opt-outs live only on Core's family-wide list.
+          if (channel === "email") {
+            const result = await emailSuppressions(supabase, workspaceId);
+            if (result.status === "unlinked") {
+              return Response.json({ channel: "email", core: "unlinked", suppressions: [] });
+            }
+            if (result.status === "error") {
+              return Response.json(
+                { error: "Core could not list email opt-outs.", core: result.reason },
+                { status: 502 },
+              );
+            }
+            return Response.json({ channel: "email", core: "ok", suppressions: result.rows });
+          }
+
           const { data, error } = await supabase
             .from("dnc_list")
             .select("*")
@@ -167,19 +257,80 @@ export const Route = createFileRoute("/api/v1/dnc")({
         try {
           const { supabase, orgId, workspaceId } = await apiClient(request);
           const body = z
-            .object({ phone: z.string().min(5).max(32), reason: z.string().max(500).nullish() })
+            .object({
+              phone: z.string().min(5).max(32).optional(),
+              email: z.string().email().max(200).optional(),
+              reason: z.string().max(500).nullish(),
+            })
+            .refine((b) => !!(b.phone || b.email), { message: "phone or email is required" })
             .parse(await request.json());
+
+          // Email opt-outs are family-wide by nature: Core is the only store, so
+          // a Core failure is fatal here rather than reported — otherwise the
+          // caller would think the address was suppressed when nothing blocks it.
+          if (body.email && !body.phone) {
+            const email = body.email.trim().toLowerCase();
+            const coreWorkspaceId = await coreWorkspaceOf(supabase, workspaceId);
+            if (!coreWorkspaceId) {
+              return Response.json(
+                { error: "This workspace is not linked to Core, so email opt-outs cannot be recorded.", core: "unlinked" },
+                { status: 409 },
+              );
+            }
+            const { coreService } = await import("@/lib/core/core.server");
+            const { CoreApiError } = await import("@/lib/core/sdk");
+            try {
+              await coreService().suppressions.create({
+                workspace_id: coreWorkspaceId,
+                channel: "email",
+                identifier: email,
+                reason: body.reason || "opt_out",
+              });
+            } catch (e) {
+              return Response.json(
+                {
+                  error: "Core could not record the email opt-out.",
+                  core: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+                },
+                { status: 502 },
+              );
+            }
+            await auditSuppressionWrite(
+              supabase,
+              workspaceId,
+              coreWorkspaceId,
+              "suppression.create",
+              email,
+              "send",
+              body.reason ?? undefined,
+            );
+
+            const { emitEvent } = await import("@/lib/hub.server");
+            await emitEvent(orgId, "lead.flagged_dnc", {
+              email,
+              channel: "email",
+              reason: body.reason ?? null,
+              core: "ok",
+              family_wide: true,
+            });
+
+            return Response.json({ channel: "email", email, core: "ok", family_wide: true }, { status: 201 });
+          }
+
+          const phone = body.phone!;
+
+
 
           const { data, error } = await supabase
             .from("dnc_list")
-            .insert({ org_id: orgId, workspace_id: workspaceId, phone: body.phone, reason: body.reason ?? null })
+            .insert({ org_id: orgId, workspace_id: workspaceId, phone, reason: body.reason ?? null })
             .select("*")
             .single();
           if (error) throw new Error(error.message);
 
           // Match leads on their core digits so a stored +1 prefix never hides a hit.
           const { phoneKey } = await import("@/lib/phone");
-          const key = phoneKey(body.phone);
+          const key = phoneKey(phone);
           const { data: candidates } = await supabase
             .from("leads")
             .select("id, phone")
@@ -198,17 +349,17 @@ export const Route = createFileRoute("/api/v1/dnc")({
           const contactsSuppressed = await suppressContactsForPhonesServer(
             supabase,
             workspaceId,
-            [body.phone],
+            [phone],
           );
 
           // An opt-out taken over the API is the same promise as one taken in the
           // UI, so it must reach Core's family-wide list too. Reported, not
           // fatal: the local block already stands.
-          const core = await pushToCore(supabase, workspaceId, body.phone, body.reason ?? undefined);
+          const core = await pushToCore(supabase, workspaceId, phone, body.reason ?? undefined);
 
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.flagged_dnc", {
-            phone: body.phone,
+            phone,
             reason: data.reason,
             lead_id: leadIds[0] ?? null,
             leads_flagged: leadIds.length,
@@ -231,6 +382,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
        * if Core still holds the family-wide opt-out the contact stays suppressed
        * and the response says so — never imply the number is dialable. Pass
        * `family_wide=true` to also ask Core to lift its suppression (audited).
+       * Pass `email=` to lift a family-wide email opt-out instead.
        */
       DELETE: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
@@ -241,16 +393,76 @@ export const Route = createFileRoute("/api/v1/dnc")({
             .object({
               id: z.string().uuid().optional(),
               phone: z.string().min(5).max(32).optional(),
+              email: z.string().email().max(200).optional(),
               family_wide: z.boolean().default(false),
               notes: z.string().max(500).optional(),
             })
-            .refine((b) => !!(b.id || b.phone), { message: "id or phone is required" })
+            .refine((b) => !!(b.id || b.phone || b.email), { message: "id, phone or email is required" })
             .parse({
               id: url.searchParams.get("id") ?? undefined,
               phone: url.searchParams.get("phone") ?? undefined,
+              email: url.searchParams.get("email") ?? undefined,
               family_wide: url.searchParams.get("family_wide") === "true",
               notes: url.searchParams.get("notes") ?? undefined,
             });
+
+          // Email opt-outs exist only on Core, so releasing one is a Core call
+          // and nothing local changes.
+          if (body.email && !body.phone && !body.id) {
+            const email = body.email.trim().toLowerCase();
+            const found = await emailSuppressions(supabase, workspaceId, email);
+            if (found.status === "unlinked") {
+              return Response.json({ error: "This workspace is not linked to Core.", core: "unlinked" }, { status: 409 });
+            }
+            if (found.status === "error") {
+              return Response.json(
+                { error: "Core could not be reached to lift the email opt-out.", core: found.reason },
+                { status: 502 },
+              );
+            }
+            if (!found.rows.length) {
+              return Response.json({ error: "No email opt-out found for that address." }, { status: 404 });
+            }
+
+            const { coreService } = await import("@/lib/core/core.server");
+            const { CoreApiError } = await import("@/lib/core/sdk");
+            const svc = coreService();
+            try {
+              for (const row of found.rows) await svc.suppressions.remove(row.id);
+            } catch (e) {
+              return Response.json(
+                {
+                  error: "Core could not lift the email opt-out.",
+                  core: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+                },
+                { status: 502 },
+              );
+            }
+            for (const row of found.rows) {
+              await auditSuppressionWrite(
+                supabase,
+                workspaceId,
+                found.coreWorkspaceId,
+                "suppression.release",
+                row.identifier,
+                "send",
+                body.notes,
+              );
+            }
+
+            const { emitEvent } = await import("@/lib/hub.server");
+            await emitEvent(orgId, "lead.released_dnc", {
+              email,
+              channel: "email",
+              released: found.rows.length,
+              family_wide: true,
+              core: "released",
+            });
+
+            return Response.json({ channel: "email", email, released: found.rows.length, family_wide: true });
+          }
+
+
 
           let q = supabase.from("dnc_list").select("id, phone").eq("workspace_id", workspaceId);
           q = body.id ? q.eq("id", body.id) : q.eq("phone", body.phone!);
