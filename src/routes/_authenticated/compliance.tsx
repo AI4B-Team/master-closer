@@ -494,6 +494,7 @@ function DncRegistry() {
   const wsId = workspace?.id ?? null;
   const coreSuppress = useServerFn(createCoreSuppression);
   const coreList = useServerFn(listCoreSuppressions);
+  const coreRelease = useServerFn(releaseCoreSuppression);
 
   const { data: entries } = useQuery({
     queryKey: ["dnc_list", wsId],
@@ -561,25 +562,68 @@ function DncRegistry() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  // Core holds the family-wide opt-out list and has no release endpoint, so a
-  // local release cannot lift a Core suppression. Say so plainly instead of
-  // implying the number is dialable again.
+  // Core holds the family-wide opt-out list, so a local delete alone cannot make
+  // a number dialable again. Rows Core also holds get an explicit family-wide
+  // release action rather than a silent local-only delete.
   const { data: coreSupp } = useQuery({
     queryKey: ["core-suppressions", wsId],
     enabled: !!wsId,
     queryFn: () => coreList(),
   });
 
-  const coreKeys = useMemo(() => {
-    const keys = new Set<string>();
+  // phoneKey -> Core suppression id, so a row can be released family-wide.
+  const coreById = useMemo(() => {
+    const map = new Map<string, string>();
     if (coreSupp?.status === "ok") {
       for (const s of coreSupp.suppressions) {
+        if (s.channel === "email" || s.identifier?.includes("@")) continue;
         const k = phoneKey(s.identifier);
-        if (k) keys.add(k);
+        if (k && s.id) map.set(k, s.id);
       }
     }
-    return keys;
+    return map;
   }, [coreSupp]);
+
+  const coreKeys = useMemo(() => new Set(coreById.keys()), [coreById]);
+
+  const releaseFamilyWide = useMutation({
+    mutationFn: async (entry: { id: string; phone: string }) => {
+      const coreId = coreById.get(phoneKey(entry.phone) ?? "");
+      if (!coreId) throw new Error("No family-wide opt-out found for this number.");
+      const res = await coreRelease({ data: { id: coreId, notes: "Released from Do Not Call registry" } });
+      if (res.status !== "ok") {
+        throw new Error(
+          res.status === "unlinked"
+            ? "This workspace is not linked to Core."
+            : "Core could not release that number. Try again shortly.",
+        );
+      }
+      // Remove the local row too, then lift the local opt-out side-effects.
+      await supabase.from("dnc_list").delete().eq("id", entry.id);
+      const released = wsId ? await releasePhoneLocally(wsId, entry.phone) : null;
+      return { ...entry, released };
+    },
+    onSuccess: (entry) => {
+      toast.success("Number released family-wide.");
+      if (entry.released && (entry.released.leads || entry.released.contacts)) {
+        toast.info(
+          `Cleared the opt-out on ${entry.released.leads} lead(s) and ${entry.released.contacts} contact(s).`,
+        );
+      }
+      if (entry.released?.linesPaused) {
+        toast.warning(
+          `${entry.released.linesPaused} follow-up line(s) stay paused — reactivate them manually.`,
+        );
+      }
+      void logActivity("lead.released_dnc", { entry_id: entry.id, scope: "family_wide" });
+      qc.invalidateQueries({ queryKey: ["dnc_list"] });
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["blocked-phone-keys"] });
+      qc.invalidateQueries({ queryKey: ["paused_lead_lines"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const remove = useMutation({
     mutationFn: async (entry: { id: string; phone: string }) => {
@@ -710,7 +754,19 @@ function DncRegistry() {
                     <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
                       {new Date(e.added_at).toLocaleDateString()}
                     </td>
-                    <td className="py-2.5 text-right">
+                    <td className="py-2.5 text-right whitespace-nowrap">
+                      {coreKeys.has(phoneKey(e.phone) ?? "") && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 rounded-lg text-xs mr-1"
+                          disabled={releaseFamilyWide.isPending}
+                          onClick={() => releaseFamilyWide.mutate({ id: e.id, phone: e.phone })}
+                        >
+                          Release Family-Wide
+                        </Button>
+                      )}
                       <Button
                         type="button"
                         variant="ghost"
