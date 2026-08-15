@@ -161,7 +161,7 @@ export function ActivityPanel() {
       else map.set(key, [e]);
     }
     return [...map.entries()];
-  }, [events]);
+  }, [shown]);
 
   return (
     <>

@@ -47,9 +47,9 @@ export function NotificationsMenu() {
   });
 
   const { data: readKeys } = useQuery({
-    queryKey: ["notification-reads", wsId],
-    enabled: !!wsId,
-    queryFn: () => fetchReadKeys(wsId!),
+    queryKey: ["notification-reads", wsId, user?.id],
+    enabled: !!wsId && !!user?.id,
+    queryFn: () => fetchReadKeys(wsId!, user!.id),
   });
 
   const visible = useMemo(
@@ -65,13 +65,13 @@ export function NotificationsMenu() {
     const keys = visible.filter((i) => !isRead(i.key)).map((i) => i.key);
     if (keys.length === 0) return;
     await markNotificationsRead(wsId, user.id, keys);
-    qc.invalidateQueries({ queryKey: ["notification-reads", wsId] });
+    qc.invalidateQueries({ queryKey: ["notification-reads", wsId, user?.id] });
   };
 
   const openItem = async (item: NotifyItem) => {
     if (wsId && user?.id) {
       await markNotificationsRead(wsId, user.id, [item.key]);
-      qc.invalidateQueries({ queryKey: ["notification-reads", wsId] });
+      qc.invalidateQueries({ queryKey: ["notification-reads", wsId, user?.id] });
     }
     setOpen(false);
     const [path, query] = item.href.split("?");
