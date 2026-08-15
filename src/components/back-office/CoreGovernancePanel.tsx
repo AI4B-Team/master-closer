@@ -27,7 +27,7 @@ export function CoreGovernancePanel() {
   const wsId = workspace?.id ?? null;
   const [pick, setPick] = useState("");
   const [listId, setListId] = useState("");
-  const [denialAction, setDenialAction] = useState<"all" | "call" | "record" | "send">("all");
+  const [denialAction, setDenialAction] = useState<"all" | "call" | "record" | "send" | "release">("all");
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
@@ -71,9 +71,14 @@ export function CoreGovernancePanel() {
       let q = supabase
         .from("core_policy_checks")
         .select("id, created_at, identifier, action, channel, denied_by, reason")
-        .eq("workspace_id", wsId!)
-        .eq("decision", "deny");
-      if (denialAction !== "all") q = q.eq("action", denialAction);
+        .eq("workspace_id", wsId!);
+      // Releases are recorded as allowed decisions; every other view lists refusals.
+      if (denialAction === "release") {
+        q = q.eq("action", "suppression.release").eq("decision", "allow");
+      } else {
+        q = q.eq("decision", "deny");
+        if (denialAction !== "all") q = q.eq("action", denialAction);
+      }
       const { data, error } = await q.order("created_at", { ascending: false }).limit(25);
       if (error) throw error;
       return data ?? [];
@@ -304,10 +309,13 @@ export function CoreGovernancePanel() {
 
           <div>
             <h4 className="flex items-center gap-2 text-sm font-semibold">
-              <History className="h-4 w-4" /> Recent Blocked Attempts
+              <History className="h-4 w-4" />{" "}
+              {denialAction === "release" ? "Recent Family-Wide Releases" : "Recent Blocked Attempts"}
             </h4>
             <p className="mt-1 text-sm text-muted-foreground">
-              Every Core decision is recorded. These are the attempts Core refused, newest first.
+              {denialAction === "release"
+                ? "Every Core decision is recorded. These are the suppressions lifted family-wide, newest first."
+                : "Every Core decision is recorded. These are the attempts Core refused, newest first."}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {([
@@ -315,6 +323,7 @@ export function CoreGovernancePanel() {
                 { k: "call", label: "Dial Blocks" },
                 { k: "record", label: "Recording Blocks" },
                 { k: "send", label: "Email Blocks" },
+                { k: "release", label: "Releases" },
               ] as const).map((o) => (
                 <Button
                   key={o.k}
@@ -328,7 +337,9 @@ export function CoreGovernancePanel() {
             </div>
             {(denials ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">
-                {denialAction === "record"
+                {denialAction === "release"
+                  ? "No family-wide suppression has been released yet."
+                  : denialAction === "record"
                   ? "Core has not blocked any recording yet."
                   : denialAction === "call"
                     ? "Core has not blocked any dial yet."
@@ -346,7 +357,7 @@ export function CoreGovernancePanel() {
                       <th className="py-2">Identifier</th>
                       <th className="py-2">Channel</th>
                       <th className="py-2">Action</th>
-                      <th className="py-2">Blocked By</th>
+                      <th className="py-2">{denialAction === "release" ? "Released By" : "Blocked By"}</th>
                       <th className="py-2">Reason</th>
                     </tr>
                   </thead>
@@ -358,8 +369,10 @@ export function CoreGovernancePanel() {
                           {d.identifier ? (d.channel === "email" ? d.identifier : formatPhone(d.identifier)) : "—"}
                         </td>
                         <td className="py-2 capitalize">{d.channel ?? "—"}</td>
-                        <td className="py-2 capitalize">{d.action === "send" ? "Email" : d.action}</td>
-                        <td className="py-2">{d.denied_by ?? "—"}</td>
+                        <td className="py-2 capitalize">
+                          {d.action === "send" ? "Email" : d.action === "suppression.release" ? "Release" : d.action}
+                        </td>
+                        <td className="py-2">{d.denied_by ?? (d.action === "suppression.release" ? "Core" : "—")}</td>
                         <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
                       </tr>
                     ))}
