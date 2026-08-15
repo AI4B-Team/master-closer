@@ -74,7 +74,7 @@ export function CoreGovernancePanel() {
   });
 
   const { data: denials } = useQuery({
-    queryKey: ["core-policy-denials", wsId, linked, denialAction],
+    queryKey: ["core-policy-denials", wsId, linked, denialAction, auditDays],
     enabled: !!wsId && linked,
     queryFn: async () => {
       let q = supabase
@@ -90,11 +90,13 @@ export function CoreGovernancePanel() {
         q = q.eq("decision", "deny");
         if (denialAction !== "all") q = q.eq("action", denialAction);
       }
+      if (auditSince) q = q.gte("created_at", auditSince);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(25);
       if (error) throw error;
       return data ?? [];
     },
   });
+
   // Last unattended mirror run, read straight from the workspace event feed.
   const { data: lastSync } = useQuery({
     queryKey: ["core-last-sync", wsId, linked],
