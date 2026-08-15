@@ -56,3 +56,31 @@ export async function fetchBlockedPhoneKeys(wsId: string) {
   return keys;
 }
 
+
+/**
+ * Undoes the local side-effects of an opt-out: contacts flagged `suppressed`
+ * and leads forced to `opt_out` when the number was added to Do Not Call.
+ *
+ * Only call this when Core no longer holds a family-wide opt-out — Core owns
+ * that list and a local release cannot lift it. Best-effort; returns counts.
+ */
+export async function releasePhoneLocally(wsId: string, phone: string | null | undefined) {
+  const key = phoneKey(phone);
+  if (!key) return { contacts: 0, leads: 0 };
+
+  const [contacts, leads] = await Promise.all([
+    supabase.from("contacts").select("id, phone").eq("workspace_id", wsId).eq("suppressed", true),
+    supabase.from("leads").select("id, phone").eq("workspace_id", wsId).eq("consent", "opt_out").not("phone", "is", null),
+  ]);
+
+  const contactIds = (contacts.data ?? []).filter((c) => phoneKey(c.phone) === key).map((c) => c.id);
+  const leadIds = (leads.data ?? []).filter((l) => phoneKey(l.phone) === key).map((l) => l.id);
+
+  if (contactIds.length) {
+    await supabase.from("contacts").update({ suppressed: false, suppressed_at: null }).in("id", contactIds);
+  }
+  if (leadIds.length) {
+    await supabase.from("leads").update({ consent: "unknown" }).in("id", leadIds);
+  }
+  return { contacts: contactIds.length, leads: leadIds.length };
+}
