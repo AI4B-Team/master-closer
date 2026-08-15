@@ -217,6 +217,30 @@ export const Route = createFileRoute("/api/v1/dnc")({
             }
           }
 
+          // POST flags matching leads as opted out, so a release has to undo it —
+          // otherwise the number leaves Do Not Call but every lead surface still
+          // refuses to dial it. Only when Core no longer blocks the number.
+          let leadsReleased = 0;
+          if (coreStillBlocks.status !== "blocked" && key) {
+            const { data: optedOut } = await supabase
+              .from("leads")
+              .select("id, phone")
+              .eq("workspace_id", workspaceId)
+              .eq("consent", "opt_out")
+              .not("phone", "is", null);
+            const leadIds = (optedOut ?? [])
+              .filter((l: { phone: string | null }) => phoneKey(l.phone) === key)
+              .map((l: { id: string }) => l.id);
+            if (leadIds.length) {
+              const { error: upErr } = await supabase
+                .from("leads")
+                .update({ consent: "unknown" })
+                .in("id", leadIds);
+              if (!upErr) leadsReleased = leadIds.length;
+            }
+          }
+
+
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.released_dnc", {
             phone: rows[0].phone,
