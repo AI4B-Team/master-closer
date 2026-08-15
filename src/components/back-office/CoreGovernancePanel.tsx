@@ -30,6 +30,12 @@ export function CoreGovernancePanel() {
   const [denialAction, setDenialAction] = useState<
     "all" | "call" | "record" | "send" | "release" | "created"
   >("all");
+  // Compliance reviews are usually period-based, so the audit views are time-bounded.
+  const [auditDays, setAuditDays] = useState<"7" | "30" | "90" | "all">("30");
+  const auditSince = auditDays === "all"
+    ? null
+    : new Date(Date.now() - Number(auditDays) * 86400000).toISOString();
+
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
@@ -68,7 +74,7 @@ export function CoreGovernancePanel() {
   });
 
   const { data: denials } = useQuery({
-    queryKey: ["core-policy-denials", wsId, linked, denialAction],
+    queryKey: ["core-policy-denials", wsId, linked, denialAction, auditDays],
     enabled: !!wsId && linked,
     queryFn: async () => {
       let q = supabase
@@ -84,11 +90,13 @@ export function CoreGovernancePanel() {
         q = q.eq("decision", "deny");
         if (denialAction !== "all") q = q.eq("action", denialAction);
       }
+      if (auditSince) q = q.gte("created_at", auditSince);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(25);
       if (error) throw error;
       return data ?? [];
     },
   });
+
   // Last unattended mirror run, read straight from the workspace event feed.
   const { data: lastSync } = useQuery({
     queryKey: ["core-last-sync", wsId, linked],
@@ -123,6 +131,7 @@ export function CoreGovernancePanel() {
         q = q.eq("decision", "deny");
         if (denialAction !== "all") q = q.eq("action", denialAction);
       }
+      if (auditSince) q = q.gte("created_at", auditSince);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(5000);
       if (error) throw error;
       const rows = data ?? [];
@@ -444,6 +453,17 @@ export function CoreGovernancePanel() {
                   {o.label}
                 </Button>
               ))}
+              <Select value={auditDays} onValueChange={(v) => setAuditDays(v as typeof auditDays)}>
+                <SelectTrigger className="h-8 w-[150px] text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 Days</SelectItem>
+                  <SelectItem value="30">Last 30 Days</SelectItem>
+                  <SelectItem value="90">Last 90 Days</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
                 size="sm"
                 variant="outline"
@@ -454,6 +474,7 @@ export function CoreGovernancePanel() {
                 {exportAudit.isPending ? "Exporting…" : "Export CSV"}
               </Button>
             </div>
+
 
             {(denials ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">
