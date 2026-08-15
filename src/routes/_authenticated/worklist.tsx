@@ -140,6 +140,11 @@ function WorklistPage() {
                         Suggested
                       </Badge>
                     ) : null}
+                    {isDnc(r.phone) ? (
+                      <Badge className="rounded-full border-0 bg-[#FDECEC] text-xs text-[#A30000]">
+                        Do Not Call
+                      </Badge>
+                    ) : null}
                   </div>
                   <p className="mt-0.5 text-xs text-[#6B6B76]">
                     {r.reason_text || titleCase(String(r.reason_code ?? ""))}
