@@ -16,7 +16,7 @@ import { Download, ListOrdered, Pencil, Plus, Search, ShieldOff, Trash2, Upload 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatPhone, phoneKey } from "@/lib/phone";
-import { suppressContactsForPhones } from "@/lib/dnc";
+import { suppressContactsForPhones, fetchBlockedPhoneKeys } from "@/lib/dnc";
 import { screenEmails } from "@/lib/core/policy.functions";
 
 export const Route = createFileRoute("/_authenticated/lists")({
