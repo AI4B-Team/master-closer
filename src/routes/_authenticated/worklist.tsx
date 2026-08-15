@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { EmptyPanel, Panel, SkeletonRows } from "@/components/back-office/ui";
 import { listWorklist, sendWorklistFeedback, undoWorklistFeedback } from "@/lib/governance.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { phoneKey } from "@/lib/phone";
 import { Bot, Phone, ThumbsDown, X, Undo2 } from "lucide-react";
 import { toast } from "sonner";
