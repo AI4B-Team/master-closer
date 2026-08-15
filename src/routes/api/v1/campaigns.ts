@@ -119,7 +119,7 @@ export const Route = createFileRoute("/api/v1/campaigns")({
               ...(screening
                 ? { dialable: screening.dialable, suppressed: screening.suppressed }
                 : {}),
-            });
+            }, workspaceId);
           }
 
           return Response.json({ campaign: data, screening }, { status: 201 });

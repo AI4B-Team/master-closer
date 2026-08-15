@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/v1/events")({
       POST: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
         try {
-          const { orgId } = await apiClient(request);
+          const { orgId, workspaceId } = await apiClient(request);
           const body = z
             .object({
               event_type: z.enum(EVENT_TYPES),
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/v1/events")({
             })
             .parse(await request.json());
           const { emitEvent } = await import("@/lib/hub.server");
-          const event = await emitEvent(orgId, body.event_type, body.payload);
+          const event = await emitEvent(orgId, body.event_type, body.payload, workspaceId);
           return Response.json({ event }, { status: 201 });
         } catch (e) {
           return apiError(e);

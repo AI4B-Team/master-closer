@@ -78,6 +78,7 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
         .from("suggestions")
         .select("objection, was_used")
         .eq("workspace_id", workspaceId)
+        .gte("created_at", since)
         .limit(2000),
       db()
         .from("agent_proposals")

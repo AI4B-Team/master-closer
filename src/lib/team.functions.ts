@@ -58,8 +58,8 @@ export const setMemberRole = createServerFn({ method: "POST" })
     z.object({ userId: z.string().uuid(), role: OrgRoleSchema }).parse(data),
   )
   .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./team.server");
-    const { orgId } = await assertAdmin(context.supabase, context.userId);
+    const { assertWorkspaceAdmin } = await import("./team.server");
+    const { orgId } = await assertWorkspaceAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: target } = await supabaseAdmin

@@ -324,7 +324,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
               reason: body.reason ?? null,
               core: "ok",
               family_wide: true,
-            });
+            }, workspaceId);
 
             return Response.json({ channel: "email", email, core: "ok", family_wide: true }, { status: 201 });
           }
@@ -377,7 +377,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
             leads_flagged: leadIds.length,
             contacts_suppressed: contactsSuppressed,
             core: core.status,
-          });
+          }, workspaceId);
 
           return Response.json(
             { dnc: data, leads_flagged: leadIds.length, contacts_suppressed: contactsSuppressed, core },
@@ -469,7 +469,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
               released: found.rows.length,
               family_wide: true,
               core: "released",
-            });
+            }, workspaceId);
 
             return Response.json({ channel: "email", email, released: found.rows.length, family_wide: true });
           }
@@ -582,7 +582,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
             core: coreStillBlocks.status,
             family_wide: !!coreRelease && coreRelease.status === "released",
             core_released: coreRelease?.released ?? 0,
-          });
+          }, workspaceId);
 
           return Response.json({
             released: rows.length,

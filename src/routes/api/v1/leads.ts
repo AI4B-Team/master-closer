@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/v1/leads")({
           if (error) throw new Error(error.message);
 
           const { emitEvent } = await import("@/lib/hub.server");
-          await emitEvent(orgId, "leads.new", { lead_id: data.id, name: data.name, source: data.source });
+          await emitEvent(orgId, "leads.new", { lead_id: data.id, name: data.name, source: data.source }, workspaceId);
 
           return Response.json(
             { lead: data, suppressed: blocked, email_suppressed: emailScreen.suppressed },
