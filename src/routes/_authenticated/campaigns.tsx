@@ -428,8 +428,9 @@ function CampaignsPage() {
                     <td className="py-3 text-[#6B6B76]">{c.agents?.name ?? "—"}</td>
                     <td className="py-3 text-[#6B6B76]">
                       {c.call_lists?.name
-                        ? `${c.call_lists.name} · ${c.call_lists.list_contacts?.length ?? 0}`
+                        ? `${c.call_lists.name} · ${dialableCount(c.call_lists)} dialable`
                         : "—"}
+
                     </td>
                     <td className="py-3 font-mono">{s.dialed} / {s.connects}</td>
                     <td className="py-3"><StatusPill label={c.status} tone={toneForStatus(c.status)} /></td>
