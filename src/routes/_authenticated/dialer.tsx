@@ -1213,7 +1213,7 @@ function DialerPage() {
                   ["Mode", mode === "full_ai" ? "AI" : mode === "hybrid" ? "Hybrid" : "Copilot"],
                   ["Jurisdiction", jurisdiction],
                   ["Disclosure", required ? "Required In This State" : disclosureStatus(jurisdiction)],
-                  ["Recording Consent", coreRec ? coreRec.consentType.replace(/_/g, " ") : "Local Rules"],
+                  ["Recording Consent", coreRec ? coreRec.consentType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Local Rules"],
                   ["Consent Log", delivered ? "Written" : "Pending"],
                   ["Call Timer", fmt(elapsed)],
                 ].map(([k, v]) => (
