@@ -127,13 +127,20 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
 
   const rename = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      // Server function scopes to the *active* workspace, so we switch first.
+      // Server function scopes to the *active* workspace, so we switch first —
+      // then switch back so managing another workspace never moves the user.
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
       if (!uid) throw new Error("Not signed in.");
+      const previous = active?.id ?? null;
       await supabase.from("profiles").update({ active_workspace_id: id }).eq("id", uid);
-      const res = await renameWorkspaceFn({ data: { name: name.trim() } });
-      return res;
+      try {
+        return await renameWorkspaceFn({ data: { name: name.trim() } });
+      } finally {
+        if (previous && previous !== id) {
+          await supabase.from("profiles").update({ active_workspace_id: previous }).eq("id", uid);
+        }
+      }
     },
     onSuccess: async () => {
       setEditingId(null);
@@ -150,9 +157,16 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
       if (!uid) throw new Error("Not signed in.");
+      const previous = active?.id ?? null;
       await supabase.from("profiles").update({ active_workspace_id: id }).eq("id", uid);
-      const res = await deleteWorkspaceFn({ data: { confirmName: name } });
-      return res;
+      try {
+        return await deleteWorkspaceFn({ data: { confirmName: name } });
+      } finally {
+        // Deleting a workspace the user wasn't in shouldn't relocate them.
+        if (previous && previous !== id) {
+          await supabase.from("profiles").update({ active_workspace_id: previous }).eq("id", uid);
+        }
+      }
     },
     onSuccess: async () => {
       setDeletingId(null);
@@ -165,6 +179,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not delete workspace."),
   });
+
 
   const list = workspaces ?? [];
   if (list.length < 2 && !active) return null;
