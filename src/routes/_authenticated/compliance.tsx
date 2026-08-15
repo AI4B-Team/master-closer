@@ -18,9 +18,9 @@ import { logActivity } from "@/lib/activity";
 import { CallingWindowPanel } from "@/components/back-office/CallingWindowPanel";
 import { CoreGovernancePanel } from "@/components/back-office/CoreGovernancePanel";
 import { useServerFn } from "@tanstack/react-start";
-import { createCoreSuppression } from "@/lib/core/policy.functions";
+import { createCoreSuppression, listCoreSuppressions } from "@/lib/core/policy.functions";
 
-import { formatPhone } from "@/lib/phone";
+import { formatPhone, phoneKey } from "@/lib/phone";
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
@@ -354,6 +354,7 @@ function DncRegistry() {
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
   const coreSuppress = useServerFn(createCoreSuppression);
+  const coreList = useServerFn(listCoreSuppressions);
 
   const { data: entries } = useQuery({
     queryKey: ["dnc_list", wsId],
