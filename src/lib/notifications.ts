@@ -234,8 +234,12 @@ export async function fetchNotifications(wsId: string, limit = 24): Promise<Noti
 }
 
 /** Keys this user has already read in the given workspace. */
-export async function fetchReadKeys(wsId: string): Promise<Set<string>> {
-  const { data } = await supabase.from("notification_reads").select("item_key").eq("workspace_id", wsId);
+export async function fetchReadKeys(wsId: string, userId: string): Promise<Set<string>> {
+  const { data } = await supabase
+    .from("notification_reads")
+    .select("item_key")
+    .eq("workspace_id", wsId)
+    .eq("user_id", userId);
   return new Set((data ?? []).map((r: any) => r.item_key as string));
 }
 
@@ -249,9 +253,14 @@ export async function markNotificationsRead(wsId: string, userId: string, keys: 
 }
 
 /** Clears read state so everything shows as unread again. */
-export async function markNotificationsUnread(wsId: string, keys: string[]) {
+export async function markNotificationsUnread(wsId: string, userId: string, keys: string[]) {
   if (keys.length === 0) return;
-  await supabase.from("notification_reads").delete().eq("workspace_id", wsId).in("item_key", keys);
+  await supabase
+    .from("notification_reads")
+    .delete()
+    .eq("workspace_id", wsId)
+    .eq("user_id", userId)
+    .in("item_key", keys);
 }
 
 /** Applies the user's account notification toggles. */
