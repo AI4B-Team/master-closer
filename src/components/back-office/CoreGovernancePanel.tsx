@@ -27,6 +27,7 @@ export function CoreGovernancePanel() {
   const wsId = workspace?.id ?? null;
   const [pick, setPick] = useState("");
   const [listId, setListId] = useState("");
+  const [denialAction, setDenialAction] = useState<"all" | "call" | "record">("all");
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
