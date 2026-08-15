@@ -444,7 +444,17 @@ export function CoreGovernancePanel() {
                   {o.label}
                 </Button>
               ))}
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={exportAudit.isPending || (denials ?? []).length === 0}
+                onClick={() => exportAudit.mutate()}
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                {exportAudit.isPending ? "Exporting…" : "Export CSV"}
+              </Button>
             </div>
+
             {(denials ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">
                 {denialAction === "release"
