@@ -234,7 +234,17 @@ async function runScout(ctx: Ctx): Promise<RunStats> {
     .select("phone")
     .eq("workspace_id", ctx.workspaceId)
     .limit(5000);
-  const dncKeys = new Set((dnc ?? []).map((d) => phoneKey(d.phone)).filter(Boolean));
+  /* Core's family-wide list lives on contacts, and a lead can share a suppressed
+     number without carrying the opt-out on its own row — treat both as blocked. */
+  const { data: suppressedContacts } = await db()
+    .from("contacts")
+    .select("phone")
+    .eq("workspace_id", ctx.workspaceId)
+    .eq("suppressed", true)
+    .limit(5000);
+  const dncKeys = new Set(
+    [...(dnc ?? []), ...(suppressedContacts ?? [])].map((d) => phoneKey(d.phone)).filter(Boolean),
+  );
   const onDnc = (phone?: string | null) => {
     const k = phoneKey(phone);
     return !!k && dncKeys.has(k);
