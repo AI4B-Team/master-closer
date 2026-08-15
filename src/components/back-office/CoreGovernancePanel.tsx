@@ -13,7 +13,7 @@ import { formatPhone } from "@/lib/phone";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
   getCoreTenancy, linkWorkspaceToCore, unlinkWorkspaceFromCore, listCoreSuppressions,
-  screenCallListWithCore, syncCoreSuppressions,
+  screenCallListWithCore, syncCoreSuppressions, screenEmails,
 } from "@/lib/core/policy.functions";
 
 /**
