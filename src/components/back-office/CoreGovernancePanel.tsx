@@ -65,20 +65,21 @@ export function CoreGovernancePanel() {
   });
 
   const { data: denials } = useQuery({
-    queryKey: ["core-policy-denials", wsId, linked],
+    queryKey: ["core-policy-denials", wsId, linked, denialAction],
     enabled: !!wsId && linked,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("core_policy_checks")
         .select("id, created_at, identifier, action, denied_by, reason")
         .eq("workspace_id", wsId!)
-        .eq("decision", "deny")
-        .order("created_at", { ascending: false })
-        .limit(25);
+        .eq("decision", "deny");
+      if (denialAction !== "all") q = q.eq("action", denialAction);
+      const { data, error } = await q.order("created_at", { ascending: false }).limit(25);
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const doScreen = useMutation({
     mutationFn: () => {
