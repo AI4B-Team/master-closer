@@ -522,7 +522,7 @@ export const assertCanEmail = createServerFn({ method: "POST" })
         await supabaseAdmin.from("core_policy_checks").insert({
           workspace_id: workspaceId,
           core_workspace_id: link.coreWorkspaceId,
-          action: "email",
+          action: "send",
           channel: "email",
           identifier,
           lead_id: data.leadId ?? null,
@@ -539,7 +539,7 @@ export const assertCanEmail = createServerFn({ method: "POST" })
     try {
       const result = await coreService().policy.assert({
         workspace_id: link.coreWorkspaceId,
-        action: "email",
+        action: "send",
         channel: "email",
         identifier,
         contact_id: data.contactId,
