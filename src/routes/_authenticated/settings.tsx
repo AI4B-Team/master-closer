@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { STATE_RULES, disclosureStatus } from "@/lib/compliance";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/back-office/AppShell";
 import { AccountShell } from "@/components/back-office/AccountShell";
@@ -87,7 +89,7 @@ function SettingsPage() {
         .update({
           name: wsName.trim() || ws.name,
           legal_business_name: legalName.trim() || null,
-          business_state: state.trim() || null,
+          business_state: state.trim().toUpperCase() || null,
           default_caller_id: callerId.trim() || null,
           timezone: timezone.trim() || "America/New_York",
           brand_color: brandColor,
@@ -122,7 +124,20 @@ function SettingsPage() {
               <div><Label>Workspace Name</Label><Input value={wsName} onChange={(e) => setWsName(e.target.value)} /></div>
               <div><Label>Legal Business Name</Label><Input value={legalName} onChange={(e) => setLegalName(e.target.value)} placeholder="Used in disclosures and agreements" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Business State</Label><Input value={state} onChange={(e) => setState(e.target.value)} placeholder="FL" /></div>
+                <div>
+                  <Label>Business State</Label>
+                  <Select value={state || "none"} onValueChange={(v) => setState(v === "none" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="Select a state" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Not set</SelectItem>
+                      {STATE_RULES.map((r) => (
+                        <SelectItem key={r.code} value={r.code}>
+                          {r.code} — {r.name} ({disclosureStatus(r.code)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div><Label>Time Zone</Label><Input value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="America/New_York" /></div>
               </div>
               <div><Label>Default Caller ID</Label><Input value={callerId} onChange={(e) => setCallerId(e.target.value)} placeholder="+1 305 555 0134" /></div>
