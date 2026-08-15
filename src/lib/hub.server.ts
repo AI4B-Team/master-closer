@@ -73,20 +73,29 @@ export async function verifyHubToken(token: string): Promise<HubClaims> {
 }
 
 /** Emit a standard family event and fan it out to enabled org webhooks. */
-export async function emitEvent(orgId: string, eventType: string, payload: Record<string, unknown> = {}) {
+export async function emitEvent(
+  orgId: string,
+  eventType: string,
+  payload: Record<string, unknown> = {},
+  workspaceId?: string,
+) {
   const [{ data: org }, { data: workspace }] = await Promise.all([
     supabaseAdmin
       .from("organizations")
       .select("real_elite_org_id")
       .eq("id", orgId)
       .maybeSingle(),
-    supabaseAdmin
-      .from("workspaces")
-      .select("id")
-      .eq("org_id", orgId)
-      .order("is_default", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    // Fallback only: events should carry the workspace that produced them, so
+    // the workspace-scoped activity feeds show them in the right place.
+    workspaceId
+      ? Promise.resolve({ data: { id: workspaceId } })
+      : supabaseAdmin
+          .from("workspaces")
+          .select("id")
+          .eq("org_id", orgId)
+          .order("is_default", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
   ]);
 
   const body = {
