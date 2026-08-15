@@ -121,8 +121,12 @@ export function CoreGovernancePanel() {
       if (r.status === "unlinked") return toast.error("This workspace is not linked to Core.");
       if (r.status === "error") return toast.error(`Suppression sync failed (${r.reason}).`);
       toast.success(
-        `${r.mirrored} Core suppressions checked — ${r.added} added to Do Not Call, ${r.contactsSuppressed} contacts flagged.`,
+        `${r.mirrored} Core suppressions checked — ${r.added} added to Do Not Call, ${r.contactsSuppressed} contacts flagged` +
+          (r.removed ? `, ${r.removed} lifted by Core` : "") +
+          (r.contactsReleased ? `, ${r.contactsReleased} contacts released` : "") +
+          ".",
       );
+
       qc.invalidateQueries({ queryKey: ["core-suppressions"] });
       qc.invalidateQueries({ queryKey: ["dnc"] });
     },
@@ -249,7 +253,7 @@ export function CoreGovernancePanel() {
                     Last automatic mirror {ts.toLocaleString()} —{" "}
                     {failed
                       ? `failed (${String(p.reason ?? "unknown reason")})`
-                      : `${Number(p.mirrored ?? 0)} checked, ${Number(p.added ?? 0)} added to Do Not Call, ${Number(p.contactsSuppressed ?? 0)} contacts flagged`}
+                      : `${Number(p.mirrored ?? 0)} checked, ${Number(p.added ?? 0)} added to Do Not Call, ${Number(p.contacts_suppressed ?? 0)} contacts flagged${Number(p.removed ?? 0) ? `, ${Number(p.removed)} lifted by Core` : ""}${Number(p.contacts_released ?? 0) ? `, ${Number(p.contacts_released)} contacts released` : ""}`}
                     .{stale ? " The hourly sweep looks stalled — mirror manually to catch up." : ""}
                   </p>
                 );

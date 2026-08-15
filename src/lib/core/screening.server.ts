@@ -88,8 +88,12 @@ export async function logScreenRows(args: {
 }
 
 /**
- * Copies Core suppressions for voice into the local Do Not Call list and flags
- * matching contacts as suppressed. Returns what changed.
+ * Copies Core suppressions for voice into the local Do Not Call list, flags
+ * matching contacts as suppressed, and releases mirrored entries Core has since
+ * lifted. Returns what changed.
+ *
+ * Releases only ever touch rows this mirror created (`reason = core_suppression`):
+ * a number a human added locally stays on Do Not Call regardless of Core.
  */
 export async function mirrorSuppressions(args: {
   supabase: any;
@@ -98,6 +102,7 @@ export async function mirrorSuppressions(args: {
   coreWorkspaceId: string;
 }) {
   const { coreService } = await import("./core.server");
+  const { phoneKey } = await import("@/lib/phone");
   const { suppressions } = await coreService().suppressions.list(args.coreWorkspaceId);
 
   const numbers = Array.from(
@@ -108,42 +113,58 @@ export async function mirrorSuppressions(args: {
         .filter((v): v is string => !!v),
     ),
   );
-  if (numbers.length === 0) return { mirrored: 0, added: 0, contactsSuppressed: 0 };
+  const coreKeys = new Set(numbers.map((n) => phoneKey(n)).filter(Boolean));
 
-  const { data: existing } = await args.supabase
+  let added = 0;
+  if (numbers.length) {
+    const { data: existing } = await args.supabase
+      .from("dnc_list")
+      .select("phone")
+      .eq("workspace_id", args.workspaceId)
+      .in("phone", numbers);
+    const have = new Set((existing ?? []).map((r: { phone: string }) => r.phone));
+    const missing = numbers.filter((n) => !have.has(n));
+
+    if (missing.length) {
+      const { error } = await args.supabase.from("dnc_list").insert(
+        missing.map((phone) => ({
+          org_id: args.orgId,
+          workspace_id: args.workspaceId,
+          phone,
+          reason: "core_suppression",
+        })),
+      );
+      if (error) throw new Error(error.message);
+    }
+    added = missing.length;
+  }
+
+  // Core has lifted anything still mirrored locally but absent from its list.
+  const { data: mirrored } = await args.supabase
     .from("dnc_list")
-    .select("phone")
+    .select("id, phone")
     .eq("workspace_id", args.workspaceId)
-    .in("phone", numbers);
-  const have = new Set((existing ?? []).map((r: { phone: string }) => r.phone));
-  const missing = numbers.filter((n) => !have.has(n));
-
-  if (missing.length) {
-    const { error } = await args.supabase.from("dnc_list").insert(
-      missing.map((phone) => ({
-        org_id: args.orgId,
-        workspace_id: args.workspaceId,
-        phone,
-        reason: "core_suppression",
-      })),
-    );
-    if (error) throw new Error(error.message);
+    .eq("reason", "core_suppression");
+  const staleRows = (mirrored ?? []).filter(
+    (r: { phone: string | null }) => !coreKeys.has(phoneKey(r.phone)),
+  );
+  if (staleRows.length) {
+    await args.supabase
+      .from("dnc_list")
+      .delete()
+      .in("id", staleRows.map((r: { id: string }) => r.id));
   }
 
   // Keep contacts in step so campaign builders skip them too. Local numbers are
   // stored as typed, so match on the normalized form rather than raw text.
-  const suppressedSet = new Set(numbers);
   const { data: candidates } = await args.supabase
     .from("contacts")
-    .select("id, phone")
+    .select("id, phone, suppressed")
     .eq("workspace_id", args.workspaceId)
-    .eq("suppressed", false)
     .not("phone", "is", null);
+
   const hitIds = (candidates ?? [])
-    .filter((c: { phone: string | null }) => {
-      const e164 = c.phone ? toE164(c.phone) : null;
-      return !!e164 && suppressedSet.has(e164);
-    })
+    .filter((c: { phone: string | null; suppressed: boolean }) => !c.suppressed && coreKeys.has(phoneKey(c.phone)))
     .map((c: { id: string }) => c.id);
 
   let touched: { id: string }[] = [];
@@ -156,9 +177,38 @@ export async function mirrorSuppressions(args: {
     touched = data ?? [];
   }
 
+  // A contact only comes back when neither Core nor any remaining local Do Not
+  // Call entry covers the number. Follow-up lines stay paused: resuming outreach
+  // is a human decision, surfaced in the Compliance Center.
+  let contactsReleased = 0;
+  if (staleRows.length) {
+    const { data: remaining } = await args.supabase
+      .from("dnc_list")
+      .select("phone")
+      .eq("workspace_id", args.workspaceId);
+    const localKeys = new Set((remaining ?? []).map((r: { phone: string | null }) => phoneKey(r.phone)));
+    const releaseIds = (candidates ?? [])
+      .filter((c: { phone: string | null; suppressed: boolean }) => {
+        const k = phoneKey(c.phone);
+        return c.suppressed && !!k && !coreKeys.has(k) && !localKeys.has(k);
+      })
+      .map((c: { id: string }) => c.id);
+    if (releaseIds.length) {
+      const { data } = await args.supabase
+        .from("contacts")
+        .update({ suppressed: false, suppressed_at: null })
+        .in("id", releaseIds)
+        .select("id");
+      contactsReleased = (data ?? []).length;
+    }
+  }
+
   return {
     mirrored: numbers.length,
-    added: missing.length,
+    added,
+    removed: staleRows.length,
     contactsSuppressed: (touched ?? []).length,
+    contactsReleased,
   };
 }
+
