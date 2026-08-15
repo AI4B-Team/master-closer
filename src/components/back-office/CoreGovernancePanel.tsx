@@ -27,7 +27,7 @@ export function CoreGovernancePanel() {
   const wsId = workspace?.id ?? null;
   const [pick, setPick] = useState("");
   const [listId, setListId] = useState("");
-  const [denialAction, setDenialAction] = useState<"all" | "call" | "record">("all");
+  const [denialAction, setDenialAction] = useState<"all" | "call" | "record" | "send">("all");
 
   const tenancy = useServerFn(getCoreTenancy);
   const link = useServerFn(linkWorkspaceToCore);
@@ -70,7 +70,7 @@ export function CoreGovernancePanel() {
     queryFn: async () => {
       let q = supabase
         .from("core_policy_checks")
-        .select("id, created_at, identifier, action, denied_by, reason")
+        .select("id, created_at, identifier, action, channel, denied_by, reason")
         .eq("workspace_id", wsId!)
         .eq("decision", "deny");
       if (denialAction !== "all") q = q.eq("action", denialAction);
@@ -314,6 +314,7 @@ export function CoreGovernancePanel() {
                 { k: "all", label: "All Decisions" },
                 { k: "call", label: "Dial Blocks" },
                 { k: "record", label: "Recording Blocks" },
+                { k: "send", label: "Email Blocks" },
               ] as const).map((o) => (
                 <Button
                   key={o.k}
@@ -331,7 +332,9 @@ export function CoreGovernancePanel() {
                   ? "Core has not blocked any recording yet."
                   : denialAction === "call"
                     ? "Core has not blocked any dial yet."
-                    : "Core has not blocked anything yet."}
+                    : denialAction === "send"
+                      ? "Core has not blocked any email yet."
+                      : "Core has not blocked anything yet."}
               </p>
 
             ) : (
@@ -340,7 +343,8 @@ export function CoreGovernancePanel() {
                   <thead className="text-left text-xs uppercase text-muted-foreground">
                     <tr>
                       <th className="py-2">When</th>
-                      <th className="py-2">Number</th>
+                      <th className="py-2">Identifier</th>
+                      <th className="py-2">Channel</th>
                       <th className="py-2">Action</th>
                       <th className="py-2">Blocked By</th>
                       <th className="py-2">Reason</th>
@@ -350,8 +354,11 @@ export function CoreGovernancePanel() {
                     {(denials ?? []).map((d) => (
                       <tr key={d.id} className="border-t">
                         <td className="py-2 text-muted-foreground">{new Date(d.created_at).toLocaleString()}</td>
-                        <td className="py-2">{d.identifier ? formatPhone(d.identifier) : "—"}</td>
-                        <td className="py-2 capitalize">{d.action}</td>
+                        <td className="py-2">
+                          {d.identifier ? (d.channel === "email" ? d.identifier : formatPhone(d.identifier)) : "—"}
+                        </td>
+                        <td className="py-2 capitalize">{d.channel ?? "—"}</td>
+                        <td className="py-2 capitalize">{d.action === "send" ? "Email" : d.action}</td>
                         <td className="py-2">{d.denied_by ?? "—"}</td>
                         <td className="py-2 text-muted-foreground">{d.reason ?? "—"}</td>
                       </tr>
