@@ -10,12 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { toast } from "sonner";
-import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus } from "lucide-react";
+import { Phone, Trash2, Save, PhoneCall, Clock, X, Briefcase, FileText, Plus, ShieldOff } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { TaskPanel } from "@/components/back-office/TaskPanel";
 import { LeadLines } from "@/components/back-office/LeadLines";
 import { ResolvedProfileBadge } from "@/components/back-office/ResolvedProfileBadge";
 import { INDUSTRIES } from "@/lib/closer-profiles";
+import { phoneKey } from "@/lib/phone";
 
 type Lead = {
   id: string;
@@ -82,6 +83,22 @@ export function LeadDrawer({
     },
   });
 
+  /* Do Not Call check: the lead's number is matched on its core digits so a
+     stored +1 prefix never hides an opt-out. Reps see this before dialing. */
+  const leadKey = phoneKey(lead?.phone);
+  const { data: dnc } = useQuery({
+    queryKey: ["lead-dnc", leadKey, wsId],
+    enabled: !!leadKey && !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dnc_list")
+        .select("id, phone, reason, added_at")
+        .eq("workspace_id", wsId!)
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []).find((r) => phoneKey(r.phone) === leadKey) ?? null;
+    },
+  });
 
 
   const { data: calls } = useQuery({
@@ -217,12 +234,23 @@ export function LeadDrawer({
         </SheetHeader>
 
         <div className="mt-5 space-y-5">
+          {dnc ? (
+            <div className="flex items-start gap-2 rounded-xl border border-[#CC0000]/30 bg-[#CC0000]/5 p-3 text-sm">
+              <ShieldOff className="mt-0.5 h-4 w-4 shrink-0 text-[#CC0000]" />
+              <p className="text-[#6B6B76]">
+                <span className="font-semibold text-[#CC0000]">On Do Not Call</span> since{" "}
+                {new Date(dnc.added_at).toLocaleDateString()}
+                {dnc.reason ? ` — ${dnc.reason}` : ""}. This number cannot be dialed.
+              </p>
+            </div>
+          ) : null}
+
           <div className="flex items-center gap-2">
             <Button
               type="button"
               className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
               onClick={() => navigate({ to: "/dialer" })}
-              disabled={!form.phone}
+              disabled={!form.phone || !!dnc}
             >
               <Phone className="h-4 w-4 mr-1" /> Call In Dialer
             </Button>
