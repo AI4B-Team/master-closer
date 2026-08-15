@@ -158,6 +158,68 @@ export async function logScreenRows(args: {
 }
 
 /**
+ * Server-side email gate for flows that have no browser round trip (invites,
+ * automated sends). Mirrors assertCanEmail: unlinked workspaces are allowed,
+ * linked workspaces fail closed when Core cannot answer.
+ */
+export async function assertEmailSendAllowed(args: {
+  supabase: any;
+  userId: string;
+  email: string;
+}): Promise<{ allowed: boolean; reason: string | null }> {
+  const { resolveCoreLink } = await import("./tenancy.server");
+  const { coreService, CoreUnavailableError } = await import("./core.server");
+  const { CoreApiError } = await import("./sdk");
+
+  const { workspaceId, link } = await resolveCoreLink(args.supabase, args.userId);
+  if (!link) return { allowed: true, reason: null };
+
+  const identifier = args.email.trim().toLowerCase();
+  const log = async (decision: string, deniedBy: string | null, reason: string | null) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    try {
+      await supabaseAdmin.from("core_policy_checks").insert({
+        workspace_id: workspaceId,
+        core_workspace_id: link.coreWorkspaceId,
+        action: "send",
+        channel: "email",
+        identifier,
+        decision,
+        denied_by: deniedBy,
+        reason,
+        actor_type: "user",
+        actor_id: args.userId,
+        rules_evaluated: [],
+      } as never);
+    } catch {
+      /* audit write must never block the decision */
+    }
+  };
+
+  try {
+    const result = await coreService().policy.assert({
+      workspace_id: link.coreWorkspaceId,
+      action: "send",
+      channel: "email",
+      identifier,
+      actor_type: "user",
+      actor_id: args.userId,
+    });
+    await log(result.decision, result.denied_by ?? null, result.reason ?? null);
+    return { allowed: result.decision === "allow", reason: result.reason ?? result.denied_by ?? null };
+  } catch (e) {
+    const reason =
+      e instanceof CoreUnavailableError
+        ? "core_not_configured"
+        : e instanceof CoreApiError
+          ? `core_${e.status}`
+          : "core_unreachable";
+    await log("deny", "core_unavailable", reason);
+    return { allowed: false, reason };
+  }
+}
+
+/**
  * Copies Core suppressions for voice into the local Do Not Call list, flags
  * matching contacts as suppressed, and releases mirrored entries Core has since
  * lifted. Returns what changed.
