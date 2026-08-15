@@ -313,11 +313,13 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z
       .object({
-        phone: z.string().min(7),
+        phone: z.string().min(7).optional(),
+        email: z.string().email().optional(),
         reason: z.string().min(1).default("opt_out"),
         notes: z.string().max(500).optional(),
         channel: z.enum(["voice", "sms", "email", "messenger", "all"]).default("voice"),
       })
+      .refine((v) => !!v.phone || !!v.email, { message: "phone or email is required" })
       .parse(d),
   )
   .middleware([requireSupabaseAuth])
@@ -329,7 +331,8 @@ export const createCoreSuppression = createServerFn({ method: "POST" })
     const { link } = await resolveCoreLink(context.supabase, context.userId);
     if (!link) return { status: "unlinked" as const };
 
-    const identifier = toE164(data.phone);
+    // Email-channel opt-outs are keyed by the address; every other channel by E.164.
+    const identifier = data.email ? data.email.trim().toLowerCase() : data.phone ? toE164(data.phone) : null;
     if (!identifier) return { status: "error" as const, reason: "unrecognized_phone_format" };
 
     try {
