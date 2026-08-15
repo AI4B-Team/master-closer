@@ -997,15 +997,17 @@ function AgreementDrawer({
                 <Button
                   variant="outline"
                   className="rounded-xl"
-                  onClick={() =>
+                  onClick={async () => {
+                    if (!(await guardSuppression())) return;
                     emailSigningLink({
                       to: agreement.signer_email,
                       title: agreement.title,
                       link,
                       amount: Number(agreement.amount ?? 0),
                       currency: agreement.currency,
-                    })
-                  }
+                    });
+                  }}
+
                 >
                   <Mail className="h-4 w-4 mr-1" /> Email Link
                 </Button>
