@@ -25,6 +25,14 @@ import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
 
+/** Splits a consent note into the spoken line and the Core basis appended to it. */
+function splitConsentNote(notes: string | null | undefined): { line: string; basis: string | null } {
+  if (!notes) return { line: "", basis: null };
+  const m = notes.match(/^([\s\S]*?)\s*\[Core:\s*([^\]]+)\]\s*$/);
+  if (!m) return { line: notes.trim(), basis: null };
+  return { line: (m[1] ?? "").trim(), basis: (m[2] ?? "").trim() };
+}
+
 export const Route = createFileRoute("/_authenticated/compliance")({
   head: () => ({
     meta: [
@@ -323,6 +331,7 @@ function DisclosureLog() {
               <th className="py-2">Method</th>
               <th className="py-2">Jurisdiction</th>
               <th className="py-2">Line</th>
+              <th className="py-2">Consent Basis</th>
             </tr>
           </thead>
           <tbody>
@@ -335,7 +344,12 @@ function DisclosureLog() {
                   <Badge variant="secondary" className="font-mono text-[10px]">{l.method}</Badge>
                 </td>
                 <td className="py-2.5 font-mono text-xs">{l.jurisdiction ?? "—"}</td>
-                <td className="py-2.5 text-[#6B6B76] max-w-[420px] truncate">{l.notes ?? "—"}</td>
+                <td className="py-2.5 text-[#6B6B76] max-w-[360px] truncate">
+                  {splitConsentNote(l.notes).line || "—"}
+                </td>
+                <td className="py-2.5 text-xs text-[#6B6B76] whitespace-nowrap">
+                  {splitConsentNote(l.notes).basis ?? "Local Rules"}
+                </td>
               </tr>
             ))}
           </tbody>
