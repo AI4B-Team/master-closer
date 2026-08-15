@@ -75,9 +75,11 @@ export function CoreGovernancePanel() {
         .from("core_policy_checks")
         .select("id, created_at, identifier, action, channel, denied_by, reason")
         .eq("workspace_id", wsId!);
-      // Releases are recorded as allowed decisions; every other view lists refusals.
+      // Suppression writes are recorded as allowed decisions; every other view lists refusals.
       if (denialAction === "release") {
         q = q.eq("action", "suppression.release").eq("decision", "allow");
+      } else if (denialAction === "created") {
+        q = q.eq("action", "suppression.create").eq("decision", "allow");
       } else {
         q = q.eq("decision", "deny");
         if (denialAction !== "all") q = q.eq("action", denialAction);
