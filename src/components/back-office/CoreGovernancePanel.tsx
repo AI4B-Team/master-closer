@@ -121,6 +121,38 @@ export function CoreGovernancePanel() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // Email addresses on the same list, screened against Core's shared opt-out
+  // list. Advisory only: every send is still authorized at the moment of send.
+  const doScreenEmails = useMutation({
+    mutationFn: async () => {
+      if (!listId) throw new Error("Choose a list to screen first.");
+      const { data, error } = await supabase
+        .from("list_contacts")
+        .select("email")
+        .eq("workspace_id", wsId!)
+        .eq("list_id", listId)
+        .not("email", "is", null);
+      if (error) throw error;
+      const emails = Array.from(
+        new Set((data ?? []).map((r) => (r.email ?? "").trim().toLowerCase()).filter(Boolean)),
+      );
+      if (!emails.length) throw new Error("No email addresses on this list.");
+      const res = await screenMail({ data: { emails: emails.slice(0, 5000) } });
+      return { ...res, total: emails.length };
+    },
+    onSuccess: (r) => {
+      if (r.status === "unlinked") return toast.error("This workspace is not linked to Core.");
+      if (r.unavailable)
+        return toast.error("Core could not be reached — every address is treated as blocked.");
+      toast.success(
+        `${r.total} addresses checked — ${r.total - r.suppressed.length} clear, ${r.suppressed.length} blocked.`,
+      );
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
+
   const doSync = useMutation({
     mutationFn: () => sync(),
     onSuccess: (r) => {
