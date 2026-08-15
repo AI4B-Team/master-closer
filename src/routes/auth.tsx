@@ -21,6 +21,10 @@ const TEAM_AVATARS = [
 ];
 
 export const Route = createFileRoute("/auth")({
+  // Rendered client-side only: this page is reached both directly and via the
+  // protected-route redirect, and SSR-ing it there produced a hydration
+  // mismatch (server streamed the lazy placeholder, client had the component).
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sign In — Master Closer" },
