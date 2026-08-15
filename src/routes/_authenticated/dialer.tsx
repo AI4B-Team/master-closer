@@ -980,6 +980,60 @@ function DialerPage() {
         // Hub delivery is best-effort.
       }
       toast.success("Added To Do Not Call.");
+      // Voice opt-outs don't imply an email opt-out, so offer it explicitly
+      // instead of silently blocking a channel the prospect didn't mention.
+      try {
+        const key = phoneKey(phone);
+        let email: string | null = null;
+        if (contact?.id) {
+          const { data: lc } = await supabase.from("list_contacts").select("email").eq("id", contact.id).maybeSingle();
+          email = lc?.email ?? null;
+        }
+        if (!email) {
+          const { data: rows } = await supabase
+            .from("leads")
+            .select("phone, email")
+            .eq("workspace_id", prof.active_workspace_id)
+            .not("email", "is", null)
+            .limit(2000);
+          email = (rows ?? []).find((r: any) => phoneKey(r.phone ?? "") === key)?.email ?? null;
+        }
+        if (email) {
+          const addr = email;
+          toast("Also Stop Emails To This Prospect?", {
+            description: addr,
+            action: {
+              label: "Block Email",
+              onClick: async () => {
+                try {
+                  const res = await coreSuppress({
+                    data: { email: addr, reason: "opt_out", notes: "Requested on call", channel: "email" },
+                  });
+                  if (res.status === "error") {
+                    toast.warning("Email Block Failed — Retry From Compliance.");
+                    return;
+                  }
+                  try {
+                    await emit({
+                      data: {
+                        event_type: "lead.flagged_dnc",
+                        payload: { email: addr, channel: "email", call_id: callId, reason: "Requested on call", family_wide: true },
+                      },
+                    });
+                  } catch {
+                    // Hub delivery is best-effort.
+                  }
+                  toast.success("Email Opted Out Family-Wide.");
+                } catch {
+                  toast.warning("Email Block Failed — Retry From Compliance.");
+                }
+              },
+            },
+          });
+        }
+      } catch {
+        // Offering the email block is a convenience, never a blocker.
+      }
       await endCall("dnc", "Do Not Call");
     } catch (e: any) {
       toast.error(e.message);
