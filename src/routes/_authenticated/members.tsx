@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -14,7 +14,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader, TAB_GROUPS } from "@/components/back-office/AppShell";
 import { Avatar, EmptyState } from "@/components/back-office/ui";
-import { UserPlus, Trash2, ShieldCheck, Users, MailQuestion, X } from "lucide-react";
+import { UserPlus, Trash2, ShieldCheck, Users, MailQuestion, X, ShieldAlert } from "lucide-react";
+import { assertCanEmail } from "@/lib/core/policy.functions";
 import { inviteMember, listInvites, listMembers, removeMember, revokeInvite, setMemberRole, setWorkspaceRole } from "@/lib/team.functions";
 
 export const Route = createFileRoute("/_authenticated/members")({
@@ -67,6 +68,23 @@ function MembersPage() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"admin" | "manager" | "rep">("rep");
+
+  // Check the invite address against family-wide email opt-outs while they type,
+  // so a blocked invite is obvious before they hit Send.
+  const screenEmail = useServerFn(assertCanEmail);
+  const [debouncedEmail, setDebouncedEmail] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedEmail(email.trim().toLowerCase()), 500);
+    return () => clearTimeout(t);
+  }, [email]);
+  const emailIsValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(debouncedEmail);
+  const { data: emailScreen, isFetching: screening } = useQuery({
+    queryKey: ["invite-email-screen", debouncedEmail],
+    queryFn: () => screenEmail({ data: { email: debouncedEmail } }),
+    enabled: open && emailIsValid,
+    staleTime: 60_000,
+  });
+  const emailBlocked = emailIsValid && emailScreen?.allowed === false;
 
   const { data, isLoading } = useQuery({
     queryKey: ["members"],
@@ -183,10 +201,20 @@ function MembersPage() {
                     </Select>
                   </div>
                 </div>
+                {emailBlocked ? (
+                  <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                    <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>
+                      {emailScreen?.reason === "core_unreachable" || emailScreen?.reason?.startsWith("core_")
+                        ? "The compliance service is unreachable, so invites are paused right now."
+                        : "This email address is on the family-wide opt-out list. The invite cannot be sent."}
+                    </span>
+                  </div>
+                ) : null}
                 <DialogFooter>
                   <Button
                     onClick={() => inviteMut.mutate()}
-                    disabled={!email.trim() || inviteMut.isPending}
+                    disabled={!email.trim() || inviteMut.isPending || emailBlocked || (emailIsValid && screening)}
                     className="bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
                   >
                     Send Invite
