@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/v1/events")({
             })
             .parse(await request.json());
           const { emitEvent } = await import("@/lib/hub.server");
-          const event = await emitEvent(orgId, body.event_type, body.payload);
+          const event = await emitEvent(orgId, body.event_type, body.payload, workspaceId);
           return Response.json({ event }, { status: 201 });
         } catch (e) {
           return apiError(e);

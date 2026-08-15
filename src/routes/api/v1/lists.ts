@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/v1/lists")({
             email_suppressed: emailSuppressed,
             campaign_id: campaign.id,
             list_id: body.list_id,
-          });
+          }, workspaceId);
 
           return Response.json(
             {
