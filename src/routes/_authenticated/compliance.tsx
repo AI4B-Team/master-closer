@@ -351,6 +351,7 @@ function DncRegistry() {
 
   const { data: workspace } = useWorkspace();
   const wsId = workspace?.id ?? null;
+  const coreSuppress = useServerFn(createCoreSuppression);
 
   const { data: entries } = useQuery({
     queryKey: ["dnc_list", wsId],
