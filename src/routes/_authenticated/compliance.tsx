@@ -284,6 +284,8 @@ function CompliancePage() {
 
       <DncRegistry />
 
+      <EmailOptOuts />
+
       <PausedLinesPanel />
 
       <DisclosureLog />
@@ -717,6 +719,142 @@ function DncRegistry() {
                       >
                         <Trash2 className="h-3.5 w-3.5 text-[#6B6B76]" />
                       </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Email-channel opt-outs live in Core (the family-wide list) — there is no
+ * local email suppression table. Agreement sends check this list before a
+ * signing link goes out.
+ */
+function EmailOptOuts() {
+  const qc = useQueryClient();
+  const [email, setEmail] = useState("");
+  const [note, setNote] = useState("");
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+  const coreSuppress = useServerFn(createCoreSuppression);
+  const coreList = useServerFn(listCoreSuppressions);
+
+  const { data: coreSupp } = useQuery({
+    queryKey: ["core-suppressions", wsId],
+    enabled: !!wsId,
+    queryFn: () => coreList(),
+  });
+
+  const emails =
+    coreSupp?.status === "ok"
+      ? coreSupp.suppressions.filter((s: any) => s.channel === "email" || s.identifier?.includes("@"))
+      : [];
+
+  const add = useMutation({
+    mutationFn: async () => {
+      const list = email
+        .split(/[\n,;\s]+/)
+        .map((e) => e.trim())
+        .filter(Boolean);
+      if (!list.length) throw new Error("Enter at least one email address.");
+      let failed = 0;
+      for (const address of list) {
+        try {
+          const res = await coreSuppress({
+            data: { email: address, reason: "opt_out", notes: note.trim() || "Added manually", channel: "email" },
+          });
+          if (res.status !== "ok") failed += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+      return { count: list.length, failed };
+    },
+    onSuccess: ({ count, failed }) => {
+      if (failed) toast.warning(`${failed} of ${count} could not be recorded in Core.`);
+      else toast.success(`${count} email address${count === 1 ? "" : "es"} opted out family-wide.`);
+      setEmail("");
+      setNote("");
+      void logActivity("lead.flagged_dnc", { channel: "email", count });
+      qc.invalidateQueries({ queryKey: ["core-suppressions"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <Card className="p-6 rounded-2xl border-[#E7E7EC] shadow-none mb-4">
+      <div className="flex items-start gap-3 mb-5">
+        <div className="h-10 w-10 rounded-xl bg-[#CC0000]/10 flex items-center justify-center shrink-0">
+          <Ban className="h-5 w-5 text-[#CC0000]" />
+        </div>
+        <div>
+          <h3 className="font-semibold">Email Opt-Outs</h3>
+          <p className="text-sm text-[#6B6B76]">
+            {emails.length} suppressed address{emails.length === 1 ? "" : "es"}. Agreements and signing
+            links are blocked for every one of them across the family.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <Label>Add Addresses</Label>
+          <Textarea
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            rows={4}
+            placeholder={"person@example.com\nother@example.com"}
+            className="mt-1.5 rounded-xl font-mono text-sm"
+          />
+          <p className="text-xs text-[#6B6B76] mt-1.5">One per line, or comma separated.</p>
+
+          <div className="mt-4">
+            <Label>Reason</Label>
+            <Input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Requested by email"
+              className="mt-1.5 rounded-xl"
+            />
+          </div>
+
+          <Button
+            onClick={() => add.mutate()}
+            disabled={add.isPending || !email.trim()}
+            className="mt-4 bg-[#CC0000] hover:bg-[#A30000] rounded-xl"
+          >
+            Suppress Addresses
+          </Button>
+        </div>
+
+        <div className="max-h-[320px] overflow-y-auto">
+          {emails.length === 0 ? (
+            <p className="text-sm text-[#6B6B76] py-8 text-center">No suppressed addresses yet.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-white">
+                <tr className="text-left text-[#6B6B76] text-xs uppercase tracking-wider border-b border-[#E7E7EC]">
+                  <th className="py-2">Address</th>
+                  <th className="py-2">Reason</th>
+                  <th className="py-2 text-right">Added</th>
+                </tr>
+              </thead>
+              <tbody>
+                {emails.map((s: any) => (
+                  <tr key={s.id ?? s.identifier} className="border-b border-[#E7E7EC] last:border-0">
+                    <td className="py-2.5 font-mono text-xs">
+                      {s.identifier}
+                      <Badge variant="secondary" className="ml-2 font-sans text-[10px]">Core</Badge>
+                    </td>
+                    <td className="py-2.5 text-[#6B6B76]">{s.reason ?? "—"}</td>
+                    <td className="py-2.5 text-right font-mono text-xs text-[#6B6B76]">
+                      {s.created_at ? new Date(s.created_at).toLocaleDateString() : "—"}
                     </td>
                   </tr>
                 ))}
