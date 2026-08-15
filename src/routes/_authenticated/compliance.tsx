@@ -21,6 +21,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createCoreSuppression, listCoreSuppressions } from "@/lib/core/policy.functions";
 
 import { formatPhone, phoneKey } from "@/lib/phone";
+import { suppressContactsForPhones } from "@/lib/dnc";
 import {
   DEFAULT_DISCLOSURE, DELIVERY_METHODS, STATE_RULES, disclosureStatus,
 } from "@/lib/compliance";
@@ -402,6 +403,8 @@ function DncRegistry() {
         })),
       );
       if (error) throw error;
+      // Keep contact records in step so nominations never resurface these numbers.
+      if (workspaceId) await suppressContactsForPhones(workspaceId, numbers);
       // Surface suppression additions in the Activity Log / webhook fan-out.
       for (const p of numbers) void logActivity("lead.flagged_dnc", { phone: p, reason: reason.trim() || "Added manually" });
       // Push each opt-out to Core so every app in the family stops contacting them.

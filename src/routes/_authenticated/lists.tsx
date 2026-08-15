@@ -16,6 +16,7 @@ import { Download, ListOrdered, Pencil, Plus, Search, ShieldOff, Trash2, Upload 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatPhone, phoneKey } from "@/lib/phone";
+import { suppressContactsForPhones } from "@/lib/dnc";
 
 export const Route = createFileRoute("/_authenticated/lists")({
   head: () => ({
@@ -139,6 +140,8 @@ function ListsPage() {
         .insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone: contact.phone, reason: `Added from list ${active?.name ?? ""}`.trim() });
       if (error) throw error;
       await supabase.from("list_contacts").update({ consent: "opt_out" }).eq("id", contact.id);
+      // Keep the contact record in step so nominations never resurface this number.
+      await suppressContactsForPhones(prof.active_workspace_id, [contact.phone]);
     },
     onSuccess: () => {
       toast.success("Added To Do Not Call.");

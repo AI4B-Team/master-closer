@@ -30,6 +30,7 @@ import { fetchObjectionLibrary } from "@/lib/objections";
 import { assemblePromptForCall } from "@/lib/closer-profiles.functions";
 import { assertCanCall, assertCanRecord, createCoreSuppression } from "@/lib/core/policy.functions";
 import { phoneKey } from "@/lib/phone";
+import { suppressContactsForPhones } from "@/lib/dnc";
 import { useCallingWindow } from "@/hooks/use-calling-window";
 import { nextOpenAt, timezoneLabel } from "@/lib/calling-window";
 
