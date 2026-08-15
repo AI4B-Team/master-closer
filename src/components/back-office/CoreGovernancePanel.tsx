@@ -130,7 +130,7 @@ export function CoreGovernancePanel() {
       );
 
       // The mirror touches Do Not Call, contacts, leads, paused lines and the audit trail.
-      for (const key of ["core-suppressions", "dnc", "leads", "contacts", "paused-lines", "activity", "events", "notifications"]) {
+      for (const key of ["core-suppressions", "dnc_list", "blocked-phone-keys", "paused_lead_lines", "leads", "contacts", "activity", "events", "notifications"]) {
         qc.invalidateQueries({ queryKey: [key] });
       }
     },
