@@ -2,15 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { activeWorkspace } from "./workspace-scope";
-
-const WIN_WORDS = ["won", "book", "appointment", "sale", "sold", "closed", "demo", "meeting"];
-
-
-function isWin(disposition: string | null) {
-  if (!disposition) return false;
-  const d = disposition.toLowerCase();
-  return WIN_WORDS.some((w) => d.includes(w));
-}
+import { isWin } from "./line-performance.shared";
 
 /**
  * Which objection lines actually move calls. Aggregated from live suggestions

@@ -2,32 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { activeWorkspace } from "./workspace-scope";
-
-const SELECT =
-  "id, workspace_id, industry, source, name, is_default, opener, context_framing, objections, screening_questions, faqs, tone, escalation_triggers, banned_topics, dispositions, default_campaign_id, updated_at";
-
-const ObjectionSchema = z.object({
-  trigger: z.string().trim().min(1).max(300),
-  approved_response: z.string().trim().min(1).max(1200),
-});
-
-const ProfileInput = z.object({
-  id: z.string().uuid().nullish(),
-  industry: z.string().trim().max(60).nullish(),
-  source: z.string().trim().max(60).nullish(),
-  name: z.string().trim().min(2).max(120),
-  is_default: z.boolean().default(false),
-  opener: z.string().trim().min(5).max(2000),
-  context_framing: z.string().trim().max(2000).nullish(),
-  objections: z.array(ObjectionSchema).max(60).default([]),
-  screening_questions: z.array(z.string().trim().min(1).max(300)).max(40).default([]),
-  faqs: z.array(z.string().trim().min(1).max(600)).max(60).default([]),
-  tone: z.string().trim().max(300).nullish(),
-  escalation_triggers: z.array(z.string().trim().min(1).max(160)).max(60).default([]),
-  banned_topics: z.array(z.string().trim().min(1).max(160)).max(60).default([]),
-  dispositions: z.array(z.string().trim().min(1).max(60)).max(40).default([]),
-});
-
+import { PROFILE_SELECT, ProfileInput } from "./closer-profiles.schema";
 
 /** Workspace profiles plus the platform defaults they inherit from. */
 export const listCloserProfiles = createServerFn({ method: "GET" })
@@ -37,12 +12,12 @@ export const listCloserProfiles = createServerFn({ method: "GET" })
     const [{ data: mine }, { data: platform }] = await Promise.all([
       context.supabase
         .from("closer_profiles")
-        .select(SELECT)
+        .select(PROFILE_SELECT)
         .eq("workspace_id", workspaceId)
         .order("industry", { ascending: true }),
       context.supabase
         .from("closer_profiles")
-        .select(SELECT)
+        .select(PROFILE_SELECT)
         .is("workspace_id", null)
         .order("industry", { ascending: true }),
     ]);
@@ -175,7 +150,7 @@ export const duplicateCloserProfile = createServerFn({ method: "POST" })
     const workspaceId = await activeWorkspace(context.supabase, context.userId);
     const { data: src } = await context.supabase
       .from("closer_profiles")
-      .select(SELECT)
+      .select(PROFILE_SELECT)
       .eq("id", data.sourceId)
       // Only this workspace's profiles or the platform defaults may be copied.
       .or(`workspace_id.eq.${workspaceId},workspace_id.is.null`)
@@ -226,8 +201,8 @@ export const resolveProfileForLead = createServerFn({ method: "GET" })
         .eq("id", data.leadId)
         .eq("workspace_id", workspaceId)
         .maybeSingle(),
-      context.supabase.from("closer_profiles").select(SELECT).eq("workspace_id", workspaceId),
-      context.supabase.from("closer_profiles").select(SELECT).is("workspace_id", null),
+      context.supabase.from("closer_profiles").select(PROFILE_SELECT).eq("workspace_id", workspaceId),
+      context.supabase.from("closer_profiles").select(PROFILE_SELECT).is("workspace_id", null),
     ]);
     if (!lead) throw new Error("Lead not found.");
 
@@ -268,7 +243,7 @@ export const previewAssembledPrompt = createServerFn({ method: "POST" })
     const [{ data: profile }, { data: ws }] = await Promise.all([
       context.supabase
         .from("closer_profiles")
-        .select(SELECT)
+        .select(PROFILE_SELECT)
         .eq("id", data.profileId)
         .or(`workspace_id.eq.${workspaceId},workspace_id.is.null`)
         .maybeSingle(),
@@ -399,8 +374,8 @@ export const assemblePromptForCall = createServerFn({ method: "POST" })
     const workspaceId = await activeWorkspace(context.supabase, context.userId);
 
     const [{ data: mine }, { data: platform }, { data: ws }, { data: disc }] = await Promise.all([
-      context.supabase.from("closer_profiles").select(SELECT).eq("workspace_id", workspaceId),
-      context.supabase.from("closer_profiles").select(SELECT).is("workspace_id", null),
+      context.supabase.from("closer_profiles").select(PROFILE_SELECT).eq("workspace_id", workspaceId),
+      context.supabase.from("closer_profiles").select(PROFILE_SELECT).is("workspace_id", null),
       context.supabase
         .from("workspaces")
         .select("name, legal_business_name, business_state")

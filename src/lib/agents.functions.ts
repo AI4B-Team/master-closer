@@ -2,14 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
-
-const PromptHelpInput = z.object({
-  name: z.string().min(1).max(120),
-  industry: z.string().max(120).nullish(),
-  mode: z.enum(["full_ai", "hybrid", "copilot"]),
-  current: z.string().max(8000).nullish(),
-  instruction: z.enum(["generate", "improve", "shorten", "tone"]).default("generate"),
-});
+import { PromptHelpInput, SuggestObjectionsInput } from "./server-schemas";
 
 export const helpSystemPrompt = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => PromptHelpInput.parse(data))
@@ -49,12 +42,6 @@ export const helpSystemPrompt = createServerFn({ method: "POST" })
 
     return { prompt: text.replace(/^```[a-z]*\n?|```$/gim, "").trim() };
   });
-
-const SuggestObjectionsInput = z.object({
-  industry: z.string().max(120).nullish(),
-  focus: z.string().max(200).nullish(),
-  existing: z.array(z.string().max(300)).max(50).default([]),
-});
 
 export const suggestObjections = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => SuggestObjectionsInput.parse(data))
