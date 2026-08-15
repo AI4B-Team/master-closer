@@ -1,7 +1,52 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
+/**
+ * Mirrors an API-taken opt-out onto Core's family-wide suppression list.
+ * Never throws: the local Do Not Call entry already blocks the number, so a Core
+ * outage is reported back to the caller rather than failing the request.
+ */
+async function pushToCore(
+  supabase: any,
+  workspaceId: string,
+  phone: string,
+  reason?: string,
+): Promise<{ status: "ok" | "unlinked" | "error"; reason?: string }> {
+  try {
+    const { data: ws } = await supabase
+      .from("workspaces")
+      .select("core_workspace_id")
+      .eq("id", workspaceId)
+      .maybeSingle();
+    if (!ws?.core_workspace_id) return { status: "unlinked" };
+
+    const { toE164 } = await import("@/lib/core/tenancy.server");
+    const identifier = toE164(phone);
+    if (!identifier) return { status: "error", reason: "unrecognized_phone_format" };
+
+    const { coreService } = await import("@/lib/core/core.server");
+    const { CoreApiError } = await import("@/lib/core/sdk");
+    try {
+      await coreService().suppressions.create({
+        workspace_id: ws.core_workspace_id as string,
+        channel: "voice",
+        identifier,
+        reason: reason || "opt_out",
+      });
+      return { status: "ok" };
+    } catch (e) {
+      return {
+        status: "error",
+        reason: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+      };
+    }
+  } catch {
+    return { status: "error", reason: "core_unreachable" };
+  }
+}
+
 /** Do-not-call: add a number and flag the matching lead, emitting the family event. */
+
 export const Route = createFileRoute("/api/v1/dnc")({
   server: {
     handlers: {
