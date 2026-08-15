@@ -356,6 +356,8 @@ export const Route = createFileRoute("/api/v1/dnc")({
             leads_released: leadsReleased,
             lines_paused: linesPaused,
             core: coreStillBlocks.status,
+            family_wide: !!coreRelease && coreRelease.status === "released",
+            core_released: coreRelease?.released ?? 0,
           });
 
           return Response.json({
@@ -364,6 +366,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
             leads_released: leadsReleased,
             lines_still_paused: linesPaused,
             core: coreStillBlocks,
+            family_wide_release: coreRelease,
           });
 
 
