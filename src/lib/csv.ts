@@ -12,12 +12,20 @@ export function toCsv(headers: string[], rows: unknown[][]): string {
 
 /** Triggers a browser download of the given CSV text. */
 export function downloadCsv(filename: string, csv: string) {
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  // Prepend a BOM so Excel reads UTF-8 accents correctly.
+  const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" }));
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  // Revoke on the next tick; revoking synchronously cancels the download in
+  // Firefox and Safari.
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 0);
 }
 
 /** Date-stamped filename, e.g. master-closer-deals-2026-08-09.csv */
