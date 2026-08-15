@@ -34,6 +34,7 @@ export function CoreGovernancePanel() {
   const unlink = useServerFn(unlinkWorkspaceFromCore);
   const suppressions = useServerFn(listCoreSuppressions);
   const screen = useServerFn(screenCallListWithCore);
+  const screenMail = useServerFn(screenEmails);
   const sync = useServerFn(syncCoreSuppressions);
 
   const { data: core, isLoading } = useQuery({
