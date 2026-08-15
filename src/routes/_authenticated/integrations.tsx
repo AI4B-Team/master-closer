@@ -80,21 +80,20 @@ function IntegrationsPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
       if (connect) {
         const { error } = await supabase.from("integrations").upsert(
           { org_id: prof.org_id, workspace_id: prof.active_workspace_id, provider, status: "connected", connected_at: new Date().toISOString() },
-          { onConflict: "org_id,provider" }
+          { onConflict: "workspace_id,provider" }
         );
         if (error) throw error;
       } else {
         await supabase.from("integrations").update({ status: "not_connected" })
-          .eq("org_id", prof.org_id).eq("provider", provider);
+          .eq("workspace_id", prof.active_workspace_id).eq("provider", provider);
       }
     },
     onSuccess: (_, v) => {
       toast.success(v.connect ? "Connected." : "Disconnected.");
-      qc.invalidateQueries({ queryKey: ["integrations"] });
+      qc.invalidateQueries({ queryKey: ["integrations", wsId] });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -105,7 +104,6 @@ function IntegrationsPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No profile");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const existing = rowFor(connector.key);
       const { error } = await supabase.from("integrations").upsert(
         {
@@ -115,14 +113,14 @@ function IntegrationsPage() {
           connected_at: existing?.connected_at ?? null,
           config: form,
         },
-        { onConflict: "org_id,provider" }
+        { onConflict: "workspace_id,provider" }
       );
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Settings Saved.");
       setConfigKey(null);
-      qc.invalidateQueries({ queryKey: ["integrations"] });
+      qc.invalidateQueries({ queryKey: ["integrations", wsId] });
     },
     onError: (e: any) => toast.error(e.message),
   });
