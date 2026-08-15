@@ -962,6 +962,8 @@ function DialerPage() {
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
       await supabase.from("dnc_list").insert({ org_id: prof.org_id, workspace_id: prof.active_workspace_id, phone, reason: "Requested on call" });
+      // Keep the contact record in step so nominations never resurface this number.
+      await suppressContactsForPhones(prof.active_workspace_id, [phone]);
       // Push the opt-out to Core so every app in the family stops contacting them.
       try {
         const res = await coreSuppress({ data: { phone, reason: "opt_out", notes: "Requested on call", channel: "voice" } });
