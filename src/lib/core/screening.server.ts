@@ -58,6 +58,61 @@ export async function assertBulkAll(args: {
 }
 
 /**
+ * Workspace-scoped Core link lookup for machine callers (API keys, cron) that
+ * have no user profile to resolve an active workspace from.
+ */
+export async function coreLinkForWorkspace(
+  workspaceId: string,
+): Promise<{ coreWorkspaceId: string } | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("workspaces")
+    .select("core_workspace_id")
+    .eq("id", workspaceId)
+    .maybeSingle();
+  return data?.core_workspace_id ? { coreWorkspaceId: data.core_workspace_id as string } : null;
+}
+
+/**
+ * Screens a single inbound email address for machine callers. Unlinked
+ * workspaces pass; a linked workspace whose Core cannot answer fails closed.
+ */
+export async function screenInboundEmail(args: {
+  workspaceId: string;
+  email: string;
+}): Promise<{ suppressed: boolean; reason: string | null }> {
+  const link = await coreLinkForWorkspace(args.workspaceId);
+  if (!link) return { suppressed: false, reason: null };
+  const identifier = args.email.trim().toLowerCase();
+  try {
+    const { rows } = await assertBulkEmails({
+      coreWorkspaceId: link.coreWorkspaceId,
+      emails: [identifier],
+      actorId: args.workspaceId,
+    });
+    await logEmailScreenRows({
+      workspaceId: args.workspaceId,
+      coreWorkspaceId: link.coreWorkspaceId,
+      actorId: args.workspaceId,
+      rows,
+      reasonPrefix: "api_intake",
+    });
+    const row = rows[0];
+    const suppressed = !row || row.decision !== "allow";
+    return { suppressed, reason: row?.reason ?? row?.deniedBy ?? null };
+  } catch {
+    await logEmailScreenRows({
+      workspaceId: args.workspaceId,
+      coreWorkspaceId: link.coreWorkspaceId,
+      actorId: args.workspaceId,
+      rows: [{ identifier, decision: "deny", deniedBy: "core_unavailable", reason: "core_unreachable" }],
+      reasonPrefix: "api_intake",
+    });
+    return { suppressed: true, reason: "core_unreachable" };
+  }
+}
+
+/**
  * Bulk-screens email addresses against Core's shared opt-out list. Used for
  * automated sends (digests, batch notifications) where there is no user to
  * react to a single denial. Errors surface as `deny` so automation fails closed.
