@@ -474,7 +474,7 @@ function CampaignsPage() {
                         ) : (
                           <Button
                             size="sm" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]"
-                            onClick={() => setStatus.mutate({ id: c.id, status: "active", name: c.name, mode: c.mode })}
+                            onClick={() => setStatus.mutate({ id: c.id, status: "active", name: c.name, mode: c.mode, dialable: c.call_lists ? dialableCount(c.call_lists) : undefined })}
                           >
                             <Play className="h-3.5 w-3.5 mr-1" /> Launch
                           </Button>
