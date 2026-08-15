@@ -205,9 +205,15 @@ function CampaignsPage() {
 
 
   const setStatus = useMutation({
-    mutationFn: async ({ id, status, name, mode }: { id: string; status: string; name: string; mode: string }) => {
+    mutationFn: async ({ id, status, name, mode, dialable }: { id: string; status: string; name: string; mode: string; dialable?: number }) => {
+      // A campaign with nothing dialable would burn a launch with zero reach:
+      // every contact is opted out, on Do Not Call or suppressed by Core.
+      if (status === "active" && dialable === 0) {
+        throw new Error("No dialable contacts. Every contact is opted out, on Do Not Call or suppressed.");
+      }
       const { error } = await supabase.from("campaigns").update({ status }).eq("id", id);
       if (error) throw error;
+
       if (status === "active") {
         try {
           await emit({ data: { event_type: "campaign.launched", payload: { kind: "campaign.launched", campaign_id: id, name, mode } } });
@@ -468,7 +474,7 @@ function CampaignsPage() {
                         ) : (
                           <Button
                             size="sm" className="rounded-xl bg-[#CC0000] hover:bg-[#A30000]"
-                            onClick={() => setStatus.mutate({ id: c.id, status: "active", name: c.name, mode: c.mode })}
+                            onClick={() => setStatus.mutate({ id: c.id, status: "active", name: c.name, mode: c.mode, dialable: c.call_lists ? dialableCount(c.call_lists) : undefined })}
                           >
                             <Play className="h-3.5 w-3.5 mr-1" /> Launch
                           </Button>
