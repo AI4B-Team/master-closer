@@ -84,7 +84,7 @@ function MembersPage() {
     enabled: open && emailIsValid,
     staleTime: 60_000,
   });
-  const emailBlocked = emailIsValid && emailScreen?.allowed === false;
+  const emailBlocked = emailIsValid && emailScreen?.status === "decided" && emailScreen.decision === "deny";
 
   const { data, isLoading } = useQuery({
     queryKey: ["members"],
@@ -205,7 +205,7 @@ function MembersPage() {
                   <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
                     <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
                     <span>
-                      {emailScreen?.reason === "core_unreachable" || emailScreen?.reason?.startsWith("core_")
+                      {emailScreen?.status === "decided" && emailScreen.deniedBy === "core_unavailable"
                         ? "The compliance service is unreachable, so invites are paused right now."
                         : "This email address is on the family-wide opt-out list. The invite cannot be sent."}
                     </span>
