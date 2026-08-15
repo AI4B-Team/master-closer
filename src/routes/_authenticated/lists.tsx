@@ -222,15 +222,7 @@ function ListsPage() {
       if (!workspaceId) throw new Error("No active workspace");
 
       // Screen the import against local Do Not Call and Core family-wide suppressions.
-      const [{ data: dnc }, { data: suppressed }] = await Promise.all([
-        supabase.from("dnc_list").select("phone").eq("workspace_id", workspaceId),
-        supabase.from("contacts").select("phone").eq("workspace_id", workspaceId).eq("suppressed", true),
-      ]);
-      const blocked = new Set<string>();
-      for (const r of [...(dnc ?? []), ...(suppressed ?? [])]) {
-        const k = phoneKey(r.phone ?? "");
-        if (k) blocked.add(k);
-      }
+      const blocked = await fetchBlockedPhoneKeys(workspaceId);
 
       // Imported email addresses are screened against the family-wide opt-out
       // list too, so nothing in this list gets emailed after an opt-out.
