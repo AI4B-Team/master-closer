@@ -154,10 +154,53 @@ export function CoreGovernancePanel() {
             </div>
           </dl>
 
-          <div>
+          <div className="rounded-md border p-4">
             <h4 className="flex items-center gap-2 text-sm font-semibold">
-              <ShieldOff className="h-4 w-4" /> Core Suppressions
+              <ListFilter className="h-4 w-4" /> Pre-Screen A List
             </h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Checks every number on a list against Core in one pass and marks blocked numbers as
+              opted out. Advisory only — each dial is still authorized at the moment of contact.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Select value={listId} onValueChange={setListId}>
+                <SelectTrigger className="w-[280px] bg-white">
+                  <SelectValue placeholder={(lists ?? []).length ? "Choose a list" : "No lists yet"} />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  {(lists ?? []).map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={() => doScreen.mutate()} disabled={!listId || doScreen.isPending}>
+                <ListFilter className="mr-2 h-4 w-4" />
+                {doScreen.isPending ? "Screening…" : "Screen Against Core"}
+              </Button>
+            </div>
+            {doScreen.data?.status === "ok" && doScreen.data.denies.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm">
+                {doScreen.data.denies.map((d) => (
+                  <li key={d.identifier} className="text-muted-foreground">
+                    <span className="font-medium text-foreground">{formatPhone(d.identifier)}</span>{" "}
+                    blocked{d.deniedBy ? ` by ${d.deniedBy}` : ""}
+                    {d.reason ? ` — ${d.reason}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h4 className="flex items-center gap-2 text-sm font-semibold">
+                <ShieldOff className="h-4 w-4" /> Core Suppressions
+              </h4>
+              <Button variant="outline" size="sm" onClick={() => doSync.mutate()} disabled={doSync.isPending}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {doSync.isPending ? "Syncing…" : "Mirror Into Do Not Call"}
+              </Button>
+            </div>
             {supp?.status === "error" ? (
               <p className="mt-2 text-sm text-[#CC0000]">Could not read suppressions ({supp.reason}).</p>
             ) : (supp?.suppressions ?? []).length === 0 ? (
