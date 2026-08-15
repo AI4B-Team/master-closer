@@ -195,6 +195,24 @@ function LeadsPage() {
     },
   });
 
+  /* Do Not Call keys for this workspace — used to flag opted-out leads inline. */
+  const { data: dncKeys } = useQuery({
+    queryKey: ["leads-dnc-keys", wsId],
+    enabled: !!wsId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dnc_list")
+        .select("phone")
+        .eq("workspace_id", wsId!);
+      if (error) throw error;
+      return new Set((data ?? []).map((d: any) => phoneKey(d.phone)).filter(Boolean));
+    },
+  });
+  const isDnc = (phone?: string | null) => {
+    const k = phoneKey(phone);
+    return !!k && !!dncKeys?.has(k);
+  };
+
   const bulkStatus = useMutation({
     mutationFn: async (status: string) => {
       const { error } = await supabase.from("leads").update({ status: status as never }).in("id", picked);
