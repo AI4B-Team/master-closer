@@ -382,6 +382,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
        * if Core still holds the family-wide opt-out the contact stays suppressed
        * and the response says so — never imply the number is dialable. Pass
        * `family_wide=true` to also ask Core to lift its suppression (audited).
+       * Pass `email=` to lift a family-wide email opt-out instead.
        */
       DELETE: async ({ request }) => {
         const { apiClient, apiError } = await import("@/lib/api-auth.server");
@@ -392,16 +393,76 @@ export const Route = createFileRoute("/api/v1/dnc")({
             .object({
               id: z.string().uuid().optional(),
               phone: z.string().min(5).max(32).optional(),
+              email: z.string().email().max(200).optional(),
               family_wide: z.boolean().default(false),
               notes: z.string().max(500).optional(),
             })
-            .refine((b) => !!(b.id || b.phone), { message: "id or phone is required" })
+            .refine((b) => !!(b.id || b.phone || b.email), { message: "id, phone or email is required" })
             .parse({
               id: url.searchParams.get("id") ?? undefined,
               phone: url.searchParams.get("phone") ?? undefined,
+              email: url.searchParams.get("email") ?? undefined,
               family_wide: url.searchParams.get("family_wide") === "true",
               notes: url.searchParams.get("notes") ?? undefined,
             });
+
+          // Email opt-outs exist only on Core, so releasing one is a Core call
+          // and nothing local changes.
+          if (body.email && !body.phone && !body.id) {
+            const email = body.email.trim().toLowerCase();
+            const found = await emailSuppressions(supabase, workspaceId, email);
+            if (found.status === "unlinked") {
+              return Response.json({ error: "This workspace is not linked to Core.", core: "unlinked" }, { status: 409 });
+            }
+            if (found.status === "error") {
+              return Response.json(
+                { error: "Core could not be reached to lift the email opt-out.", core: found.reason },
+                { status: 502 },
+              );
+            }
+            if (!found.rows.length) {
+              return Response.json({ error: "No email opt-out found for that address." }, { status: 404 });
+            }
+
+            const { coreService } = await import("@/lib/core/core.server");
+            const { CoreApiError } = await import("@/lib/core/sdk");
+            const svc = coreService();
+            try {
+              for (const row of found.rows) await svc.suppressions.remove(row.id);
+            } catch (e) {
+              return Response.json(
+                {
+                  error: "Core could not lift the email opt-out.",
+                  core: e instanceof CoreApiError ? `core_${e.status}` : "core_unreachable",
+                },
+                { status: 502 },
+              );
+            }
+            for (const row of found.rows) {
+              await auditSuppressionWrite(
+                supabase,
+                workspaceId,
+                found.coreWorkspaceId,
+                "suppression.release",
+                row.identifier,
+                "send",
+                body.notes,
+              );
+            }
+
+            const { emitEvent } = await import("@/lib/hub.server");
+            await emitEvent(orgId, "lead.released_dnc", {
+              email,
+              channel: "email",
+              released: found.rows.length,
+              family_wide: true,
+              core: "released",
+            });
+
+            return Response.json({ channel: "email", email, released: found.rows.length, family_wide: true });
+          }
+
+
 
           let q = supabase.from("dnc_list").select("id, phone").eq("workspace_id", workspaceId);
           q = body.id ? q.eq("id", body.id) : q.eq("phone", body.phone!);
