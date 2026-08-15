@@ -1,18 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { activeWorkspace } from "./workspace-scope";
 
 const WIN_WORDS = ["won", "book", "appointment", "sale", "sold", "closed", "demo", "meeting"];
 
-async function activeWorkspace(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("active_workspace_id")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!data?.active_workspace_id) throw new Error("No active workspace for this user.");
-  return data.active_workspace_id as string;
-}
 
 function isWin(disposition: string | null) {
   if (!disposition) return false;

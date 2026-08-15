@@ -1,38 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-async function callerScope(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("org_id, active_workspace_id")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!data?.active_workspace_id) throw new Error("No active workspace for this user.");
-  return { orgId: data.org_id as string, workspaceId: data.active_workspace_id as string };
-}
-
-/**
- * Server-side twin of logActivity: governance decisions are audit-relevant, so
- * they are written from the handler rather than trusted to the browser.
- */
-async function logGovernance(
-  supabase: any,
-  scope: { orgId: string; workspaceId: string },
-  kind: string,
-  payload: Record<string, unknown> = {},
-) {
-  try {
-    await supabase.from("events").insert({
-      org_id: scope.orgId,
-      workspace_id: scope.workspaceId,
-      event_type: "job.completed",
-      payload: { kind, ...payload },
-    });
-  } catch {
-    /* non-blocking */
-  }
-}
+import { callerScope, logGovernance } from "./workspace-scope";
 
 /** Registry + recent runs for the Agents admin surface. */
 export const listAgents = createServerFn({ method: "GET" })

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { activeWorkspace } from "./workspace-scope";
 
 const SELECT =
   "id, workspace_id, industry, source, name, is_default, opener, context_framing, objections, screening_questions, faqs, tone, escalation_triggers, banned_topics, dispositions, default_campaign_id, updated_at";
@@ -27,15 +28,6 @@ const ProfileInput = z.object({
   dispositions: z.array(z.string().trim().min(1).max(60)).max(40).default([]),
 });
 
-async function activeWorkspace(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("active_workspace_id")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!data?.active_workspace_id) throw new Error("No active workspace for this user.");
-  return data.active_workspace_id as string;
-}
 
 /** Workspace profiles plus the platform defaults they inherit from. */
 export const listCloserProfiles = createServerFn({ method: "GET" })
