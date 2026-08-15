@@ -896,7 +896,27 @@ function AgreementDrawer({
   if (!agreement) return null;
   const link = signingUrl(agreement.token);
 
+  // Same rule as creation: an opted-out or family-wide suppressed contact must
+  // not receive outreach, so both send paths are gated here too.
+  const guardSuppression = async () => {
+    const { data: prof } = await supabase.from("profiles").select("active_workspace_id").maybeSingle();
+    if (!prof?.active_workspace_id) return true;
+    if (agreement.leads?.consent === "opt_out") {
+      toast.error("This contact has opted out. Sending is blocked.");
+      return false;
+    }
+    const key = phoneKey(agreement.leads?.phone);
+    if (!key) return true;
+    const blocked = await fetchBlockedPhoneKeys(prof.active_workspace_id);
+    if (blocked.has(key)) {
+      toast.error("This contact is on Do Not Call or suppressed. Sending is blocked.");
+      return false;
+    }
+    return true;
+  };
+
   const send = async () => {
+    if (!(await guardSuppression())) return;
     const { error } = await supabase
       .from("agreements")
       .update({ status: "sent", sent_at: new Date().toISOString() })
@@ -919,6 +939,7 @@ function AgreementDrawer({
     onChange();
     onClose();
   };
+
 
   const voidIt = async () => {
     const { error } = await supabase.from("agreements").update({ status: "void" }).eq("id", agreement.id);
