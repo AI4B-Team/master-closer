@@ -241,12 +241,36 @@ export const Route = createFileRoute("/api/v1/dnc")({
           }
 
 
+          // Suppression pauses live follow-up lines through a database trigger.
+          // Resuming them is a human decision, so report how many stay paused
+          // rather than silently reactivating outreach.
+          let linesPaused = 0;
+          if (contactsReleased > 0 && key) {
+            const { data: contacts } = await supabase
+              .from("contacts")
+              .select("id, phone")
+              .eq("workspace_id", workspaceId);
+            const ids = (contacts ?? [])
+              .filter((c: { phone: string | null }) => phoneKey(c.phone) === key)
+              .map((c: { id: string }) => c.id);
+            if (ids.length) {
+              const { count } = await supabase
+                .from("lead_lines")
+                .select("id", { count: "exact", head: true })
+                .eq("workspace_id", workspaceId)
+                .eq("status", "paused")
+                .in("contact_id", ids);
+              linesPaused = count ?? 0;
+            }
+          }
+
           const { emitEvent } = await import("@/lib/hub.server");
           await emitEvent(orgId, "lead.released_dnc", {
             phone: rows[0].phone,
             entry_id: rows[0].id,
             contacts_released: contactsReleased,
             leads_released: leadsReleased,
+            lines_paused: linesPaused,
             core: coreStillBlocks.status,
           });
 
@@ -254,8 +278,10 @@ export const Route = createFileRoute("/api/v1/dnc")({
             released: rows.length,
             contacts_released: contactsReleased,
             leads_released: leadsReleased,
+            lines_still_paused: linesPaused,
             core: coreStillBlocks,
           });
+
 
         } catch (e) {
           return apiError(e);
