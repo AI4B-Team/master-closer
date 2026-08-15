@@ -96,6 +96,10 @@ export const inviteMember = createServerFn({ method: "POST" })
       .eq("email", email)
       .maybeSingle();
     if (existing) {
+      // Never multi-home an account that belongs to another organization into this tenant.
+      if (existing.org_id !== orgId) {
+        throw new Error("That email already belongs to another organization's account.");
+      }
       const { data: already } = await supabaseAdmin
         .from("workspace_members")
         .select("id")
