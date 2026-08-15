@@ -45,3 +45,31 @@ export async function suppressContactsForPhonesServer(
     return 0;
   }
 }
+
+/**
+ * Server-side twin of `fetchBlockedPhoneKeys` in `@/lib/dnc`, for callers that
+ * bring their own Supabase client (the /api/v1 surface, cron jobs).
+ *
+ * Returns the normalized phone keys that must not receive outreach: local Do
+ * Not Call entries plus contacts suppressed family-wide by Core.
+ */
+export async function fetchBlockedPhoneKeysServer(
+  supabase: any,
+  workspaceId: string,
+): Promise<Set<string>> {
+  const keys = new Set<string>();
+  try {
+    const [dnc, contacts] = await Promise.all([
+      supabase.from("dnc_list").select("phone").eq("workspace_id", workspaceId),
+      supabase.from("contacts").select("phone").eq("workspace_id", workspaceId).eq("suppressed", true),
+    ]);
+    for (const row of [...(dnc.data ?? []), ...(contacts.data ?? [])]) {
+      const k = phoneKey((row as { phone: string | null }).phone);
+      if (k) keys.add(k);
+    }
+  } catch {
+    // Best-effort: an unreadable list must not silently allow outreach, so
+    // callers treat an empty set as "screen with what we have".
+  }
+  return keys;
+}
