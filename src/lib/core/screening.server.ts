@@ -203,12 +203,60 @@ export async function mirrorSuppressions(args: {
     }
   }
 
+  // Leads carry their own consent state, and the dialer, worklist and agreement
+  // surfaces read it. Mirroring it keeps a Core opt-out visible on the lead
+  // record itself instead of only on the contact.
+  const { data: leadRows } = await args.supabase
+    .from("leads")
+    .select("id, phone, consent")
+    .eq("workspace_id", args.workspaceId)
+    .not("phone", "is", null);
+
+  const leadHits = (leadRows ?? [])
+    .filter((l: { phone: string | null; consent: string }) => l.consent !== "opt_out" && coreKeys.has(phoneKey(l.phone)))
+    .map((l: { id: string }) => l.id);
+  let leadsFlagged = 0;
+  if (leadHits.length) {
+    const { data } = await args.supabase
+      .from("leads")
+      .update({ consent: "opt_out" })
+      .in("id", leadHits)
+      .select("id");
+    leadsFlagged = (data ?? []).length;
+  }
+
+  let leadsReleased = 0;
+  if (staleRows.length) {
+    const { data: remaining } = await args.supabase
+      .from("dnc_list")
+      .select("phone")
+      .eq("workspace_id", args.workspaceId);
+    const localKeys = new Set((remaining ?? []).map((r: { phone: string | null }) => phoneKey(r.phone)));
+    const releaseIds = (leadRows ?? [])
+      .filter((l: { phone: string | null; consent: string }) => {
+        const k = phoneKey(l.phone);
+        return l.consent === "opt_out" && !!k && !coreKeys.has(k) && !localKeys.has(k);
+      })
+      .map((l: { id: string }) => l.id);
+    if (releaseIds.length) {
+      const { data } = await args.supabase
+        .from("leads")
+        .update({ consent: "unknown" })
+        .in("id", releaseIds)
+        .select("id");
+      leadsReleased = (data ?? []).length;
+    }
+  }
+
   return {
     mirrored: numbers.length,
     added,
     removed: staleRows.length,
     contactsSuppressed: (touched ?? []).length,
     contactsReleased,
+    leadsFlagged,
+    leadsReleased,
   };
 }
+
 
