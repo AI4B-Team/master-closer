@@ -40,6 +40,8 @@ export type WorkspaceSyncResult = {
   contactsReleased?: number;
   leadsFlagged?: number;
   leadsReleased?: number;
+  listContactsFlagged?: number;
+  listContactsReleased?: number;
   reason?: string;
 };
 
