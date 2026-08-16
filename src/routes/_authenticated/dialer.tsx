@@ -556,7 +556,38 @@ function DialerPage() {
 
   /* Quiet hours are judged on the prospect's clock, never the caller's. */
   const { window: callWindow, verdictFor } = useCallingWindow();
-  const windowVerdict = phone ? verdictFor({ phone }) : null;
+
+  // A lead's own timezone outranks their area code (a 917 mobile living in
+  // Denver is a 2-hour error). The dialer only holds a phone number, so resolve
+  // the explicit zone from the CRM record behind that number before judging.
+  const phoneDigits = phoneKey(phone);
+  const { data: leadTimezone } = useQuery({
+    queryKey: ["lead-timezone", wsId, phoneDigits],
+    enabled: !!wsId && phoneDigits.length >= 10,
+    queryFn: async (): Promise<string | null> => {
+      const like = `%${phoneDigits}%`;
+      const [{ data: c }, { data: l }] = await Promise.all([
+        supabase
+          .from("contacts")
+          .select("timezone")
+          .eq("workspace_id", wsId!)
+          .not("timezone", "is", null)
+          .like("phone", like)
+          .limit(1),
+        supabase
+          .from("leads")
+          .select("timezone")
+          .eq("workspace_id", wsId!)
+          .not("timezone", "is", null)
+          .like("phone", like)
+          .limit(1),
+      ]);
+      return c?.[0]?.timezone ?? l?.[0]?.timezone ?? null;
+    },
+  });
+
+  const leadForWindow = { phone, timezone: leadTimezone ?? null };
+  const windowVerdict = phone ? verdictFor(leadForWindow) : null;
   const windowBlocked = !!windowVerdict && !windowVerdict.allowed && callWindow.enforce;
 
   const scheduleOutsideWindow = async () => {
@@ -564,10 +595,11 @@ function DialerPage() {
     const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
     if (!prof?.active_workspace_id) return;
     const due = nextOpenAt({
-      lead: { phone },
+      lead: leadForWindow,
       window: callWindow,
       workspaceDefaultTimezone: callWindow.default_timezone,
     });
+
     const { error } = await supabase.from("tasks").insert({
       org_id: prof.org_id,
       workspace_id: prof.active_workspace_id,
@@ -652,7 +684,7 @@ function DialerPage() {
       }
 
       // Hard stop: quiet hours in the prospect's local time, logged either way.
-      const verdict = verdictFor({ phone });
+      const verdict = verdictFor(leadForWindow);
       if (!verdict.allowed) {
         await supabase.from("calling_window_blocks").insert({
           workspace_id: prof.active_workspace_id,
