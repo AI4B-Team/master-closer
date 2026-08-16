@@ -89,6 +89,30 @@ export const Route = createFileRoute("/api/v1/campaigns")({
             })
             .parse(await request.json());
 
+          // A caller can only wire up an AI closer and a call list that belong to
+          // the workspace the token resolves to — otherwise a campaign would run
+          // on another tenant's agent config or point at a list it cannot read.
+          if (body.agent_id) {
+            const { data: agent } = await supabase
+              .from("agents")
+              .select("id")
+              .eq("id", body.agent_id)
+              .eq("workspace_id", workspaceId)
+              .maybeSingle();
+            if (!agent) return Response.json({ error: "AI closer not found in this workspace." }, { status: 404 });
+          }
+          if (body.list_id) {
+            const { data: list } = await supabase
+              .from("call_lists")
+              .select("id")
+              .eq("id", body.list_id)
+              .eq("workspace_id", workspaceId)
+              .maybeSingle();
+            if (!list) return Response.json({ error: "Call list not found in this workspace." }, { status: 404 });
+          }
+
+
+
           const { data, error } = await supabase
             .from("campaigns")
             .insert({
