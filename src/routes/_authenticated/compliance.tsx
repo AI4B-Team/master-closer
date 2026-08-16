@@ -94,11 +94,11 @@ function CompliancePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
+      if (!wsId) throw new Error("No active workspace");
+      const { data: prof } = await supabase.from("profiles").select("org_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
-      if (!prof.active_workspace_id) throw new Error("No active workspace");
       const payload = {
-        org_id: prof.org_id, workspace_id: prof.active_workspace_id,
+        org_id: prof.org_id, workspace_id: wsId,
         script,
         default_jurisdiction: jurisdiction.toUpperCase(),
         ...methods,
