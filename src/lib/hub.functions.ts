@@ -68,9 +68,56 @@ export const hubSignIn = createServerFn({ method: "POST" })
       if (org?.id && prof?.org_id && prof.org_id !== org.id) {
         await supabaseAdmin.from("profiles").update({ org_id: org.id }).eq("id", userId);
         await supabaseAdmin.from("user_roles").update({ org_id: org.id }).eq("user_id", userId);
+
+        // The signup trigger also spun up a throwaway workspace under the
+        // throwaway org. Move the user into a real workspace of the hub org
+        // first, then delete the throwaway rows — otherwise the profile keeps
+        // pointing at a workspace whose org no longer exists.
+        const { data: hubWs } = await supabaseAdmin
+          .from("workspaces")
+          .select("id")
+          .eq("org_id", org.id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        let targetWsId = hubWs?.id ?? null;
+
+        if (targetWsId) {
+          await supabaseAdmin
+            .from("workspace_members")
+            .upsert(
+              { workspace_id: targetWsId, user_id: userId, role: "member" },
+              { onConflict: "workspace_id,user_id", ignoreDuplicates: true },
+            );
+        } else {
+          // Hub org has no workspaces yet — keep the fresh one and re-parent it.
+          const { data: ownWs } = await supabaseAdmin
+            .from("workspaces")
+            .select("id")
+            .eq("org_id", prof.org_id)
+            .eq("owner_id", userId)
+            .limit(1)
+            .maybeSingle();
+          if (ownWs?.id) {
+            await supabaseAdmin.from("workspaces").update({ org_id: org.id }).eq("id", ownWs.id);
+            targetWsId = ownWs.id;
+          }
+        }
+
+        // Drop anything still parented to the throwaway org.
+        await supabaseAdmin.from("workspaces").delete().eq("org_id", prof.org_id);
         await supabaseAdmin.from("organizations").delete().eq("id", prof.org_id);
+
+        if (targetWsId) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ active_workspace_id: targetWsId })
+            .eq("id", userId);
+        }
         orgId = org.id;
       }
+
 
       if (!orgId) throw new Error("Could not resolve a workspace for this account.");
 
