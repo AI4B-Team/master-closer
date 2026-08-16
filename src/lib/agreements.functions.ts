@@ -155,7 +155,30 @@ export const signAgreement = createServerFn({ method: "POST" })
     });
 
     if (row.deal_id) {
-      await supabaseAdmin.from("deals").update({ stage: "won", close_probability: 100 }).eq("id", row.deal_id);
+      // The board reads stage_id, the metrics read the legacy stage label, so a
+      // signature has to move both or the deal counts as won while still
+      // sitting in whatever column it was in.
+      let wonStageId: string | null = null;
+      if (row.workspace_id) {
+        const { data: wonStage } = await supabaseAdmin
+          .from("pipeline_stages")
+          .select("id")
+          .eq("workspace_id", row.workspace_id)
+          .eq("kind", "won")
+          .order("position", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        wonStageId = wonStage?.id ?? null;
+      }
+      await supabaseAdmin
+        .from("deals")
+        .update({
+          stage: "won",
+          close_probability: 100,
+          ...(wonStageId ? { stage_id: wonStageId } : {}),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", row.deal_id);
     }
 
 
