@@ -213,10 +213,15 @@ function DialerPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      // The agreement must land in the workspace this dialer is showing, not
+      // whichever one the profile row drifted to in another tab.
+      if (!wsId || prof.active_workspace_id !== wsId) {
+        throw new Error("Your Active Workspace Changed. Reload Before Sending An Agreement.");
+      }
       const { data: tpl } = await supabase
         .from("agreement_templates")
         .select("id, body, file_path, file_name")
-        .eq("workspace_id", prof.active_workspace_id)
+        .eq("workspace_id", wsId)
         .order("is_default", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -237,7 +242,7 @@ function DialerPage() {
       const { data: row, error } = await supabase
         .from("agreements")
         .insert({
-          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
+          org_id: prof.org_id, workspace_id: wsId,
           template_id: tpl?.id ?? null,
           call_id: callId,
           title: `${signer} — Agreement`,
@@ -248,6 +253,8 @@ function DialerPage() {
           status: "sent",
           sent_at: new Date().toISOString(),
           signer_name: signer,
+          signer_phone: contact?.phone ?? phone ?? null,
+          
         })
         .select("id, token")
         .single();
@@ -591,6 +598,11 @@ function DialerPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      // Screening below reads this workspace's lists, so the call must be
+      // written to the same one — otherwise we'd screen A and dial in B.
+      if (!wsId || prof.active_workspace_id !== wsId) {
+        throw new Error("Your Active Workspace Changed. Reload Before Dialing.");
+      }
 
       // Hard stop: never dial a number on the Do Not Call list. A number we
       // cannot read is a number we cannot screen, so it fails closed rather
