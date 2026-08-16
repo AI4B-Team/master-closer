@@ -27,6 +27,10 @@ export async function appendPromptVersion(
     .from("agent_prompt_versions")
     .select("version, system_prompt")
     .eq("agent_id", args.agentId)
+    // Scope the history read to the workspace too: the version chain and the
+    // "identical snapshot" check must never be computed against another
+    // tenant's rows if a stale/foreign agent id is ever passed in.
+    .eq("workspace_id", args.workspaceId)
     .order("version", { ascending: false })
     .limit(1)
     .maybeSingle();
