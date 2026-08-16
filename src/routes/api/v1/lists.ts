@@ -64,6 +64,9 @@ export const Route = createFileRoute("/api/v1/lists")({
           });
           let suppressed = 0;
           let emailSuppressed = 0;
+          // A row can be blocked by phone, by email, or both, so "not dialable"
+          // is counted once per row rather than as the sum of both reasons.
+          let blockedRows = 0;
           const rows = contacts.map((c) => {
             const k = phoneKey(c.phone);
             const isBlocked = c.consent === "opt_out" || (!!k && blocked.has(k));
@@ -71,6 +74,7 @@ export const Route = createFileRoute("/api/v1/lists")({
             const emailKey = c.email?.trim().toLowerCase();
             const emailBlocked = !!emailKey && emailScreen.suppressed.has(emailKey);
             if (emailBlocked) emailSuppressed += 1;
+            if (isBlocked || emailBlocked) blockedRows += 1;
             return {
               org_id: orgId,
               workspace_id: workspaceId,
