@@ -20,14 +20,20 @@ export async function suppressContactsForPhonesServer(
   if (!keys.size) return 0;
 
   try {
-    const { data, error } = await supabase
-      .from("contacts")
-      .select("id, phone")
-      .eq("workspace_id", workspaceId)
-      .eq("suppressed", false);
-    if (error || !data?.length) return 0;
+    // Paged: an unbounded select returns only the first page, so contacts past
+    // the cap would stay dialable after an opt-out.
+    const rows = await pageAll<{ id: string; phone: string | null }>((from, to) =>
+      supabase
+        .from("contacts")
+        .select("id, phone")
+        .eq("workspace_id", workspaceId)
+        .eq("suppressed", false)
+        .order("id", { ascending: true })
+        .range(from, to),
+    );
+    if (!rows.length) return 0;
 
-    const ids = (data as { id: string; phone: string | null }[])
+    const ids = rows
       .filter((c) => {
         const k = phoneKey(c.phone);
         return !!k && keys.has(k);
@@ -46,30 +52,57 @@ export async function suppressContactsForPhonesServer(
   }
 }
 
+const PAGE = 1000;
+
+async function pageAll<T>(
+  query: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await query(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    const batch = data ?? [];
+    out.push(...batch);
+    if (batch.length < PAGE) return out;
+  }
+}
+
 /**
  * Server-side twin of `fetchBlockedPhoneKeys` in `@/lib/dnc`, for callers that
  * bring their own Supabase client (the /api/v1 surface, cron jobs).
  *
  * Returns the normalized phone keys that must not receive outreach: local Do
- * Not Call entries plus contacts suppressed family-wide by Core.
+ * Not Call entries plus contacts suppressed family-wide by Core. Reads are
+ * paged and a failure throws, so a partial list can never read as "clear".
  */
 export async function fetchBlockedPhoneKeysServer(
   supabase: any,
   workspaceId: string,
 ): Promise<Set<string>> {
   const keys = new Set<string>();
-  try {
-    const [dnc, contacts] = await Promise.all([
-      supabase.from("dnc_list").select("phone").eq("workspace_id", workspaceId),
-      supabase.from("contacts").select("phone").eq("workspace_id", workspaceId).eq("suppressed", true),
-    ]);
-    for (const row of [...(dnc.data ?? []), ...(contacts.data ?? [])]) {
-      const k = phoneKey((row as { phone: string | null }).phone);
-      if (k) keys.add(k);
-    }
-  } catch {
-    // Best-effort: an unreadable list must not silently allow outreach, so
-    // callers treat an empty set as "screen with what we have".
+  const [dnc, contacts] = await Promise.all([
+    pageAll<{ phone: string | null }>((from, to) =>
+      supabase
+        .from("dnc_list")
+        .select("phone")
+        .eq("workspace_id", workspaceId)
+        .order("phone", { ascending: true })
+        .range(from, to),
+    ),
+    pageAll<{ phone: string | null }>((from, to) =>
+      supabase
+        .from("contacts")
+        .select("phone")
+        .eq("workspace_id", workspaceId)
+        .eq("suppressed", true)
+        .order("id", { ascending: true })
+        .range(from, to),
+    ),
+  ]);
+  for (const row of [...dnc, ...contacts]) {
+    const k = phoneKey(row.phone);
+    if (k) keys.add(k);
   }
   return keys;
 }
+
