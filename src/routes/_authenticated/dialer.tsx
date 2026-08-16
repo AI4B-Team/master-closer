@@ -684,7 +684,7 @@ function DialerPage() {
       }
 
       // Hard stop: quiet hours in the prospect's local time, logged either way.
-      const verdict = verdictFor({ phone });
+      const verdict = verdictFor(leadForWindow);
       if (!verdict.allowed) {
         await supabase.from("calling_window_blocks").insert({
           workspace_id: prof.active_workspace_id,
