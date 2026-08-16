@@ -18,27 +18,57 @@ export const linePerformance = createServerFn({ method: "GET" })
     const workspaceId = await activeWorkspace(context.supabase, context.userId);
     const since = new Date(Date.now() - data.days * 86400_000).toISOString();
 
-    const { data: calls } = await context.supabase
-      .from("calls")
-      .select("id, disposition, mode, started_at")
-      .eq("workspace_id", workspaceId)
-      .gte("started_at", since)
-      .limit(2000);
+    // The Data API caps a single response at 1000 rows regardless of .limit(),
+    // so both reads are paged. Calls are ordered newest-first so the window is
+    // a deterministic "most recent" sample rather than whatever the planner
+    // happened to return.
+    const CALL_CAP = 2000;
+    const PAGE = 1000;
+    type CallRow = { id: string; disposition: string | null; mode: string | null };
+    const calls: CallRow[] = [];
+    for (let from = 0; from < CALL_CAP; from += PAGE) {
+      const { data: page } = await context.supabase
+        .from("calls")
+        .select("id, disposition, mode, started_at")
+        .eq("workspace_id", workspaceId)
+        .gte("started_at", since)
+        .order("started_at", { ascending: false })
+        .range(from, Math.min(from + PAGE, CALL_CAP) - 1);
+      if (!page?.length) break;
+      calls.push(...(page as unknown as CallRow[]));
+      if (page.length < PAGE) break;
+    }
 
-    const callIds = (calls ?? []).map((c: any) => c.id);
+    const callIds = calls.map((c) => c.id);
     if (callIds.length === 0) {
       return { days: data.days, totals: { surfaced: 0, used: 0, wins: 0 }, rows: [] };
     }
 
     const byCall = new Map<string, { disposition: string | null; mode: string | null }>();
-    for (const c of calls ?? []) byCall.set(c.id, { disposition: c.disposition, mode: c.mode });
+    for (const c of calls) byCall.set(c.id, { disposition: c.disposition, mode: c.mode });
 
-    const { data: suggestions } = await context.supabase
-      .from("suggestions")
-      .select("id, call_id, objection, line, was_used")
-      .eq("workspace_id", workspaceId)
-      .in("call_id", callIds)
-      .limit(5000);
+    // A single .in() over hundreds of ids builds a URL long enough to be
+    // rejected outright, so the id list is filtered in chunks and each chunk
+    // is paged to its end.
+    type SuggestionRow = { call_id: string; objection: string; line: string; was_used: boolean };
+    const suggestions: SuggestionRow[] = [];
+    const CHUNK = 100;
+    for (let i = 0; i < callIds.length; i += CHUNK) {
+      const ids = callIds.slice(i, i + CHUNK);
+      for (let from = 0; ; from += PAGE) {
+        const { data: page } = await context.supabase
+          .from("suggestions")
+          .select("call_id, objection, line, was_used")
+          .eq("workspace_id", workspaceId)
+          .in("call_id", ids)
+          .order("id", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (!page?.length) break;
+        suggestions.push(...(page as unknown as SuggestionRow[]));
+        if (page.length < PAGE) break;
+      }
+    }
+
 
     type Agg = {
       objection: string;
