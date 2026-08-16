@@ -40,7 +40,16 @@ export function ObjectionReviewQueue({ profiles }: { profiles: ProfileOption[] }
   const [showResolved, setShowResolved] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, { trigger: string; response: string; profileId: string }>>({});
 
-  const q = useQuery({ queryKey: ["objection-candidates"], queryFn: () => fetchQueue({}) });
+  // Scope the cache by workspace: the server fn resolves the active workspace,
+  // so an unscoped key showed the previous workspace's queue after switching.
+  const { data: workspace } = useWorkspace();
+  const wsId = workspace?.id ?? null;
+
+  const q = useQuery({
+    queryKey: ["objection-candidates", wsId],
+    enabled: !!wsId,
+    queryFn: () => fetchQueue({}),
+  });
   const all = (q.data?.candidates ?? []) as unknown as Candidate[];
 
   const rows = useMemo(
