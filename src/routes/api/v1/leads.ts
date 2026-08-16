@@ -58,8 +58,9 @@ export const Route = createFileRoute("/api/v1/leads")({
               ...body,
               org_id: orgId,
               workspace_id: workspaceId,
-              ...(blocked ? { consent: "opt_out" as const } : {}),
+              ...(blocked || emailScreen.suppressed ? { consent: "opt_out" as const } : {}),
             })
+
             .select("*")
             .single();
           if (error) throw new Error(error.message);
