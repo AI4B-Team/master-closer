@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/v1/lists")({
               name: c.name,
               phone: c.phone,
               email: c.email,
-              consent: isBlocked ? ("opt_out" as const) : c.consent,
+              consent: isBlocked || emailBlocked ? ("opt_out" as const) : c.consent,
               source: `campaign:${campaign.name}`,
             };
           });
