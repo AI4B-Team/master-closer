@@ -16,14 +16,21 @@ export async function suppressContactsForPhones(wsId: string, phones: (string | 
   const keys = new Set(phones.map((p) => phoneKey(p)).filter(Boolean) as string[]);
   if (!keys.size) return 0;
 
-  const { data, error } = await supabase
-    .from("contacts")
-    .select("id, phone, suppressed")
-    .eq("workspace_id", wsId)
-    .eq("suppressed", false);
-  if (error || !data?.length) return 0;
+  // Paged: the Data API caps an unbounded select, so a workspace with more
+  // unsuppressed contacts than one page would silently skip the matches that
+  // fell past the cap and leave those people dialable.
+  const rows = await pageAll<{ id: string; phone: string | null }>((from, to) =>
+    supabase
+      .from("contacts")
+      .select("id, phone")
+      .eq("workspace_id", wsId)
+      .eq("suppressed", false)
+      .order("id", { ascending: true })
+      .range(from, to),
+  );
+  if (!rows.length) return 0;
 
-  const ids = data.filter((c) => {
+  const ids = rows.filter((c) => {
     const k = phoneKey(c.phone);
     return !!k && keys.has(k);
   }).map((c) => c.id);
@@ -37,6 +44,29 @@ export async function suppressContactsForPhones(wsId: string, phones: (string | 
   return ids.length;
 }
 
+const PAGE = 1000;
+
+/**
+ * Reads every row of a workspace-scoped query, page by page.
+ *
+ * Compliance screening cannot use a single unbounded select: the Data API
+ * returns only the first page, so any blocked number past it would read as
+ * "clear". A read failure throws so callers fail closed instead of screening
+ * against a partial list.
+ */
+async function pageAll<T>(
+  query: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await query(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    const batch = data ?? [];
+    out.push(...batch);
+    if (batch.length < PAGE) return out;
+  }
+}
+
 /**
  * Returns the set of normalized phone keys that must not receive outreach in a
  * workspace: local Do Not Call entries plus contacts suppressed family-wide by
@@ -45,15 +75,26 @@ export async function suppressContactsForPhones(wsId: string, phones: (string | 
  */
 export async function fetchBlockedPhoneKeys(wsId: string) {
   const [dnc, contacts] = await Promise.all([
-    supabase.from("dnc_list").select("phone").eq("workspace_id", wsId),
-    supabase.from("contacts").select("phone").eq("workspace_id", wsId).eq("suppressed", true),
+    pageAll<{ phone: string | null }>((from, to) =>
+      supabase.from("dnc_list").select("phone").eq("workspace_id", wsId).order("phone", { ascending: true }).range(from, to),
+    ),
+    pageAll<{ phone: string | null }>((from, to) =>
+      supabase
+        .from("contacts")
+        .select("phone")
+        .eq("workspace_id", wsId)
+        .eq("suppressed", true)
+        .order("id", { ascending: true })
+        .range(from, to),
+    ),
   ]);
   const keys = new Set<string>();
-  for (const row of [...(dnc.data ?? []), ...(contacts.data ?? [])]) {
-    const k = phoneKey((row as any).phone);
+  for (const row of [...dnc, ...contacts]) {
+    const k = phoneKey(row.phone);
     if (k) keys.add(k);
   }
   return keys;
+
 }
 
 
