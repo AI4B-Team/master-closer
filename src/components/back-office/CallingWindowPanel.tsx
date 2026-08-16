@@ -57,13 +57,23 @@ export function CallingWindowPanel() {
   });
 
   useEffect(() => {
-    if (!row) return;
+    if (row === undefined) return; // still loading — leave the form alone
+    if (row === null) {
+      // No window saved for this workspace yet: reset to defaults so a save
+      // can't copy the previously viewed workspace's hours onto this one.
+      setStart("08:00");
+      setEnd("21:00");
+      setDays([1, 2, 3, 4, 5]);
+      setTz("America/New_York");
+      setEnforce(true);
+      return;
+    }
     setStart(minuteToInput(row.start_minute));
     setEnd(minuteToInput(row.end_minute));
     setDays(row.days ?? [1, 2, 3, 4, 5]);
     setTz(row.default_timezone);
     setEnforce(row.enforce);
-  }, [row]);
+  }, [row, wsId]);
 
   const { data: blocks } = useQuery({
     queryKey: ["calling-window-blocks", wsId],
