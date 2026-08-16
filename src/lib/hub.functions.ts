@@ -21,7 +21,8 @@ export const hubSignIn = createServerFn({ method: "POST" })
       .eq("real_elite_user_id", claims.reo_user_id)
       .maybeSingle();
 
-    let email = claims.email;
+    const claimEmail = claims.email.trim().toLowerCase();
+    let email = claimEmail;
 
     if (!linked) {
       // 2) Does the hub org already exist here?
@@ -35,17 +36,17 @@ export const hubSignIn = createServerFn({ method: "POST" })
       const { data: existingByEmail } = await supabaseAdmin
         .from("profiles")
         .select("id, org_id")
-        .eq("email", claims.email)
+        .eq("email", claimEmail)
         .maybeSingle();
 
       let userId = existingByEmail?.id ?? null;
 
       if (!userId) {
         const created = await supabaseAdmin.auth.admin.createUser({
-          email: claims.email,
+          email: claimEmail,
           email_confirm: true,
           user_metadata: {
-            full_name: claims.name ?? claims.email,
+            full_name: claims.name ?? claimEmail,
             org_name: claims.org_name ?? "Real Elite Workspace",
           },
         });
@@ -68,9 +69,56 @@ export const hubSignIn = createServerFn({ method: "POST" })
       if (org?.id && prof?.org_id && prof.org_id !== org.id) {
         await supabaseAdmin.from("profiles").update({ org_id: org.id }).eq("id", userId);
         await supabaseAdmin.from("user_roles").update({ org_id: org.id }).eq("user_id", userId);
+
+        // The signup trigger also spun up a throwaway workspace under the
+        // throwaway org. Move the user into a real workspace of the hub org
+        // first, then delete the throwaway rows — otherwise the profile keeps
+        // pointing at a workspace whose org no longer exists.
+        const { data: hubWs } = await supabaseAdmin
+          .from("workspaces")
+          .select("id")
+          .eq("org_id", org.id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        let targetWsId = hubWs?.id ?? null;
+
+        if (targetWsId) {
+          await supabaseAdmin
+            .from("workspace_members")
+            .upsert(
+              { workspace_id: targetWsId, user_id: userId, role: "member" },
+              { onConflict: "workspace_id,user_id", ignoreDuplicates: true },
+            );
+        } else {
+          // Hub org has no workspaces yet — keep the fresh one and re-parent it.
+          const { data: ownWs } = await supabaseAdmin
+            .from("workspaces")
+            .select("id")
+            .eq("org_id", prof.org_id)
+            .eq("owner_id", userId)
+            .limit(1)
+            .maybeSingle();
+          if (ownWs?.id) {
+            await supabaseAdmin.from("workspaces").update({ org_id: org.id }).eq("id", ownWs.id);
+            targetWsId = ownWs.id;
+          }
+        }
+
+        // Drop anything still parented to the throwaway org.
+        await supabaseAdmin.from("workspaces").delete().eq("org_id", prof.org_id);
         await supabaseAdmin.from("organizations").delete().eq("id", prof.org_id);
+
+        if (targetWsId) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ active_workspace_id: targetWsId })
+            .eq("id", userId);
+        }
         orgId = org.id;
       }
+
 
       if (!orgId) throw new Error("Could not resolve a workspace for this account.");
 
@@ -90,7 +138,7 @@ export const hubSignIn = createServerFn({ method: "POST" })
         .eq("id", userId)
         .is("real_elite_user_id", null);
     } else {
-      email = linked.email ?? claims.email;
+      email = (linked.email ?? claimEmail).trim().toLowerCase();
     }
 
     // Start a normal local session via a one-time email credential.
