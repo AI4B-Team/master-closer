@@ -60,37 +60,32 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
   const days = cadence === "daily" ? 1 : 7;
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
-  const [{ data: calls }, { data: deals }, { data: suggestions }, { data: proposals }, { data: candidates }] =
+  const [{ data: calls }, { data: deals }, { data: proposals }, { data: candidates }] =
     await Promise.all([
       db()
         .from("calls")
-        .select("outcome, dial_outcome, duration_sec, close_probability, started_at")
+        .select("id, outcome, dial_outcome, duration_sec, close_probability, started_at")
         .eq("workspace_id", workspaceId)
         .gte("started_at", since)
-        .limit(2000),
+        .order("started_at", { ascending: false })
+        .limit(1000),
       db()
         .from("deals")
         .select("value, stage, updated_at")
         .eq("workspace_id", workspaceId)
         .gte("updated_at", since)
-        .limit(2000),
-      db()
-        .from("suggestions")
-        .select("objection, was_used")
-        .eq("workspace_id", workspaceId)
-        .gte("created_at", since)
-        .limit(2000),
+        .limit(1000),
       db()
         .from("agent_proposals")
         .select("status, expires_at, reviewed_at")
         .eq("workspace_id", workspaceId)
-        .limit(2000),
+        .limit(1000),
       db()
         .from("objection_candidates")
         .select("status")
         .eq("workspace_id", workspaceId)
         .eq("status", "pending")
-        .limit(2000),
+        .limit(1000),
     ]);
 
 
@@ -105,11 +100,27 @@ export async function buildDigest(workspaceId: string, cadence: Cadence): Promis
   const won = (deals ?? []).filter((d) => String(d.stage ?? "") === "won");
   const revenue = won.reduce((s, d) => s + Number(d.value ?? 0), 0);
 
+  // Suggestions have no timestamp of their own — only the call they were
+  // surfaced on does — so the window is applied through those call ids. Ids are
+  // filtered in chunks to keep the request URL within limits.
+  const suggestions: Array<{ objection: string | null }> = [];
+  const callIds = rows.map((c) => c.id);
+  for (let i = 0; i < callIds.length; i += 100) {
+    const { data: page } = await db()
+      .from("suggestions")
+      .select("objection")
+      .eq("workspace_id", workspaceId)
+      .in("call_id", callIds.slice(i, i + 100))
+      .limit(1000);
+    if (page?.length) suggestions.push(...page);
+  }
+
   const byTrigger = new Map<string, number>();
-  for (const s of suggestions ?? []) {
+  for (const s of suggestions) {
     const key = String(s.objection ?? "").trim();
     if (key) byTrigger.set(key, (byTrigger.get(key) ?? 0) + 1);
   }
+
 
   const topObjection = [...byTrigger.entries()].sort((a, b) => b[1] - a[1])[0];
 
