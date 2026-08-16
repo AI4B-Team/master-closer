@@ -48,6 +48,9 @@ export async function appendProfileVersion(
     .from("closer_profile_versions")
     .select("version, snapshot")
     .eq("profile_id", args.profileId)
+    // Same tenant scoping as prompt versions: never diff or number a version
+    // against another workspace's history.
+    .eq("workspace_id", args.workspaceId)
     .order("version", { ascending: false })
     .limit(1)
     .maybeSingle();

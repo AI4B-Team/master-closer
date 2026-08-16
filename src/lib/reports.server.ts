@@ -217,6 +217,14 @@ export async function runSchedule(schedule: DigestSchedule) {
   const now = new Date();
   const audience = await screenRecipients(schedule);
 
+  // Advance the schedule BEFORE posting. These are two separate writes, so a
+  // crash between them has to fail toward "digest skipped" rather than "same
+  // digest posted twice on the next tick".
+  await db()
+    .from("report_schedules")
+    .update({ last_run_at: now.toISOString(), next_run_at: nextRunAt(schedule, now) })
+    .eq("id", schedule.id);
+
   await db().from("events").insert({
     org_id: schedule.org_id,
     workspace_id: schedule.workspace_id,
@@ -235,10 +243,6 @@ export async function runSchedule(schedule: DigestSchedule) {
     },
   });
 
-  await db()
-    .from("report_schedules")
-    .update({ last_run_at: now.toISOString(), next_run_at: nextRunAt(schedule, now) })
-    .eq("id", schedule.id);
 
   return {
     schedule_id: schedule.id,

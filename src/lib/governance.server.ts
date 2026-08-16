@@ -542,6 +542,7 @@ async function runBookingAuditor(ctx: Ctx): Promise<RunStats> {
         .from("leads")
         .select("timezone, phone")
         .eq("id", a.lead_id as string)
+        .eq("workspace_id", ctx.workspaceId)
         .maybeSingle();
       if (lead) leadTz = resolveLeadTimezone(lead as { timezone?: string | null; phone?: string | null }).timezone;
     }
