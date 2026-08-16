@@ -501,13 +501,19 @@ export const Route = createFileRoute("/api/v1/dnc")({
           if (delErr) throw new Error(delErr.message);
 
           const coreStillBlocks = await coreBlocks(supabase, workspaceId, rows[0].phone);
+          // Only a definite "Core no longer holds this number" clears the local
+          // suppression. "unknown" means Core was unreachable (or the number was
+          // unparseable) — treating that as released would re-open outreach to a
+          // number that may still carry a family-wide opt-out.
+          const coreClear =
+            coreStillBlocks.status === "clear" || coreStillBlocks.status === "unlinked";
 
 
 
           const { phoneKey } = await import("@/lib/phone");
           const key = phoneKey(rows[0].phone);
           let contactsReleased = 0;
-          if (coreStillBlocks.status !== "blocked" && key) {
+          if (coreClear && key) {
             const { data: contacts } = await supabase
               .from("contacts")
               .select("id, phone")
@@ -529,7 +535,7 @@ export const Route = createFileRoute("/api/v1/dnc")({
           // otherwise the number leaves Do Not Call but every lead surface still
           // refuses to dial it. Only when Core no longer blocks the number.
           let leadsReleased = 0;
-          if (coreStillBlocks.status !== "blocked" && key) {
+          if (coreClear && key) {
             const { data: optedOut } = await supabase
               .from("leads")
               .select("id, phone")
