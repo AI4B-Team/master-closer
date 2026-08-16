@@ -136,20 +136,26 @@ type EventRow = {
   created_at: string;
 };
 
-/** POST one event to every enabled webhook for its workspace, with an HMAC signature header. */
-export async function dispatchEvent(event: EventRow) {
+/**
+ * POST one event to every enabled webhook for its workspace, with an HMAC
+ * signature header. `skipHookIds` lets a retry pass leave endpoints that already
+ * took this event alone, so a retry never double-delivers to a healthy endpoint.
+ */
+export async function dispatchEvent(event: EventRow, skipHookIds?: Set<string>) {
   // Webhooks are configured per workspace, so an event must only reach the
   // endpoints of the workspace that produced it — never sibling workspaces
   // in the same organization.
-  const { data: hooks } = await supabaseAdmin
+  const { data: all } = await supabaseAdmin
     .from("org_webhooks")
     .select("id, url, secret")
     .eq("org_id", event.org_id)
     .eq("workspace_id", event.workspace_id)
     .eq("enabled", true);
 
+  const hooks = (all ?? []).filter((h) => !skipHookIds?.has(h.id));
 
-  if (!hooks?.length) return 0;
+  if (!hooks.length) return 0;
+
 
   const body = JSON.stringify({
     id: event.id,
