@@ -101,7 +101,7 @@ export const Route = createFileRoute("/api/v1/lists")({
           return Response.json(
             {
               pushed: inserted?.length ?? 0,
-              dialable: (inserted?.length ?? 0) - suppressed,
+              dialable: Math.max(0, (inserted?.length ?? 0) - blockedRows),
               suppressed,
               email_suppressed: emailSuppressed,
               email_screen_unavailable: emailScreen.coreUnavailable,
