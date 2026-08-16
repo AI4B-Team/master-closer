@@ -118,7 +118,9 @@ export const signAgreement = createServerFn({ method: "POST" })
       null;
     const signedAt = new Date().toISOString();
 
-    const { error } = await supabaseAdmin
+    // Re-check the status in the UPDATE itself: two submits landing together
+    // would both pass the read above and each fire a "signed" event.
+    const { data: updated, error } = await supabaseAdmin
       .from("agreements")
       .update({
         status: "signed",
@@ -129,8 +131,12 @@ export const signAgreement = createServerFn({ method: "POST" })
         signature_data: data.signatureData,
         signer_ip: ip,
       })
-      .eq("id", row.id);
+      .eq("id", row.id)
+      .in("status", ["sent", "viewed"])
+      .select("id");
     if (error) throw error;
+    if (!updated?.length) return { ok: true, alreadySigned: true };
+
 
     await supabaseAdmin.from("agreement_events").insert({
       agreement_id: row.id,
