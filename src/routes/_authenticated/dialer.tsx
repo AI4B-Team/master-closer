@@ -598,6 +598,11 @@ function DialerPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      // Screening below reads this workspace's lists, so the call must be
+      // written to the same one — otherwise we'd screen A and dial in B.
+      if (!wsId || prof.active_workspace_id !== wsId) {
+        throw new Error("Your Active Workspace Changed. Reload Before Dialing.");
+      }
 
       // Hard stop: never dial a number on the Do Not Call list. A number we
       // cannot read is a number we cannot screen, so it fails closed rather
