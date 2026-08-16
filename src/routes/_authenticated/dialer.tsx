@@ -253,6 +253,8 @@ function DialerPage() {
           status: "sent",
           sent_at: new Date().toISOString(),
           signer_name: signer,
+          signer_phone: contact?.phone ?? phone ?? null,
+          signer_email: contact?.email ?? null,
         })
         .select("id, token")
         .single();
