@@ -260,6 +260,13 @@ export const sendWorklistFeedback = createServerFn({ method: "POST" })
       .eq("id", data.nomination_id)
       .eq("workspace_id", workspaceId)
       .maybeSingle();
+    /* Without those ids the row is inert: Scout mutes by subject, so a feedback
+       row with all three null would let a waved-off lead come straight back on
+       the next rebuild. Better to say so than to accept a silent no-op. */
+    if (!nom || (!nom.contact_id && !nom.lead_line_id && !nom.lead_id)) {
+      throw new Error("This worklist item is no longer current — refresh the worklist and try again.");
+    }
+
 
     const { data: row, error } = await context.supabase
       .from("worklist_feedback")
