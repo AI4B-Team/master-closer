@@ -201,11 +201,37 @@ export async function dispatchEvent(event: EventRow, skipHookIds?: Set<string>) 
   return delivered;
 }
 
-/** Retry/backfill: deliver every event that has no successful delivery yet. */
-export async function dispatchPending(limit = 100) {
+/**
+ * Retry/backfill: re-deliver events that still have an endpoint waiting on them.
+ *
+ * Two things keep this queue from jamming. It only looks at workspaces that
+ * actually have an enabled webhook — otherwise the oldest events in a workspace
+ * with no endpoints (which never get a delivery row) would fill every page
+ * forever and nothing new would ever be retried. And success is tracked per
+ * endpoint, so one failing endpoint out of two still gets retried while the
+ * healthy one is not sent a duplicate.
+ */
+export async function dispatchPending(limit = 100, sinceDays = 7) {
+  const { data: hooks } = await supabaseAdmin
+    .from("org_webhooks")
+    .select("id, workspace_id")
+    .eq("enabled", true);
+
+  const hookIdsByWorkspace = new Map<string, string[]>();
+  for (const h of hooks ?? []) {
+    if (!h.workspace_id) continue;
+    const list = hookIdsByWorkspace.get(h.workspace_id) ?? [];
+    list.push(h.id);
+    hookIdsByWorkspace.set(h.workspace_id, list);
+  }
+  if (hookIdsByWorkspace.size === 0) return { events: 0, delivered: 0 };
+
+  const since = new Date(Date.now() - sinceDays * 86_400_000).toISOString();
   const { data: events } = await supabaseAdmin
     .from("events")
     .select("id, org_id, workspace_id, event_type, payload, created_at")
+    .in("workspace_id", [...hookIdsByWorkspace.keys()])
+    .gte("created_at", since)
     .order("created_at", { ascending: true })
     .limit(limit);
 
@@ -213,19 +239,30 @@ export async function dispatchPending(limit = 100) {
 
   const { data: done } = await supabaseAdmin
     .from("webhook_deliveries")
-    .select("event_id, status_code")
-    .in("event_id", events.map((e) => e.id));
+    .select("event_id, webhook_id, status_code")
+    .in(
+      "event_id",
+      events.map((e) => e.id),
+    );
 
-  const ok = new Set(
-    (done ?? []).filter((d) => d.status_code && d.status_code < 300).map((d) => d.event_id),
-  );
+  // event id -> endpoints that already accepted it.
+  const okByEvent = new Map<string, Set<string>>();
+  for (const d of done ?? []) {
+    if (!d.status_code || d.status_code >= 300) continue;
+    const set = okByEvent.get(d.event_id) ?? new Set<string>();
+    set.add(d.webhook_id);
+    okByEvent.set(d.event_id, set);
+  }
 
   let delivered = 0;
   let processed = 0;
   for (const event of events) {
-    if (ok.has(event.id)) continue;
+    const wsHooks = event.workspace_id ? hookIdsByWorkspace.get(event.workspace_id) ?? [] : [];
+    const okHooks = okByEvent.get(event.id) ?? new Set<string>();
+    if (wsHooks.length === 0 || wsHooks.every((id) => okHooks.has(id))) continue;
     processed++;
-    delivered += await dispatchEvent(event);
+    delivered += await dispatchEvent(event, okHooks);
   }
   return { events: processed, delivered };
 }
+
