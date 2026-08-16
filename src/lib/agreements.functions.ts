@@ -204,17 +204,27 @@ export const declineAgreement = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!row) throw new Error("This agreement link is no longer valid.");
     if (row.status === "signed") throw new Error("This agreement is already signed.");
+    // Only an agreement that is actually out for signature can be declined:
+    // drafts and voided rows are not public, and a second decline would log a
+    // duplicate event and overwrite the original decline time.
+    if (row.status !== "sent" && row.status !== "viewed") {
+      throw new Error("This agreement is not open for signature.");
+    }
 
-    await supabaseAdmin
+    const { data: declined } = await supabaseAdmin
       .from("agreements")
       .update({ status: "declined", declined_at: new Date().toISOString() })
-      .eq("id", row.id);
+      .eq("id", row.id)
+      .in("status", ["sent", "viewed"])
+      .select("id");
+    if (!declined?.length) return { ok: true };
     await supabaseAdmin.from("agreement_events").insert({
       agreement_id: row.id,
       org_id: row.org_id,
       event_type: "declined",
       meta: { reason: data.reason ?? null },
     });
+
     await supabaseAdmin.from("events").insert({
       org_id: row.org_id,
       workspace_id: row.workspace_id,
