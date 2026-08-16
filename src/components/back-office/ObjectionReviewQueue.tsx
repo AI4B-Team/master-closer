@@ -9,6 +9,7 @@ import { EmptyPanel, Panel, SkeletonRows, StatusPill } from "@/components/back-o
 import { Check, Inbox, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { logActivity } from "@/lib/activity";
+import { useWorkspace } from "@/hooks/use-workspace";
 import {
   listObjectionCandidates,
   reviewObjectionCandidate,
