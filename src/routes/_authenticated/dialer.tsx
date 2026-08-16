@@ -592,9 +592,12 @@ function DialerPage() {
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
 
-      // Hard stop: never dial a number on the Do Not Call list.
+      // Hard stop: never dial a number on the Do Not Call list. A number we
+      // cannot read is a number we cannot screen, so it fails closed rather
+      // than skipping every compliance gate below.
       const target = phoneKey(phone);
-      if (target) {
+      if (!target) throw new Error("Enter A Valid Phone Number Before Dialing.");
+      {
         const [{ data: dncRows }, { data: suppRows }] = await Promise.all([
           supabase.from("dnc_list").select("phone").eq("workspace_id", wsId!),
           supabase.from("contacts").select("phone").eq("workspace_id", wsId!).eq("suppressed", true),
