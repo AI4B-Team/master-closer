@@ -242,7 +242,7 @@ function DialerPage() {
       const { data: row, error } = await supabase
         .from("agreements")
         .insert({
-          org_id: prof.org_id, workspace_id: prof.active_workspace_id,
+          org_id: prof.org_id, workspace_id: wsId,
           template_id: tpl?.id ?? null,
           call_id: callId,
           title: `${signer} — Agreement`,
