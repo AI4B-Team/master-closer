@@ -21,7 +21,8 @@ export const hubSignIn = createServerFn({ method: "POST" })
       .eq("real_elite_user_id", claims.reo_user_id)
       .maybeSingle();
 
-    let email = claims.email;
+    const claimEmail = claims.email.trim().toLowerCase();
+    let email = claimEmail;
 
     if (!linked) {
       // 2) Does the hub org already exist here?
@@ -35,17 +36,17 @@ export const hubSignIn = createServerFn({ method: "POST" })
       const { data: existingByEmail } = await supabaseAdmin
         .from("profiles")
         .select("id, org_id")
-        .eq("email", claims.email)
+        .eq("email", claimEmail)
         .maybeSingle();
 
       let userId = existingByEmail?.id ?? null;
 
       if (!userId) {
         const created = await supabaseAdmin.auth.admin.createUser({
-          email: claims.email,
+          email: claimEmail,
           email_confirm: true,
           user_metadata: {
-            full_name: claims.name ?? claims.email,
+            full_name: claims.name ?? claimEmail,
             org_name: claims.org_name ?? "Real Elite Workspace",
           },
         });
@@ -137,7 +138,7 @@ export const hubSignIn = createServerFn({ method: "POST" })
         .eq("id", userId)
         .is("real_elite_user_id", null);
     } else {
-      email = linked.email ?? claims.email;
+      email = (linked.email ?? claimEmail).trim().toLowerCase();
     }
 
     // Start a normal local session via a one-time email credential.
