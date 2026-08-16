@@ -213,10 +213,15 @@ function DialerPage() {
       const { data: prof } = await supabase.from("profiles").select("org_id, active_workspace_id, full_name, email").maybeSingle();
       if (!prof) throw new Error("No workspace found.");
       if (!prof.active_workspace_id) throw new Error("No active workspace");
+      // The agreement must land in the workspace this dialer is showing, not
+      // whichever one the profile row drifted to in another tab.
+      if (!wsId || prof.active_workspace_id !== wsId) {
+        throw new Error("Your Active Workspace Changed. Reload Before Sending An Agreement.");
+      }
       const { data: tpl } = await supabase
         .from("agreement_templates")
         .select("id, body, file_path, file_name")
-        .eq("workspace_id", prof.active_workspace_id)
+        .eq("workspace_id", wsId)
         .order("is_default", { ascending: false })
         .limit(1)
         .maybeSingle();
